@@ -8,7 +8,6 @@ from __future__ import print_function
 from __future__ import division
 
 # Standard libraries
-import sys
 from os.path import splitext, basename
 import numpy as np
 
@@ -18,8 +17,8 @@ except ImportError:
     print('Warning: YAML must be installed to read input file.')
 
 # Local imports
-from .utils import units, SPEC_KEY, get_temp_unit
-from .exceptions import (KeywordError, UndefinedElementError,
+from .utils import units, SPEC_KEY
+from .exceptions import (KeywordError,
                          MissingElementError, MissingAttributeError,
                          UndefinedKeywordError
                          )
@@ -129,7 +128,7 @@ def get_ignition_type(ignition_type):
         # Check value of target
         validation.validate_gt('target-value', ignition['target-value'], 0.0)
 
-        ### THIS ISN'T SUPPORTED NOW
+        # THIS ISN'T SUPPORTED NOW
         raise NotImplementedError('concentration ignition delay type '
                                   'not supported'
                                   )
