@@ -11,10 +11,7 @@ from __future__ import division
 from os.path import splitext, basename
 import numpy as np
 
-try:
-    import yaml
-except ImportError:
-    print('Warning: YAML must be installed to read input file.')
+import yaml
 
 # Local imports
 from .utils import units, SPEC_KEY
