@@ -9,13 +9,14 @@ Based on validation module of pyrk (https://github.com/pyrk).
 from __future__ import print_function
 from __future__ import division
 import sys
-if sys.version_info > (3,):
-    long = int
 
 import pint
 
 # Local imports
 from .utils import units
+
+if sys.version_info > (3,):
+    long = int
 
 
 def validate_geq(value_name, value, low_lim):

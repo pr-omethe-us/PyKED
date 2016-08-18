@@ -94,17 +94,17 @@ class TestIgnitionType:
         """Ensure exception raised for wrong target.
         """
         with pytest.raises(UndefinedKeywordError):
-            ignition = parse_files.get_ignition_type({'target': 'volume',
-                                                      'type': 'max'
-                                                      })
+            parse_files.get_ignition_type({'target': 'volume',
+                                           'type': 'max'
+                                           })
 
     def test_ignition_type_wrong_type(self):
         """Ensure exception raised for wrong type.
         """
         with pytest.raises(UndefinedKeywordError):
-            ignition = parse_files.get_ignition_type({'target': 'pressure',
-                                                      'type': 'min'
-                                                      })
+            parse_files.get_ignition_type({'target': 'pressure',
+                                           'type': 'min'
+                                           })
 
     def test_pressure_species_target_OH(self):
         """Test species max value as target.
@@ -142,11 +142,11 @@ class TestDatapoints:
 
         pressures = numpy.ones(5) * 220. * units.kilopascal
         temperatures = [1164.48, 1164.97, 1264.2,
-                              1332.57, 1519.18
-                              ] * units.kelvin
+                        1332.57, 1519.18
+                        ] * units.kelvin
         ignition_delays = [471.54, 448.03, 291.57,
-                                 205.93, 88.11
-                                 ] * units.us
+                           205.93, 88.11
+                           ] * units.us
 
         for idx, case in enumerate(properties['cases']):
             # Ensure correct pressure, temperature, and

@@ -3,6 +3,7 @@
 .. moduleauthor:: Kyle Niemeyer <kyle.niemeyer@gmail.com>
 """
 
+
 class ParseError(Exception):
     """Base class for errors."""
     pass
