@@ -40,27 +40,26 @@ def get_experiment_kind(raw_properties):
         Type of experiment ('ST' or 'RCM')
 
     """
-    if not raw_properties.get('experiment-type', None):
+    if 'experiment-type' not in raw_properties:
         raise MissingElementError('experiment-type')
 
-    if raw_properties['experiment-type'] != 'Ignition delay':
-        raise NotImplementedError('experimentType not '
+    if raw_properties['experiment-type'].lower() != 'ignition delay':
+        raise NotImplementedError('experimentType must be '
                                   'ignition delay'
                                   )
 
-    apparatus = raw_properties.get('apparatus', None)
-    if not apparatus:
+    if 'apparatus' not in raw_properties:
         raise MissingElementError('apparatus')
-
-    kind = apparatus.get('kind', None)
-    if not kind:
-        raise MissingElementError('apparatus/kind')
-    elif kind == 'shock tube':
-        return 'ST'
-    elif kind == 'rapid compression machine':
-        return 'RCM'
     else:
-        raise NotImplementedError(kind + ' experiment not supported')
+        if 'kind' not in raw_properties['apparatus']:
+            raise MissingElementError('apparatus/kind')
+        kind = raw_properties['apparatus']['kind']
+        if kind == 'shock tube':
+            return 'ST'
+        elif kind == 'rapid compression machine':
+            return 'RCM'
+        else:
+            raise NotImplementedError(kind + ' experiment not supported')
 
 
 def get_ignition_type(ignition_type):

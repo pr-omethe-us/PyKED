@@ -14,7 +14,8 @@ import pytest
 from .. import parse_files
 from ..simulation import Simulation
 from ..utils import units
-from ..exceptions import UndefinedKeywordError
+from ..exceptions import UndefinedKeywordError, MissingElementError
+
 
 class TestExperimentType:
     """
@@ -42,6 +43,39 @@ class TestExperimentType:
 
         kind = parse_files.get_experiment_kind(raw_properties)
         assert kind == 'RCM'
+
+    def test_no_apparatus_kind(self):
+        """Ensure having no apparatus kind present raises an error
+        """
+        with pytest.raises(MissingElementError):
+            parse_files.get_experiment_kind({'experiment-type': 'ignition delay',
+                                             'apparatus': {'dummy': 'This is not a kind'}})
+
+    def test_no_experiment_type(self):
+        """Ensure having no experiment type present raises an error
+        """
+        with pytest.raises(MissingElementError):
+            parse_files.get_experiment_kind({'not experiment type': 'This is not right'})
+
+    def test_no_apparatus(self):
+        """Ensure having no apparatus present raises an error
+        """
+        with pytest.raises(MissingElementError):
+            parse_files.get_experiment_kind({'experiment-type': 'ignition delay'})
+
+    def test_nonimplemented_apparatus_kind(self):
+        """Ensure using an apparatus kind that isn't shock tube or rapid compression machine
+        raises an error.
+        """
+        with pytest.raises(NotImplementedError):
+            parse_files.get_experiment_kind({'experiment-type': 'ignition delay',
+                                             'apparatus': {'kind': 'not an experiment kind'}})
+
+    def test_nonimplemented_experiment_type(self):
+        """Ensure using an experiment type that isn't 'igniton delay' raises an error
+        """
+        with pytest.raises(NotImplementedError):
+            parse_files.get_experiment_kind({'experiment-type': 'not an experiment type'})
 
 
 class TestIgnitionType:
