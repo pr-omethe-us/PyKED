@@ -19,7 +19,6 @@ from .exceptions import (KeywordError,
                          MissingElementError, MissingAttributeError,
                          UndefinedKeywordError
                          )
-from .simulation import Simulation
 from . import validation
 
 
@@ -355,48 +354,3 @@ def read_experiment(filename):
                                    'with shock tube experiment.')
 
     return properties
-
-
-def create_simulations(properties):
-    """Set up individual simulations for each ignition delay value.
-
-    Parameters
-    ----------
-    properties : dict
-        Dictionary with group of experimental properties
-
-    Returns
-    -------
-    simulations : list
-        List of :class:`Simulation` objects for each simulation
-
-    """
-
-    simulations = []
-    for idx, case in enumerate(properties['cases']):
-        sim_properties = {}
-        # Common properties
-        sim_properties['data-file'] = properties['data-file']
-        sim_properties['id'] = properties['id'] + '_' + str(idx)
-
-        for prop in ['temperature', 'pressure', 'ignition-delay',
-                     'composition'
-                     ]:
-            sim_properties[prop] = case[prop]
-
-        # Copy pressure rise or volume history if present
-        if 'pressure-rise' in case:
-            sim_properties['pressure-rise'] = case['pressure-rise']
-
-        if 'volume' in case:
-            sim_properties['volume'] = case['volume']
-            sim_properties['time'] = case['time']
-
-        simulations.append(Simulation(properties['kind'], sim_properties,
-                                      case['ignition']['target'],
-                                      case['ignition']['type'],
-                                      case['ignition']['target-value'],
-                                      case['ignition']['target-units']
-                                      )
-                           )
-    return simulations
