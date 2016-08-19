@@ -10,6 +10,12 @@ from __future__ import print_function
 from __future__ import division
 import sys
 
+import pkg_resources
+try:
+    import ruamel.yaml as yaml
+except ImportError:
+    import yaml
+
 import pint
 
 # Local imports
@@ -17,6 +23,11 @@ from .utils import units
 
 if sys.version_info > (3,):
     long = int
+
+# Load the ChemKED schema definition file
+schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
+with open(schema_file, 'r') as f:
+    schema = yaml.safe_load(f)
 
 
 def validate_geq(value_name, value, low_lim):

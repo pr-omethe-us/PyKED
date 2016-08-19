@@ -10,7 +10,8 @@ import yaml
 import pytest
 
 from cerberus import Validator
-from ..utils import schema
+from ..validation import schema
+print(schema)
 
 v = Validator(schema)
 
@@ -62,3 +63,18 @@ class TestValidator(object):
             assert False
         else:
             assert True
+
+    def test_invalid_experiment_type(self):
+        """Ensure that an invalid experiment type raises an exception.
+        """
+        # update=True means to ignore required keys that are left out for testing
+        v.validate({'experiment-type': 'invalid experiment'}, update=True)
+        assert v.errors['experiment-type'] == 'unallowed value invalid experiment'
+
+    def test_valid_experiment_types(self):
+        """Ensure that all the valid experiment types are validated
+        """
+        # update=True means to ignore required keys that are left out for testing
+        valid_experiment_types = ['ignition delay']
+        for exp in valid_experiment_types:
+            assert v.validate({'experiment-type': exp}, update=True)
