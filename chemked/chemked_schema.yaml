@@ -1,0 +1,171 @@
+# Common reference for authors' information
+author:
+  type: dict
+  schema: &author
+    ORCID:  # TODO: Write ORCID validator
+      type: string
+    name:
+      required: true
+      type: string
+# Common reference for pressure rise schema
+pressure-rise: &pressure-rise
+  schema:
+    value:
+      min: 0.0
+      required: true
+      type: float
+    units:
+      required: true
+      type: string
+  type: dict
+# Common reference for composition schema
+composition: &composition
+  type: list
+  schema:
+    type: dict
+    schema:
+      species:
+        required: true
+        type: string
+      mole-fraction:
+        required: true
+        type: float
+      InChI:
+        required: true
+        type: string
+# Common reference for value-unit schema
+value-unit-schema: &value-unit-schema
+  type: dict
+  schema:
+    value:
+      min: 0.0
+      required: true
+      type: float
+    units:  # TODO: Write unit validator
+      required: true
+      type: string
+# Common reference for ignition-type
+ignition-type: &ignition-type
+  type: dict
+  schema:
+    target:
+      required: true
+      type: string
+    type:
+      allowed:
+      - d/dt max
+      - max
+      - min
+      required: true
+      type: string
+
+# Start the ChemKED schema
+common-properties:
+  type: dict
+  schema:
+    pressure: *value-unit-schema
+    ignition-type: *ignition-type
+    composition: *composition
+    pressure-rise: *pressure-rise
+apparatus:
+  required: true
+  type: dict
+  schema:
+    kind:
+      allowed:
+      - shock tube
+      - rapid compression machine
+      required: true
+      type: string
+    institution:
+      type: string
+    facility:
+      type: string
+datapoints:
+  required: true
+  type: list
+  schema:
+    type: dict
+    schema:
+      pressure-rise: *pressure-rise
+      compression-time: *value-unit-schema
+      pressure: *value-unit-schema
+      ignition-type: *ignition-type
+      ignition-delay: *value-unit-schema
+      temperature: *value-unit-schema
+      composition: *composition
+      volume-history:
+        type: dict
+        schema:
+          volume:
+            required: true
+            type: dict
+            schema:
+              units:  # TODO: Write unit validator
+                required: true
+                type: string
+              column:
+                required: true
+                type: integer
+          time:
+            required: true
+            type: dict
+            schema:
+              units:  # TODO: Write unit validator
+                required: true
+                type: string
+              column:
+                required: true
+                type: integer
+          values:
+            required: true
+            type: list
+            schema:
+              type: list
+              items:
+              - type: float
+              - type: float
+reference:
+  required: true
+  type: dict
+  schema:
+    volume:
+      min: 0
+      required: true
+      type: integer
+    journal:
+      required: true
+      type: string
+    doi:  # TODO: Write DOI validator
+      type: string
+    authors:
+      type: list
+      required: true
+      schema:
+        type: dict
+        schema: *author
+    detail:
+      type: string
+    year:
+      min: 1600
+      required: true
+      type: integer
+    pages:
+      required: true
+      type: string
+chemked-version:  # TODO: Implement proper version comparison
+  allowed: 0.0.1
+  required: true
+  type: string
+experiment-type:
+  allowed:
+  - ignition delay
+  required: true
+  type: string
+file-author:
+  type: dict
+  required: true
+  schema: *author
+file-version:
+  required: true
+  type: string
