@@ -16,7 +16,7 @@ from ..utils import units
 from ..exceptions import UndefinedKeywordError, MissingElementError
 
 
-class TestExperimentType:
+class TestExperimentType(object):
     """
     """
     def test_shock_tube_experiment(self):
@@ -77,7 +77,7 @@ class TestExperimentType:
             parse_files.get_experiment_kind({'experiment-type': 'not an experiment type'})
 
 
-class TestIgnitionType:
+class TestIgnitionType(object):
     """
     """
     def test_ignition_type_pressure(self):
@@ -122,7 +122,7 @@ class TestIgnitionType:
         assert ignition['type'] == 'max'
 
 
-class TestDatapoints:
+class TestDatapoints(object):
     """
     """
     def test_shock_tube_data_points(self):
