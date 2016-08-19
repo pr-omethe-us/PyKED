@@ -83,7 +83,7 @@ person_schema = {
 schema = {
     'file-author': merge_dicts(person_schema, dict(required=True)),
     'file-version': {'type': 'string', 'required': True},
-    'chemked-version': {'type': 'string', 'required': True, 'allowed': '0.0.1'},  # TODO: Implement proper version comparison
+    'chemked-version': {'type': 'string', 'required': True, 'allowed': '0.0.1'},  # TODO: Implement proper version comparison # noqa
     'reference': {'type': 'dict', 'required': True, 'schema': {
         'doi': {'type': 'string'},  # TODO: Write DOI validator
         'authors': {'type': 'list', 'required': True, 'schema': person_schema},
@@ -108,37 +108,39 @@ schema = {
         'pressure-rise': pressure_rise_schema,
         },
     },
-    'datapoints': {'type': 'list', 'required': True, 'schema': {'type': 'dict', 'schema': {
-        'temperature': temperature_schema,
-        'ignition-delay': ignition_delay_schema,
-        'pressure': pressure_schema,
-        'composition': composition_schema,
-        'ignition-type': ignition_type_schema,
-        'compression-time': compression_time_schema,
-        'volume-history': {'type': 'dict', 'schema': {
-            'time': {'type': 'dict', 'required': True, 'schema': {
-                'units': {'type': 'string', 'required': True},  # TODO: Write unit validator
-                'column': {'type': 'integer', 'required': True},
-                },
-            },
-            'volume': {'type': 'dict', 'required': True, 'schema': {
-                'units': {'type': 'string', 'required': True},  # TODO: Write unit validator
-                'column': {'type': 'integer', 'required': True},
-                },
-            },
-            'values': {
-                'type': 'list',
-                'schema': {
-                    'type': 'list',
-                    'items': [{'type': 'float'}, {'type': 'float'}]
+    'datapoints': {'type': 'list', 'required': True, 'schema': {
+        'type': 'dict',
+        'schema': {
+            'temperature': temperature_schema,
+            'ignition-delay': ignition_delay_schema,
+            'pressure': pressure_schema,
+            'composition': composition_schema,
+            'ignition-type': ignition_type_schema,
+            'compression-time': compression_time_schema,
+            'volume-history': {'type': 'dict', 'schema': {
+                'time': {'type': 'dict', 'required': True, 'schema': {
+                    'units': {'type': 'string', 'required': True},  # TODO: Write unit validator
+                    'column': {'type': 'integer', 'required': True},
                     },
-                'required': True
+                },
+                'volume': {'type': 'dict', 'required': True, 'schema': {
+                    'units': {'type': 'string', 'required': True},  # TODO: Write unit validator
+                    'column': {'type': 'integer', 'required': True},
+                    },
+                },
+                'values': {
+                    'type': 'list',
+                    'schema': {
+                        'type': 'list',
+                        'items': [{'type': 'float'}, {'type': 'float'}]
+                        },
+                    'required': True
+                    },
                 },
             },
-        },
-        'pressure-rise': pressure_rise_schema,
+            'pressure-rise': pressure_rise_schema,
+        }
     }},
-    },
     'experiment-type': {'type': 'string', 'required': True, 'allowed': ['ignition delay']},
 }
 
