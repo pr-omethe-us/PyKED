@@ -2,7 +2,7 @@
 author:
   type: dict
   schema: &author
-    ORCID:
+    ORCID:  # TODO: Write ORCID validator
       type: string
     name:
       required: true
@@ -41,7 +41,7 @@ value-unit-schema: &value-unit-schema
       min: 0.0
       required: true
       type: float
-    units:
+    units:  # TODO: Write unit validator
       required: true
       type: string
 # Common reference for ignition-type
@@ -101,7 +101,7 @@ datapoints:
             required: true
             type: dict
             schema:
-              units:
+              units:  # TODO: Write unit validator
                 required: true
                 type: string
               column:
@@ -111,7 +111,7 @@ datapoints:
             required: true
             type: dict
             schema:
-              units:
+              units:  # TODO: Write unit validator
                 required: true
                 type: string
               column:
@@ -136,7 +136,7 @@ reference:
     journal:
       required: true
       type: string
-    doi:
+    doi:  # TODO: Write DOI validator
       type: string
     authors:
       type: list
@@ -153,7 +153,7 @@ reference:
     pages:
       required: true
       type: string
-chemked-version:
+chemked-version:  # TODO: Implement proper version comparison
   allowed: 0.0.1
   required: true
   type: string
