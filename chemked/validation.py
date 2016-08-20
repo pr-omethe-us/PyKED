@@ -17,6 +17,7 @@ except ImportError:
     import yaml
 
 import pint
+from cerberus import Validator
 
 # Local imports
 from .utils import units
@@ -28,6 +29,42 @@ if sys.version_info > (3,):
 schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
 with open(schema_file, 'r') as f:
     schema = yaml.safe_load(f)
+
+# SI units for available value-type properties
+property_units = {'temperature': 'kelvin',
+                  'pressure': 'pascal',
+                  'ignition-delay': 'second',
+                  'pressure-rise': '1.0 / second',
+                  'compression-time': 'second',
+                  }
+
+class OurValidator(Validator):
+    """Custom validator with rules for units and Quantities.
+    """
+    def _validate_isunit(self, isunit, field, value):
+        """Checks that given unit is a valid SI unit.
+        """
+        if isunit:
+            try:
+                units(value)
+            except pint.UndefinedUnitError:
+                self._error(field, 'incorrect units')
+
+    def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
+        """Checks for valid given value and appropriate units.
+        """
+        if isvalid_quantity:
+            quantity = value['value'] * units(value['units'])
+
+            low_lim = 0.0 * units(property_units[field])
+
+            try:
+                if quantity <= low_lim:
+                    self._error(field, 'value must be > 0.0')
+            except pint.DimensionalityError:
+                self._error(field, 'incompatible units; should be consistent '
+                            'with ' + property_units[field]
+                            )
 
 
 def validate_geq(value_name, value, low_lim):

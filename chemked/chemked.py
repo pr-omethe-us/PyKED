@@ -4,22 +4,9 @@ Main ChemKED module
 # Python 2 compatibility
 from __future__ import print_function
 
-from pint import UndefinedUnitError
-from cerberus import Validator
-
 # Local imports
-from .validation import schema, yaml
+from .validation import schema, OurValidator, yaml
 from .utils import units
-
-class OurValidator(Validator):
-    """Custom validator with rules for units and Quantities.
-    """
-    def _validate_isunit(self, isunit, field, value):
-        if isunit:
-            try:
-                units(value)
-            except UndefinedUnitError:
-                self._error(field, 'incorrect units')
 
 class ChemKED(object):
     """Main ChemKED class.

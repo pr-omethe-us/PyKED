@@ -9,12 +9,10 @@ import pkg_resources
 import yaml
 import pytest
 
-from cerberus import Validator
-from ..validation import schema
+from ..validation import schema, OurValidator
 print(schema)
 
-v = Validator(schema)
-
+v = OurValidator(schema)
 
 class TestValidator(object):
     """

@@ -27,6 +27,7 @@ composition: &composition
 # Common reference for value-unit schema
 value-unit: &value-unit
   type: dict
+  isvalid_quantity: true
   schema:
     value:
       min: 0.0
@@ -35,6 +36,7 @@ value-unit: &value-unit
     units:  # TODO: Write unit validator
       required: true
       type: string
+      isunit: true
 # Common reference for ignition-type
 ignition-type: &ignition-type
   type: dict
