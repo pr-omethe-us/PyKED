@@ -43,15 +43,6 @@ property_units = {'temperature': 'kelvin',
 class OurValidator(Validator):
     """Custom validator with rules for units and Quantities.
     """
-    def _validate_isunit(self, isunit, field, value):
-        """Checks that given unit is a valid SI unit.
-        """
-        if isunit:
-            try:
-                units(value)
-            except pint.UndefinedUnitError:
-                self._error(field, 'incorrect units')
-
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
         """Checks for appropriate units.
         """

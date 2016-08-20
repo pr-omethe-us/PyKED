@@ -36,7 +36,6 @@ value-unit: &value-unit
     units:
       required: true
       type: string
-      isunit: true
 # Common reference for ignition-type
 ignition-type: &ignition-type
   type: dict
@@ -104,7 +103,6 @@ datapoints:
             schema:
               units:
                 required: true
-                isunit: true
                 type: string
               column:
                 required: true
@@ -117,7 +115,6 @@ datapoints:
             schema:
               units:
                 required: true
-                isunit: true
                 type: string
               column:
                 required: true
