@@ -33,7 +33,7 @@ value-unit: &value-unit
       min: 0.0
       required: true
       type: float
-    units:  # TODO: Write unit validator
+    units:
       required: true
       type: string
       isunit: true
@@ -103,6 +103,7 @@ datapoints:
             schema:
               units:  # TODO: Write unit validator
                 required: true
+                isunit: true
                 type: string
               column:
                 required: true
@@ -114,6 +115,7 @@ datapoints:
             schema:
               units:  # TODO: Write unit validator
                 required: true
+                isunit: true
                 type: string
               column:
                 required: true
