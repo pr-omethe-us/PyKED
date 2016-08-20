@@ -42,6 +42,13 @@ ignition-type: &ignition-type
     target:
       required: true
       type: string
+      allowed:
+        - temperature
+        - pressure
+        - OH
+        - OH*
+        - CH
+        - CH*
     type:
       allowed:
         - d/dt max
