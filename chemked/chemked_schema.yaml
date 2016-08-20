@@ -7,17 +7,6 @@ author:
     name:
       required: true
       type: string
-# Common reference for pressure rise schema
-pressure-rise: &pressure-rise
-  schema:
-    value:
-      min: 0.0
-      required: true
-      type: float
-    units:
-      required: true
-      type: string
-  type: dict
 # Common reference for composition schema
 composition: &composition
   type: list
@@ -66,7 +55,7 @@ common-properties:
     pressure: *value-unit-schema
     ignition-type: *ignition-type
     composition: *composition
-    pressure-rise: *pressure-rise
+    pressure-rise: *value-unit-schema
 apparatus:
   required: true
   type: dict
@@ -87,7 +76,7 @@ datapoints:
   schema:
     type: dict
     schema:
-      pressure-rise: *pressure-rise
+      pressure-rise: *value-unit-schema
       compression-time: *value-unit-schema
       pressure: *value-unit-schema
       ignition-type: *ignition-type
