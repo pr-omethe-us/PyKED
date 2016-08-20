@@ -23,7 +23,7 @@ composition: &composition
         required: true
         type: string
 # Common reference for value-unit schema
-value-unit-schema: &value-unit-schema
+value-unit: &value-unit
   type: dict
   schema:
     value:
@@ -52,10 +52,10 @@ ignition-type: &ignition-type
 common-properties:
   type: dict
   schema:
-    pressure: *value-unit-schema
+    pressure: *value-unit
     ignition-type: *ignition-type
     composition: *composition
-    pressure-rise: *value-unit-schema
+    pressure-rise: *value-unit
 apparatus:
   required: true
   type: dict
@@ -76,12 +76,12 @@ datapoints:
   schema:
     type: dict
     schema:
-      pressure-rise: *value-unit-schema
-      compression-time: *value-unit-schema
-      pressure: *value-unit-schema
+      pressure-rise: *value-unit
+      compression-time: *value-unit
+      pressure: *value-unit
       ignition-type: *ignition-type
-      ignition-delay: *value-unit-schema
-      temperature: *value-unit-schema
+      ignition-delay: *value-unit
+      temperature: *value-unit
       composition: *composition
       volume-history:
         type: dict
