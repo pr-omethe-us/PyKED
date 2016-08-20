@@ -100,8 +100,9 @@ datapoints:
           volume:
             required: true
             type: dict
+            isvalid_unit: true
             schema:
-              units:  # TODO: Write unit validator
+              units:
                 required: true
                 isunit: true
                 type: string
@@ -112,8 +113,9 @@ datapoints:
           time:
             required: true
             type: dict
+            isvalid_unit: true
             schema:
-              units:  # TODO: Write unit validator
+              units:
                 required: true
                 isunit: true
                 type: string

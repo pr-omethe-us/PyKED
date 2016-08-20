@@ -36,6 +36,8 @@ property_units = {'temperature': 'kelvin',
                   'ignition-delay': 'second',
                   'pressure-rise': '1.0 / second',
                   'compression-time': 'second',
+                  'volume': 'meter**3',
+                  'time': 'second',
                   }
 
 class OurValidator(Validator):
@@ -50,12 +52,23 @@ class OurValidator(Validator):
             except pint.UndefinedUnitError:
                 self._error(field, 'incorrect units')
 
+    def _validate_isvalid_unit(self, isvalid_unit, field, value):
+        """Checks for appropriate units.
+        """
+        if isvalid_unit:
+            quantity = 1.0 * units(value['units'])
+            try:
+                quantity.to(property_units[field])
+            except pint.DimensionalityError:
+                self._error(field, 'incompatible units; should be consistent '
+                            'with ' + property_units[field]
+                            )
+
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
         """
         if isvalid_quantity:
             quantity = value['value'] * units(value['units'])
-
             low_lim = 0.0 * units(property_units[field])
 
             try:
