@@ -18,12 +18,16 @@ except ImportError:
 
 import pint
 from cerberus import Validator
+import habanero
+from orcid import SearchAPI
 
 # Local imports
 from .utils import units
 
 if sys.version_info > (3,):
     long = int
+
+orcid_api = SearchAPI(sandbox=False)
 
 # Load the ChemKED schema definition file
 schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
@@ -70,6 +74,71 @@ class OurValidator(Validator):
                             'with ' + property_units[field]
                             )
 
+    def _validate_isvalid_reference(self, isvalid_reference, field, value):
+        """Checks valid reference metadata using DOI (if present).
+        """
+        if isvalid_reference and 'doi' in value:
+            try:
+                ref = habanero.Crossref().works(ids = value['doi'])['message']
+            except HTTPError or habanero.RequestError:
+                self._error(field, 'DOI not found')
+                return
+
+            # check journal name
+            if value['journal'] not in ref['container-title']:
+                self._error(field, 'journal does not match: ' +
+                            ', '.join(ref['container-title'])
+                            )
+            # check year
+            pub_year = (ref.get('published-print')
+                        if ref.get('published-print')
+                        else ref.get('published-online')
+                        )['date-parts'][0][0]
+
+            if value['year'] != pub_year:
+                self._error(field, 'year should be ' + str(pub_year))
+
+            # check volume number
+            if value['volume'] != int(ref['volume']):
+                self._error(field, 'volume number should be ' + ref['volume'])
+
+            # check pages
+            if value['pages'] != ref['page']:
+                self._error(field, 'pages should be ' + ref['page'])
+
+            # check that all authors present
+            author_list = value['authors'][:]
+            for author in ref['author']:
+                # find using family name
+                author_match = next(
+                    (a for a in author_list if
+                    a['name'].split()[-1].upper() == author['family'].upper()),
+                    None
+                    )
+                if author_match is None:
+                    self._error(field, 'missing author ' +
+                                ' '.join([author['given'], author['family']])
+                                )
+                else:
+                    # validate ORCID
+                    orcid = author.get('ORCID')
+                    if orcid:
+                        orcid = orcid[orcid.rfind('/') + 1 :]
+                        if author_match['ORCID'] != orcid:
+                            self._error(
+                                field, 'author ' +
+                                ' '.join([author['given'], author['family']]) +
+                                ' ORCID should be ' + orcid
+                                )
+                    elif author_match.get('ORCID'):
+                        # still validate if present in file
+                        res = orcid_api.search_public('orcid:' +
+                                                      author_match['ORCID']
+                                                      )
+                        if res['orcid-search-results']['num-found'] == 0:
+                            self._error(field, 'ORCID incorrect for ' +
+                                        author_match['name']
+                                        )
 
 def validate_geq(value_name, value, low_lim):
     """Raise error if value lower than specified lower limit or wrong type.

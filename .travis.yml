@@ -29,7 +29,7 @@ install:
     - source activate test-environment
     - conda install pint
     # just until conda-forge recipe available
-    - pip install cerberus
+    - pip install cerberus habanero orcid
 
 # command to run tests
 script: py.test -vv

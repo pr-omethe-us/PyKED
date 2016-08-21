@@ -131,6 +131,7 @@ datapoints:
 reference:
   required: true
   type: dict
+  isvalid_reference: true
   schema:
     volume:
       min: 0
