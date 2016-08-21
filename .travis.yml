@@ -31,10 +31,10 @@ install:
     - source activate test-environment
     - conda install pint
     # just until conda-forge recipe available
-    - pip install cerberus habanero orcid
+    - pip install cerberus habanero orcid pytest-cov
 
 # command to run tests
-script: py.test -vv
+script: py.test -vv --cov=./
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
