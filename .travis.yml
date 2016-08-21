@@ -33,3 +33,6 @@ install:
 
 # command to run tests
 script: py.test -vv
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
