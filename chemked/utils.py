@@ -10,6 +10,8 @@ units = pint.UnitRegistry()
 
 units.define('cm3 = centimeter**3')
 
+Q_ = units.Quantity
+
 # Unique InChI identifier for species
 SPEC_KEY = {'1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3': 'nC7H16',
             '1S/C8H18/c1-7(2)6-8(3,4)5/h7H,6H2,1-5H3': 'iC8H18',
