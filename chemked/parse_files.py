@@ -11,8 +11,6 @@ from __future__ import division
 from os.path import splitext, basename
 import numpy as np
 
-import yaml
-
 # Local imports
 from .utils import units, SPEC_KEY
 from .exceptions import (KeywordError,
@@ -305,7 +303,7 @@ def read_experiment(filename):
     """
 
     with open(filename, 'r') as f:
-        raw_properties = yaml.load(f)
+        raw_properties = validation.yaml.load(f)
 
     properties = {}
 

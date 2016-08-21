@@ -6,9 +6,12 @@ from __future__ import division
 import os
 import pkg_resources
 
-import numpy
-import yaml
 import pytest
+import numpy
+try:
+    import ruamel.yaml as yaml
+except ImportError:
+    import yaml
 
 # Local imports
 from .. import parse_files

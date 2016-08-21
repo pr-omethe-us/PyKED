@@ -6,8 +6,11 @@ Tests for the utils
 import os
 import pkg_resources
 
-import yaml
 import pytest
+try:
+    import ruamel.yaml as yaml
+except ImportError:
+    import yaml
 
 from ..validation import schema, OurValidator
 print(schema)
