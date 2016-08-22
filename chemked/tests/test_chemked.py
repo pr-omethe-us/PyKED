@@ -7,11 +7,10 @@ import pkg_resources
 
 # Third-party libraries
 import numpy as np
-from cerberus import Validator
 import pytest
 
 # Local imports
-from ..validation import schema, yaml
+from ..validation import schema, OurValidator, yaml
 from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
 
@@ -50,7 +49,7 @@ class TestDataPoint(object):
         with open(filename, 'r') as f:
             properties = yaml.safe_load(f)
 
-        v = Validator(schema)
+        v = OurValidator(schema)
         if not v.validate(properties):
             raise ValueError(v.errors)
 
