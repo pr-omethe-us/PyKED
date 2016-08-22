@@ -7,8 +7,8 @@ from __future__ import print_function
 import pint
 
 units = pint.UnitRegistry()
-
 units.define('cm3 = centimeter**3')
+Q_ = units.Quantity
 
 # Unique InChI identifier for species
 SPEC_KEY = {'1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3': 'nC7H16',
