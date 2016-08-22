@@ -11,7 +11,8 @@ from .validation import schema, yaml
 from .utils import Q_
 
 vol_hist = namedtuple('VolumeHistory', ['time', 'volume'])
-reference = namedtuple('Reference', ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
+reference = namedtuple('Reference',
+                       ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
 apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
 
 
