@@ -8,7 +8,9 @@ Based on validation module of pyrk (https://github.com/pyrk).
 # Python 2 compatibility
 from __future__ import print_function
 from __future__ import division
+
 import sys
+from warnings import warn
 
 import pkg_resources
 try:
@@ -77,12 +79,19 @@ class OurValidator(Validator):
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
+
+        Todo:
+            * remove UnboundLocalError from exception handling
         """
         if isvalid_reference and 'doi' in value:
             try:
                 ref = habanero.Crossref().works(ids = value['doi'])['message']
-            except requests.HTTPError or habanero.RequestError:
+            except (requests.HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
+                return
+            # TODO: remove UnboundLocalError after habanero fixed
+            except (requests.exceptions.ConnectionError, UnboundLocalError):
+                warn('network not available, DOI not validated.')
                 return
 
             # check journal name
