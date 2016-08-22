@@ -37,9 +37,14 @@ class TestValidator(object):
     def test_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
-        v = OurValidator(schema)
         with pytest.warns(UserWarning):
             v.validate({'reference': {'doi': '10.1016/j.combustflame.2009.12.022'}}, update=True)
+
+    def test_invalid_DOI(self):
+        """Test for proper response to incorrect/invalid DOI.
+        """
+        v.validate({'reference': {'doi': '10.1000/invalid.doi'}}, update=True)
+        assert v.errors['reference'] == 'DOI not found'
 
     def test_valid_shock_tube(self):
         """Ensure shock tube experiment can be detected.
