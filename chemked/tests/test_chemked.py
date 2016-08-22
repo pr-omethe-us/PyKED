@@ -8,6 +8,7 @@ import pkg_resources
 # Third-party libraries
 import numpy as np
 from cerberus import Validator
+import pytest
 
 # Local imports
 from ..validation import schema, yaml
@@ -28,6 +29,16 @@ class TestChemKED(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         c = ChemKED(filename)
         assert len(c.datapoints) == 5
+
+        temperatures = Q_([1164.48, 1164.97, 1264.2, 1332.57, 1519.18], 'K')
+        ignition_delays = Q_([471.54, 448.03, 291.57, 205.93, 88.11], 'us')
+
+        for i, d in enumerate(c.datapoints):
+            assert d.ignition_delay == ignition_delays[i]
+            assert d.pressure == Q_(220., 'kPa')
+            assert d.temperature == temperatures[i]
+            assert 'pressure_rise' not in d.__dict__
+            assert 'volume_history' not in d.__dict__
 
 
 class TestDataPoint(object):
