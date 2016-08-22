@@ -30,6 +30,11 @@ schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
 with open(schema_file, 'r') as f:
     schema = yaml.safe_load(f)
 
+# These top-level keys in the schema server as references for lower-level keys.
+# They are removed to prevent conflicts due to required variables, etc.
+for key in ['author', 'value-unit-required', 'value-unit-optional', 'composition', 'ignition-type']:
+    schema.pop(key)
+
 # SI units for available value-type properties
 property_units = {'temperature': 'kelvin',
                   'pressure': 'pascal',

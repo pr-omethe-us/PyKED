@@ -1,6 +1,5 @@
 # Common reference for authors' information
 author:
-  type: dict
   schema: &author
     ORCID:  # TODO: Write ORCID validator
       type: string
@@ -10,6 +9,7 @@ author:
 # Common reference for composition schema
 composition: &composition
   type: list
+  required: true
   schema:
     type: dict
     schema:
@@ -25,7 +25,18 @@ composition: &composition
         required: true
         type: string
 # Common reference for value-unit schema
-value-unit: &value-unit
+value-unit-required: &value-unit-required
+  type: dict
+  isvalid_quantity: true
+  required: true
+  schema:
+    value:
+      required: true
+      type: float
+    units:
+      required: true
+      type: string
+value-unit-optional: &value-unit-optional
   type: dict
   isvalid_quantity: true
   schema:
@@ -61,10 +72,10 @@ ignition-type: &ignition-type
 common-properties:
   type: dict
   schema:
-    pressure: *value-unit
+    pressure: *value-unit-required
     ignition-type: *ignition-type
     composition: *composition
-    pressure-rise: *value-unit
+    pressure-rise: *value-unit-optional
 apparatus:
   required: true
   type: dict
@@ -85,12 +96,12 @@ datapoints:
   schema:
     type: dict
     schema:
-      pressure-rise: *value-unit
-      compression-time: *value-unit
-      pressure: *value-unit
+      pressure-rise: *value-unit-optional
+      compression-time: *value-unit-optional
+      pressure: *value-unit-required
       ignition-type: *ignition-type
-      ignition-delay: *value-unit
-      temperature: *value-unit
+      ignition-delay: *value-unit-required
+      temperature: *value-unit-required
       composition: *composition
       volume-history:
         type: dict
