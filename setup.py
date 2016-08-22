@@ -14,16 +14,6 @@ with open('README.md') as readme_file:
 with open('CHANGELOG.md') as changelog_file:
     changelog = changelog_file.read()
 
-requirements = ['ruamel.yaml>=0.12.5',
-                'cerberus>=0.9.2',
-                'pint>=0.7.2',
-                'pytest>=2.9.2',
-                'numpy>=1.11.0',
-                ]
-
-test_requirements = [# TODO: put package test requirements here
-                     ]
-
 setup(
     name='chemked',
 
@@ -40,7 +30,14 @@ setup(
     packages=['chemked',],
     package_dir={'chemked': 'chemked'},
     include_package_data=True,
-    install_requires=requirements,
+
+    install_requires=['ruamel.yaml>=0.12.5',
+                      'cerberus>=0.9.2',
+                      'pint>=0.7.2',
+                      'pytest>=2.9.2',
+                      'numpy>=1.11.0',
+                      ],
+
     license='MIT license',
     zip_safe=False,
     keywords=['chemical kinetics',],
@@ -56,6 +53,8 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         ],
+
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=[# TODO: put package test requirements here
+                   ]
 )
