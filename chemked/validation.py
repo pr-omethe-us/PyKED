@@ -17,6 +17,7 @@ except ImportError:
     import yaml
 
 import pint
+import requests
 from cerberus import Validator
 import habanero
 from orcid import SearchAPI
@@ -80,7 +81,7 @@ class OurValidator(Validator):
         if isvalid_reference and 'doi' in value:
             try:
                 ref = habanero.Crossref().works(ids = value['doi'])['message']
-            except HTTPError or habanero.RequestError:
+            except requests.HTTPError or habanero.RequestError:
                 self._error(field, 'DOI not found')
                 return
 
