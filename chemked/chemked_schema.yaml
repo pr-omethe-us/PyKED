@@ -30,7 +30,6 @@ value-unit: &value-unit
   isvalid_quantity: true
   schema:
     value:
-      min: 0.0
       required: true
       type: float
     units:
