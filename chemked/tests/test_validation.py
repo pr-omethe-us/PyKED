@@ -13,10 +13,77 @@ try:
 except ImportError:
     import yaml
 
-from ..validation import schema, OurValidator
+from ..validation import schema, OurValidator, compare_name
 print(schema)
 
 v = OurValidator(schema)
+
+class TestCompareName(object):
+    """
+    """
+    def test_matching_name(self):
+        """ Kyle Niemeyer vs Kyle Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'Kyle Niemeyer')
+
+    def test_matching_first_initial(self):
+        """ Kyle Niemeyer vs K Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'K Niemeyer')
+        assert compare_name('K', 'Niemeyer', 'Kyle Niemeyer')
+
+    def test_matching_full_name(self):
+        """ Kyle Niemeyer vs Kyle E. Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'Kyle E. Niemeyer')
+        assert compare_name('K', 'Niemeyer', 'Kyle E. Niemeyer')
+
+    def test_matching_initials_periods(self):
+        """ Kyle Niemeyer vs K. E. Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'K. E. Niemeyer')
+        assert compare_name('K', 'Niemeyer', 'K. E. Niemeyer')
+
+    def test_matching_initials(self):
+        """ Kyle Niemeyer vs K E Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'K E Niemeyer')
+        assert compare_name('K', 'Niemeyer', 'K E Niemeyer')
+
+    def test_matching_initials_combined(self):
+        """ Kyle Niemeyer vs KE Niemeyer
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'KE Niemeyer')
+        assert compare_name('K', 'Niemeyer', 'KE Niemeyer')
+
+    def test_matching_name_hyphen(self):
+        """ Chih-Jen Sung vs Chih-Jen Sung
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'Chih-Jen Sung')
+
+    def test_matching_first_initial_hyphen(self):
+        """ Chih-Jen Sung vs C Sung
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'C Sung')
+        assert compare_name('C', 'Sung', 'Chih-Jen Sung')
+
+    def test_matching_initials_periods_hyphen(self):
+        """ Chih-Jen Sung vs C-J Sung
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'C.-J. Sung')
+
+    def test_matching_initials_hyphens(self):
+        """ Chih-Jen Sung vs C J Sung
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'C J Sung')
+        assert compare_name('C J', 'Sung', 'Chih-Jen Sung')
+
+    def test_matching_initials_combined_hyphen(self):
+        """ Chih-Jen Sung vs CJ Sung
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'CJ Sung')
+        assert compare_name('CJ', 'Sung', 'Chih-Jen Sung')
+
 
 class TestValidator(object):
     """
@@ -34,11 +101,17 @@ class TestValidator(object):
         yield
         socket.socket = old_socket
 
-    def test_missing_internet(self, disable_socket):
+    def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
         with pytest.warns(UserWarning):
             v.validate({'reference': {'doi': '10.1016/j.combustflame.2009.12.022'}}, update=True)
+
+    def test_orcid_missing_internet(self, disable_socket):
+        """Ensure that ORCID validation fails gracefully with no Internet.
+        """
+        with pytest.warns(UserWarning):
+            v.validate({'author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
 
     def test_invalid_DOI(self):
         """Test for proper response to incorrect/invalid DOI.

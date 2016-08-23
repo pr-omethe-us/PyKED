@@ -1,8 +1,9 @@
 # Common reference for authors' information
-author:
+author: &author
   type: dict
-  schema: &author
-    ORCID:  # TODO: Write ORCID validator
+  isvalid_orcid: true
+  schema:
+    ORCID:
       type: string
     name:
       required: true
@@ -140,14 +141,12 @@ reference:
     journal:
       required: true
       type: string
-    doi:  # TODO: Write DOI validator
+    doi:
       type: string
     authors:
       type: list
       required: true
-      schema:
-        type: dict
-        schema: *author
+      schema: *author
     detail:
       type: string
     year:
@@ -166,10 +165,7 @@ experiment-type:
     - ignition delay
   required: true
   type: string
-file-author:
-  type: dict
-  required: true
-  schema: *author
+file-author: *author
 file-version:
   required: true
   type: string
