@@ -119,6 +119,22 @@ class TestValidator(object):
         v.validate({'reference': {'doi': '10.1000/invalid.doi'}}, update=True)
         assert v.errors['reference'] == 'DOI not found'
 
+    def test_invalid_ORCID(self):
+        """Test for proper response to incorrect/invalid ORCID.
+        """
+        v.validate({'author': {'ORCID': '0000-0000-0000-0000',
+                   'name': 'Kyle Niemeyer'}}, update=True
+                   )
+        assert v.errors['author'] == 'ORCID incorrect or invalid for Kyle Niemeyer'
+
+    def test_invalid_ORCID_name(self):
+        """Test for proper response to incorrect name with ORCID.
+        """
+        v.validate({'author': {'ORCID': '0000-0003-4425-7097',
+                   'name': 'Bryan Weber'}}, update=True
+                   )
+        assert v.errors['author'] == 'name incorrect, should be Kyle Niemeyer'
+
     def test_valid_shock_tube(self):
         """Ensure shock tube experiment can be detected.
         """

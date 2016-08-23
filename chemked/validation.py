@@ -207,7 +207,9 @@ class OurValidator(Validator):
 
             # Return error if no results are found for the given ORCID
             if res['orcid-search-results']['num-found'] == 0:
-                self._error(field, 'ORCID incorrect or invalid for ' + field)
+                self._error(field, 'ORCID incorrect or invalid for ' +
+                            value['name']
+                            )
                 return
 
             maplist = ['orcid-search-results', 'orcid-search-result', 0,
