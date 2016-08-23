@@ -62,13 +62,13 @@ def compare_name(given_name, family_name, question_name):
     family_name = family_name.lower()
     question_name = question_name.lower()
 
-    # split name in question by , <space> - . ! ? :
-    name_split = list(filter(None, re.split("[, \-.!?:]+", question_name)))
+    # split name in question by , <space> - . 
+    name_split = list(filter(None, re.split("[, \-.]+", question_name)))
     first_name = [name_split[0]]
     if len(name_split) == 3:
         first_name += [name_split[1]]
 
-    given_name = list(filter(None, re.split("[, \-.!?:]+", given_name)))
+    given_name = list(filter(None, re.split("[, \-.]+", given_name)))
 
     if len(first_name) == 2 and len(given_name) == 2:
         # both have first and middle name/initial
