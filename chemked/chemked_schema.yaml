@@ -103,6 +103,9 @@ datapoints:
       ignition-delay: *value-unit-required
       temperature: *value-unit-required
       composition: *composition
+      equivalence-ratio:
+          type: float
+          min: 0.0
       volume-history:
         type: dict
         schema:
