@@ -68,7 +68,7 @@ class TestCompareName(object):
         assert compare_name('C', 'Sung', 'Chih-Jen Sung')
 
     def test_matching_initials_periods_hyphen(self):
-        """ Chih-Jen Sung vs C-J Sung
+        """ Chih-Jen Sung vs C.-J. Sung
         """
         assert compare_name('Chih-Jen', 'Sung', 'C.-J. Sung')
 
@@ -76,7 +76,9 @@ class TestCompareName(object):
         """ Chih-Jen Sung vs C J Sung
         """
         assert compare_name('Chih-Jen', 'Sung', 'C J Sung')
+        assert compare_name('Chih-Jen', 'Sung', 'C-J Sung')
         assert compare_name('C J', 'Sung', 'Chih-Jen Sung')
+        assert compare_name('C-J', 'Sung', 'Chih-Jen Sung')
 
     def test_matching_initials_combined_hyphen(self):
         """ Chih-Jen Sung vs CJ Sung
