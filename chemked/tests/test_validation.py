@@ -159,6 +159,19 @@ class TestValidator(object):
                                            'should be Kyle Niemeyer'
                                            )
 
+    def test_suggest_ORCID(self):
+        """Test for proper suggestion for missing ORCID.
+        """
+        authors = [{'name': 'Kyle E Niemeyer'},
+                   {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
+                   {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
+                   ]
+        with pytest.warns(UserWarning):
+            v.validate({'reference': {'authors': authors,
+                              'doi': '10.1016/j.combustflame.2015.06.017'}},
+                              update=True
+                              )
+
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
         """
