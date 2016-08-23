@@ -174,26 +174,26 @@ class OurValidator(Validator):
                     self._error(field, 'missing author ' +
                                 ' '.join([author['given'], author['family']])
                                 )
-                else:
-                    # validate ORCID
-                    orcid = author.get('ORCID')
-                    if orcid:
-                        orcid = orcid[orcid.rfind('/') + 1 :]
-                        if author_match['ORCID'] != orcid:
-                            self._error(
-                                field, 'author ' +
-                                ' '.join([author['given'], author['family']]) +
-                                ' ORCID should be ' + orcid
-                                )
-                    elif author_match.get('ORCID'):
-                        # still validate if present in file
-                        res = orcid_api.search_public('orcid:' +
-                                                      author_match['ORCID']
-                                                      )
-                        if res['orcid-search-results']['num-found'] == 0:
-                            self._error(field, 'ORCID incorrect for ' +
-                                        author_match['name']
-                                        )
+                # else:
+                #     # validate ORCID
+                #     orcid = author.get('ORCID')
+                #     if orcid:
+                #         orcid = orcid[orcid.rfind('/') + 1 :]
+                #         if author_match['ORCID'] != orcid:
+                #             self._error(
+                #                 field, 'author ' +
+                #                 ' '.join([author['given'], author['family']]) +
+                #                 ' ORCID should be ' + orcid
+                #                 )
+                #     elif author_match.get('ORCID'):
+                #         # still validate if present in file
+                #         res = orcid_api.search_public('orcid:' +
+                #                                       author_match['ORCID']
+                #                                       )
+                #         if res['orcid-search-results']['num-found'] == 0:
+                #             self._error(field, 'ORCID incorrect for ' +
+                #                         author_match['name']
+                #                         )
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
