@@ -225,8 +225,9 @@ class OurValidator(Validator):
             given_name = reduce(lambda d, k: d[k], maplist, res)
 
             if not compare_name(given_name, family_name, value['name']):
-                self._error(field, 'name incorrect for ' + value['ORCID'] +
-                            ', should be ' + ' '.join([given_name, family_name])
+                self._error(field, 'Name and ORCID do not match. Name supplied: ' +
+                            value['name'] + '. Name associated with ORCID: ' +
+                            ' '.join([given_name, family_name])
                             )
 
 
