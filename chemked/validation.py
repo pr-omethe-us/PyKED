@@ -146,7 +146,7 @@ class OurValidator(Validator):
                 return
 
             # check journal name
-            if value['journal'] not in ref['container-title']:
+            if value.get('journal') and value['journal'] not in ref['container-title']:
                 self._error(field, 'journal does not match: ' +
                             ', '.join(ref['container-title'])
                             )
@@ -156,15 +156,15 @@ class OurValidator(Validator):
                         else ref.get('published-online')
                         )['date-parts'][0][0]
 
-            if value['year'] != pub_year:
+            if value.get('year') and value['year'] != pub_year:
                 self._error(field, 'year should be ' + str(pub_year))
 
             # check volume number
-            if value['volume'] != int(ref['volume']):
+            if value.get('volume') and value['volume'] != int(ref['volume']):
                 self._error(field, 'volume number should be ' + ref['volume'])
 
             # check pages
-            if value['pages'] != ref['page']:
+            if value.get('pages') and value['pages'] != ref['page']:
                 self._error(field, 'pages should be ' + ref['page'])
 
             # check that all authors present
@@ -180,26 +180,24 @@ class OurValidator(Validator):
                     self._error(field, 'missing author ' +
                                 ' '.join([author['given'], author['family']])
                                 )
-                # else:
-                #     # validate ORCID
-                #     orcid = author.get('ORCID')
-                #     if orcid:
-                #         orcid = orcid[orcid.rfind('/') + 1 :]
-                #         if author_match['ORCID'] != orcid:
-                #             self._error(
-                #                 field, 'author ' +
-                #                 ' '.join([author['given'], author['family']]) +
-                #                 ' ORCID should be ' + orcid
-                #                 )
-                #     elif author_match.get('ORCID'):
-                #         # still validate if present in file
-                #         res = orcid_api.search_public('orcid:' +
-                #                                       author_match['ORCID']
-                #                                       )
-                #         if res['orcid-search-results']['num-found'] == 0:
-                #             self._error(field, 'ORCID incorrect for ' +
-                #                         author_match['name']
-                #                         )
+                else:
+                    # validate ORCID if given
+                    orcid = author.get('ORCID')
+                    if orcid:
+                        # Crossref may give ORCID as http://orcid.org/####-####-####-####
+                        # so need to strip the leading URL
+                        orcid = orcid[orcid.rfind('/') + 1 :]
+
+                        if author_match.get('ORCID'):
+                            if author_match['ORCID'] != orcid:
+                                self._error(
+                                    field, author_match['name'] + ' ORCID does '
+                                    'not match that in reference. Reference: '
+                                    + orcid + '. Given: ' + author_match['ORCID']
+                                    )
+                        else:
+                            # ORCID not given, suggest adding it
+                            warn('ORCID ' + orcid + ' missing for ' + author_match['name'])
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
@@ -227,8 +225,8 @@ class OurValidator(Validator):
             given_name = reduce(lambda d, k: d[k], maplist, res)
 
             if not compare_name(given_name, family_name, value['name']):
-                self._error(field, 'name incorrect, should be ' +
-                            ' '.join([given_name, family_name])
+                self._error(field, 'name incorrect for ' + value['ORCID'] +
+                            ', should be ' + ' '.join([given_name, family_name])
                             )
 
 
