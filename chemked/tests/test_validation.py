@@ -155,7 +155,9 @@ class TestValidator(object):
         v.validate({'file-author': {'ORCID': '0000-0003-4425-7097',
                    'name': 'Bryan Weber'}}, update=True
                    )
-        assert v.errors['file-author'] == 'name incorrect, should be Kyle Niemeyer'
+        assert v.errors['file-author'] == ('name incorrect for 0000-0003-4425-7097, '
+                                           'should be Kyle Niemeyer'
+                                           )
 
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
@@ -165,6 +167,23 @@ class TestValidator(object):
                    {'name': 'Bryan W Weber', 'ORCID': '0000-0003-0815-9270'},
                    ]
         assert v.validate({'reference': {'authors': authors}}, update=True)
+
+    def test_unmatching_ORCIDs(self):
+        """Ensure appropriate error for author ORCID not matching that via DOI
+        """
+        # update=True means to ignore required keys that are left out for testing
+        authors = [{'name': 'Kyle E Niemeyer', 'ORCID': '0000-0003-0815-9270'},
+                   {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
+                   {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
+                   ]
+        v.validate({'reference': {'authors': authors,
+                          'doi': '10.1016/j.combustflame.2015.06.017'}},
+                          update=True
+                          )
+        assert ('Kyle E Niemeyer ORCID does not match '
+                'that in reference. Reference: 0000-0003-4425-7097. '
+                'Given: ' + authors[0]['ORCID']
+                ) in v.errors['reference']
 
     def test_valid_shock_tube(self):
         """Ensure shock tube experiment can be detected.
