@@ -62,7 +62,13 @@ def compare_name(given_name, family_name, question_name):
     family_name = family_name.lower()
     question_name = question_name.lower()
 
-    # split name in question by , <space> - . 
+    # rearrange names given as "last, first middle"
+    if ',' in question_name:
+        name_split = question_name.split(',')
+        name_split.reverse()
+        question_name = ' '.join(name_split).strip()
+
+    # split name in question by , <space> - .
     name_split = list(filter(None, re.split("[, \-.]+", question_name)))
     first_name = [name_split[0]]
     if len(name_split) == 3:

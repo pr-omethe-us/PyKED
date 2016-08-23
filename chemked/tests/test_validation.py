@@ -86,6 +86,26 @@ class TestCompareName(object):
         assert compare_name('Chih-Jen', 'Sung', 'CJ Sung')
         assert compare_name('CJ', 'Sung', 'Chih-Jen Sung')
 
+    def test_matching_name_comma(self):
+        """ Kyle Niemeyer vs Niemeyer, Kyle E
+        """
+        assert compare_name('Kyle', 'Niemeyer', 'Niemeyer, Kyle E')
+        assert compare_name('Kyle', 'Niemeyer', 'Niemeyer, Kyle E.')
+
+    def test_matching_name_comma_hyphen(self):
+        """ Chih-Jen Sung vs Sung, Chih-Jen
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, Chih-Jen')
+
+    def test_matching_name_comma_hyphen_initials(self):
+        """ Chih-Jen Sung vs Sung, C-J
+        """
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, C-J')
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, C.-J.')
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, C J')
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, C. J.')
+        assert compare_name('Chih-Jen', 'Sung', 'Sung, CJ')
+
 
 class TestValidator(object):
     """
