@@ -1,6 +1,7 @@
 # Common reference for authors' information
 author: &author
   type: dict
+  required: true
   isvalid_orcid: true
   schema:
     ORCID:
