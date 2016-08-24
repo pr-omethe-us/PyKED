@@ -51,6 +51,7 @@ value-unit-optional: &value-unit-optional
 # Common reference for ignition-type
 ignition-type: &ignition-type
   type: dict
+  required: true
   schema:
     target:
       required: true
