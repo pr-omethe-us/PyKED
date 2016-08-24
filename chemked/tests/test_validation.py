@@ -18,6 +18,7 @@ print(schema)
 
 v = OurValidator(schema)
 
+
 class TestCompareName(object):
     """
     """
@@ -110,13 +111,13 @@ class TestCompareName(object):
 class TestValidator(object):
     """
     """
-    # Modeled after http://doc.pytest.org/en/latest/fixture.html#fixture-finalization-executing-teardown-code
     @pytest.fixture(scope='function')
     def disable_socket(self):
         """Disables socket to prevent network access.
         """
         import socket
         old_socket = socket.socket
+
         def guard(*args, **kwargs):
             raise ConnectionError("No internet")
         socket.socket = guard
@@ -133,7 +134,7 @@ class TestValidator(object):
         """Ensure that ORCID validation fails gracefully with no Internet.
         """
         with pytest.warns(UserWarning):
-            v.validate({'author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
+            v.validate({'file-author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
 
     def test_invalid_DOI(self):
         """Test for proper response to incorrect/invalid DOI.
@@ -144,16 +145,16 @@ class TestValidator(object):
     def test_invalid_ORCID(self):
         """Test for proper response to incorrect/invalid ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0000-0000-0000',
-                   'name': 'Kyle Niemeyer'}}, update=True
+        v.validate({'file-author': {'ORCID': '0000-0000-0000-0000', 'name': 'Kyle Niemeyer'}},
+                   update=True
                    )
         assert v.errors['file-author'] == 'ORCID incorrect or invalid for Kyle Niemeyer'
 
     def test_invalid_ORCID_name(self):
         """Test for proper response to incorrect name with ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0003-4425-7097',
-                   'name': 'Bryan Weber'}}, update=True
+        v.validate({'file-author': {'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}},
+                   update=True
                    )
         assert v.errors['file-author'] == ('Name and ORCID do not match. Name supplied: ' +
                                            'Bryan Weber. Name associated with ORCID: ' +
@@ -168,10 +169,10 @@ class TestValidator(object):
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
                    ]
         with pytest.warns(UserWarning):
-            v.validate({'reference': {'authors': authors,
-                              'doi': '10.1016/j.combustflame.2015.06.017'}},
-                              update=True
-                              )
+            v.validate(
+                {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+                update=True,
+            )
 
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
@@ -190,10 +191,10 @@ class TestValidator(object):
                    {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
                    ]
-        v.validate({'reference': {'authors': authors,
-                          'doi': '10.1016/j.combustflame.2015.06.017'}},
-                          update=True
-                          )
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+            update=True,
+        )
         assert ('Kyle E Niemeyer ORCID does not match '
                 'that in reference. Reference: 0000-0003-4425-7097. '
                 'Given: ' + authors[0]['ORCID']

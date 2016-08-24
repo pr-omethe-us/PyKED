@@ -54,6 +54,7 @@ property_units = {'temperature': 'kelvin',
                   'time': 'second',
                   }
 
+
 def compare_name(given_name, family_name, question_name):
     """Compares a name in question to a specified name separated into given and family.
 
@@ -141,7 +142,7 @@ class OurValidator(Validator):
         """
         if isvalid_reference and 'doi' in value:
             try:
-                ref = habanero.Crossref().works(ids = value['doi'])['message']
+                ref = habanero.Crossref().works(ids=value['doi'])['message']
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return
@@ -178,7 +179,7 @@ class OurValidator(Validator):
                 # find using family name
                 author_match = next(
                     (a for a in author_list if
-                    a['name'].split()[-1].upper() == author['family'].upper()),
+                     a['name'].split()[-1].upper() == author['family'].upper()),
                     None
                     )
                 if author_match is None:
@@ -191,14 +192,14 @@ class OurValidator(Validator):
                     if orcid:
                         # Crossref may give ORCID as http://orcid.org/####-####-####-####
                         # so need to strip the leading URL
-                        orcid = orcid[orcid.rfind('/') + 1 :]
+                        orcid = orcid[orcid.rfind('/') + 1:]
 
-                        if author_match.get('ORCID'):
+                        if 'ORCID' in author_match:
                             if author_match['ORCID'] != orcid:
                                 self._error(
-                                    field, author_match['name'] + ' ORCID does '
-                                    'not match that in reference. Reference: '
-                                    + orcid + '. Given: ' + author_match['ORCID']
+                                    field, author_match['name'] + ' ORCID does ' +
+                                    'not match that in reference. Reference: ' +
+                                    orcid + '. Given: ' + author_match['ORCID']
                                     )
                         else:
                             # ORCID not given, suggest adding it
