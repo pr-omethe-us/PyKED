@@ -1,10 +1,12 @@
+sudo: false
+
 language: python
 python:
- # - 2.7
+ - 2.7
  - 3.5
 
 install:
-    - sudo apt-get update
+#    - sudo apt-get update
       # We do this conditionally because it saves us some downloading if the
       # version is the same.
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -22,14 +24,17 @@ install:
     - conda config --add channels conda-forge
 
     # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-    - sudo rm -rf /dev/shm
-    - sudo ln -s /run/shm /dev/shm
+#    - sudo rm -rf /dev/shm
+#    - sudo ln -s /run/shm /dev/shm
 
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pytest PyYAML ruamel.yaml
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint
     - source activate test-environment
-    - conda install pint
     # just until conda-forge recipe available
-    - pip install cerberus
+    # need pytest 3.0.0
+    - pip install pytest cerberus habanero orcid pytest-cov
 
 # command to run tests
-script: py.test -vv
+script: pytest -vv --cov=./
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
