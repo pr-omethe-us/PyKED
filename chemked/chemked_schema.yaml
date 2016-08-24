@@ -97,6 +97,7 @@ apparatus:
 datapoints:
   required: true
   type: list
+  minlength: 1
   schema:
     type: dict
     schema:
@@ -161,6 +162,7 @@ reference:
     authors:
       type: list
       required: true
+      minlength: 1
       schema: *author
     detail:
       type: string

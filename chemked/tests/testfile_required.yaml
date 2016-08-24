@@ -1,0 +1,37 @@
+---
+file-author:
+  name: B. Author
+file-version: (1, 0)
+chemked-version: 0.0.1
+reference:
+  authors:
+    - name: A. Author
+  journal: Testing Journal
+  year: 1600
+experiment-type: ignition delay
+apparatus:
+    kind: shock tube
+datapoints:
+  - temperature:
+      value: 1164.48
+      units: kelvin
+    ignition-delay:
+      value: 471.54
+      units: us
+    pressure:
+      value: 220
+      units: kilopascal
+    composition:
+      - species: H2
+        InChI: 1S/H2/h1H
+        mole-fraction: 0.00444
+      - species: O2
+        InChI: 1S/O2/c1-2
+        mole-fraction: 0.00566
+      - species: Ar
+        InChI: 1S/Ar
+        mole-fraction: 0.9899
+    ignition-type:
+      target: pressure
+      type: d/dt max
+...
