@@ -95,6 +95,32 @@ class ChemKED(object):
 
             raise ValueError(v.errors)
 
+    def get_dataframe(self):
+        """Get a Pandas DataFrame of the datapoints in this instance.
+
+        Returns:
+            DataFrame: Contains the temperature, pressure, ignition delay, and composition of
+                each of the datapoints in the instance
+
+        Todos:
+            * Allow differing composition per row
+            * Add additional columns for other information, such as experiment-type, etc.
+            * Allow user input to define which columns are output?
+        """
+        import pandas as pd
+        col_labels = ['Temperature', 'Pressure', 'Ignition Delay']
+        for s in self.datapoints[0].composition:
+            col_labels.append(s['species'])
+        columns = pd.Index(col_labels)
+        data = []
+        for d in self.datapoints:
+            row = [d.temperature, d.pressure, d.ignition_delay]
+            for s in d.composition:
+                row.append(s['mole-fraction'])
+            data.append(row)
+
+        return pd.DataFrame(data=data, columns=columns)
+
 
 class DataPoint(object):
     """Class for a single datapoint.
