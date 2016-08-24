@@ -58,19 +58,19 @@ class ChemKED(object):
             self.datapoints.append(DataPoint(point))
 
         self.reference = reference(
-            volume=properties['reference']['volume'],
-            journal=properties['reference']['journal'],
-            doi=properties['reference']['doi'],
-            authors=properties['reference']['authors'],
-            detail=properties['reference']['detail'],
-            year=properties['reference']['year'],
-            pages=properties['reference']['pages'],
+            volume=properties['reference'].get('volume'),
+            journal=properties['reference'].get('journal'),
+            doi=properties['reference'].get('doi'),
+            authors=properties['reference'].get('authors'),
+            detail=properties['reference'].get('detail'),
+            year=properties['reference'].get('year'),
+            pages=properties['reference'].get('pages'),
         )
 
         self.apparatus = apparatus(
-            kind=properties['apparatus']['kind'],
-            institution=properties['apparatus']['institution'],
-            facility=properties['apparatus']['facility'],
+            kind=properties['apparatus'].get('kind'),
+            institution=properties['apparatus'].get('institution'),
+            facility=properties['apparatus'].get('facility'),
         )
 
         for prop in ['chemked-version', 'experiment-type', 'file-author', 'file-version']:

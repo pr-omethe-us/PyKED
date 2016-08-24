@@ -151,7 +151,6 @@ reference:
   schema:
     volume:
       min: 0
-      required: true
       type: integer
     journal:
       required: true
@@ -169,7 +168,6 @@ reference:
       required: true
       type: integer
     pages:
-      required: true
       type: string
 chemked-version:  # TODO: Implement proper version comparison
   allowed: 0.0.1

@@ -152,25 +152,26 @@ class OurValidator(Validator):
                 return
 
             # check journal name
-            if value.get('journal') and value['journal'] not in ref['container-title']:
+            if ('journal' in value) and (value['journal'] not in ref['container-title']):
                 self._error(field, 'journal does not match: ' +
                             ', '.join(ref['container-title'])
                             )
             # check year
             pub_year = (ref.get('published-print')
-                        if ref.get('published-print')
+                        if 'published-print' in ref
                         else ref.get('published-online')
                         )['date-parts'][0][0]
 
-            if value.get('year') and value['year'] != pub_year:
+            if ('year' in value) and (value['year'] != pub_year):
                 self._error(field, 'year should be ' + str(pub_year))
 
             # check volume number
-            if value.get('volume') and value['volume'] != int(ref['volume']):
+            if (('volume' in value) and ('volume' in ref) and
+                    (value['volume'] != int(ref['volume']))):
                 self._error(field, 'volume number should be ' + ref['volume'])
 
             # check pages
-            if value.get('pages') and value['pages'] != ref['page']:
+            if ('pages' in value) and ('page' in ref) and value['pages'] != ref['page']:
                 self._error(field, 'pages should be ' + ref['page'])
 
             # check that all authors present
