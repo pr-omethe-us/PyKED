@@ -131,27 +131,30 @@ class ChemKED(object):
             DataFrame: Contains the information regarding each point in the ``datapoints`` attribute
         """
         import pandas as pd
-        all_labels = [
-            'temperature', 'pressure', 'ignition delay', 'composition', 'reference', 'apparatus',
-            'file author', 'file version', 'chemked version',
-        ]
+
+        valid_labels = [a.replace('_', ' ') for a in self.__dict__ if not a.startswith('__')]
+        valid_labels.remove('datapoints')
+        valid_labels.extend(['composition', 'ignition delay', 'temperature', 'pressure'])
+        ref_index = valid_labels.index('reference')
+        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+        app_index = valid_labels.index('apparatus')
+        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+
         species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
+
         if output_columns is None or len(output_columns) == 0:
-            col_labels = all_labels
+            col_labels = valid_labels
             comp_index = col_labels.index('composition')
             col_labels[comp_index:comp_index + 1] = species_list
-            ref_index = col_labels.index('reference')
-            col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
-            app_index = col_labels.index('apparatus')
-            col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
         else:
             output_columns = [a.lower() for a in output_columns]
             col_labels = []
             for col in output_columns:
-                if col.split(':')[0] in all_labels:
+                if col in valid_labels:
                     col_labels.append(col)
                 else:
                     raise ValueError('{} is not a valid output column choice'.format(col))
+
             if 'composition' in col_labels:
                 comp_index = col_labels.index('composition')
                 col_labels[comp_index:comp_index + 1] = species_list
