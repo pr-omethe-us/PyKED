@@ -49,17 +49,3 @@ SPEC_NAMES = {'nC7H16': 'n-heptane',
               'H2': 'hydrogen',
               'H2O': 'water',
               }
-
-
-def print_species_names():
-    """Print species names, internal short name, and InChI identifiers."""
-
-    len_longest = max([len(sp) for sp in SPEC_NAMES.values()])
-    header = '{:<{}s} Short name\tInChI key'.format('Species name', len_longest)
-
-    print(header)
-    print('-' * len(header.expandtabs()))
-    for spec in SPEC_KEY_REV.items():
-        print('{:<{}s} {:10}\t{}'.format(SPEC_NAMES[spec[0]], len_longest,
-              spec[0], spec[1])
-              )
