@@ -39,6 +39,11 @@ schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
 with open(schema_file, 'r') as f:
     schema = yaml.safe_load(f)
 
+# These top-level keys in the schema server as references for lower-level keys.
+# They are removed to prevent conflicts due to required variables, etc.
+for key in ['author', 'value-unit-required', 'value-unit-optional', 'composition', 'ignition-type']:
+    schema.pop(key)
+
 # SI units for available value-type properties
 property_units = {'temperature': 'kelvin',
                   'pressure': 'pascal',
@@ -48,6 +53,7 @@ property_units = {'temperature': 'kelvin',
                   'volume': 'meter**3',
                   'time': 'second',
                   }
+
 
 def compare_name(given_name, family_name, question_name):
     """Compares a name in question to a specified name separated into given and family.
@@ -136,7 +142,7 @@ class OurValidator(Validator):
         """
         if isvalid_reference and 'doi' in value:
             try:
-                ref = habanero.Crossref().works(ids = value['doi'])['message']
+                ref = habanero.Crossref().works(ids=value['doi'])['message']
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return
@@ -146,25 +152,26 @@ class OurValidator(Validator):
                 return
 
             # check journal name
-            if value.get('journal') and value['journal'] not in ref['container-title']:
+            if ('journal' in value) and (value['journal'] not in ref['container-title']):
                 self._error(field, 'journal does not match: ' +
                             ', '.join(ref['container-title'])
                             )
             # check year
             pub_year = (ref.get('published-print')
-                        if ref.get('published-print')
+                        if 'published-print' in ref
                         else ref.get('published-online')
                         )['date-parts'][0][0]
 
-            if value.get('year') and value['year'] != pub_year:
+            if ('year' in value) and (value['year'] != pub_year):
                 self._error(field, 'year should be ' + str(pub_year))
 
             # check volume number
-            if value.get('volume') and value['volume'] != int(ref['volume']):
+            if (('volume' in value) and ('volume' in ref) and
+                    (value['volume'] != int(ref['volume']))):
                 self._error(field, 'volume number should be ' + ref['volume'])
 
             # check pages
-            if value.get('pages') and value['pages'] != ref['page']:
+            if ('pages' in value) and ('page' in ref) and value['pages'] != ref['page']:
                 self._error(field, 'pages should be ' + ref['page'])
 
             # check that all authors present
@@ -173,7 +180,7 @@ class OurValidator(Validator):
                 # find using family name
                 author_match = next(
                     (a for a in author_list if
-                    a['name'].split()[-1].upper() == author['family'].upper()),
+                     a['name'].split()[-1].upper() == author['family'].upper()),
                     None
                     )
                 if author_match is None:
@@ -186,14 +193,14 @@ class OurValidator(Validator):
                     if orcid:
                         # Crossref may give ORCID as http://orcid.org/####-####-####-####
                         # so need to strip the leading URL
-                        orcid = orcid[orcid.rfind('/') + 1 :]
+                        orcid = orcid[orcid.rfind('/') + 1:]
 
-                        if author_match.get('ORCID'):
+                        if 'ORCID' in author_match:
                             if author_match['ORCID'] != orcid:
                                 self._error(
-                                    field, author_match['name'] + ' ORCID does '
-                                    'not match that in reference. Reference: '
-                                    + orcid + '. Given: ' + author_match['ORCID']
+                                    field, author_match['name'] + ' ORCID does ' +
+                                    'not match that in reference. Reference: ' +
+                                    orcid + '. Given: ' + author_match['ORCID']
                                     )
                         else:
                             # ORCID not given, suggest adding it
@@ -229,211 +236,3 @@ class OurValidator(Validator):
                             value['name'] + '. Name associated with ORCID: ' +
                             ' '.join([given_name, family_name])
                             )
-
-
-def validate_geq(value_name, value, low_lim):
-    """Raise error if value lower than specified lower limit or wrong type.
-
-    Parameters
-    ---------
-    value_name : str
-        Name of value being tested
-    value : int, float, numpy.ndarray, pint.Quantity
-        Value to be tested
-    low_lim : type(value)
-        Lowest acceptable limit of ``value``
-
-    Returns
-    -------
-    value : type(value)
-        The original value
-
-    """
-
-    try:
-        if validate_num(value_name, value) < low_lim:
-            msg = (value_name + ' must be greater than or equal to ' +
-                   str(low_lim) + '.\n'
-                   'Value provided was: ' + str(value)
-                   )
-            # RuntimeError used to avoid being caught by Pint comparison error.
-            # Pint should really raise TypeError (or something) rather than
-            # ValueError.
-            raise RuntimeError(msg)
-        else:
-            return value
-    except ValueError:
-        if isinstance(value, units.Quantity):
-            msg = ('\n' + value_name + ' given with units, when variable '
-                   'should be dimensionless.'
-                   )
-            raise pint.DimensionalityError(value.units, None,
-                                           extra_msg=msg
-                                           )
-        else:
-            msg = ('\n' + value_name + ' not given in units. '
-                   'Correct units share dimensionality with: ' +
-                   str(low_lim.units)
-                   )
-            raise pint.DimensionalityError(None, low_lim.units,
-                                           extra_msg=msg
-                                           )
-    except pint.DimensionalityError:
-        msg = ('\n' + value_name + ' given in incompatible units. '
-               'Correct units share dimensionality with: ' +
-               str(low_lim.units)
-               )
-        raise pint.DimensionalityError(value.units, low_lim.units,
-                                       extra_msg=msg
-                                       )
-    except:
-        raise
-
-
-def validate_gt(value_name, value, low_lim):
-    """Raise error if value not greater than lower limit or wrong type.
-
-    Parameters
-    ---------
-    value_name : str
-        Name of value being tested
-    value : int, float, numpy.ndarray, pint.Quantity
-        Value to be tested
-    low_lim : type(value)
-        ``value`` must be greater than this limit
-
-    Returns
-    -------
-    value : type(value)
-        The original value
-
-    """
-
-    try:
-        if not validate_num(value_name, value) > low_lim:
-            msg = (value_name + ' must be greater than ' +
-                   str(low_lim) + '.\n'
-                   'Value provided was: ' + str(value)
-                   )
-            # RuntimeError used to avoid being caught by Pint comparison error.
-            # Pint should really raise TypeError (or something) rather than
-            # ValueError.
-            raise RuntimeError(msg)
-        else:
-            return value
-    except ValueError:
-        if isinstance(value, units.Quantity):
-            msg = ('\n' + value_name + ' given with units, when variable '
-                   'should be dimensionless.'
-                   )
-            raise pint.DimensionalityError(value.units, None,
-                                           extra_msg=msg
-                                           )
-        else:
-            msg = ('\n' + value_name + ' not given in units. '
-                   'Correct units share dimensionality with: ' +
-                   str(low_lim.units)
-                   )
-            raise pint.DimensionalityError(None, low_lim.units,
-                                           extra_msg=msg
-                                           )
-    except pint.DimensionalityError:
-        msg = ('\n' + value_name + ' given in incompatible units. '
-               'Correct units share dimensionality with: ' +
-               str(low_lim.units)
-               )
-        raise pint.DimensionalityError(value.units, low_lim.units,
-                                       extra_msg=msg
-                                       )
-    except:
-        raise
-
-
-def validate_leq(value_name, value, upp_lim):
-    """Raise error if value greater than specified upper limit or wrong type.
-
-    Parameters
-    ---------
-    value_name : str
-        Name of value being tested
-    value : int, float, numpy.ndarray, pint.Quantity
-        Value to be tested
-    upp_lim : type(value)
-        Highest acceptable limit of ``value``
-
-    Returns
-    -------
-    value : type(value)
-        The original value
-
-    """
-
-    try:
-        if validate_num(value_name, value) > upp_lim:
-            msg = (value_name + ' must be less than or equal to ' +
-                   str(upp_lim) + '.\n'
-                   'Value provided was: ' + str(value)
-                   )
-            # RuntimeError used to avoid being caught by Pint comparison error.
-            # Pint should really raise TypeError (or something) rather than
-            # ValueError.
-            raise RuntimeError(msg)
-        else:
-            return value
-    except ValueError:
-        if isinstance(value, units.Quantity):
-            msg = ('\n' + value_name + ' given with units, when variable '
-                   'should be dimensionless.'
-                   )
-            raise pint.DimensionalityError(value.units, None,
-                                           extra_msg=msg
-                                           )
-        else:
-            msg = ('\n' + value_name + ' not given in units. '
-                   'Correct units share dimensionality with: ' +
-                   str(upp_lim.units)
-                   )
-            raise pint.DimensionalityError(None, upp_lim.units,
-                                           extra_msg=msg
-                                           )
-    except pint.DimensionalityError:
-        msg = ('\n' + value_name + ' given in incompatible units. '
-               'Correct units share dimensionality with: ' +
-               str(upp_lim.units)
-               )
-        raise pint.DimensionalityError(value.units, upp_lim.units,
-                                       extra_msg=msg
-                                       )
-    except:
-        raise
-
-
-def validate_num(value_name, value):
-    """Raise error if value is not a number.
-
-    Parameters
-    ---------
-    value_name : str
-        Name of value being tested
-    value : int, float, numpy.ndarray, pint.Quantity
-        Value to be tested
-
-    Returns
-    -------
-    value : type(value)
-        The original value
-
-    """
-    if isinstance(value, (int, long, float, units.Quantity)):
-        return value
-    else:
-        try:
-            if isinstance(value.magnitude, (int, long, float, units.Quantity)):
-                return value
-        except AttributeError:
-            pass
-    msg = (value_name + ' must be an integer, long, float, or Quantity. \n'
-           'The value provided was of type ' + str(type(value)) + ' and '
-           'value ' + str(value)
-           )
-    raise TypeError(msg)

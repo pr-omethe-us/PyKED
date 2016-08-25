@@ -1,6 +1,7 @@
 # Common reference for authors' information
 author: &author
   type: dict
+  required: true
   isvalid_orcid: true
   schema:
     ORCID:
@@ -11,6 +12,7 @@ author: &author
 # Common reference for composition schema
 composition: &composition
   type: list
+  required: true
   schema:
     type: dict
     schema:
@@ -26,12 +28,22 @@ composition: &composition
         required: true
         type: string
 # Common reference for value-unit schema
-value-unit: &value-unit
+value-unit-required: &value-unit-required
+  type: dict
+  isvalid_quantity: true
+  required: true
+  schema:
+    value:
+      required: true
+      type: float
+    units:
+      required: true
+      type: string
+value-unit-optional: &value-unit-optional
   type: dict
   isvalid_quantity: true
   schema:
     value:
-      min: 0.0
       required: true
       type: float
     units:
@@ -40,6 +52,7 @@ value-unit: &value-unit
 # Common reference for ignition-type
 ignition-type: &ignition-type
   type: dict
+  required: true
   schema:
     target:
       required: true
@@ -63,10 +76,10 @@ ignition-type: &ignition-type
 common-properties:
   type: dict
   schema:
-    pressure: *value-unit
+    pressure: *value-unit-required
     ignition-type: *ignition-type
     composition: *composition
-    pressure-rise: *value-unit
+    pressure-rise: *value-unit-optional
 apparatus:
   required: true
   type: dict
@@ -84,16 +97,20 @@ apparatus:
 datapoints:
   required: true
   type: list
+  minlength: 1
   schema:
     type: dict
     schema:
-      pressure-rise: *value-unit
-      compression-time: *value-unit
-      pressure: *value-unit
+      pressure-rise: *value-unit-optional
+      compression-time: *value-unit-optional
+      pressure: *value-unit-required
       ignition-type: *ignition-type
-      ignition-delay: *value-unit
-      temperature: *value-unit
+      ignition-delay: *value-unit-required
+      temperature: *value-unit-required
       composition: *composition
+      equivalence-ratio:
+          type: float
+          min: 0.0
       volume-history:
         type: dict
         schema:
@@ -136,7 +153,6 @@ reference:
   schema:
     volume:
       min: 0
-      required: true
       type: integer
     journal:
       required: true
@@ -146,6 +162,7 @@ reference:
     authors:
       type: list
       required: true
+      minlength: 1
       schema: *author
     detail:
       type: string
@@ -154,7 +171,6 @@ reference:
       required: true
       type: integer
     pages:
-      required: true
       type: string
 chemked-version:  # TODO: Implement proper version comparison
   allowed: 0.0.1

@@ -18,6 +18,7 @@ print(schema)
 
 v = OurValidator(schema)
 
+
 class TestCompareName(object):
     """
     """
@@ -110,13 +111,13 @@ class TestCompareName(object):
 class TestValidator(object):
     """
     """
-    # Modeled after http://doc.pytest.org/en/latest/fixture.html#fixture-finalization-executing-teardown-code
     @pytest.fixture(scope='function')
     def disable_socket(self):
         """Disables socket to prevent network access.
         """
         import socket
         old_socket = socket.socket
+
         def guard(*args, **kwargs):
             raise ConnectionError("No internet")
         socket.socket = guard
@@ -133,7 +134,7 @@ class TestValidator(object):
         """Ensure that ORCID validation fails gracefully with no Internet.
         """
         with pytest.warns(UserWarning):
-            v.validate({'author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
+            v.validate({'file-author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
 
     def test_invalid_DOI(self):
         """Test for proper response to incorrect/invalid DOI.
@@ -144,16 +145,16 @@ class TestValidator(object):
     def test_invalid_ORCID(self):
         """Test for proper response to incorrect/invalid ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0000-0000-0000',
-                   'name': 'Kyle Niemeyer'}}, update=True
+        v.validate({'file-author': {'ORCID': '0000-0000-0000-0000', 'name': 'Kyle Niemeyer'}},
+                   update=True
                    )
         assert v.errors['file-author'] == 'ORCID incorrect or invalid for Kyle Niemeyer'
 
     def test_invalid_ORCID_name(self):
         """Test for proper response to incorrect name with ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0003-4425-7097',
-                   'name': 'Bryan Weber'}}, update=True
+        v.validate({'file-author': {'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}},
+                   update=True
                    )
         assert v.errors['file-author'] == ('Name and ORCID do not match. Name supplied: ' +
                                            'Bryan Weber. Name associated with ORCID: ' +
@@ -168,10 +169,10 @@ class TestValidator(object):
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
                    ]
         with pytest.warns(UserWarning):
-            v.validate({'reference': {'authors': authors,
-                              'doi': '10.1016/j.combustflame.2015.06.017'}},
-                              update=True
-                              )
+            v.validate(
+                {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+                update=True,
+            )
 
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
@@ -190,71 +191,89 @@ class TestValidator(object):
                    {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
                    ]
-        v.validate({'reference': {'authors': authors,
-                          'doi': '10.1016/j.combustflame.2015.06.017'}},
-                          update=True
-                          )
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+            update=True,
+        )
         assert ('Kyle E Niemeyer ORCID does not match '
                 'that in reference. Reference: 0000-0003-4425-7097. '
                 'Given: ' + authors[0]['ORCID']
                 ) in v.errors['reference']
 
-    def test_valid_shock_tube(self):
-        """Ensure shock tube experiment can be detected.
-        """
-        file_path = os.path.join('testfile_st.yaml')
+    @pytest.fixture(scope='function')
+    def properties(self, request):
+        file_path = os.path.join(request.param)
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with open(filename, 'r') as f:
-            properties = yaml.load(f)
+            return yaml.load(f)
 
+    @pytest.mark.parametrize("properties", [
+        'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml', 'testfile_required.yaml',
+    ], indirect=['properties'])
+    def test_valid_yaml(self, properties):
+        """Ensure ChemKED YAML is validated
+        """
         if not v.validate(properties):
             print(v.errors)
             assert False
         else:
             assert True
 
-    def test_valid_shock_tube_with_pressure_rise(self):
-        """Ensure shock tube experiment can be detected with pressure rise.
+    @pytest.mark.parametrize("field", [
+        'file-author', 'chemked-version', 'file-version', 'reference', 'experiment-type',
+        'apparatus', 'datapoints',
+    ])
+    @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
+    def test_missing_required_field(self, field, properties):
+        """Ensure missing required fields causes an errors
         """
-        file_path = os.path.join('testfile_st2.yaml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
+        properties.pop(field)
+        v.validate(properties)
+        assert v.errors[field] == 'required field'
 
-        with open(filename, 'r') as f:
-            properties = yaml.load(f)
-
-        if not v.validate(properties):
-            print(v.errors)
-            assert False
-        else:
-            assert True
-
-    def test_valid_rcm_experiment(self):
-        """Ensure RCM experiment can be detected.
+    @pytest.mark.parametrize("field, sub", [
+        ('reference', 'authors'), ('reference', 'journal'), ('reference', 'year'),
+        ('apparatus', 'kind'), ('file-author', 'name'),
+    ])
+    @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
+    def test_missing_required_subfield(self, field, sub, properties):
+        """Ensure missing subfields causes an errors
         """
-        file_path = os.path.join('testfile_rcm.yaml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
+        properties[field].pop(sub)
+        v.validate(properties)
+        assert v.errors[field][sub] == 'required field'
 
-        with open(filename, 'r') as f:
-            properties = yaml.load(f)
+    @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
+    def test_missing_authors(self, properties):
+        """Ensure the authors list contains data
+        """
+        properties['reference']['authors'] = []
+        v.validate(properties)
+        print(v.errors)
+        assert v.errors['reference']['authors'] == 'min length is 1'
 
-        if not v.validate(properties):
-            print(v.errors)
-            assert False
-        else:
-            assert True
+    @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
+    def test_missing_datapoints(self, properties):
+        """Ensure the datapoints list contains data
+        """
+        properties['datapoints'] = []
+        v.validate(properties)
+        print(v.errors)
+        assert v.errors['datapoints'] == 'min length is 1'
 
     def test_invalid_experiment_type(self):
-        """Ensure that an invalid experiment type raises an exception.
+        """Ensure that an invalid experiment type is an error
         """
         # update=True means to ignore required keys that are left out for testing
         v.validate({'experiment-type': 'invalid experiment'}, update=True)
         assert v.errors['experiment-type'] == 'unallowed value invalid experiment'
 
-    def test_valid_experiment_types(self):
+    @pytest.mark.parametrize("valid_type", [
+        'ignition delay',
+    ])
+    def test_valid_experiment_types(self, valid_type):
         """Ensure that all the valid experiment types are validated
         """
         # update=True means to ignore required keys that are left out for testing
-        valid_experiment_types = ['ignition delay']
-        for exp in valid_experiment_types:
-            assert v.validate({'experiment-type': exp}, update=True)
+        assert v.validate({'experiment-type': valid_type}, update=True)
