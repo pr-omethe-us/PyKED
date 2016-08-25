@@ -146,7 +146,12 @@ class ChemKED(object):
             col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
         else:
             output_columns = [a.lower() for a in output_columns]
-            col_labels = [a for a in output_columns if a.split(':')[0] in all_labels]
+            col_labels = []
+            for col in output_columns:
+                if col.split(':')[0] in all_labels:
+                    col_labels.append(col)
+                else:
+                    raise ValueError('{} is not a valid output column choice'.format(col))
             if 'composition' in col_labels:
                 comp_index = col_labels.index('composition')
                 col_labels[comp_index:comp_index + 1] = species_list
