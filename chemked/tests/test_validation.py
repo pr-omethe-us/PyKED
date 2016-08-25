@@ -13,7 +13,7 @@ try:
 except ImportError:
     import yaml
 
-from ..validation import schema, OurValidator, compare_name
+from ..validation import schema, OurValidator, compare_name, property_units
 print(schema)
 
 v = OurValidator(schema)
@@ -277,3 +277,25 @@ class TestValidator(object):
         """
         # update=True means to ignore required keys that are left out for testing
         assert v.validate({'experiment-type': valid_type}, update=True)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_units(self, quantity, unit):
+        """Ensure that incompatible units are validation errors
+        """
+        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True, 'schema':
+                                  {'units': {'type': 'string'}}
+                                  }}
+        v = OurValidator(unit_schema)
+        v.validate({quantity: {'units': 'ampere'}})
+        assert v.errors[quantity] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_quantity(self, quantity, unit):
+        """Ensure that incompatible quantities are validation errors
+        """
+        quant_schema = {quantity: {'type': 'dict', 'isvalid_quantity': True, 'schema':
+                                   {'value': {'type': 'float'}, 'units': {'type': 'string'}}
+                                   }}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: {'value': -999.0, 'units': unit}})
+        assert v.errors[quantity] == 'value must be greater than 0.0 {}'.format(unit)
