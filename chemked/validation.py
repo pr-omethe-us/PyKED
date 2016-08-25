@@ -128,7 +128,9 @@ class OurValidator(Validator):
 
             try:
                 if quantity <= low_lim:
-                    self._error(field, 'value must be > 0.0')
+                    self._error(
+                        field, 'value must be greater than 0.0 {}'.format(property_units[field]),
+                    )
             except pint.DimensionalityError:
                 self._error(field, 'incompatible units; should be consistent '
                             'with ' + property_units[field]
