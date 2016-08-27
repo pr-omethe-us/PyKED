@@ -93,7 +93,7 @@ class ChemKED(object):
                     print(('{key} has an illegal value. Allowed values are {values} and are case '
                            'sensitive').format(key=key, values=schema[key]['allowed']))
 
-            raise ValueError(v.errors)
+            raise ValueError(validator.errors)
 
 
 class DataPoint(object):
