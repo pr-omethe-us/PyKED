@@ -86,9 +86,9 @@ class ChemKED(object):
             ValueError: If the YAML file cannot be validated, a ``ValueError`` is raised whose
                 string contains the errors that are present.
         """
-        v = OurValidator(schema)
-        if not v.validate(properties):
-            for key, value in v.errors.items():
+        validator = OurValidator(schema)
+        if not validator.validate(properties):
+            for key, value in validator.errors.items():
                 if 'unallowed value' in value:
                     print(('{key} has an illegal value. Allowed values are {values} and are case '
                            'sensitive').format(key=key, values=schema[key]['allowed']))
