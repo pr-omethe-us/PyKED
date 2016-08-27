@@ -12,10 +12,10 @@ import numpy as np
 from .validation import schema, OurValidator, yaml
 from .utils import Q_
 
-vol_hist = namedtuple('VolumeHistory', ['time', 'volume'])
-reference = namedtuple('Reference',
+VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
+Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
-apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
+Apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
 
 
 class ChemKED(object):
@@ -57,7 +57,7 @@ class ChemKED(object):
         for point in properties['datapoints']:
             self.datapoints.append(DataPoint(point))
 
-        self.reference = reference(
+        self.reference = Reference(
             volume=properties['reference'].get('volume'),
             journal=properties['reference'].get('journal'),
             doi=properties['reference'].get('doi'),
@@ -67,7 +67,7 @@ class ChemKED(object):
             pages=properties['reference'].get('pages'),
         )
 
-        self.apparatus = apparatus(
+        self.apparatus = Apparatus(
             kind=properties['apparatus'].get('kind'),
             institution=properties['apparatus'].get('institution'),
             facility=properties['apparatus'].get('facility'),
@@ -128,7 +128,7 @@ class DataPoint(object):
             volume_col = properties['volume-history']['volume']['column']
             volume_units = properties['volume-history']['volume']['units']
             values = np.array(properties['volume-history']['values'])
-            self.volume_history = vol_hist(
+            self.volume_history = VolumeHistory(
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
