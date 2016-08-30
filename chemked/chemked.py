@@ -127,6 +127,10 @@ class ChemKED(object):
                 Only the first author is printed when ``Reference`` or ``Reference:Authors`` is
                 selected because the whole author list may be quite long.
 
+        Examples:
+            >>> df = ChemKED(yaml_file).get_dataframe()
+            >>> df = ChemKED(yaml_file).get_dataframe(['Temperature', 'Ignition Delay'])
+
         Returns:
             DataFrame: Contains the information regarding each point in the ``datapoints`` attribute
         """
