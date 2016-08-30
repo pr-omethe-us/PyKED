@@ -150,7 +150,7 @@ class ChemKED(object):
             output_columns = [a.lower() for a in output_columns]
             col_labels = []
             for col in output_columns:
-                if col in valid_labels:
+                if col in valid_labels or col in ['reference', 'apparatus']:
                     col_labels.append(col)
                 else:
                     raise ValueError('{} is not a valid output column choice'.format(col))
