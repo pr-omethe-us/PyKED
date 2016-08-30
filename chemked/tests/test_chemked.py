@@ -39,6 +39,34 @@ class TestChemKED(object):
             assert 'pressure_rise' not in d.__dict__
             assert 'volume_history' not in d.__dict__
 
+    def test_no_input(self):
+        """Test that no input raises an exception
+        """
+        with pytest.raises(NameError):
+            ChemKED()
+
+    def test_dict_input(self):
+        file_path = os.path.join('testfile_required.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+
+        ChemKED(dict_input=properties)
+
+    def test_unallowed_input(self, capfd):
+        file_path = os.path.join('testfile_required.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+
+        properties['experiment-type'] = 'Ignition Delay'  # should be ignition delay
+
+        with pytest.raises(ValueError):
+            ChemKED(dict_input=properties)
+            out, err = capfd.readouterr()
+            assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
+                           "delay'] and are case sensitive")
+
 
 class TestDataPoint(object):
     """
