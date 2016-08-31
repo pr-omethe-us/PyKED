@@ -95,6 +95,106 @@ class ChemKED(object):
 
             raise ValueError(v.errors)
 
+    def get_dataframe(self, output_columns=None):
+        """Get a Pandas DataFrame of the datapoints in this instance.
+
+        Arguments:
+            output_columns (list, optional): List of strings specifying the columns to include
+                in the output DataFrame. The default is ``None``, which outputs all of the
+                columns. Options include (not case sensitive):
+                    * Temperature
+                    * Pressure
+                    * Ignition Delay
+                    * Composition
+                    * Reference
+                    * Apparatus
+                    * Experiment Type
+                    * File Author
+                    * File Version
+                    * ChemKED Version
+                In addition, specific fields from the Reference and Apparatus attributes can
+                be included by specifying the name after a colon. These options are:
+                    * Reference:Volume
+                    * Reference:Journal
+                    * Reference:DOI
+                    * Reference:Authors
+                    * Reference:Detail
+                    * Reference:Year
+                    * Reference:Pages
+                    * Apparatus:Kind
+                    * Apparatus:Facility
+                    * Apparatus:Institution
+                Only the first author is printed when ``Reference`` or ``Reference:Authors`` is
+                selected because the whole author list may be quite long.
+
+        Examples:
+            >>> df = ChemKED(yaml_file).get_dataframe()
+            >>> df = ChemKED(yaml_file).get_dataframe(['Temperature', 'Ignition Delay'])
+
+        Returns:
+            DataFrame: Contains the information regarding each point in the ``datapoints`` attribute
+        """
+        import pandas as pd
+
+        valid_labels = [a.replace('_', ' ') for a in self.__dict__ if not a.startswith('__')]
+        valid_labels.remove('datapoints')
+        valid_labels.extend(['composition', 'ignition delay', 'temperature', 'pressure'])
+        ref_index = valid_labels.index('reference')
+        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+        app_index = valid_labels.index('apparatus')
+        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+
+        species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
+
+        if output_columns is None or len(output_columns) == 0:
+            col_labels = valid_labels
+            comp_index = col_labels.index('composition')
+            col_labels[comp_index:comp_index + 1] = species_list
+        else:
+            output_columns = [a.lower() for a in output_columns]
+            col_labels = []
+            for col in output_columns:
+                if col in valid_labels or col in ['reference', 'apparatus']:
+                    col_labels.append(col)
+                else:
+                    raise ValueError('{} is not a valid output column choice'.format(col))
+
+            if 'composition' in col_labels:
+                comp_index = col_labels.index('composition')
+                col_labels[comp_index:comp_index + 1] = species_list
+            if 'reference' in col_labels:
+                ref_index = col_labels.index('reference')
+                col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+            if 'apparatus' in col_labels:
+                app_index = col_labels.index('apparatus')
+                col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+
+        data = []
+        for d in self.datapoints:
+            row = []
+            for col in col_labels:
+                if col in species_list:
+                    for s in d.composition:
+                        if col == s['species']:
+                            row.append(s['mole-fraction'])
+                elif 'reference' in col or 'apparatus' in col:
+                    split_col = col.split(':')
+                    if split_col[1] == 'authors':
+                        row.append(getattr(getattr(self, split_col[0]), split_col[1])[0]['name'])
+                    else:
+                        row.append(getattr(getattr(self, split_col[0]), split_col[1]))
+                elif col in ['temperature', 'pressure', 'ignition delay']:
+                    row.append(getattr(d, col.replace(' ', '_')))
+                elif col == 'file author':
+                    row.append(getattr(self, col.replace(' ', '_'))['name'])
+                else:
+                    row.append(getattr(self, col.replace(' ', '_')))
+            data.append(row)
+
+        col_labels = [a.title() for a in col_labels]
+        columns = pd.Index(col_labels)
+        return pd.DataFrame(data=data, columns=columns)
+
 
 class DataPoint(object):
     """Class for a single datapoint.
