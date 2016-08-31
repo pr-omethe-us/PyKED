@@ -39,6 +39,103 @@ class TestChemKED(object):
             assert 'pressure_rise' not in d.__dict__
             assert 'volume_history' not in d.__dict__
 
+    def test_no_input(self):
+        """Test that no input raises an exception
+        """
+        with pytest.raises(NameError):
+            ChemKED()
+
+    def test_dict_input(self):
+        file_path = os.path.join('testfile_required.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+
+        ChemKED(dict_input=properties)
+
+    def test_unallowed_input(self, capfd):
+        file_path = os.path.join('testfile_required.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+
+        properties['experiment-type'] = 'Ignition Delay'  # should be ignition delay
+
+        with pytest.raises(ValueError):
+            ChemKED(dict_input=properties)
+            out, err = capfd.readouterr()
+            assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
+                           "delay'] and are case sensitive")
+
+
+class TestDataFrameOutput(object):
+    """
+    """
+    def test_get_dataframe(self):
+        pd = pytest.importorskip('pandas')
+        pdt = pytest.importorskip('pandas.util.testing')
+        yaml_file = os.path.join('testfile_st.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        c = ChemKED(yaml_filename).get_dataframe()
+        csv_file = os.path.join('dataframe_st.csv')
+        csv_filename = pkg_resources.resource_filename(__name__, csv_file)
+        converters = {
+            'Ignition Delay': Q_,
+            'Temperature': Q_,
+            'Pressure': Q_,
+        }
+        df = pd.read_csv(csv_filename, index_col=0, converters=converters)
+        pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
+
+    def test_custom_dataframe(self):
+        pd = pytest.importorskip('pandas')
+        pdt = pytest.importorskip('pandas.util.testing')
+        yaml_file = os.path.join('testfile_st.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        cols_to_get = ['composition', 'Reference', 'apparatus', 'temperature', 'ignition delay']
+        c = ChemKED(yaml_filename).get_dataframe(cols_to_get)
+        csv_file = os.path.join('dataframe_st.csv')
+        csv_filename = pkg_resources.resource_filename(__name__, csv_file)
+        converters = {
+            'Ignition Delay': Q_,
+            'Temperature': Q_,
+            'Pressure': Q_,
+        }
+        use_cols = ['Apparatus:Kind', 'Apparatus:Institution', 'Apparatus:Facility',
+                    'Reference:Volume', 'Reference:Journal', 'Reference:Doi', 'Reference:Authors',
+                    'Reference:Detail', 'Reference:Year', 'Reference:Pages', 'Temperature',
+                    'Ignition Delay', 'H2', 'Ar', 'O2',
+                    ]
+        df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
+        pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
+
+    def test_custom_dataframe_2(self):
+        pd = pytest.importorskip('pandas')
+        pdt = pytest.importorskip('pandas.util.testing')
+        yaml_file = os.path.join('testfile_st.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        cols_to_get = ['temperature', 'ignition delay', 'Pressure']
+        c = ChemKED(yaml_filename).get_dataframe(cols_to_get)
+        csv_file = os.path.join('dataframe_st.csv')
+        csv_filename = pkg_resources.resource_filename(__name__, csv_file)
+        converters = {
+            'Ignition Delay': Q_,
+            'Temperature': Q_,
+            'Pressure': Q_,
+        }
+        use_cols = ['Temperature', 'Ignition Delay', 'Pressure']
+        df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
+        pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
+
+    def test_invalid_column(self):
+        pytest.importorskip('pandas')
+        pytest.importorskip('pandas.util.testing')
+
+        yaml_file = os.path.join('testfile_st.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        with pytest.raises(ValueError):
+            ChemKED(yaml_filename).get_dataframe(['bad column'])
+
 
 class TestDataPoint(object):
     """

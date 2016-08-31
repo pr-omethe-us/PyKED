@@ -27,7 +27,7 @@ install:
 #    - sudo rm -rf /dev/shm
 #    - sudo ln -s /run/shm /dev/shm
 
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint pylint
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint pylint pandas
     - source activate test-environment
     # just until conda-forge recipe available
     # need pytest 3.0.0
