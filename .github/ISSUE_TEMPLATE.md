@@ -1,7 +1,10 @@
+### Code sample, preferably able to be copy-pasted and run with no changes
+
+
 ### Expected behavior
 
 
-### Actual behavior
+### Actual behavior, including any error messages
 
 
-### Steps to reproduce the behavior
+### PyKED/ChemKED version, Python version, OS version
