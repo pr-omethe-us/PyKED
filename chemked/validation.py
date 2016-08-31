@@ -1,8 +1,4 @@
-"""Validation functions for values.
-
-Based on validation module of pyrk (https://github.com/pyrk).
-
-.. moduleauthor:: Kyle Niemeyer <kyle.niemeyer@gmail.com>
+"""Validation class for ChemKED schema.
 """
 
 # Python 2 compatibility
@@ -62,6 +58,20 @@ def compare_name(given_name, family_name, question_name):
     "Kyle E. Niemeyer", "Kyle Niemeyer", "K. E. Niemeyer", "KE Niemeyer", and
     "K Niemeyer". Other possibilities include names with hyphens such as
     "Chih-Jen Sung", "C. J. Sung", "C-J Sung".
+
+    Examples:
+        >>> compare_name('Kyle', 'Niemeyer', 'Kyle E Niemeyer')
+        True
+        >>> compare_name('Chih-Jen', 'Sung', 'C-J Sung')
+        True
+
+    Args:
+        given_name (str): Given (or first) name to be checked against.
+        family_name (str): Family (or last) name to be checked against.
+        question_name (str): The whole name in question.
+
+    Returns:
+        bool: The return value. True for successful comparison, False otherwise.
     """
     # lowercase everything
     given_name = given_name.lower()
@@ -108,7 +118,12 @@ class OurValidator(Validator):
     """Custom validator with rules for units and Quantities.
     """
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
-        """Checks for appropriate units.
+        """Checks for appropriate units using Pint unit registry.
+
+        Args:
+            isvalid_unit (bool): flag from schema indicating units to be checked.
+            field (str): property associated with units in question.
+            value (dict): dictionary of values from file associated with this property.
         """
         if isvalid_unit:
             quantity = 1.0 * units(value['units'])
@@ -121,6 +136,11 @@ class OurValidator(Validator):
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
+
+        Args:
+            isvalid_quantity (bool): flag from schema indicating quantity to be checked.
+            field (str): property associated with quantity in question.
+            value (dict): dictionary of values from file associated with this quantity.
         """
         if isvalid_quantity:
             quantity = value['value'] * units(value['units'])
@@ -141,6 +161,11 @@ class OurValidator(Validator):
 
         Todo:
             * remove UnboundLocalError from exception handling
+
+        Args:
+            isvalid_reference (bool): flag from schema indicating reference to be checked.
+            field (str): 'reference'
+            value (dict): dictionary of reference metadata.
         """
         if isvalid_reference and 'doi' in value:
             try:
@@ -210,6 +235,11 @@ class OurValidator(Validator):
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
+
+        Args:
+            isvalid_orcid (bool): flag from schema indicating ORCID to be checked.
+            field (str): 'author'
+            value (dict): dictionary of author metadata.
         """
         if isvalid_orcid and 'ORCID' in value:
             try:

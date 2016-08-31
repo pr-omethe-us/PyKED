@@ -12,10 +12,10 @@ import numpy as np
 from .validation import schema, OurValidator, yaml
 from .utils import Q_
 
-vol_hist = namedtuple('VolumeHistory', ['time', 'volume'])
-reference = namedtuple('Reference',
+VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
+Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
-apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
+Apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
 
 
 class ChemKED(object):
@@ -57,7 +57,7 @@ class ChemKED(object):
         for point in properties['datapoints']:
             self.datapoints.append(DataPoint(point))
 
-        self.reference = reference(
+        self.reference = Reference(
             volume=properties['reference'].get('volume'),
             journal=properties['reference'].get('journal'),
             doi=properties['reference'].get('doi'),
@@ -67,7 +67,7 @@ class ChemKED(object):
             pages=properties['reference'].get('pages'),
         )
 
-        self.apparatus = apparatus(
+        self.apparatus = Apparatus(
             kind=properties['apparatus'].get('kind'),
             institution=properties['apparatus'].get('institution'),
             facility=properties['apparatus'].get('facility'),
@@ -86,14 +86,14 @@ class ChemKED(object):
             ValueError: If the YAML file cannot be validated, a ``ValueError`` is raised whose
                 string contains the errors that are present.
         """
-        v = OurValidator(schema)
-        if not v.validate(properties):
-            for key, value in v.errors.items():
+        validator = OurValidator(schema)
+        if not validator.validate(properties):
+            for key, value in validator.errors.items():
                 if 'unallowed value' in value:
                     print(('{key} has an illegal value. Allowed values are {values} and are case '
                            'sensitive').format(key=key, values=schema[key]['allowed']))
 
-            raise ValueError(v.errors)
+            raise ValueError(validator.errors)
 
     def get_dataframe(self, output_columns=None):
         """Get a Pandas DataFrame of the datapoints in this instance.
@@ -140,9 +140,9 @@ class ChemKED(object):
         valid_labels.remove('datapoints')
         valid_labels.extend(['composition', 'ignition delay', 'temperature', 'pressure'])
         ref_index = valid_labels.index('reference')
-        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
         app_index = valid_labels.index('apparatus')
-        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
         species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
 
@@ -164,10 +164,10 @@ class ChemKED(object):
                 col_labels[comp_index:comp_index + 1] = species_list
             if 'reference' in col_labels:
                 ref_index = col_labels.index('reference')
-                col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+                col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
             if 'apparatus' in col_labels:
                 app_index = col_labels.index('apparatus')
-                col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+                col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
         data = []
         for d in self.datapoints:
@@ -228,7 +228,7 @@ class DataPoint(object):
             volume_col = properties['volume-history']['volume']['column']
             volume_units = properties['volume-history']['volume']['units']
             values = np.array(properties['volume-history']['values'])
-            self.volume_history = vol_hist(
+            self.volume_history = VolumeHistory(
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
