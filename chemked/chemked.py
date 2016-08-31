@@ -140,9 +140,9 @@ class ChemKED(object):
         valid_labels.remove('datapoints')
         valid_labels.extend(['composition', 'ignition delay', 'temperature', 'pressure'])
         ref_index = valid_labels.index('reference')
-        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+        valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
         app_index = valid_labels.index('apparatus')
-        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+        valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
         species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
 
@@ -164,10 +164,10 @@ class ChemKED(object):
                 col_labels[comp_index:comp_index + 1] = species_list
             if 'reference' in col_labels:
                 ref_index = col_labels.index('reference')
-                col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in reference._fields]
+                col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
             if 'apparatus' in col_labels:
                 app_index = col_labels.index('apparatus')
-                col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in apparatus._fields]
+                col_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
         data = []
         for d in self.datapoints:
