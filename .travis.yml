@@ -31,7 +31,7 @@ install:
     - source activate test-environment
     # just until conda-forge recipe available
     # need pytest 3.0.0
-    - pip install cerberus habanero orcid
+    - pip install cerberus==0.9.2 habanero orcid
 
 # command to run tests
 script: pytest -vv --cov=./ && pylint pyked/
