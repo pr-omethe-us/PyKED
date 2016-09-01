@@ -27,14 +27,13 @@ install:
 #    - sudo rm -rf /dev/shm
 #    - sudo ln -s /run/shm /dev/shm
 
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint pylint pandas
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint pylint pandas pytest pytest-cov
     - source activate test-environment
-    # just until conda-forge recipe available
-    # need pytest 3.0.0
-    - pip install pytest cerberus habanero orcid pytest-cov
+    # just until conda-forge recipes available
+    - pip install cerberus==0.9.2 habanero orcid
 
 # command to run tests
-script: pytest -vv --cov=./ && pylint chemked/
+script: pytest -vv --cov=./ && pylint pyked/
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
