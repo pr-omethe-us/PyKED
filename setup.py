@@ -34,7 +34,7 @@ setup(
     install_requires=['ruamel.yaml>=0.12.5',
                       'cerberus>=0.9.2',
                       'pint>=0.7.2',
-                      'pytest>=2.9.2',
+                      'pytest>=3.0.1',
                       'numpy>=1.11.0',
                       ],
 
