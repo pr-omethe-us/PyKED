@@ -34,7 +34,7 @@ install:
     - pip install pytest cerberus habanero orcid pytest-cov
 
 # command to run tests
-script: pytest -vv --cov=./ && pylint chemked/
+script: pytest -vv --cov=./ && pylint pyked/
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = chemked
+source = pyked
 
 [report]
 exclude_lines =
@@ -10,5 +10,5 @@ exclude_lines =
     if __name__ == .__main__.:
 ignore_errors = True
 omit =
-    chemked/tests/*
+    pyked/tests/*
     setup.py
