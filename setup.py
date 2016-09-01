@@ -5,7 +5,7 @@ from setuptools import setup
 # To use a consistent encoding
 from codecs import open
 
-with open('chemked/_version.py') as version_file:
+with open('pyked/_version.py') as version_file:
     exec(version_file.read())
 
 with open('README.md') as readme_file:
@@ -15,7 +15,7 @@ with open('CHANGELOG.md') as changelog_file:
     changelog = changelog_file.read()
 
 setup(
-    name='chemked',
+    name='pyked',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -26,9 +26,9 @@ setup(
     long_description=readme + '\n\n' + changelog,
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
-    url='https://github.com/Niemeyer-Research-Group/ChemKED',
-    packages=['chemked',],
-    package_dir={'chemked': 'chemked'},
+    url='https://github.com/Niemeyer-Research-Group/PyKED',
+    packages=['pyked',],
+    package_dir={'pyked': 'pyked'},
     include_package_data=True,
 
     install_requires=['ruamel.yaml>=0.12.5',
