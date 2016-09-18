@@ -210,9 +210,10 @@ class OurValidator(Validator):
                 # find using family name
                 author_match = next(
                     (a for a in authors if
-                     compare_name(given_name, family_name, a['name']),
-                     None
-                     )
+                     compare_name(author['given'], author['family'], a['name'])
+                     ),
+                    None
+                    )
                 # error if missing author in given reference information
                 if author_match is None:
                     self._error(field, 'missing author ' +
