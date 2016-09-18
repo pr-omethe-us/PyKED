@@ -215,6 +215,31 @@ class TestValidator(object):
         )
         assert ('Extra author(s) given: Bryan W Weber') in v.errors['reference']
 
+    def test_two_authors_same_surname(self):
+        """Ensure author validation can distinguish authors with same surname.
+        """
+        # missing Liuyan Lu from author list
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'}},
+                   {'name': 'Tianfeng Lu'}, {'name': 'Oluwayemisi O Oluwole'}},
+                   {'name': 'Graham M Goldin'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2013.08.018'}},
+            update=True,
+        )
+        assert ('Missing author: Liuyan Lu') in v.errors['reference']
+
+        # now missing Tianfeng Lu from author list
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'}},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'}},
+                   {'name': 'Graham M Goldin'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2013.08.018'}},
+            update=True,
+        )
+        assert ('Missing author: Tianfeng Lu') in v.errors['reference']
+
     @pytest.fixture(scope='function')
     def properties(self, request):
         file_path = os.path.join(request.param)

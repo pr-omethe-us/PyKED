@@ -216,7 +216,7 @@ class OurValidator(Validator):
                     )
                 # error if missing author in given reference information
                 if author_match is None:
-                    self._error(field, 'missing author ' +
+                    self._error(field, 'Missing author ' +
                                 ' '.join([author['given'], author['family']])
                                 )
                 else:
