@@ -9,6 +9,29 @@ author: &author
     name:
       required: true
       type: string
+# Common reference for species schema
+species: &species
+    type: dict
+    required: true
+    schema:
+        name:
+            type: string
+            required: true
+        # Specify either InChI (later SMILES, etc.) or molecular-structure
+        InChI:
+            type: string
+        molecular-structure:
+            type: list
+            minlength: 1
+            schema:
+                type: dict
+                schema:
+                    element:
+                        type: string
+                    amount:
+                        type: float
+                        min: 0.0
+                        # TODO: option for float or int?
 # Common reference for composition schema
 composition: &composition
   type: list
@@ -17,9 +40,7 @@ composition: &composition
   schema:
     type: dict
     schema:
-      species:
-        required: true
-        type: string
+      species: *species
       mole-fraction:
         required: true
         type: float
@@ -44,9 +65,6 @@ composition: &composition
         excludes:
           - mole-fraction
           - mass-fraction
-      InChI:
-        required: true
-        type: string
 # Common reference for value-unit schema
 value-unit-required: &value-unit-required
   type: string
