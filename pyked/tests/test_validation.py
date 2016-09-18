@@ -200,6 +200,21 @@ class TestValidator(object):
                 'Given: ' + authors[0]['ORCID']
                 ) in v.errors['reference']
 
+    def test_extra_authors(self):
+        """Ensure appropriate error for extra authors given.
+        """
+        # update=True means to ignore required keys that are left out for testing
+        authors = [{'name': 'Kyle E Niemeyer', 'ORCID': '0000-0003-4425-7097'},
+                   {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
+                   {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'},
+                   {'name': 'Bryan W Weber'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+            update=True,
+        )
+        assert ('Extra author(s) given: Bryan W Weber') in v.errors['reference']
+
     @pytest.fixture(scope='function')
     def properties(self, request):
         file_path = os.path.join(request.param)

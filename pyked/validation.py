@@ -239,7 +239,7 @@ class OurValidator(Validator):
 
                 # check for extra names given
                 if len(author_names) > 0:
-                    self._error(field, 'extra authors given: ' +
+                    self._error(field, 'Extra authors given: ' +
                                 ', '.join(author_names)
                                 )
 
