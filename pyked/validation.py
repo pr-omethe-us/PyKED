@@ -202,19 +202,23 @@ class OurValidator(Validator):
                 self._error(field, 'pages should be ' + ref['page'])
 
             # check that all authors present
-            author_list = value['authors'][:]
+            authors = value['authors'][:]
+            author_names = [a['name'] for a in authors]
             for author in ref['author']:
                 # find using family name
                 author_match = next(
-                    (a for a in author_list if
+                    (a for a in authors if
                      a['name'].split()[-1].upper() == author['family'].upper()),
-                    None
-                    )
+                     None
+                     )
+                # error if missing author in given reference information
                 if author_match is None:
                     self._error(field, 'missing author ' +
                                 ' '.join([author['given'], author['family']])
                                 )
                 else:
+                    author_names.remove(author_match['name'])
+
                     # validate ORCID if given
                     orcid = author.get('ORCID')
                     if orcid:
@@ -232,6 +236,12 @@ class OurValidator(Validator):
                         else:
                             # ORCID not given, suggest adding it
                             warn('ORCID ' + orcid + ' missing for ' + author_match['name'])
+
+                # check for extra names given
+                if len(author_names) > 0:
+                    self._error(field, 'extra authors given: ' +
+                                ', '.join(author_names)
+                                )
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
