@@ -210,7 +210,7 @@ class OurValidator(Validator):
                 # find using family name
                 author_match = next(
                     (a for a in authors if
-                     a['name'].split()[-1].upper() == author['family'].upper()),
+                     compare_name(given_name, family_name, a['name']),
                      None
                      )
                 # error if missing author in given reference information
