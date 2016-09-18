@@ -37,7 +37,9 @@ with open(schema_file, 'r') as f:
 
 # These top-level keys in the schema server as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
-for key in ['author', 'value-unit-required', 'value-unit-optional', 'composition', 'ignition-type']:
+for key in ['author', 'value-unit-required', 'value-unit-optional',
+            'composition', 'ignition-type'
+            ]:
     schema.pop(key)
 
 # SI units for available value-type properties
@@ -239,7 +241,7 @@ class OurValidator(Validator):
 
                 # check for extra names given
                 if len(author_names) > 0:
-                    self._error(field, 'Extra authors given: ' +
+                    self._error(field, 'Extra author(s) given: ' +
                                 ', '.join(author_names)
                                 )
 
