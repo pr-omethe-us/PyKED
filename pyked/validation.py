@@ -240,11 +240,11 @@ class OurValidator(Validator):
                             # ORCID not given, suggest adding it
                             warn('ORCID ' + orcid + ' missing for ' + author_match['name'])
 
-                # check for extra names given
-                if len(author_names) > 0:
-                    self._error(field, 'Extra author(s) given: ' +
-                                ', '.join(author_names)
-                                )
+            # check for extra names given
+            if len(author_names) > 0:
+                self._error(field, 'Extra author(s) given: ' +
+                            ', '.join(author_names)
+                            )
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
