@@ -232,8 +232,8 @@ class TestValidator(object):
         """Ensure author validation can distinguish authors with same surname.
         """
         # missing Liuyan Lu from author list
-        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'}},
-                   {'name': 'Tianfeng Lu'}, {'name': 'Oluwayemisi O Oluwole'}},
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Tianfeng Lu'}, {'name': 'Oluwayemisi O Oluwole'},
                    {'name': 'Graham M Goldin'}
                    ]
         v.validate(
@@ -243,8 +243,8 @@ class TestValidator(object):
         assert ('Missing author: Liuyan Lu') in v.errors['reference']
 
         # now missing Tianfeng Lu from author list
-        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'}},
-                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'}},
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
                    {'name': 'Graham M Goldin'}
                    ]
         v.validate(
