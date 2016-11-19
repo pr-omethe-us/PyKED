@@ -48,6 +48,7 @@ datapoints:
       pressure: *pres
       composition: *comp
       ignition-type: *ign
+      equivalence-ratio: 0.4
     - temperature:
         value: 1164.97
         units: kelvin
@@ -57,6 +58,7 @@ datapoints:
       pressure: *pres
       composition: *comp
       ignition-type: *ign
+      equivalence-ratio: 0.4
     - temperature:
         value: 1264.2
         units: kelvin
@@ -66,6 +68,7 @@ datapoints:
       pressure: *pres
       composition: *comp
       ignition-type: *ign
+      equivalence-ratio: 0.4
     - temperature:
         value: 1332.57
         units: kelvin
@@ -75,6 +78,7 @@ datapoints:
       pressure: *pres
       composition: *comp
       ignition-type: *ign
+      equivalence-ratio: 0.4
     - temperature:
         value: 1519.18
         units: kelvin
@@ -84,4 +88,5 @@ datapoints:
       pressure: *pres
       composition: *comp
       ignition-type: *ign
+      equivalence-ratio: 0.4
 ...

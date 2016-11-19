@@ -45,6 +45,7 @@ datapoints:
     - temperature:
         value: 1264.2
         units: kelvin
+      equivalence-ratio: 0.4
       ignition-delay:
           value: 291.57
           units: us
