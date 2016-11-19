@@ -31,10 +31,10 @@ common-properties:
           mole-fraction: 0.00444
         - species: O2
           InChI: 1S/O2/c1-2
-          mole-fraction: 0.00566
+          mole-fraction: 0.00556
         - species: Ar
           InChI: 1S/Ar
-          mole-fraction: 0.9899
+          mole-fraction: 0.99
     ignition-type: &ign
         target: pressure
         type: d/dt max

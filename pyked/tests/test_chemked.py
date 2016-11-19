@@ -159,7 +159,7 @@ class TestDataPoint(object):
     def test_cantera_composition_string(self):
         properties = self.load_properties('testfile_st.yaml')
         d = DataPoint(properties)
-        assert d.get_cantera_composition() == 'H2: 0.00444, O2: 0.00566, Ar: 0.9899'
+        assert d.get_cantera_composition() == 'H2: 0.00444, O2: 0.00556, Ar: 0.99'
 
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_st.yaml')
