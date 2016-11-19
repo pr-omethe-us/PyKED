@@ -37,7 +37,9 @@ with open(schema_file, 'r') as f:
 
 # These top-level keys in the schema server as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
-for key in ['author', 'value-unit-required', 'value-unit-optional', 'composition', 'ignition-type']:
+for key in ['author', 'value-unit-required', 'value-unit-optional',
+            'composition', 'ignition-type'
+            ]:
     schema.pop(key)
 
 # SI units for available value-type properties
@@ -202,19 +204,24 @@ class OurValidator(Validator):
                 self._error(field, 'pages should be ' + ref['page'])
 
             # check that all authors present
-            author_list = value['authors'][:]
+            authors = value['authors'][:]
+            author_names = [a['name'] for a in authors]
             for author in ref['author']:
                 # find using family name
                 author_match = next(
-                    (a for a in author_list if
-                     a['name'].split()[-1].upper() == author['family'].upper()),
+                    (a for a in authors if
+                     compare_name(author['given'], author['family'], a['name'])
+                     ),
                     None
                     )
+                # error if missing author in given reference information
                 if author_match is None:
-                    self._error(field, 'missing author ' +
+                    self._error(field, 'Missing author: ' +
                                 ' '.join([author['given'], author['family']])
                                 )
                 else:
+                    author_names.remove(author_match['name'])
+
                     # validate ORCID if given
                     orcid = author.get('ORCID')
                     if orcid:
@@ -232,6 +239,12 @@ class OurValidator(Validator):
                         else:
                             # ORCID not given, suggest adding it
                             warn('ORCID ' + orcid + ' missing for ' + author_match['name'])
+
+            # check for extra names given
+            if len(author_names) > 0:
+                self._error(field, 'Extra author(s) given: ' +
+                            ', '.join(author_names)
+                            )
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.

@@ -174,6 +174,18 @@ class TestValidator(object):
                 update=True,
             )
 
+    def test_missing_author(self):
+        """Test for proper error for missing author.
+        """
+        authors = [{'name': 'Kyle E Niemeyer'}, {'name': 'Kyle Brady'},
+                   {'name': 'Chih-Jen Sung'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+            update=True,
+        )
+        assert ('Missing author: Xin Hui') in v.errors['reference']
+
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
         """
@@ -199,6 +211,45 @@ class TestValidator(object):
                 'that in reference. Reference: 0000-0003-4425-7097. '
                 'Given: ' + authors[0]['ORCID']
                 ) in v.errors['reference']
+
+    def test_extra_authors(self):
+        """Ensure appropriate error for extra authors given.
+        """
+        # update=True means to ignore required keys that are left out for testing
+        authors = [{'name': 'Kyle E Niemeyer'}, {'name': 'Kyle Brady'},
+                   {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'},
+                   {'name': 'Bryan W Weber'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
+            update=True,
+        )
+        assert ('Extra author(s) given: Bryan W Weber') in v.errors['reference']
+
+    def test_two_authors_same_surname(self):
+        """Ensure author validation can distinguish authors with same surname.
+        """
+        # missing Liuyan Lu from author list
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Tianfeng Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2013.08.018'}},
+            update=True,
+        )
+        assert ('Missing author: Liuyan Lu') in v.errors['reference']
+
+        # now missing Tianfeng Lu from author list
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}
+                   ]
+        v.validate(
+            {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2013.08.018'}},
+            update=True,
+        )
+        assert ('Missing author: Tianfeng Lu') in v.errors['reference']
 
     @pytest.fixture(scope='function')
     def properties(self, request):
