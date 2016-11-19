@@ -106,6 +106,7 @@ class ChemKED(object):
                     * Pressure
                     * Ignition Delay
                     * Composition
+                    * Equivalence Ratio
                     * Reference
                     * Apparatus
                     * Experiment Type
@@ -138,7 +139,9 @@ class ChemKED(object):
 
         valid_labels = [a.replace('_', ' ') for a in self.__dict__ if not a.startswith('__')]
         valid_labels.remove('datapoints')
-        valid_labels.extend(['composition', 'ignition delay', 'temperature', 'pressure'])
+        valid_labels.extend(
+            ['composition', 'ignition delay', 'temperature', 'pressure', 'equivalence ratio']
+        )
         ref_index = valid_labels.index('reference')
         valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
         app_index = valid_labels.index('apparatus')
@@ -183,7 +186,7 @@ class ChemKED(object):
                         row.append(getattr(getattr(self, split_col[0]), split_col[1])[0]['name'])
                     else:
                         row.append(getattr(getattr(self, split_col[0]), split_col[1]))
-                elif col in ['temperature', 'pressure', 'ignition delay']:
+                elif col in ['temperature', 'pressure', 'ignition delay', 'equivalence ratio']:
                     row.append(getattr(d, col.replace(' ', '_')))
                 elif col == 'file author':
                     row.append(getattr(self, col.replace(' ', '_'))['name'])
@@ -222,6 +225,7 @@ class DataPoint(object):
                 setattr(self, prop.replace('-', '_'), quant)
 
         self.composition = properties['composition']
+        self.equivalence_ratio = properties.get('equivalence-ratio')
         if 'volume-history' in properties:
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
