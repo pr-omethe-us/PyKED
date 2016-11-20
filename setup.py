@@ -27,20 +27,19 @@ setup(
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
     url='https://github.com/Niemeyer-Research-Group/PyKED',
-    packages=['pyked',],
+    packages=['pyked'],
     package_dir={'pyked': 'pyked'},
     include_package_data=True,
 
     install_requires=['ruamel.yaml>=0.12.5',
-                      'cerberus>=0.9.2',
+                      'cerberus>=1.0.0',
                       'pint>=0.7.2',
-                      'pytest>=3.0.1',
                       'numpy>=1.11.0',
                       ],
 
     license='BSD-3-Clause',
     zip_safe=False,
-    keywords=['chemical kinetics',],
+    keywords=['chemical kinetics'],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -55,6 +54,7 @@ setup(
         ],
 
     test_suite='tests',
-    tests_require=[# TODO: put package test requirements here
+    tests_require=['pytest>=3.0.1',
+                   'pytest-cov',
                    ]
 )
