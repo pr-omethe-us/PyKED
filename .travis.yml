@@ -6,9 +6,8 @@ python:
  - 3.5
 
 install:
-#    - sudo apt-get update
       # We do this conditionally because it saves us some downloading if the
-      # version is the same.
+      # Miniconda version is the same as the test environment.
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
       else
@@ -23,14 +22,12 @@ install:
     - conda info -a
     - conda config --add channels conda-forge
 
-    # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-#    - sudo rm -rf /dev/shm
-#    - sudo ln -s /run/shm /dev/shm
-
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint pylint pandas pytest pytest-cov
+    - >
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint
+      pylint pandas pytest>=3.0.1 pytest-cov cerberus>=1.0 beautifulsoup4 simplejson requests
     - source activate test-environment
     # just until conda-forge recipes available
-    - pip install cerberus==0.9.2 habanero orcid
+    - pip install habanero orcid
 
 # command to run tests
 script: pytest -vv --cov=./ && pylint pyked/
