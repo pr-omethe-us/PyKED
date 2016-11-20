@@ -330,23 +330,28 @@ class TestValidator(object):
         assert v.validate({'experiment-type': valid_type}, update=True)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
-    def test_incompatible_units(self, quantity, unit):
-        """Ensure that incompatible units are validation errors
-        """
-        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True, 'schema':
-                                  {'units': {'type': 'string'}}
-                                  }}
-        v = OurValidator(unit_schema)
-        v.validate({quantity: {'units': 'ampere'}})
-        assert v.errors[quantity] == 'incompatible units; should be consistent with {}'.format(unit)
-
-    @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_quantity(self, quantity, unit):
         """Ensure that incompatible quantities are validation errors
         """
-        quant_schema = {quantity: {'type': 'dict', 'isvalid_quantity': True, 'schema':
-                                   {'value': {'type': 'float'}, 'units': {'type': 'string'}}
-                                   }}
+        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: {'value': -999.0, 'units': unit}})
-        assert v.errors[quantity] == 'value must be greater than 0.0 {}'.format(unit)
+        v.validate({quantity: '-999 {}'.format(unit)})
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_quantity(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors
+        """
+        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: '1.0 {}'.format('candela*ampere')})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
+    def test_dimensionality_error_unit(self, quantity, unit):
+        """Ensure that dimensionality errors in units are validation errors
+        """
+        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
+        v = OurValidator(unit_schema)
+        v.validate({quantity: {'units': 'candela*ampere'}})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)

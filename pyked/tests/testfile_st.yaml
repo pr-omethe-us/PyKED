@@ -23,8 +23,7 @@ apparatus:
     facility: stainless steel shock tube
 common-properties:
     pressure: &pres
-        value: 220
-        units: kilopascal
+      220 kilopascal
     composition: &comp
         - species: H2
           InChI: 1S/H2/h1H
@@ -39,52 +38,32 @@ common-properties:
         target: pressure
         type: d/dt max
 datapoints:
-    - temperature:
-        value: 1164.48
-        units: kelvin
-      ignition-delay:
-          value: 471.54
-          units: us
+    - temperature: 1164.48 kelvin
+      ignition-delay: 471.54 us
       pressure: *pres
       composition: *comp
       ignition-type: *ign
       equivalence-ratio: 0.4
-    - temperature:
-        value: 1164.97
-        units: kelvin
-      ignition-delay:
-          value: 448.03
-          units: us
+    - temperature: 1164.97 kelvin
+      ignition-delay: 448.03 us
       pressure: *pres
       composition: *comp
       ignition-type: *ign
       equivalence-ratio: 0.4
-    - temperature:
-        value: 1264.2
-        units: kelvin
-      ignition-delay:
-          value: 291.57
-          units: us
+    - temperature: 1264.2 kelvin
+      ignition-delay: 291.57 us
       pressure: *pres
       composition: *comp
       ignition-type: *ign
       equivalence-ratio: 0.4
-    - temperature:
-        value: 1332.57
-        units: kelvin
-      ignition-delay:
-          value: 205.93
-          units: us
+    - temperature: 1332.57 kelvin
+      ignition-delay: 205.93 us
       pressure: *pres
       composition: *comp
       ignition-type: *ign
       equivalence-ratio: 0.4
-    - temperature:
-        value: 1519.18
-        units: kelvin
-      ignition-delay:
-          value: 88.11
-          units: us
+    - temperature: 1519.18 kelvin
+      ignition-delay: 88.11 us
       pressure: *pres
       composition: *comp
       ignition-type: *ign

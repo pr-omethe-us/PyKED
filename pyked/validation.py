@@ -22,7 +22,7 @@ import habanero
 from orcid import SearchAPI
 
 # Local imports
-from .utils import units
+from .utils import units, Q_
 
 if sys.version_info > (3,):
     long = int
@@ -117,7 +117,7 @@ def compare_name(given_name, family_name, question_name):
 
 
 class OurValidator(Validator):
-    """Custom validator with rules for units and Quantities.
+    """Custom validator with rules for Quantities and references.
     """
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
         """Checks for appropriate units using Pint unit registry.
@@ -127,14 +127,13 @@ class OurValidator(Validator):
             field (str): property associated with units in question.
             value (dict): dictionary of values from file associated with this property.
         """
-        if isvalid_unit:
-            quantity = 1.0 * units(value['units'])
-            try:
-                quantity.to(property_units[field])
-            except pint.DimensionalityError:
-                self._error(field, 'incompatible units; should be consistent '
-                            'with ' + property_units[field]
-                            )
+        quantity = 1.0 * units(value['units'])
+        try:
+            quantity.to(property_units[field])
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units[field]
+                        )
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
@@ -142,21 +141,20 @@ class OurValidator(Validator):
         Args:
             isvalid_quantity (bool): flag from schema indicating quantity to be checked.
             field (str): property associated with quantity in question.
-            value (dict): dictionary of values from file associated with this quantity.
+            value (str): string of the value of the quantity
         """
-        if isvalid_quantity:
-            quantity = value['value'] * units(value['units'])
-            low_lim = 0.0 * units(property_units[field])
+        quantity = Q_(value)
+        low_lim = 0.0 * units(property_units[field])
 
-            try:
-                if quantity <= low_lim:
-                    self._error(
-                        field, 'value must be greater than 0.0 {}'.format(property_units[field]),
-                    )
-            except pint.DimensionalityError:
-                self._error(field, 'incompatible units; should be consistent '
-                            'with ' + property_units[field]
-                            )
+        try:
+            if quantity <= low_lim:
+                self._error(
+                    field, 'value must be greater than 0.0 {}'.format(property_units[field]),
+                )
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units[field]
+                        )
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).

@@ -29,26 +29,12 @@ composition: &composition
         type: string
 # Common reference for value-unit schema
 value-unit-required: &value-unit-required
-  type: dict
+  type: string
   isvalid_quantity: true
   required: true
-  schema:
-    value:
-      required: true
-      type: float
-    units:
-      required: true
-      type: string
 value-unit-optional: &value-unit-optional
-  type: dict
+  type: string
   isvalid_quantity: true
-  schema:
-    value:
-      required: true
-      type: float
-    units:
-      required: true
-      type: string
 # Common reference for ignition-type
 ignition-type: &ignition-type
   type: dict

@@ -12,15 +12,9 @@ experiment-type: ignition delay
 apparatus:
     kind: shock tube
 datapoints:
-  - temperature:
-      value: 1164.48
-      units: kelvin
-    ignition-delay:
-      value: 471.54
-      units: us
-    pressure:
-      value: 220
-      units: kilopascal
+  - temperature: 1164.48 kelvin
+    ignition-delay: 471.54 us
+    pressure: 220 kilopascal
     composition:
       - species: H2
         InChI: 1S/H2/h1H
