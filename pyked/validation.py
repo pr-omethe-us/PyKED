@@ -10,10 +10,7 @@ from warnings import warn
 import re
 
 import pkg_resources
-try:
-    import ruamel.yaml as yaml
-except ImportError:
-    import yaml
+import ruamel.yaml as yaml
 
 import pint
 from requests.exceptions import HTTPError, ConnectionError
