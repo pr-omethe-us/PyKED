@@ -159,7 +159,8 @@ reference:
     pages:
       type: string
 chemked-version:  # TODO: Implement proper version comparison
-  allowed: 0.0.1
+  allowed:
+    - 0.0.1
   required: true
   type: string
 experiment-type:
