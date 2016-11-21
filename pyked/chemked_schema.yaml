@@ -27,6 +27,7 @@ composition: &composition
         max: 1.0
         excludes:
           - mass-fraction
+          - mole-percent
       mass-fraction:
         required: true
         type: float
@@ -34,6 +35,15 @@ composition: &composition
         max: 1.0
         excludes:
           - mole-fraction
+          - mole-percent
+      mole-percent:
+        required: true
+        type: float
+        min: 0.0
+        max: 100.0
+        excludes:
+          - mole-fraction
+          - mass-fraction
       InChI:
         required: true
         type: string
