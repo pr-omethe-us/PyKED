@@ -221,7 +221,7 @@ class DataPoint(object):
     def __init__(self, properties):
         for prop in ['ignition-delay', 'temperature', 'pressure', 'pressure-rise']:
             if prop in properties:
-                quant = Q_(properties[prop]['value'], properties[prop]['units'])
+                quant = Q_(properties[prop])
                 setattr(self, prop.replace('-', '_'), quant)
 
         self.composition = properties['composition']

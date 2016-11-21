@@ -8,10 +8,7 @@ import pkg_resources
 from requests.exceptions import ConnectionError
 
 import pytest
-try:
-    import ruamel.yaml as yaml
-except ImportError:
-    import yaml
+import ruamel.yaml as yaml
 
 from ..validation import schema, OurValidator, compare_name, property_units
 print(schema)
@@ -140,7 +137,7 @@ class TestValidator(object):
         """Test for proper response to incorrect/invalid DOI.
         """
         v.validate({'reference': {'doi': '10.1000/invalid.doi'}}, update=True)
-        assert v.errors['reference'] == 'DOI not found'
+        assert v.errors['reference'][0] == 'DOI not found'
 
     def test_invalid_ORCID(self):
         """Test for proper response to incorrect/invalid ORCID.
@@ -148,7 +145,7 @@ class TestValidator(object):
         v.validate({'file-author': {'ORCID': '0000-0000-0000-0000', 'name': 'Kyle Niemeyer'}},
                    update=True
                    )
-        assert v.errors['file-author'] == 'ORCID incorrect or invalid for Kyle Niemeyer'
+        assert v.errors['file-author'][0] == 'ORCID incorrect or invalid for Kyle Niemeyer'
 
     def test_invalid_ORCID_name(self):
         """Test for proper response to incorrect name with ORCID.
@@ -156,10 +153,10 @@ class TestValidator(object):
         v.validate({'file-author': {'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}},
                    update=True
                    )
-        assert v.errors['file-author'] == ('Name and ORCID do not match. Name supplied: ' +
-                                           'Bryan Weber. Name associated with ORCID: ' +
-                                           'Kyle Niemeyer'
-                                           )
+        assert v.errors['file-author'][0] == ('Name and ORCID do not match. Name supplied: ' +
+                                              'Bryan Weber. Name associated with ORCID: ' +
+                                              'Kyle Niemeyer'
+                                              )
 
     def test_suggest_ORCID(self):
         """Test for proper suggestion for missing ORCID.
@@ -265,11 +262,7 @@ class TestValidator(object):
     def test_valid_yaml(self, properties):
         """Ensure ChemKED YAML is validated
         """
-        if not v.validate(properties):
-            print(v.errors)
-            assert False
-        else:
-            assert True
+        assert v.validate(properties)
 
     @pytest.mark.parametrize("field", [
         'file-author', 'chemked-version', 'file-version', 'reference', 'experiment-type',
@@ -281,7 +274,7 @@ class TestValidator(object):
         """
         properties.pop(field)
         v.validate(properties)
-        assert v.errors[field] == 'required field'
+        assert v.errors[field][0] == 'required field'
 
     @pytest.mark.parametrize("field, sub", [
         ('reference', 'authors'), ('reference', 'journal'), ('reference', 'year'),
@@ -293,7 +286,7 @@ class TestValidator(object):
         """
         properties[field].pop(sub)
         v.validate(properties)
-        assert v.errors[field][sub] == 'required field'
+        assert v.errors[field][0][sub][0] == 'required field'
 
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
     def test_missing_authors(self, properties):
@@ -301,8 +294,7 @@ class TestValidator(object):
         """
         properties['reference']['authors'] = []
         v.validate(properties)
-        print(v.errors)
-        assert v.errors['reference']['authors'] == 'min length is 1'
+        assert v.errors['reference'][0]['authors'][0] == 'min length is 1'
 
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
     def test_missing_datapoints(self, properties):
@@ -310,15 +302,14 @@ class TestValidator(object):
         """
         properties['datapoints'] = []
         v.validate(properties)
-        print(v.errors)
-        assert v.errors['datapoints'] == 'min length is 1'
+        assert v.errors['datapoints'][0] == 'min length is 1'
 
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error
         """
         # update=True means to ignore required keys that are left out for testing
         v.validate({'experiment-type': 'invalid experiment'}, update=True)
-        assert v.errors['experiment-type'] == 'unallowed value invalid experiment'
+        assert v.errors['experiment-type'][0] == 'unallowed value invalid experiment'
 
     @pytest.mark.parametrize("valid_type", [
         'ignition delay',
@@ -330,23 +321,28 @@ class TestValidator(object):
         assert v.validate({'experiment-type': valid_type}, update=True)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
-    def test_incompatible_units(self, quantity, unit):
-        """Ensure that incompatible units are validation errors
-        """
-        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True, 'schema':
-                                  {'units': {'type': 'string'}}
-                                  }}
-        v = OurValidator(unit_schema)
-        v.validate({quantity: {'units': 'ampere'}})
-        assert v.errors[quantity] == 'incompatible units; should be consistent with {}'.format(unit)
-
-    @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_quantity(self, quantity, unit):
         """Ensure that incompatible quantities are validation errors
         """
-        quant_schema = {quantity: {'type': 'dict', 'isvalid_quantity': True, 'schema':
-                                   {'value': {'type': 'float'}, 'units': {'type': 'string'}}
-                                   }}
+        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: {'value': -999.0, 'units': unit}})
-        assert v.errors[quantity] == 'value must be greater than 0.0 {}'.format(unit)
+        v.validate({quantity: '-999 {}'.format(unit)})
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_quantity(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors
+        """
+        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: '1.0 {}'.format('candela*ampere')})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
+    def test_dimensionality_error_unit(self, quantity, unit):
+        """Ensure that dimensionality errors in units are validation errors
+        """
+        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
+        v = OurValidator(unit_schema)
+        v.validate({quantity: {'units': 'candela*ampere'}})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
