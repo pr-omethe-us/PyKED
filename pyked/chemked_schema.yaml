@@ -13,6 +13,7 @@ author: &author
 composition: &composition
   type: list
   required: true
+  min-length: 1
   schema:
     type: dict
     schema:
