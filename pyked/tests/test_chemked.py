@@ -59,13 +59,25 @@ class TestChemKED(object):
         with open(filename, 'r') as f:
             properties = yaml.safe_load(f)
 
-        properties['experiment-type'] = 'Ignition Delay'  # should be ignition delay
+        properties['experiment-type'] = 'Ignition Delay'  # should be 'ignition delay'
 
         with pytest.raises(ValueError):
             ChemKED(dict_input=properties)
-            out, err = capfd.readouterr()
-            assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
-                           "delay'] and are case sensitive")
+
+        out, err = capfd.readouterr()
+        assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
+                       "delay'] and are case sensitive.\n")
+
+    def test_missing_input(self, capfd):
+        file_path = os.path.join('testfile_required.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+
+        properties.pop('apparatus')
+
+        with pytest.raises(ValueError):
+            ChemKED(dict_input=properties)
 
 
 class TestDataFrameOutput(object):
