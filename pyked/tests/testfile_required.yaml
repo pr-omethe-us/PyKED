@@ -16,15 +16,15 @@ datapoints:
     ignition-delay: 471.54 us
     pressure: 220 kilopascal
     composition:
-      - species: H2
+      - species-name: H2
         InChI: 1S/H2/h1H
         mole-fraction: 0.00444
-      - species: O2
+      - species-name: O2
         InChI: 1S/O2/c1-2
-        mole-fraction: 0.00566
-      - species: Ar
+        mole-fraction: 0.00556
+      - species-name: Ar
         InChI: 1S/Ar
-        mole-fraction: 0.9899
+        mole-fraction: 0.99
     ignition-type:
       target: pressure
       type: d/dt max
