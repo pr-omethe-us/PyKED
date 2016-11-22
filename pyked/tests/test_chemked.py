@@ -162,40 +162,82 @@ class TestDataPoint(object):
         if not v.validate(properties):
             raise ValueError(v.errors)
 
-        return properties['datapoints'][0]
+        return properties['datapoints']
 
     def test_create_datapoint(self):
-        properties = self.load_properties('testfile_st.yaml')
-        DataPoint(properties)
+        properties = self.load_properties('testfile_required.yaml')
+        DataPoint(properties[0])
 
-    def test_cantera_composition_string(self):
-        properties = self.load_properties('testfile_st.yaml')
-        d = DataPoint(properties)
-        assert d.get_cantera_composition() == 'H2: 0.00444, O2: 0.00556, Ar: 0.99'
+    def test_cantera_composition_mole_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
+
+    def test_cantera_composition_mole_fraction_bad(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        with pytest.raises(ValueError):
+            d.get_cantera_mole_fraction()
+
+    def test_cantera_composition_mass_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        assert d.get_cantera_mass_fraction() == 'H2: 2.2525e-04, O2: 4.4775e-03, Ar: 9.9530e-01'
+
+    def test_cantera_composition_mass_fraction_bad(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        with pytest.raises(ValueError):
+            d.get_cantera_mass_fraction()
+
+    def test_cantera_composition_mole_percent(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[2])
+        assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
+
+    def test_multiple_composition_types(self):
+        properties = self.load_properties('testfile_bad.yaml')
+        with pytest.raises(TypeError):
+            DataPoint(properties[3])
+
+    def test_mole_fraction_bad_sum(self):
+        properties = self.load_properties('testfile_bad.yaml')
+        with pytest.raises(ValueError):
+            DataPoint(properties[0])
+
+    def test_mass_fraction_bad_sum(self):
+        properties = self.load_properties('testfile_bad.yaml')
+        with pytest.raises(ValueError):
+            DataPoint(properties[1])
+
+    def test_mole_percent_bad_sum(self):
+        properties = self.load_properties('testfile_bad.yaml')
+        with pytest.raises(ValueError):
+            DataPoint(properties[2])
 
     def test_ignition_delay(self):
-        properties = self.load_properties('testfile_st.yaml')
-        d = DataPoint(properties)
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
         assert d.ignition_delay == Q_(471.54, 'us')
 
     def test_temperature(self):
-        properties = self.load_properties('testfile_st.yaml')
-        d = DataPoint(properties)
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
         assert d.temperature == Q_(1164.48, 'K')
 
     def test_pressure(self):
-        properties = self.load_properties('testfile_st.yaml')
-        d = DataPoint(properties)
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
         assert d.pressure == Q_(220.0, 'kPa')
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')
-        d = DataPoint(properties)
+        d = DataPoint(properties[0])
         assert d.pressure_rise == Q_(0.1, '1/ms')
 
     def test_volume_history(self):
         properties = self.load_properties('testfile_rcm.yaml')
-        d = DataPoint(properties)
+        d = DataPoint(properties[0])
 
         # Check other data group with volume history
         np.testing.assert_allclose(d.volume_history.time,

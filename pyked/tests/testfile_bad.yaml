@@ -12,51 +12,71 @@ experiment-type: ignition delay
 apparatus:
     kind: shock tube
 datapoints:
+  # Mole fractions don't sum to 1
   - temperature: 1164.48 kelvin
     ignition-delay: 471.54 us
     pressure: 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        mole-fraction: 0.00444
+        mole-fraction: 0.1
       - species-name: O2
         InChI: 1S/O2/c1-2
-        mole-fraction: 0.00556
+        mole-fraction: 0.1
       - species-name: Ar
         InChI: 1S/Ar
-        mole-fraction: 0.99
+        mole-fraction: 0.1
     ignition-type:
       target: pressure
       type: d/dt max
+  # Mass fractions don't sum to 1
   - temperature: 1164.48 kelvin
     ignition-delay: 471.54 us
     pressure: 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        mass-fraction: 2.25252818E-4
+        mass-fraction: 0.1
       - species-name: O2
         InChI: 1S/O2/c1-2
-        mass-fraction: 4.47745336E-3
+        mass-fraction: 0.1
       - species-name: Ar
         InChI: 1S/Ar
-        mass-fraction: 9.95297294E-1
+        mass-fraction: 0.1
     ignition-type:
       target: pressure
       type: d/dt max
+  # Mole percents don't sum to 100
   - temperature: 1164.48 kelvin
     ignition-delay: 471.54 us
     pressure: 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        mole-percent: 0.444
+        mole-percent: 10.0
       - species-name: O2
         InChI: 1S/O2/c1-2
-        mole-percent: 0.556
+        mole-percent: 10.0
       - species-name: Ar
         InChI: 1S/Ar
-        mole-percent: 99.0
+        mole-percent: 10.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  # Mulitiple types of quantity specification
+  - temperature: 1164.48 kelvin
+    ignition-delay: 471.54 us
+    pressure: 220 kilopascal
+    composition:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        mole-percent: 10.0
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        mass-fraction: 0.1
+      - species-name: Ar
+        InChI: 1S/Ar
+        mole-fraction: 0.1
     ignition-type:
       target: pressure
       type: d/dt max
