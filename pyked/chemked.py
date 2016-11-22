@@ -265,11 +265,11 @@ class DataPoint(object):
             str: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
         if self.composition_type == 'mole-fraction':
-            return ', '.join(['{}: {}'.format(c['species-name'], c['mole-fraction']) for c in
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-fraction']) for c in
                               self.composition])
         elif self.composition_type == 'mole-percent':
-            return ', '.join(['{}: {}'.format(c['species-name'], c['mole-percent']/100.0) for c in
-                              self.composition])
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-percent']/100.0) for
+                              c in self.composition])
         else:
             raise ValueError('Cannot get mole fractions from the given composition.\n'
                              '{}'.format(self.composition))
@@ -281,7 +281,7 @@ class DataPoint(object):
             str: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
         if self.composition_type == 'mass-fraction':
-            return ', '.join(['{}: {}'.format(c['species-name'], c['mass-fraction']) for c in
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mass-fraction']) for c in
                               self.composition])
         else:
             raise ValueError('Cannot get mass fractions from the given composition.\n'
