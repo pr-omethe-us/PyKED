@@ -23,12 +23,20 @@ species: &species
       required: true
       excludes:
         - molecular-structure
+        - SMILES
+    SMILES:
+      type: string
+      required: true
+      excludes:
+        - molecular-structure
+        - InChI
     molecular-structure:
       type: list
       minlength: 1
       required: true
       excludes:
         - InChI
+        - SMILES
       schema:
         type: dict
         schema:
