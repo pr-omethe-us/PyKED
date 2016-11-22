@@ -227,6 +227,22 @@ class DataPoint(object):
                 setattr(self, prop.replace('-', '_'), None)
 
         self.composition = properties['composition']
+        self.composition_type = set([q for q in ['mole-fraction', 'mass-fraction', 'mole-percent']
+                                     for species in self.composition if q in species])
+        if len(self.composition_type) > 1:
+            raise TypeError('More than one of mole-fraction, mass-fraction, or mole-percent '
+                            'were specified in the data point.\n{}'.format(self.composition))
+        self.composition_type = self.composition_type.pop()
+        comp_sum = np.sum([species.get(self.composition_type) for species in self.composition])
+        if self.composition_type == 'mole-percent':
+            if not np.isclose(comp_sum, 100.0):
+                raise ValueError('mole-percent for the data point do not sum to '
+                                 '100.0.\n{}'.format(self.composition))
+        else:
+            if not np.isclose(comp_sum, 1.0):
+                raise ValueError('{} for the data point do not sum to '
+                                 '1.0.\n{}'.format(self.composition_type, self.composition))
+
         self.equivalence_ratio = properties.get('equivalence-ratio')
 
         if 'volume-history' in properties:
