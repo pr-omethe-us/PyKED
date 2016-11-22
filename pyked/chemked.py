@@ -258,11 +258,31 @@ class DataPoint(object):
         else:
             self.volume_history = None
 
-    def get_cantera_composition(self):
+    def get_cantera_mole_fraction(self):
         """Get the composition in a string format suitable for input to Cantera.
 
         Returns:
             str: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
-        return ', '.join(map(lambda c: '{}: {}'.format(c['species-name'], c['mole-fraction']),
-                             self.composition))
+        if self.composition_type == 'mole-fraction':
+            return ', '.join(['{}: {}'.format(c['species-name'], c['mole-fraction']) for c in
+                              self.composition])
+        elif self.composition_type == 'mole-percent':
+            return ', '.join(['{}: {}'.format(c['species-name'], c['mole-percent']/100.0) for c in
+                              self.composition])
+        else:
+            raise ValueError('Cannot get mole fractions from the given composition.\n'
+                             '{}'.format(self.composition))
+
+    def get_cantera_mass_fraction(self):
+        """Get the composition in a string format suitable for input to Cantera.
+
+        Returns:
+            str: String in the ``SPEC: AMT, SPEC: AMT`` format
+        """
+        if self.composition_type == 'mass-fraction':
+            return ', '.join(['{}: {}'.format(c['species-name'], c['mass-fraction']) for c in
+                              self.composition])
+        else:
+            raise ValueError('Cannot get mass fractions from the given composition.\n'
+                             '{}'.format(self.composition))
