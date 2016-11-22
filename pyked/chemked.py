@@ -223,9 +223,12 @@ class DataPoint(object):
             if prop in properties:
                 quant = Q_(properties[prop])
                 setattr(self, prop.replace('-', '_'), quant)
+            else:
+                setattr(self, prop.replace('-', '_'), None)
 
         self.composition = properties['composition']
         self.equivalence_ratio = properties.get('equivalence-ratio')
+
         if 'volume-history' in properties:
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
@@ -236,6 +239,8 @@ class DataPoint(object):
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
+        else:
+            self.volume_history = None
 
     def get_cantera_composition(self):
         """Get the composition in a string format suitable for input to Cantera.

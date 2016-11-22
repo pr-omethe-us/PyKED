@@ -36,8 +36,8 @@ class TestChemKED(object):
             assert d.ignition_delay == ignition_delays[i]
             assert d.pressure == Q_(220., 'kPa')
             assert d.temperature == temperatures[i]
-            assert 'pressure_rise' not in d.__dict__
-            assert 'volume_history' not in d.__dict__
+            assert d.pressure_rise is None
+            assert d.volume_history is None
 
     def test_no_input(self):
         """Test that no input raises an exception
