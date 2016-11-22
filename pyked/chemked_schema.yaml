@@ -22,15 +22,15 @@ species: &species
       type: string
       required: true
       excludes:
-        - molecular-structure
+        - atomic-structure
         - SMILES
     SMILES:
       type: string
       required: true
       excludes:
-        - molecular-structure
+        - atomic-structure
         - InChI
-    molecular-structure:
+    atomic-structure:
       type: list
       minlength: 1
       required: true
