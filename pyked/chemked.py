@@ -179,7 +179,7 @@ class ChemKED(object):
                 if col in species_list:
                     for s in d.composition:
                         if col == s['species-name']:
-                            row.append(s['mole-fraction'])
+                            row.append(s[d.composition_type])
                 elif 'reference' in col or 'apparatus' in col:
                     split_col = col.split(':')
                     if split_col[1] == 'authors':
