@@ -20,9 +20,15 @@ species: &species
     # Specify either InChI (later SMILES, etc.) or molecular-structure
     InChI:
       type: string
+      required: true
+      excludes:
+        - molecular-structure
     molecular-structure:
       type: list
       minlength: 1
+      required: true
+      excludes:
+        - InChI
       schema:
         type: dict
         schema:
