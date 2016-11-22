@@ -11,27 +11,27 @@ author: &author
       type: string
 # Common reference for species schema
 species: &species
-    type: dict
-    required: true
-    schema:
-        name:
+  type: dict
+  required: true
+  schema:
+    name:
+      type: string
+      required: true
+    # Specify either InChI (later SMILES, etc.) or molecular-structure
+    InChI:
+      type: string
+    molecular-structure:
+      type: list
+      minlength: 1
+      schema:
+        type: dict
+        schema:
+          element:
             type: string
-            required: true
-        # Specify either InChI (later SMILES, etc.) or molecular-structure
-        InChI:
-            type: string
-        molecular-structure:
-            type: list
-            minlength: 1
-            schema:
-                type: dict
-                schema:
-                    element:
-                        type: string
-                    amount:
-                        type: float
-                        min: 0.0
-                        # TODO: option for float or int?
+          amount:
+            type: float
+            min: 0.0
+            # TODO: option for float or int?
 # Common reference for composition schema
 composition: &composition
   type: list
