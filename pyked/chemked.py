@@ -147,7 +147,7 @@ class ChemKED(object):
         app_index = valid_labels.index('apparatus')
         valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
-        species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
+        species_list = list(set([s['species-name'] for d in self.datapoints for s in d.composition]))
 
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
@@ -178,7 +178,7 @@ class ChemKED(object):
             for col in col_labels:
                 if col in species_list:
                     for s in d.composition:
-                        if col == s['species']:
+                        if col == s['species-name']:
                             row.append(s['mole-fraction'])
                 elif 'reference' in col or 'apparatus' in col:
                     split_col = col.split(':')
@@ -243,5 +243,5 @@ class DataPoint(object):
         Returns:
             str: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
-        return ', '.join(map(lambda c: '{}: {}'.format(c['species'], c['mole-fraction']),
+        return ', '.join(map(lambda c: '{}: {}'.format(c['species-name'], c['mole-fraction']),
                              self.composition))

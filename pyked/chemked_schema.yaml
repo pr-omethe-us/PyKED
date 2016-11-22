@@ -9,52 +9,46 @@ author: &author
     name:
       required: true
       type: string
-# Common reference for species schema
-species: &species
-  type: dict
-  required: true
-  schema:
-    name:
-      type: string
-      required: true
-    # Specify either InChI (later SMILES, etc.) or molecular-structure
-    InChI:
-      type: string
-      required: true
-      excludes:
-        - atomic-structure
-        - SMILES
-    SMILES:
-      type: string
-      required: true
-      excludes:
-        - atomic-structure
-        - InChI
-    atomic-structure:
-      type: list
-      minlength: 1
-      required: true
-      excludes:
-        - InChI
-        - SMILES
-      schema:
-        type: dict
-        schema:
-          element:
-            type: string
-          amount:
-            type: float
-            min: 0.0
-            # TODO: option for float or int?
 # Common reference for composition schema
 composition: &composition
   type: list
   required: true
-  min-length: 1
+  minlength: 1
   schema:
     type: dict
+    required: true
     schema:
-      species: *species
+      species-name:
+        type: string
+        required: true
+      InChI:
+        type: string
+        required: true
+        excludes:
+          - atomic-structure
+          - SMILES
+      SMILES:
+        type: string
+        required: true
+        excludes:
+          - atomic-structure
+          - InChI
+      atomic-structure:
+        type: list
+        minlength: 1
+        required: true
+        excludes:
+          - InChI
+          - SMILES
+        schema:
+          type: dict
+          schema:
+            element:
+              type: string
+            amount:
+              type: float
+              min: 0.0
+              # TODO: option for float or int?
       mole-fraction:
         required: true
         type: float
