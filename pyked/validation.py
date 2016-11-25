@@ -35,7 +35,8 @@ with open(schema_file, 'r') as f:
 # These top-level keys in the schema server as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
 for key in ['author', 'value-unit-required', 'value-unit-optional',
-            'composition', 'ignition-type'
+            'composition', 'ignition-type', 'value-with-uncertainty',
+            'value-without-uncertainty'
             ]:
     schema.pop(key)
 
@@ -138,9 +139,9 @@ class OurValidator(Validator):
         Args:
             isvalid_quantity (bool): flag from schema indicating quantity to be checked.
             field (str): property associated with quantity in question.
-            value (str): string of the value of the quantity
+            value (list): list with the string of the value of the quantity
         """
-        quantity = Q_(value)
+        quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
 
         try:
@@ -152,6 +153,48 @@ class OurValidator(Validator):
             self._error(field, 'incompatible units; should be consistent '
                         'with ' + property_units[field]
                         )
+
+    def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
+        """Checks for valid given value and appropriate units with uncertainty.
+
+        Args:
+            isvalid_uncertainty (bool): flag from schema indicating uncertainty to be checked
+            field (str): property associated with the quantity in question.
+            value (list): list with the string of the value of the quantity and a dictionary of
+                the uncertainty
+        """
+        self._validate_isvalid_quantity(True, field, value)
+
+        # This len check is necessary for reasons that aren't quite clear to me
+        # Cerberus calls this validation method even when lists have only one element
+        if len(value) > 1 and value[1]['uncertainty-type'] is not 'relative':
+            quantity = Q_(value[0])
+            if value[1].get('uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
+                uncertainty = Q_(value[1]['uncertainty'])
+                try:
+                    uncertainty.to(quantity.units)
+                except pint.DimensionalityError:
+                    self._error(field, 'incompatible uncertainty units; should be '
+                                'compatible with {}'.format(quantity.units))
+
+            if value[1].get('upper-uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
+                upper_uncertainty = Q_(value[1]['upper-uncertainty'])
+                try:
+                    upper_uncertainty.to(quantity.units)
+                except pint.DimensionalityError:
+                    self._error(field, 'incompatible uncertainty units; should be '
+                                'compatible with {}'.format(quantity.units))
+
+            if value[1].get('lower-uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
+                lower_uncertainty = Q_(value[1]['lower-uncertainty'])
+                try:
+                    lower_uncertainty.to(quantity.units)
+                except pint.DimensionalityError:
+                    self._error(field, 'incompatible uncertainty units; should be '
+                                'compatible with {}'.format(quantity.units))
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
