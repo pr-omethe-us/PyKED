@@ -229,10 +229,10 @@ class DataPoint(object):
                     lower_uncertainty = unc.get('lower-uncertainty', False)
                     if unc['uncertainty-type'] == 'relative':
                         if uncertainty:
-                            quant = quant.plus_minus(uncertainty, relative=True)
+                            quant = quant.plus_minus(float(uncertainty), relative=True)
                         elif upper_uncertainty or lower_uncertainty:
                             # TODO: Warn that the max of the upper and lower uncertainties was used
-                            uncertainty = max(upper_uncertainty, lower_uncertainty)
+                            uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
                             quant = quant.plus_minus(uncertainty, relative=True)
                     elif unc['uncertainty-type'] == 'absolute':
                         if uncertainty:
