@@ -117,6 +117,7 @@ class TestValidator(object):
 
         def guard(*args, **kwargs):
             raise ConnectionError("No internet")
+
         socket.socket = guard
         yield
         socket.socket = old_socket
