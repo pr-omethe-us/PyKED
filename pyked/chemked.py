@@ -222,6 +222,29 @@ class DataPoint(object):
         for prop in ['ignition-delay', 'temperature', 'pressure', 'pressure-rise']:
             if prop in properties:
                 quant = Q_(properties[prop][0])
+                if len(properties[prop]) > 1:
+                    unc = properties[prop][1]
+                    uncertainty = unc.get('uncertainty', False)
+                    upper_uncertainty = unc.get('upper-uncertainty', False)
+                    lower_uncertainty = unc.get('lower-uncertainty', False)
+                    if unc['uncertainty-type'] == 'relative':
+                        if uncertainty:
+                            quant = quant.plus_minus(uncertainty, relative=True)
+                        elif upper_uncertainty or lower_uncertainty:
+                            # TODO: Warn that the max of the upper and lower uncertainties was used
+                            uncertainty = max(upper_uncertainty, lower_uncertainty)
+                            quant = quant.plus_minus(uncertainty, relative=True)
+                    elif unc['uncertainty-type'] == 'absolute':
+                        if uncertainty:
+                            uncertainty = Q_(uncertainty)
+                            uncertainty.ito(quant.units)
+                            quant = quant.plus_minus(uncertainty.magnitude)
+                        elif upper_uncertainty or lower_uncertainty:
+                            # TODO: Warn that the max of the upper and lower uncertainties was used
+                            uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                            uncertainty.ito(quant.units)
+                            quant = quant.plus_minus(uncertainty.magnitude)
+
                 setattr(self, prop.replace('-', '_'), quant)
             else:
                 setattr(self, prop.replace('-', '_'), None)
