@@ -5,6 +5,7 @@ Main ChemKED module
 from __future__ import print_function
 
 from collections import namedtuple
+from warnings import warn
 
 import numpy as np
 
@@ -231,7 +232,9 @@ class DataPoint(object):
                         if uncertainty:
                             quant = quant.plus_minus(float(uncertainty), relative=True)
                         elif upper_uncertainty or lower_uncertainty:
-                            # TODO: Warn that the max of the upper and lower uncertainties was used
+                            warn('Asymmetric uncertainties are not supported. The '
+                                 'maximum of lower-uncertainty and upper-uncertainty '
+                                 'has been used as the symmetric uncertainty.')
                             uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
                             quant = quant.plus_minus(uncertainty, relative=True)
                     elif unc['uncertainty-type'] == 'absolute':
@@ -240,7 +243,9 @@ class DataPoint(object):
                             uncertainty.ito(quant.units)
                             quant = quant.plus_minus(uncertainty.magnitude)
                         elif upper_uncertainty or lower_uncertainty:
-                            # TODO: Warn that the max of the upper and lower uncertainties was used
+                            warn('Asymmetric uncertainties are not supported. The '
+                                 'maximum of lower-uncertainty and upper-uncertainty '
+                                 'has been used as the symmetric uncertainty.')
                             uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
                             uncertainty.ito(quant.units)
                             quant = quant.plus_minus(uncertainty.magnitude)
