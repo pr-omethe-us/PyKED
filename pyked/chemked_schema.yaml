@@ -25,15 +25,15 @@ composition: &composition
         type: string
         required: true
         excludes:
-          - atomic-structure
+          - atomic-composition
           - SMILES
       SMILES:
         type: string
         required: true
         excludes:
-          - atomic-structure
+          - atomic-composition
           - InChI
-      atomic-structure:
+      atomic-composition:
         type: list
         minlength: 1
         required: true
