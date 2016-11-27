@@ -27,12 +27,14 @@ composition: &composition
         excludes:
           - atomic-composition
           - SMILES
+          - elemental-composition
       SMILES:
         type: string
         required: true
         excludes:
           - atomic-composition
           - InChI
+          - elemental-composition
       atomic-composition:
         type: list
         minlength: 1
@@ -40,6 +42,24 @@ composition: &composition
         excludes:
           - InChI
           - SMILES
+          - elemental-composition
+        schema:
+          type: dict
+          schema:
+            element:
+              type: string
+            amount:
+              type: float
+              min: 0.0
+              # TODO: option for float or int?
+      elemental-composition:
+        type: list
+        minlength: 1
+        required: true
+        excludes:
+          - InChI
+          - SMILES
+          - atomic-composition
         schema:
           type: dict
           schema:
