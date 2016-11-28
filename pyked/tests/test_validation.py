@@ -347,3 +347,32 @@ class TestValidator(object):
         v = OurValidator(unit_schema)
         v.validate({quantity: {'units': 'candela*ampere'}})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_relative_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with relative uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'relative', 'uncertainty': 0.1}]})
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with absolute uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'absolute', 'uncertainty': '0.1 {}'.format(unit)}]})
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_asym_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with absolute asymmetric uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'absolute',
+                                       'upper-uncertainty': '0.1 {}'.format(unit),
+                                       'lower-uncertainty': '0.1 {}'.format(unit)}]})
