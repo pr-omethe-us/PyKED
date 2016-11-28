@@ -98,7 +98,6 @@ value-with-uncertainty: &value-with-uncertainty
   isvalid_uncertainty: true
   items:
     - type: string
-      required: true
     - type: dict
       schema:
         uncertainty-type:
@@ -131,7 +130,6 @@ value-without-uncertainty: &value-without-uncertainty
   isvalid_quantity: true
   items:
     - type: string
-      required: true
 value-unit-required: &value-unit-required
   type: list
   required: true
