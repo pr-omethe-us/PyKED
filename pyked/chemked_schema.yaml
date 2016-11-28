@@ -108,20 +108,26 @@ value-with-uncertainty: &value-with-uncertainty
             - relative
         uncertainty:
           required: true
-          type: string
+          anyof_type:
+            - string
+            - float
           excludes:
             - upper-uncertainty
             - lower-uncertainty
         upper-uncertainty:
           required: true
-          type: string
+          anyof_type:
+            - string
+            - float
           excludes:
             - uncertainty
           dependencies:
             - lower-uncertainty
         lower-uncertainty:
           required: true
-          type: string
+          anyof_type:
+            - string
+            - float
           excludes:
             - uncertainty
           dependencies:
