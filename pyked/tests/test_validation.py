@@ -325,18 +325,18 @@ class TestValidator(object):
     def test_incompatible_quantity(self, quantity, unit):
         """Ensure that incompatible quantities are validation errors
         """
-        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        quant_schema = {quantity: {'type': 'list', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: '-999 {}'.format(unit)})
+        v.validate({quantity: ['-999 {}'.format(unit)]})
         assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_dimensionality_error_quantity(self, quantity, unit):
         """Ensure that dimensionality errors are validation errors
         """
-        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        quant_schema = {quantity: {'type': 'list', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: '1.0 {}'.format('candela*ampere')})
+        v.validate({quantity: ['1.0 {}'.format('candela*ampere')]})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
 
     @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
