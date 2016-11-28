@@ -12,9 +12,12 @@ experiment-type: ignition delay
 apparatus:
     kind: shock tube
 datapoints:
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
@@ -28,9 +31,12 @@ datapoints:
     ignition-type:
       target: pressure
       type: d/dt max
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
@@ -44,9 +50,12 @@ datapoints:
     ignition-type:
       target: pressure
       type: d/dt max
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H

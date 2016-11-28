@@ -13,9 +13,12 @@ apparatus:
     kind: shock tube
 datapoints:
   # Mole fractions don't sum to 1
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
@@ -30,9 +33,12 @@ datapoints:
       target: pressure
       type: d/dt max
   # Mass fractions don't sum to 1
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
@@ -47,9 +53,12 @@ datapoints:
       target: pressure
       type: d/dt max
   # Mole percents don't sum to 100
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
@@ -64,9 +73,12 @@ datapoints:
       target: pressure
       type: d/dt max
   # Mulitiple types of quantity specification
-  - temperature: 1164.48 kelvin
-    ignition-delay: 471.54 us
-    pressure: 220 kilopascal
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
