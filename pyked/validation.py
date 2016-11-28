@@ -167,7 +167,8 @@ class OurValidator(Validator):
 
         # This len check is necessary for reasons that aren't quite clear to me
         # Cerberus calls this validation method even when lists have only one element
-        if len(value) > 1 and value[1]['uncertainty-type'] is not 'relative':
+        # and should therefore be validated only by isvalid_quantity
+        if len(value) > 1 and value[1]['uncertainty-type'] != 'relative':
             quantity = Q_(value[0])
             if value[1].get('uncertainty') is not None:
                 self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
