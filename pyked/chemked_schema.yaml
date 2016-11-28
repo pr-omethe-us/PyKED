@@ -13,20 +13,86 @@ author: &author
 composition: &composition
   type: list
   required: true
+  minlength: 1
   schema:
     type: dict
+    required: true
     schema:
-      species:
-        required: true
+      species-name:
         type: string
+        required: true
+      InChI:
+        type: string
+        required: true
+        excludes:
+          - atomic-composition
+          - SMILES
+          - elemental-composition
+      SMILES:
+        type: string
+        required: true
+        excludes:
+          - atomic-composition
+          - InChI
+          - elemental-composition
+      atomic-composition:
+        type: list
+        minlength: 1
+        required: true
+        excludes:
+          - InChI
+          - SMILES
+          - elemental-composition
+        schema:
+          type: dict
+          schema:
+            element:
+              type: string
+            amount:
+              type: float
+              min: 0.0
+              # TODO: option for float or int?
+      elemental-composition:
+        type: list
+        minlength: 1
+        required: true
+        excludes:
+          - InChI
+          - SMILES
+          - atomic-composition
+        schema:
+          type: dict
+          schema:
+            element:
+              type: string
+            amount:
+              type: float
+              min: 0.0
+              # TODO: option for float or int?
       mole-fraction:
         required: true
         type: float
         min: 0.0
         max: 1.0
-      InChI:
+        excludes:
+          - mass-fraction
+          - mole-percent
+      mass-fraction:
         required: true
-        type: string
+        type: float
+        min: 0.0
+        max: 1.0
+        excludes:
+          - mole-fraction
+          - mole-percent
+      mole-percent:
+        required: true
+        type: float
+        min: 0.0
+        max: 100.0
+        excludes:
+          - mole-fraction
+          - mass-fraction
 # Common reference for value-unit schema
 value-unit-required: &value-unit-required
   type: string

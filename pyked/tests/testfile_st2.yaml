@@ -25,13 +25,13 @@ common-properties:
     pressure: &pres
       2.18 atm
     composition: &comp
-        - species: H2
+        - species-name: H2
           InChI: 1S/H2/h1H
           mole-fraction: 0.00444
-        - species: O2
+        - species-name: O2
           InChI: 1S/O2/c1-2
           mole-fraction: 0.00556
-        - species: Ar
+        - species-name: Ar
           InChI: 1S/Ar
           mole-fraction: 0.99
     pressure-rise: &pres-rise

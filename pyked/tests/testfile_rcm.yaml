@@ -26,16 +26,16 @@ datapoints:
       ignition-delay: 1.0 ms
       pressure: 958.0 torr
       composition:
-          - species: H2
+          - species-name: H2
             InChI: 1S/H2/h1H
             mole-fraction: 0.12500
-          - species: O2
+          - species-name: O2
             InChI: 1S/O2/c1-2
             mole-fraction: 0.06250
-          - species: N2
+          - species-name: N2
             InChI: 1S/N2/c1-2
             mole-fraction: 0.18125
-          - species: Ar
+          - species-name: Ar
             InChI: 1S/Ar
             mole-fraction: 0.63125
       ignition-type:

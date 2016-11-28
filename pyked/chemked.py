@@ -89,9 +89,9 @@ class ChemKED(object):
         validator = OurValidator(schema)
         if not validator.validate(properties):
             for key, value in validator.errors.items():
-                if 'unallowed value' in value:
+                if any(['unallowed value' in v for v in value]):
                     print(('{key} has an illegal value. Allowed values are {values} and are case '
-                           'sensitive').format(key=key, values=schema[key]['allowed']))
+                           'sensitive.').format(key=key, values=schema[key]['allowed']))
 
             raise ValueError(validator.errors)
 
@@ -147,7 +147,7 @@ class ChemKED(object):
         app_index = valid_labels.index('apparatus')
         valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
-        species_list = list(set([s['species'] for d in self.datapoints for s in d.composition]))
+        species_list = list(set([s['species-name'] for d in self.datapoints for s in d.composition]))
 
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
@@ -178,8 +178,8 @@ class ChemKED(object):
             for col in col_labels:
                 if col in species_list:
                     for s in d.composition:
-                        if col == s['species']:
-                            row.append(s['mole-fraction'])
+                        if col == s['species-name']:
+                            row.append(s[d.composition_type])
                 elif 'reference' in col or 'apparatus' in col:
                     split_col = col.split(':')
                     if split_col[1] == 'authors':
@@ -223,9 +223,28 @@ class DataPoint(object):
             if prop in properties:
                 quant = Q_(properties[prop])
                 setattr(self, prop.replace('-', '_'), quant)
+            else:
+                setattr(self, prop.replace('-', '_'), None)
 
         self.composition = properties['composition']
+        self.composition_type = set([q for q in ['mole-fraction', 'mass-fraction', 'mole-percent']
+                                     for species in self.composition if q in species])
+        if len(self.composition_type) > 1:
+            raise TypeError('More than one of mole-fraction, mass-fraction, or mole-percent '
+                            'were specified in the data point.\n{}'.format(self.composition))
+        self.composition_type = self.composition_type.pop()
+        comp_sum = np.sum([species.get(self.composition_type) for species in self.composition])
+        if self.composition_type == 'mole-percent':
+            if not np.isclose(comp_sum, 100.0):
+                raise ValueError('mole-percent for the data point do not sum to '
+                                 '100.0.\n{}'.format(self.composition))
+        else:
+            if not np.isclose(comp_sum, 1.0):
+                raise ValueError('{} for the data point do not sum to '
+                                 '1.0.\n{}'.format(self.composition_type, self.composition))
+
         self.equivalence_ratio = properties.get('equivalence-ratio')
+
         if 'volume-history' in properties:
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
@@ -236,12 +255,34 @@ class DataPoint(object):
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
+        else:
+            self.volume_history = None
 
-    def get_cantera_composition(self):
+    def get_cantera_mole_fraction(self):
         """Get the composition in a string format suitable for input to Cantera.
 
         Returns:
             str: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
-        return ', '.join(map(lambda c: '{}: {}'.format(c['species'], c['mole-fraction']),
-                             self.composition))
+        if self.composition_type == 'mole-fraction':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-fraction']) for c in
+                              self.composition])
+        elif self.composition_type == 'mole-percent':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-percent']/100.0) for
+                              c in self.composition])
+        else:
+            raise ValueError('Cannot get mole fractions from the given composition.\n'
+                             '{}'.format(self.composition))
+
+    def get_cantera_mass_fraction(self):
+        """Get the composition in a string format suitable for input to Cantera.
+
+        Returns:
+            str: String in the ``SPEC: AMT, SPEC: AMT`` format
+        """
+        if self.composition_type == 'mass-fraction':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mass-fraction']) for c in
+                              self.composition])
+        else:
+            raise ValueError('Cannot get mass fractions from the given composition.\n'
+                             '{}'.format(self.composition))
