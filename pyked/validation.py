@@ -169,33 +169,14 @@ class OurValidator(Validator):
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
         if len(value) > 1 and value[1]['uncertainty-type'] != 'relative':
-            quantity = Q_(value[0])
             if value[1].get('uncertainty') is not None:
                 self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
-                uncertainty = Q_(value[1]['uncertainty'])
-                try:
-                    uncertainty.to(quantity.units)
-                except pint.DimensionalityError:
-                    self._error(field, 'incompatible uncertainty units; should be '
-                                'compatible with {}'.format(quantity.units))
 
             if value[1].get('upper-uncertainty') is not None:
                 self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
-                upper_uncertainty = Q_(value[1]['upper-uncertainty'])
-                try:
-                    upper_uncertainty.to(quantity.units)
-                except pint.DimensionalityError:
-                    self._error(field, 'incompatible uncertainty units; should be '
-                                'compatible with {}'.format(quantity.units))
 
             if value[1].get('lower-uncertainty') is not None:
                 self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
-                lower_uncertainty = Q_(value[1]['lower-uncertainty'])
-                try:
-                    lower_uncertainty.to(quantity.units)
-                except pint.DimensionalityError:
-                    self._error(field, 'incompatible uncertainty units; should be '
-                                'compatible with {}'.format(quantity.units))
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
