@@ -364,7 +364,8 @@ class TestValidator(object):
         uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
         v = OurValidator(uncertainty_schema)
         assert v.validate({quantity: ['1.0 {}'.format(unit),
-                                      {'uncertainty-type': 'absolute', 'uncertainty': '0.1 {}'.format(unit)}]})
+                                      {'uncertainty-type': 'absolute',
+                                       'uncertainty': '0.1 {}'.format(unit)}]})
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_absolute_asym_uncertainty_validation(self, quantity, unit):
@@ -376,3 +377,75 @@ class TestValidator(object):
                                       {'uncertainty-type': 'absolute',
                                        'upper-uncertainty': '0.1 {}'.format(unit),
                                        'lower-uncertainty': '0.1 {}'.format(unit)}]})
+
+    def test_missing_lower_upper_uncertainty(self):
+        """Test that having a single asymmetric uncertainty fails validation.
+
+        When https://github.com/nicolaiarocci/cerberus/issues/278 is resolved,
+        the errors that result from this validation should be checked to make
+        sure that the missing values are caught. For now, we just check that
+        the document doesn't validate.
+        """
+        result = v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                             {'uncertainty-type': 'relative',
+                                                              'upper-uncertainty': 0.1}]}]},
+                            update=True)
+        assert not result
+
+        result = v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                             {'uncertainty-type': 'relative',
+                                                              'lower-uncertainty': 0.1}]}]},
+                            update=True)
+        assert not result
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_sym_uncertainty(self, quantity, unit):
+        """Ensure that incompatible quantities are validation errors for symmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'uncertainty': '-999 {}'.format(unit)}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_sym_uncertainty(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors for symmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'uncertainty': '1 {}'.format('candela*ampere')}]})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_asym_uncertainty(self, quantity, unit):
+        """Ensure that incompatible quantities are validation errors for asymmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'upper-uncertainty': '-999 {}'.format(unit),
+                                'lower-uncertainty': '-999 {}'.format(unit)}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_asym_uncertainty(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors for asymmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'upper-uncertainty': '1 {}'.format('candela*ampere'),
+                                'lower-uncertainty': '1 {}'.format('candela*ampere')}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
