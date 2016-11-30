@@ -1,0 +1,101 @@
+---
+file-author:
+  name: B. Author
+file-version: (1, 0)
+chemked-version: 0.0.1
+reference:
+  authors:
+    - name: A. Author
+  journal: Testing Journal
+  year: 1600
+experiment-type: ignition delay
+apparatus:
+  kind: shock tube
+datapoints:
+  - temperature:
+      - 1164.48 kelvin
+      - uncertainty-type: absolute
+        uncertainty: 10 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
+    composition:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        mole-percent: 0.444
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        mole-percent: 0.556
+      - species-name: Ar
+        InChI: 1S/Ar
+        mole-percent: 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+      - uncertainty-type: relative
+        uncertainty: 0.1
+    pressure:
+      - 220 kilopascal
+    composition:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        mole-percent: 0.444
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        mole-percent: 0.556
+      - species-name: Ar
+        InChI: 1S/Ar
+        mole-percent: 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  - temperature:
+      - 1164.48 kelvin
+      - uncertainty-type: absolute
+        upper-uncertainty: 10 kelvin
+        lower-uncertainty: 5 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure:
+      - 220 kilopascal
+    composition:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        mole-percent: 0.444
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        mole-percent: 0.556
+      - species-name: Ar
+        InChI: 1S/Ar
+        mole-percent: 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+      - uncertainty-type: relative
+        upper-uncertainty: 0.1
+        lower-uncertainty: 0.05
+    pressure:
+      - 220 kilopascal
+    composition:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        mole-percent: 0.444
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        mole-percent: 0.556
+      - species-name: Ar
+        InChI: 1S/Ar
+        mole-percent: 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+...
