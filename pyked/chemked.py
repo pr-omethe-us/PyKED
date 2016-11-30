@@ -228,7 +228,8 @@ class DataPoint(object):
                     uncertainty = unc.get('uncertainty', False)
                     upper_uncertainty = unc.get('upper-uncertainty', False)
                     lower_uncertainty = unc.get('lower-uncertainty', False)
-                    if unc['uncertainty-type'] == 'relative':
+                    uncertainty_type = unc.get('uncertainty-type')
+                    if uncertainty_type == 'relative':
                         if uncertainty:
                             quant = quant.plus_minus(float(uncertainty), relative=True)
                         elif upper_uncertainty or lower_uncertainty:
@@ -237,7 +238,7 @@ class DataPoint(object):
                                  'has been used as the symmetric uncertainty.')
                             uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
                             quant = quant.plus_minus(uncertainty, relative=True)
-                    elif unc['uncertainty-type'] == 'absolute':
+                    elif uncertainty_type == 'absolute':
                         if uncertainty:
                             uncertainty = Q_(uncertainty)
                             quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
