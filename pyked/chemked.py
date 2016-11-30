@@ -238,6 +238,9 @@ class DataPoint(object):
                                  'has been used as the symmetric uncertainty.')
                             uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
                             quant = quant.plus_minus(uncertainty, relative=True)
+                        else:
+                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                             '"lower-uncertainty" need to be specified.')
                     elif uncertainty_type == 'absolute':
                         if uncertainty:
                             uncertainty = Q_(uncertainty)
@@ -248,6 +251,11 @@ class DataPoint(object):
                                  'has been used as the symmetric uncertainty.')
                             uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
                             quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                        else:
+                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                             '"lower-uncertainty" need to be specified.')
+                    else:
+                        raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
 
                 setattr(self, prop.replace('-', '_'), quant)
             else:
