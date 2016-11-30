@@ -240,15 +240,13 @@ class DataPoint(object):
                     elif unc['uncertainty-type'] == 'absolute':
                         if uncertainty:
                             uncertainty = Q_(uncertainty)
-                            uncertainty.ito(quant.units)
-                            quant = quant.plus_minus(uncertainty.magnitude)
+                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                         elif upper_uncertainty or lower_uncertainty:
                             warn('Asymmetric uncertainties are not supported. The '
                                  'maximum of lower-uncertainty and upper-uncertainty '
                                  'has been used as the symmetric uncertainty.')
                             uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
-                            uncertainty.ito(quant.units)
-                            quant = quant.plus_minus(uncertainty.magnitude)
+                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
 
                 setattr(self, prop.replace('-', '_'), quant)
             else:
