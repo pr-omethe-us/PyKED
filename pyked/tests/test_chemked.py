@@ -269,6 +269,19 @@ class TestDataPoint(object):
         assert d.ignition_delay.error == Q_(47.154, 'us')
         assert d.ignition_delay.rel == 0.1
 
+    def test_missing_uncertainty_parts(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        for prop in ['uncertainty', 'uncertainty-type']:
+            save = properties[0]['temperature'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[0])
+            properties[0]['temperature'][1][prop] = save
+
+            save = properties[1]['ignition-delay'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[1])
+            properties[1]['ignition-delay'][1][prop] = save
+
     def test_volume_history(self):
         properties = self.load_properties('testfile_rcm.yaml')
         d = DataPoint(properties[0])
