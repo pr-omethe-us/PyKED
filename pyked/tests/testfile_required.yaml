@@ -10,7 +10,7 @@ reference:
   year: 1600
 experiment-type: ignition delay
 apparatus:
-    kind: shock tube
+  kind: shock tube
 datapoints:
   - temperature:
       - 1164.48 kelvin
