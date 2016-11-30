@@ -35,6 +35,7 @@ setup(
                       'cerberus>=1.0.0',
                       'pint>=0.7.2',
                       'numpy>=1.11.0',
+                      'uncertainties>=3.0.1'
                       ],
 
     license='BSD-3-Clause',

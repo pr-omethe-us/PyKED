@@ -24,7 +24,7 @@ install:
 
     - >
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint
-      pylint pandas pytest pytest-cov cerberus beautifulsoup4 simplejson requests
+      pylint pandas pytest pytest-cov cerberus beautifulsoup4 simplejson requests uncertainties
     - source activate test-environment
     # just until conda-forge recipes available
     - pip install habanero orcid
