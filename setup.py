@@ -26,7 +26,7 @@ setup(
     long_description=readme + '\n\n' + changelog,
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
-    url='https://github.com/Niemeyer-Research-Group/PyKED',
+    url='https://github.com/pr-omethe-us/PyKED',
     packages=['pyked'],
     package_dir={'pyked': 'pyked'},
     include_package_data=True,

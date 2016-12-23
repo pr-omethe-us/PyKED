@@ -2,7 +2,7 @@
 
 We welcome contributions in the form of bug reports, bug fixes, improvements to the documentation, ideas for enhancements, or the enhancements themselves!
 
-You can find a [list of current issues](https://github.com/Niemeyer-Research-Group/PyKED/issues) in the project's GitHub repository. Feel free to tackle any existing bugs or enhancement ideas by submitting a [pull request](https://github.com/Niemeyer-Research-Group/PyKED/pulls). Some issues are marked as `beginner-friendly`. These issues are a great place to start working with PyKED and ChemKED, if you're new here.
+You can find a [list of current issues](https://github.com/pr-omethe-us/PyKED/issues) in the project's GitHub repository. Feel free to tackle any existing bugs or enhancement ideas by submitting a [pull request](https://github.com/pr-omethe-us/PyKED/pulls). Some issues are marked as `beginner-friendly`. These issues are a great place to start working with PyKED and ChemKED, if you're new here.
 
 ## Bug Reports
 
@@ -19,10 +19,10 @@ You can find a [list of current issues](https://github.com/Niemeyer-Research-Gro
  * Please reference relevant GitHub issues in your commit messages using `GH123` or `#123`.
  * Changes should be [PEP8](https://www.python.org/dev/peps/pep-0008/) and [PEP257](https://www.python.org/dev/peps/pep-0257/) compatible.
  * Keep style fixes to a separate commit to make your pull request more readable.
- * Add your changes into the [`CHANGELOG`](https://github.com/Niemeyer-Research-Group/PyKED/blob/master/CHANGELOG.md)
+ * Add your changes into the [`CHANGELOG`](https://github.com/pr-omethe-us/PyKED/blob/master/CHANGELOG.md)
  * Docstrings are required and should follow the [Google style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
- * When you start working on a pull request, start by creating a new branch pointing at the latest commit on [GitHub master](https://github.com/Niemeyer-Research-Group/PyKED/tree/master).
- * The copyright policy is detailed in the [`LICENSE`](https://github.com/Niemeyer-Research-Group/PyKED/blob/master/LICENSE).
+ * When you start working on a pull request, start by creating a new branch pointing at the latest commit on [GitHub master](https://github.com/pr-omethe-us/PyKED/tree/master).
+ * The copyright policy is detailed in the [`LICENSE`](https://github.com/pr-omethe-us/PyKED/blob/master/LICENSE).
 
 ## Meta
 
