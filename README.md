@@ -1,9 +1,8 @@
 # PyKED
 
-[![Build Status](https://travis-ci.org/Niemeyer-Research-Group/PyKED.svg?branch=master)](https://travis-ci.org/Niemeyer-Research-Group/PyKED)
-[![codecov](https://codecov.io/gh/Niemeyer-Research-Group/PyKED/branch/master/graph/badge.svg)](https://codecov.io/gh/Niemeyer-Research-Group/PyKED)
-[![Dependency Status](https://dependencyci.com/github/Niemeyer-Research-Group/PyKED/badge)](https://dependencyci.com/github/Niemeyer-Research-Group/PyKED)
-
+[![Build Status](https://travis-ci.org/pr-omethe-us/PyKED.svg?branch=master)](https://travis-ci.org/pr-omethe-us/PyKED)
+[![codecov](https://codecov.io/gh/pr-omethe-us/PyKED/branch/master/graph/badge.svg)](https://codecov.io/gh/pr-omethe-us/PyKED)
+[![Dependency Status](https://dependencyci.com/github/pr-omethe-us/PyKED/badge)](https://dependencyci.com/github/pr-omethe-us/PyKED)
 
 ## Code of Conduct
 
