@@ -36,7 +36,7 @@ with open(schema_file, 'r') as f:
 # They are removed to prevent conflicts due to required variables, etc.
 for key in ['author', 'value-unit-required', 'value-unit-optional',
             'composition', 'ignition-type', 'value-with-uncertainty',
-            'value-without-uncertainty'
+            'value-without-uncertainty', 'uncertainty'
             ]:
     schema.pop(key)
 
