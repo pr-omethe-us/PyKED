@@ -215,6 +215,7 @@ class DataPoint(object):
         pressure (pint.Quantity): The pressure of the experiment
         pressure_rise (pint.Quantity, optional): The amount of pressure rise during the induction
             period of a shock tube experiment.
+        ignition_type (dict): Dictionary with the ignition target and type.
         volume_history (namedtuple, optional): The volume history of the reactor during an RCM
             experiment.
     """
@@ -244,6 +245,8 @@ class DataPoint(object):
                                  '1.0.\n{}'.format(self.composition_type, self.composition))
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
+
+        self.ignition_type = properties.get('ignition-type')
 
         if 'volume-history' in properties:
             time_col = properties['volume-history']['time']['column']
