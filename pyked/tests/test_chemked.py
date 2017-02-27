@@ -38,6 +38,7 @@ class TestChemKED(object):
             assert d.temperature == temperatures[i]
             assert d.pressure_rise is None
             assert d.volume_history is None
+            assert d.compression_time is None
             assert d.ignition_type['type'] == 'd/dt max'
             assert d.ignition_type['target'] == 'pressure'
 
