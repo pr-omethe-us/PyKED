@@ -129,7 +129,7 @@ ignition-type: &ignition-type
 common-properties:
   type: dict
   schema:
-    pressure: *value-unit-required
+    pressure: *value-unit-optional
     ignition-type: *ignition-type
     composition: *composition
     pressure-rise: *value-unit-optional
