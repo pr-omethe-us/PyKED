@@ -38,6 +38,8 @@ class TestChemKED(object):
             assert d.temperature == temperatures[i]
             assert d.pressure_rise is None
             assert d.volume_history is None
+            assert d.ignition_type['type'] == 'd/dt max'
+            assert d.ignition_type['target'] == 'pressure'
 
     def test_no_input(self):
         """Test that no input raises an exception
