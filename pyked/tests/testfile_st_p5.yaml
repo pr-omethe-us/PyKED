@@ -1,0 +1,64 @@
+---
+file-author:
+    name: Morgan Mayer
+    ORCID: 0000-0001-7137-5721
+file-version: (0, 1)
+chemked-version: 0.0.1
+reference:
+    doi: 10.1016/j.combustflame.2011.08.014
+    authors:
+        - name: Ivo Stranic
+        - name: Deanna P. Chase
+        - name: Joseph T. Harmon
+        - name: Sheng Yang
+        - name: David F. Davidson
+        - name: Ronald K. Hanson
+    journal: Combustion and Flame
+    year: 2011
+    volume: 159
+    pages: 516-527
+experiment-type: ignition delay
+apparatus:
+    kind: shock tube
+    institution: High Temperature Gasdynamics Laboratory, Stanford University
+    facility: stainless steel shock tube
+common-properties:
+    composition: &comp
+        - species-name: t-butanol
+          InChI: 1S/C4H10O/c1-4(2,3)5/h5H,1-3H3
+          mole-fraction: 0.003333333
+        - species-name: O2
+          InChI:  1S/O2/c1-2
+          mole-fraction: 0.04
+        - species-name: Ar
+          InChI:  1S/Ar
+          mole-fraction: 0.956666667
+    ignition-type:  &ign
+      target: OH*
+      type: 1/2 max
+datapoints:
+    - temperature: 1459 kelvin
+      ignition-delay: 347 us
+      pressure: 1.60 atm
+      composition: *comp
+      ignition-type: *ign
+      equivalence-ratio: 0.5
+    - temperature: 1389 kelvin
+      ignition-delay: 756 us
+      pressure: 1.67 atm
+      composition: *comp
+      ignition-type: *ign
+      equivalence-ratio: 0.5
+    - temperature: 1497 kelvin
+      ignition-delay: 212 us
+      pressure: 1.55 atm
+      composition: *comp
+      ignition-type: *ign
+      equivalence-ratio: 0.5
+    - temperature: 1562 kelvin
+      ignition-delay: 105 us
+      pressure: 1.50 atm
+      composition: *comp
+      ignition-type: *ign
+      equivalence-ratio: 0.5
+...

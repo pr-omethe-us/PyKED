@@ -282,3 +282,25 @@ class TestDataPoint(object):
             6.68100309742E+001
             ]), 'cm**3')
         np.testing.assert_allclose(d.volume_history.volume, volumes)
+
+    def test_supported_ignition_types(self):
+        # pressure d/dt max
+        properties = self.load_properties('testfile_st.yaml')
+        datapoints = [DataPoint(d) for d in properties]
+        for d in datapoints:
+            assert d.ignition_type['target'] == 'pressure'
+            assert d.ignition_type['type'] == 'd/dt max'
+
+        # OH, max
+        properties = self.load_properties('testfile_st2.yaml')
+        datapoints = [DataPoint(d) for d in properties]
+        for d in datapoints:
+            assert d.ignition_type['target'] == 'OH'
+            assert d.ignition_type['type'] == 'max'
+
+        # OH*, 1/2 max
+        properties = self.load_properties('testfile_st_p5.yaml')
+        datapoints = [DataPoint(d) for d in properties]
+        for d in datapoints:
+            assert d.ignition_type['target'] == 'OH*'
+            assert d.ignition_type['type'] == '1/2 max'
