@@ -120,6 +120,7 @@ ignition-type: &ignition-type
       allowed:
         - d/dt max
         - max
+        - 1/2 max
         - min
       required: true
       type: string
