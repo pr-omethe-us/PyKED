@@ -27,9 +27,9 @@ setup(
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
     url='https://github.com/Niemeyer-Research-Group/PyKED',
-    packages=['pyked'],
-    package_dir={'pyked': 'pyked'},
+    packages=['pyked', 'pyked.tests'],
     include_package_data=True,
+    package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
 
     install_requires=['ruamel.yaml>=0.12.5',
                       'cerberus>=1.0.0',
