@@ -31,7 +31,7 @@ setup(
     include_package_data=True,
     package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
 
-    install_requires=['ruamel.yaml>=0.12.5',
+    install_requires=['pyyaml>=3.12,<4.0',
                       'cerberus>=1.0.0',
                       'pint>=0.7.2',
                       'numpy>=1.11.0',
