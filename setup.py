@@ -35,6 +35,8 @@ setup(
                       'cerberus>=1.0.0',
                       'pint>=0.7.2',
                       'numpy>=1.11.0',
+                      'habanero>=0.2.6',
+                      'orcid>=0.7.0',
                       ],
 
     license='BSD-3-Clause',
