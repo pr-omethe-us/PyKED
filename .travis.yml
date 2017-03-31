@@ -3,26 +3,38 @@ env:
   global:
     - secure: "BJScAQqZ93wF2MTL/52lsz9NN7einCoKC5SvdOzQ+MBGO6DOdEql3DqHPrys5xUHX0bejvdVbknS4GP5lRM+iv0+TF7jGz1FGCOA33WocOXMM7GxGAZq3Arnk9R2efNc0RplnF0kVQqOKa1hYtLmFCf9SZRltKCScewr1vKKf8k4R9egciSK+QTFZa+njCxFEVYJAOyifCukqcPRx1L7hJn2od0oaRctSRWhdWl8gPKAP4JLMdWqgmXEuDG3pTm8vq6JM2W7fhEXdlNr8P+txowGKBDw47m0LJc9q6ReH7FnqcpWMXdsIxGEeBd1nzvpqeNbBSKFwcEjqWKMqeImaySaVvSbcnLFZzU2MPb20sWRGiqP1oN8scQDnTG57hL/DeVY6gM7SFXZxD3akpvl865zNO9PlG4sCdANZv/ZEwSqAcMEQAXa32R1//iP+36HB6PHcNbDsi3o17/kfJRBnG7EFeLMfapyM1WiD5FJ39nS7MaLAIDFYus68J+VK/szpUjpL0623l2+RbmcQ660WGR+RV5mL/n6xtcCOTKnGRiVhvnYpqTAvU+jg2DBXlXWGTztZCqPoOHBtlVA+vwO7SYTl3W1/2ECPP6ogx6YRYjcasD/sj8Z8P8cbtpqSmPwR0D7J+vz+DX8qf01aG3NETcgGXhFq6i/WpRbUEXpK1U="
 
-language: python
-python:
- - 3.5
- - 3.6
+language: generic
+
+matrix:
+  include:
+    - os: linux
+      env: PYTHON="3.5"
+
+    - os: linux
+      env: PYTHON="3.6"
+
+    - os: osx
+      env: PYTHON="3.5"
+
+    - os: osx
+      env: PYTHON="3.6"
+
 
 install:
       # We do this conditionally because it saves us some downloading if the
       # Miniconda version is the same as the test environment.
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-      else
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
       fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - sed -i -e "s/\${TRAVIS_PYTHON_VERSION}/"${TRAVIS_PYTHON_VERSION}"/" test-environment.yaml
     - conda config --append channels conda-forge
+    - sed -i -e "s/\${PYTHON}/"${PYTHON}"/" test-environment.yaml
     - conda env create -qf test-environment.yaml
     - source activate test-environment
       # Useful for debugging any issues with conda
@@ -37,7 +49,7 @@ install:
 script:
   - set -e
   - pytest -vv --cov=./
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
+  - if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
         git checkout -- test-environment.yaml;
         conda install -q sphinx doctr;
         python setup.py install;

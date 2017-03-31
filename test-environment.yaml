@@ -7,7 +7,7 @@ dependencies:
   - pyyaml>=3.12
   - pytest>=3.0.0
   - pytest-cov>=2.3.1
-  - python=${TRAVIS_PYTHON_VERSION}
+  - python=${PYTHON}
   - cerberus>=1.0.0
   - pint>=0.7.2
   - beautifulsoup4
