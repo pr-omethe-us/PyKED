@@ -13,3 +13,4 @@ dependencies:
   - beautifulsoup4
   - simplejson
   - requests
+  - pandas
