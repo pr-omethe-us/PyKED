@@ -57,15 +57,18 @@ datapoints:
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        amount: 0.444
+        amount:
+          - 0.444
         kind: mole percent
       - species-name: O2
         InChI: 1S/O2/c1-2
-        type: 0.556
+        amount:
+          - 0.556
         kind: mole percent
       - species-name: Ar
         InChI: 1S/Ar
-        amount: 99.0
+        amount:
+          - 99.0
         kind: mole percent
     ignition-type:
       target: pressure
@@ -82,15 +85,18 @@ datapoints:
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        type: 0.444
+        amount:
+          - 0.444
         kind: mole percent
       - species-name: O2
         InChI: 1S/O2/c1-2
-        amount: 0.556
+        amount:
+          - 0.556
         kind: mole percent
       - species-name: Ar
         InChI: 1S/Ar
-        amount: 99.0
+        amount:
+          - 99.0
         kind: mole percent
     ignition-type:
       target: pressure
@@ -107,15 +113,18 @@ datapoints:
     composition:
       - species-name: H2
         InChI: 1S/H2/h1H
-        amount: 0.444
+        amount:
+          - 0.444
         kind: mole percent
       - species-name: O2
         InChI: 1S/O2/c1-2
-        amount: 0.556
+        amount:
+          - 0.556
         kind: mole percent
       - species-name: Ar
         InChI: 1S/Ar
-        amount: 99.0
+        amount:
+          - 99.0
         kind: mole percent
     ignition-type:
       target: pressure
