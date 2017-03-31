@@ -1,4 +1,7 @@
 sudo: false
+env:
+  global:
+    - secure: "zkPSRn92C07+4ScuSbfmE0EjYJm4fnwdGRDZPgoCfECTwJY8H/VHh+bU9PLK8Tdlw82TxAR/+cJ6LOOgSMd3ELEa0eYtrQi8Lf/w2XQkF2rxL6p4w/AypAsjg6RCs/Fb+roprN6nAxtecDV+7GgiZ028yNMhSHghdV1n650ulXeU072ez1+h6K8WBOA5DIPxaTvtJPv4c5i48pLGAcJNQqBZ7FTFk0jqQovhencEJCOJeTkAy0t5MXaH5D5ojQrxFtJyWTnPEpBDhVRgd6sTCR9kaYGhwOooBkBdVJVYva9bbXm5Zbqdmh0eQg7q39pZUUfN1HfpQ0YTtgY+VG9EIyqYp8kCZ27otewbfefp+fUlUzv85wSgtBnxNy2emJb4lvlNGGtGN+KalZmdUzvgsV1s79ukQqqFrBO96tnJAY6dzABeFxi3YkHchcK+9NKCRJBYR8WkSzZ8QLarDbRyPt9C7CT0n5QkSUf2OXaSceHMzQpHDLx3KDnLWH/lUySRyURPHPIJxXUwLw9Rru/Vb/WlhXq/O+gLvv0nFnNTPYjpFAcgqPIXh8+ts/vzKec8ekNotU05qwzHq2mMk5p5idmL11W7crJgUpYxv7fECkpRReNespgVOkuDhs45ckXXGEQD61EjnWMBbSWGWAmh+Yku5vWMdib3tS7GdkU3P3I="
 
 language: python
 python:
@@ -30,7 +33,19 @@ install:
 
 # command to run tests
 #script: pytest -vv --cov=./ && pylint pyked/
-script: pytest -vv --cov=./
+script:
+  - set -e
+  - pytest -vv --cov=./
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
+        git checkout -- test-environment.yaml
+        conda install -q sphinx doctr
+        python setup.py install
+        cd docs
+        make html SPHINXOPTS="-W"
+        cd ..
+        doctr deploy .
+    fi
+  - set +e
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
