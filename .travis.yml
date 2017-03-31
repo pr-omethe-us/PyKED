@@ -37,13 +37,13 @@ script:
   - set -e
   - pytest -vv --cov=./
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
-        git checkout -- test-environment.yaml
-        conda install -q sphinx doctr
-        python setup.py install
-        cd docs
-        make html SPHINXOPTS="-W"
-        cd ..
-        doctr deploy .
+        git checkout -- test-environment.yaml;
+        conda install -q sphinx doctr;
+        python setup.py install;
+        cd docs;
+        make html SPHINXOPTS="-W";
+        cd ..;
+        doctr deploy .;
     fi
   - set +e
 
