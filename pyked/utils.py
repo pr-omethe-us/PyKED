@@ -1,12 +1,9 @@
-"""
-
-.. moduleauthor:: Kyle Niemeyer <kyle.niemeyer@gmail.com>
-"""
 from __future__ import print_function
 
 import pint
 
 units = pint.UnitRegistry()
+"""Unit registry to contain the units used in PyKED"""
 units.define('cm3 = centimeter**3')
 Q_ = units.Quantity
 
@@ -23,6 +20,7 @@ SPEC_KEY = {'1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3': 'nC7H16',
             '1S/H2/h1H': 'H2',
             '1S/H2O/h1H2': 'H2O',
             }
+"""(`dict`) Dictionary of InChI as keys with the species name as the value"""
 
 SPEC_KEY_REV = {'nC7H16': '1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3',
                 'iC8H18': '1S/C8H18/c1-7(2)6-8(3,4)5/h7H,6H2,1-5H3',
@@ -36,6 +34,7 @@ SPEC_KEY_REV = {'nC7H16': '1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3',
                 'H2': '1S/H2/h1H',
                 'H2O': '1S/H2O/h1H2',
                 }
+"""(`dict`) Dictionary of species name as keys with the InChI as the value"""
 
 SPEC_NAMES = {'nC7H16': 'n-heptane',
               'iC8H18': 'isooctane',
@@ -49,3 +48,4 @@ SPEC_NAMES = {'nC7H16': 'n-heptane',
               'H2': 'hydrogen',
               'H2O': 'water',
               }
+"""(`dict`) Dictionary of species names as keys with long versions as values"""

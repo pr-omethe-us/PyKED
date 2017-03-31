@@ -65,12 +65,12 @@ def compare_name(given_name, family_name, question_name):
         True
 
     Args:
-        given_name (str): Given (or first) name to be checked against.
-        family_name (str): Family (or last) name to be checked against.
-        question_name (str): The whole name in question.
+        given_name (`str`): Given (or first) name to be checked against.
+        family_name (`str`): Family (or last) name to be checked against.
+        question_name (`str`): The whole name in question.
 
     Returns:
-        bool: The return value. True for successful comparison, False otherwise.
+        `bool`: The return value. True for successful comparison, False otherwise.
     """
     # lowercase everything
     given_name = given_name.lower()
@@ -120,9 +120,9 @@ class OurValidator(Validator):
         """Checks for appropriate units using Pint unit registry.
 
         Args:
-            isvalid_unit (bool): flag from schema indicating units to be checked.
-            field (str): property associated with units in question.
-            value (dict): dictionary of values from file associated with this property.
+            isvalid_unit (`bool`): flag from schema indicating units to be checked.
+            field (`str`): property associated with units in question.
+            value (`dict`): dictionary of values from file associated with this property.
         """
         quantity = 1.0 * units(value['units'])
         try:
@@ -136,9 +136,9 @@ class OurValidator(Validator):
         """Checks for valid given value and appropriate units.
 
         Args:
-            isvalid_quantity (bool): flag from schema indicating quantity to be checked.
-            field (str): property associated with quantity in question.
-            value (str): string of the value of the quantity
+            isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.
+            field (`str`): property associated with quantity in question.
+            value (`str`): string of the value of the quantity
         """
         quantity = Q_(value)
         low_lim = 0.0 * units(property_units[field])
@@ -160,9 +160,9 @@ class OurValidator(Validator):
             * remove UnboundLocalError from exception handling
 
         Args:
-            isvalid_reference (bool): flag from schema indicating reference to be checked.
-            field (str): 'reference'
-            value (dict): dictionary of reference metadata.
+            isvalid_reference (`bool`): flag from schema indicating reference to be checked.
+            field (`str`): 'reference'
+            value (`dict`): dictionary of reference metadata.
         """
         if isvalid_reference and 'doi' in value:
             try:
@@ -245,9 +245,9 @@ class OurValidator(Validator):
         """Checks for valid ORCID if given.
 
         Args:
-            isvalid_orcid (bool): flag from schema indicating ORCID to be checked.
-            field (str): 'author'
-            value (dict): dictionary of author metadata.
+            isvalid_orcid (`bool`): flag from schema indicating ORCID to be checked.
+            field (`str`): 'author'
+            value (`dict`): dictionary of author metadata.
         """
         if isvalid_orcid and 'ORCID' in value:
             try:
