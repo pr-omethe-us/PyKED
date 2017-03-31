@@ -23,7 +23,7 @@ install:
     - conda config --add channels conda-forge
 
     - >
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy ruamel.yaml pint
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pyyaml pint
       pylint pandas pytest pytest-cov cerberus beautifulsoup4 simplejson requests
     - source activate test-environment
     # just until conda-forge recipes available
