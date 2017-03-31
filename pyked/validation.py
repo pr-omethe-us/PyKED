@@ -36,7 +36,7 @@ with open(schema_file, 'r') as f:
 # They are removed to prevent conflicts due to required variables, etc.
 for key in ['author', 'value-unit-required', 'value-unit-optional',
             'composition', 'ignition-type', 'value-with-uncertainty',
-            'value-without-uncertainty', 'uncertainty'
+            'value-without-uncertainty',
             ]:
     schema.pop(key)
 
@@ -301,3 +301,15 @@ class OurValidator(Validator):
                             value['name'] + '. Name associated with ORCID: ' +
                             ' '.join([given_name, family_name])
                             )
+
+    def _validate_isvalid_composition_amount(self, isvalid_composition_amount, field, value):
+        """Checks for valid specification of composition amount.
+
+        Args:
+            isvalid_composition_amount (bool): flag from schema indicating
+                composition amount to be checked.
+            field (str): 'amount'
+            value (dict): dictionary of composition amount information
+        """
+        if isvalid_composition_amount:
+            
