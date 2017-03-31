@@ -22,6 +22,7 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - sed -i -e "s/\${TRAVIS_PYTHON_VERSION}/"${TRAVIS_PYTHON_VERSION}"/" test-environment.yaml
+    - conda config --append channels conda-forge
     - conda env create -qf test-environment.yaml
     - source activate test-environment
       # Useful for debugging any issues with conda
