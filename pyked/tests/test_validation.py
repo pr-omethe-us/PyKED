@@ -8,10 +8,9 @@ import pkg_resources
 from requests.exceptions import ConnectionError
 
 import pytest
-import ruamel.yaml as yaml
+import yaml
 
 from ..validation import schema, OurValidator, compare_name, property_units
-print(schema)
 
 v = OurValidator(schema)
 
