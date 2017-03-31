@@ -2,8 +2,8 @@ sudo: false
 
 language: python
 python:
- - 2.7
  - 3.5
+ - 3.6
 
 install:
       # We do this conditionally because it saves us some downloading if the
@@ -18,14 +18,13 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
+    - sed -i -e "s/\${TRAVIS_PYTHON_VERSION}/"${TRAVIS_PYTHON_VERSION}"/" test-environment.yaml
+    - conda env create -qf test-environment.yaml
+    - source activate test-environment
       # Useful for debugging any issues with conda
     - conda info -a
-    - conda config --add channels conda-forge
+    - conda list
 
-    - >
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pyyaml pint
-      pylint pandas pytest pytest-cov cerberus beautifulsoup4 simplejson requests
-    - source activate test-environment
     # just until conda-forge recipes available
     - pip install habanero orcid
 
