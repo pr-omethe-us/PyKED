@@ -44,7 +44,7 @@ script:
         cd docs;
         make html SPHINXOPTS="-W";
         cd ..;
-        doctr deploy .;
+        doctr deploy --no-require-master .;
     fi
   - set +e
 
