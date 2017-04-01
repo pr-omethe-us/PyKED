@@ -95,6 +95,9 @@ class TestDataFrameOutput(object):
             'Ignition Delay': Q_,
             'Temperature': Q_,
             'Pressure': Q_,
+            'H2': Q_,
+            'Ar': Q_,
+            'O2': Q_,
         }
         df = pd.read_csv(csv_filename, index_col=0, converters=converters)
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
@@ -112,6 +115,9 @@ class TestDataFrameOutput(object):
             'Ignition Delay': Q_,
             'Temperature': Q_,
             'Pressure': Q_,
+            'H2': Q_,
+            'Ar': Q_,
+            'O2': Q_,
         }
         use_cols = ['Apparatus:Kind', 'Apparatus:Institution', 'Apparatus:Facility',
                     'Reference:Volume', 'Reference:Journal', 'Reference:Doi', 'Reference:Authors',
@@ -134,6 +140,9 @@ class TestDataFrameOutput(object):
             'Ignition Delay': Q_,
             'Temperature': Q_,
             'Pressure': Q_,
+            'H2': Q_,
+            'Ar': Q_,
+            'O2': Q_,
         }
         use_cols = ['Temperature', 'Ignition Delay', 'Pressure']
         df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
@@ -194,26 +203,6 @@ class TestDataPoint(object):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
         assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
-
-    def test_multiple_composition_types(self):
-        properties = self.load_properties('testfile_bad.yaml')
-        with pytest.raises(TypeError):
-            DataPoint(properties[3])
-
-    def test_mole_fraction_bad_sum(self):
-        properties = self.load_properties('testfile_bad.yaml')
-        with pytest.raises(ValueError):
-            DataPoint(properties[0])
-
-    def test_mass_fraction_bad_sum(self):
-        properties = self.load_properties('testfile_bad.yaml')
-        with pytest.raises(ValueError):
-            DataPoint(properties[1])
-
-    def test_mole_percent_bad_sum(self):
-        properties = self.load_properties('testfile_bad.yaml')
-        with pytest.raises(ValueError):
-            DataPoint(properties[2])
 
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')

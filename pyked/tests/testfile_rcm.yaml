@@ -29,18 +29,24 @@ datapoints:
     pressure:
       - 958.0 torr
     composition:
-      - species-name: H2
-        InChI: 1S/H2/h1H
-        mole-fraction: 0.12500
-      - species-name: O2
-        InChI: 1S/O2/c1-2
-        mole-fraction: 0.06250
-      - species-name: N2
-        InChI: 1S/N2/c1-2
-        mole-fraction: 0.18125
-      - species-name: Ar
-        InChI: 1S/Ar
-        mole-fraction: 0.63125
+      kind: mole fraction
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.12500
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.06250
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.18125
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 0.63125
     ignition-type:
       target: pressure
       type: d/dt max

@@ -12,6 +12,7 @@ import re
 import pkg_resources
 import ruamel.yaml as yaml
 
+import numpy as np
 import pint
 from requests.exceptions import HTTPError, ConnectionError
 from cerberus import Validator
@@ -302,14 +303,49 @@ class OurValidator(Validator):
                             ' '.join([given_name, family_name])
                             )
 
-    def _validate_isvalid_composition_amount(self, isvalid_composition_amount, field, value):
-        """Checks for valid specification of composition amount.
+    def _validate_isvalid_composition(self, isvalid_composition, field, value):
+        """Checks for valid specification of composition.
 
         Args:
-            isvalid_composition_amount (bool): flag from schema indicating
-                composition amount to be checked.
-            field (str): 'amount'
-            value (dict): dictionary of composition amount information
+            isvalid_composition (bool): flag from schema indicating
+                composition to be checked.
+            field (str): 'composition'
+            value (dict): dictionary of composition
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_composition': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
         """
-        if isvalid_composition_amount:
-            
+        if isvalid_composition:
+            sum_amount = 0.0
+            for sp in value['species']:
+
+                # protect against user error of not using list
+                if isinstance(sp['amount'], list):
+                    amount = sp['amount'][0]
+                else:
+                    amount = sp['amount']
+                sum_amount += amount
+
+                # Check that amount within bounds, based on kind specified
+                if ((value['kind'] in ['mass fraction', 'mole fraction'] and
+                    (amount < 0.0 or amount > 1.0)) or
+                    (value['kind'] == 'mole percent' and (amount < 0.0 or amount > 100.0))
+                    ):
+                    self._error(field, 'Species ' + sp['species-name'] + ' ' +
+                               value['kind'] + ' is out of bounds.'
+                               )
+
+            # Make sure mole/mass fraction sum to 1
+            if (value['kind'] in ['mass fraction', 'mole fraction'] and
+                not np.allclose(1.0, sum_amount)
+                ):
+                self._error(field, 'Species ' + value['kind'] + 's do not sum to 1.0: '
+                            '{:f}'.format(sum_amount)
+                            )
+            if value['kind'] == 'mole percent' and not np.allclose(100.0, sum_amount):
+                self._error(field, 'Species ' + value['kind'] + 's do not sum to 100.0: '
+                            '{:f}'.format(sum_amount)
+                            )
+
+            # TODO: validate InChI, SMILES, or elemental-composition/atomic-composition

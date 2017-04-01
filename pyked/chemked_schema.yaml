@@ -67,100 +67,103 @@ value-unit-optional: &value-unit-optional
 #
 # Common reference for composition schema
 composition: &composition
-  type: list
-  required: true
-  minlength: 1
+  isvalid_composition: true
+  type: dict
   schema:
-    type: dict
-    required: true
-    schema:
-      species-name:
-        type: string
+    kind:
+      type: string
+      allowed: ['mass fraction', 'mole fraction', 'mole percent']
+    species:
+      type: list
+      required: true
+      minlength: 1
+      schema:
+        type: dict
         required: true
-      InChI:
-        type: string
-        required: true
-        excludes:
-          - atomic-composition
-          - SMILES
-          - elemental-composition
-      SMILES:
-        type: string
-        required: true
-        excludes:
-          - atomic-composition
-          - InChI
-          - elemental-composition
-      atomic-composition:
-        type: list
-        minlength: 1
-        required: true
-        excludes:
-          - InChI
-          - SMILES
-          - elemental-composition
         schema:
-          type: dict
-          schema:
-            element:
-              type: string
-            amount:
-              type: float
-              min: 0.0
-              # TODO: option for float or int?
-      elemental-composition:
-        type: list
-        minlength: 1
-        required: true
-        excludes:
-          - InChI
-          - SMILES
-          - atomic-composition
-        schema:
-          type: dict
-          schema:
-            element:
-              type: string
-            amount:
-              type: float
-              min: 0.0
-              # TODO: option for float or int?
-      amount:
-        isvalid_composition_amount: true
-        required: true
-        type: list
-        oneof:
-          - items:
-            - type: float
-          - items:
-            - type: float
-            - type: dict
+          species-name:
+            type: string
+            required: true
+          InChI:
+            type: string
+            required: true
+            excludes:
+              - atomic-composition
+              - SMILES
+              - elemental-composition
+          SMILES:
+            type: string
+            required: true
+            excludes:
+              - atomic-composition
+              - InChI
+              - elemental-composition
+          atomic-composition:
+            type: list
+            minlength: 1
+            required: true
+            excludes:
+              - InChI
+              - SMILES
+              - elemental-composition
+            schema:
+              type: dict
               schema:
-                uncertainty-type:
-                  required: true
+                element:
                   type: string
-                  allowed:
-                    - absolute
-                    - relative
-                uncertainty:
-                  required: true
+                amount:
                   type: float
-                  excludes:
-                    - upper-uncertainty
-                    - lower-uncertainty
-                upper-uncertainty:
-                  required: true
+                  min: 0.0
+                  # TODO: option for float or int?
+          elemental-composition:
+            type: list
+            minlength: 1
+            required: true
+            excludes:
+              - InChI
+              - SMILES
+              - atomic-composition
+            schema:
+              type: dict
+              schema:
+                element:
+                  type: string
+                amount:
                   type: float
-                  excludes: uncertainty
-                  dependencies: lower-uncertainty
-                lower-uncertainty:
-                  required: true
-                  type: float
-                  excludes: uncertainty
-                  dependencies: upper-uncertainty
-      kind:
-        type: string
-        allowed: ['mass fraction', 'mole fraction', 'mole percent']
+                  min: 0.0
+                  # TODO: option for float or int?
+          amount:
+            required: true
+            type: list
+            oneof:
+              - items:
+                - type: float
+              - items:
+                - type: float
+                - type: dict
+                  schema:
+                    uncertainty-type:
+                      required: true
+                      type: string
+                      allowed:
+                        - absolute
+                        - relative
+                    uncertainty:
+                      required: true
+                      type: float
+                      excludes:
+                        - upper-uncertainty
+                        - lower-uncertainty
+                    upper-uncertainty:
+                      required: true
+                      type: float
+                      excludes: uncertainty
+                      dependencies: lower-uncertainty
+                    lower-uncertainty:
+                      required: true
+                      type: float
+                      excludes: uncertainty
+                      dependencies: upper-uncertainty
 #
 # Common reference for ignition-type
 ignition-type: &ignition-type

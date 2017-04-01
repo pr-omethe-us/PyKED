@@ -25,15 +25,20 @@ common-properties:
   pressure: &pres
     - 220 kilopascal
   composition: &comp
-    - species-name: H2
-      InChI: 1S/H2/h1H
-      mole-fraction: 0.00444
-    - species-name: O2
-      InChI: 1S/O2/c1-2
-      mole-fraction: 0.00556
-    - species-name: Ar
-      InChI: 1S/Ar
-      mole-fraction: 0.99
+    kind: mole fraction
+    species:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.00444
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        amount:
+          - 0.00556
+      - species-name: Ar
+        InChI: 1S/Ar
+        amount:
+          - 0.99
   ignition-type: &ign
     target: pressure
     type: d/dt max

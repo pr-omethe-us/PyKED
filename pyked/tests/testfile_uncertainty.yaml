@@ -21,28 +21,27 @@ datapoints:
     pressure:
       - 220 kilopascal
     composition:
-      - species-name: H2
-        InChI: 1S/H2/h1H
-        kind: mole percent
-        amount:
-          - 0.444
-          - uncertainty-type: relative
-            uncertainty: 0.01
-      - species-name: O2
-        InChI: 1S/O2/c1-2
-        kind: mole percent
-        amount:
-          - 0.556
-          - uncertainty-type: absolute
-            uncertainty: 0.002
-      - species-name: Ar
-        InChI: 1S/Ar
-        kind: mole percent
-        amount:
-          - 99.0
-          - uncertainty-type: absolute
-            upper-uncertainty: 1.0
-            lower-uncertainty: 0.2
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+            - uncertainty-type: relative
+              uncertainty: 0.01
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+            - uncertainty-type: absolute
+              uncertainty: 0.002
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
+            - uncertainty-type: absolute
+              upper-uncertainty: 1.0
+              lower-uncertainty: 0.2
     ignition-type:
       target: pressure
       type: d/dt max
@@ -55,21 +54,20 @@ datapoints:
     pressure:
       - 220 kilopascal
     composition:
-      - species-name: H2
-        InChI: 1S/H2/h1H
-        amount:
-          - 0.444
-        kind: mole percent
-      - species-name: O2
-        InChI: 1S/O2/c1-2
-        amount:
-          - 0.556
-        kind: mole percent
-      - species-name: Ar
-        InChI: 1S/Ar
-        amount:
-          - 99.0
-        kind: mole percent
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
     ignition-type:
       target: pressure
       type: d/dt max
@@ -83,21 +81,20 @@ datapoints:
     pressure:
       - 220 kilopascal
     composition:
-      - species-name: H2
-        InChI: 1S/H2/h1H
-        amount:
-          - 0.444
-        kind: mole percent
-      - species-name: O2
-        InChI: 1S/O2/c1-2
-        amount:
-          - 0.556
-        kind: mole percent
-      - species-name: Ar
-        InChI: 1S/Ar
-        amount:
-          - 99.0
-        kind: mole percent
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
     ignition-type:
       target: pressure
       type: d/dt max
@@ -111,21 +108,20 @@ datapoints:
     pressure:
       - 220 kilopascal
     composition:
-      - species-name: H2
-        InChI: 1S/H2/h1H
-        amount:
-          - 0.444
-        kind: mole percent
-      - species-name: O2
-        InChI: 1S/O2/c1-2
-        amount:
-          - 0.556
-        kind: mole percent
-      - species-name: Ar
-        InChI: 1S/Ar
-        amount:
-          - 99.0
-        kind: mole percent
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
     ignition-type:
       target: pressure
       type: d/dt max
