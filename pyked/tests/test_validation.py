@@ -53,6 +53,7 @@ class TestCompareName(object):
         ('First Middle Second', 'Last', 'F. M. S. Last'),
         ('F. M. S.', 'Lastone Lasttwo', 'F. M. S. Lastone Lasttwo'),
         ('First Middle Second', 'Lastone Lasttwo', 'First Middle Second Lastone Lasttwo'),
+        ('F. M. S.', 'Lastone-Lasttwo', 'F. M. S. Lastone-Lasttwo'),
     ])
     def test_matching_names(self, given, family, question_name):
         """ Ensure that all tested names compare correctly.

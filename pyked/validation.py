@@ -92,7 +92,7 @@ def compare_name(given_name, family_name, question_name):
 
     # split names by , <space> - .
     given_name = list(filter(None, re.split("[, \-.]+", given_name)))
-    num_family_names = len(list(filter(None, re.split("[, \-.]+", family_name))))
+    num_family_names = len(list(filter(None, re.split("[, .]+", family_name))))
 
     # split name in question by , <space> - .
     name_split = list(filter(None, re.split("[, \-.]+", question_name)))
@@ -120,7 +120,14 @@ def compare_name(given_name, family_name, question_name):
         given_name[0] = given_name[0][0]
         first_name[0] = name_split[0][0]
 
-    return given_name == first_name and family_name == ' '.join(name_split[-num_family_names:])
+    # Hyphenated last name may need to be reconnected
+    if num_family_names == 1 and '-' in family_name:
+        num_hyphen = family_name.count('-')
+        family_name_compare = '-'.join(name_split[-(num_hyphen + 1):])
+    else:
+        family_name_compare = ' '.join(name_split[-num_family_names:])
+
+    return given_name == first_name and family_name == family_name_compare
 
 
 class OurValidator(Validator):
