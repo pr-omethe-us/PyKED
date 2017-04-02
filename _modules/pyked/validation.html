@@ -57,6 +57,7 @@
 <span class="kn">import</span> <span class="nn">pkg_resources</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pint</span>
 <span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="k">import</span> <span class="n">HTTPError</span><span class="p">,</span> <span class="ne">ConnectionError</span>
 <span class="kn">from</span> <span class="nn">cerberus</span> <span class="k">import</span> <span class="n">Validator</span>
@@ -80,7 +81,8 @@
 <span class="c1"># These top-level keys in the schema serve as references for lower-level keys.</span>
 <span class="c1"># They are removed to prevent conflicts due to required variables, etc.</span>
 <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;value-unit-required&#39;</span><span class="p">,</span> <span class="s1">&#39;value-unit-optional&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;composition&#39;</span><span class="p">,</span> <span class="s1">&#39;ignition-type&#39;</span>
+            <span class="s1">&#39;composition&#39;</span><span class="p">,</span> <span class="s1">&#39;ignition-type&#39;</span><span class="p">,</span> <span class="s1">&#39;value-with-uncertainty&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;value-without-uncertainty&#39;</span><span class="p">,</span>
             <span class="p">]:</span>
     <span class="k">del</span> <span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
@@ -168,6 +170,10 @@
 <span class="sd">            isvalid_unit (`bool`): flag from schema indicating units to be checked.</span>
 <span class="sd">            field (`str`): property associated with units in question.</span>
 <span class="sd">            value (`dict`): dictionary of values from file associated with this property.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_unit&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">quantity</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
@@ -184,8 +190,12 @@
 <span class="sd">            isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.</span>
 <span class="sd">            field (`str`): property associated with quantity in question.</span>
 <span class="sd">            value (`str`): string of the value of the quantity</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_quantity&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">quantity</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -198,6 +208,34 @@
                         <span class="s1">&#39;with &#39;</span> <span class="o">+</span> <span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
                         <span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_validate_isvalid_uncertainty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_uncertainty</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units with uncertainty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_uncertainty (`bool`): flag from schema indicating uncertainty to be checked</span>
+<span class="sd">            field (`str`): property associated with the quantity in question.</span>
+<span class="sd">            value (`list`): list with the string of the value of the quantity and a dictionary of</span>
+<span class="sd">                the uncertainty</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_uncertainty&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># This len check is necessary for reasons that aren&#39;t quite clear to me</span>
+        <span class="c1"># Cerberus calls this validation method even when lists have only one element</span>
+        <span class="c1"># and should therefore be validated only by isvalid_quantity</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">]])</span>
+
     <span class="k">def</span> <span class="nf">_validate_isvalid_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_reference</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks valid reference metadata using DOI (if present).</span>
 
@@ -208,6 +246,11 @@
 <span class="sd">            isvalid_reference (`bool`): flag from schema indicating reference to be checked.</span>
 <span class="sd">            field (`str`): &#39;reference&#39;</span>
 <span class="sd">            value (`dict`): dictionary of reference metadata.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_reference&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">isvalid_reference</span> <span class="ow">and</span> <span class="s1">&#39;doi&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -293,6 +336,11 @@
 <span class="sd">            isvalid_orcid (`bool`): flag from schema indicating ORCID to be checked.</span>
 <span class="sd">            field (`str`): &#39;author&#39;</span>
 <span class="sd">            value (`dict`): dictionary of author metadata.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_orcid&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">isvalid_orcid</span> <span class="ow">and</span> <span class="s1">&#39;ORCID&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -320,7 +368,54 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Name and ORCID do not match. Name supplied: &#39;</span> <span class="o">+</span>
                             <span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;. Name associated with ORCID: &#39;</span> <span class="o">+</span>
                             <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">given_name</span><span class="p">,</span> <span class="n">family_name</span><span class="p">])</span>
+                            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_isvalid_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_composition</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks for valid specification of composition.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_composition (bool): flag from schema indicating</span>
+<span class="sd">                composition to be checked.</span>
+<span class="sd">            field (str): &#39;composition&#39;</span>
+<span class="sd">            value (dict): dictionary of composition</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_composition&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">isvalid_composition</span><span class="p">:</span>
+            <span class="n">sum_amount</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]:</span>
+
+                <span class="c1"># protect against user error of not using list</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
+                <span class="n">sum_amount</span> <span class="o">+=</span> <span class="n">amount</span>
+
+                <span class="c1"># Check that amount within bounds, based on kind specified</span>
+                <span class="k">if</span> <span class="p">((</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mass fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole fraction&#39;</span><span class="p">]</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">))</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mole percent&#39;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="mf">100.0</span><span class="p">))</span>
+                    <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                               <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; is out of bounds.&#39;</span>
+                               <span class="p">)</span>
+
+            <span class="c1"># Make sure mole/mass fraction sum to 1</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mass fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole fraction&#39;</span><span class="p">]</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">)</span>
+                <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;s do not sum to 1.0: &#39;</span>
+                            <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
+                            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mole percent&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;s do not sum to 100.0: &#39;</span>
+                            <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
                             <span class="p">)</span></div>
+
+            <span class="c1"># TODO: validate InChI, SMILES, or elemental-composition/atomic-composition</span>
 </pre></div>
 
           </div>
