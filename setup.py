@@ -1,6 +1,3 @@
-    url='https://github.com/pr-omethe-us/PyKED',
-    packages=['pyked'],
-    package_dir={'pyked': 'pyked'},
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -30,19 +27,20 @@ setup(
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
     url='https://github.com/pr-omethe-us/PyKED',
-    packages=['pyked'],
+    packages=['pyked', 'pyked.tests'],
     package_dir={'pyked': 'pyked'},
     include_package_data=True,
     package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
 
-    install_requires=['pyyaml>=3.12,<4.0',
-                      'cerberus>=1.0.0',
-                      'pint>=0.7.2',
-                      'numpy>=1.11.0',
-                      'habanero>=0.2.6',
-                      'orcid>=0.7.0',
-                      'uncertainties>=3.0.1'
-                      ],
+    install_requires=[
+        'pyyaml>=3.12,<4.0',
+        'cerberus>=1.0.0',
+        'pint>=0.7.2',
+        'numpy>=1.11.0',
+        'habanero>=0.2.6',
+        'orcid>=0.7.0',
+        'uncertainties>=3.0.1',
+    ],
 
     license='BSD-3-Clause',
     zip_safe=False,
@@ -52,16 +50,14 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        ],
+        'Programming Language :: Python :: 3.6',
+    ],
 
     test_suite='tests',
-    tests_require=['pytest>=3.0.1',
-                   'pytest-cov',
-                   ]
+    tests_require=[
+        'pytest>=3.0.1',
+        'pytest-cov',
+    ],
 )
