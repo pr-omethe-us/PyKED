@@ -12,59 +12,10 @@ experiment-type: ignition delay
 apparatus:
   kind: shock tube
 datapoints:
-  # Mole fractions don't sum to 1
   - temperature:
       - 1164.48 kelvin
-    ignition-delay:
-      - 471.54 us
-    pressure:
-      - 220 kilopascal
-    composition:
-      kind: mole fraction
-      species:
-        - species-name: H2
-          InChI: 1S/H2/h1H
-          amount:
-            - 0.1
-        - species-name: O2
-          InChI: 1S/O2/c1-2
-          amount:
-            - 0.1
-        - species-name: Ar
-          InChI: 1S/Ar
-          amount:
-            - 0.1
-    ignition-type:
-      target: pressure
-      type: d/dt max
-  # Mass fractions don't sum to 1
-  - temperature:
-      - 1164.48 kelvin
-    ignition-delay:
-      - 471.54 us
-    pressure:
-      - 220 kilopascal
-    composition:
-      kind: mass fraction
-      species:
-        - species-name: H2
-          InChI: 1S/H2/h1H
-          amount:
-            - 0.1
-        - species-name: O2
-          InChI: 1S/O2/c1-2
-          amount:
-            - 0.1
-        - species-name: Ar
-          InChI: 1S/Ar
-          amount:
-            - 0.1
-    ignition-type:
-      target: pressure
-      type: d/dt max
-  # Mole percents don't sum to 100
-  - temperature:
-      - 1164.48 kelvin
+      - uncertainty-type: absolute
+        uncertainty: 10 kelvin
     ignition-delay:
       - 471.54 us
     pressure:
@@ -75,40 +26,102 @@ datapoints:
         - species-name: H2
           InChI: 1S/H2/h1H
           amount:
-            - 10.0
+            - 0.444
+            - uncertainty-type: relative
+              uncertainty: 0.01
         - species-name: O2
           InChI: 1S/O2/c1-2
           amount:
-            - 10.0
+            - 0.556
+            - uncertainty-type: absolute
+              uncertainty: 0.002
         - species-name: Ar
           InChI: 1S/Ar
           amount:
-            - 10.0
+            - 99.0
+            - uncertainty-type: absolute
+              upper-uncertainty: 1.0
+              lower-uncertainty: 0.2
     ignition-type:
       target: pressure
       type: d/dt max
-  # Mulitiple types of quantity specification
   - temperature:
       - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+      - uncertainty-type: relative
+        uncertainty: 0.1
+    pressure:
+      - 220 kilopascal
+    composition:
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  - temperature:
+      - 1164.48 kelvin
+      - uncertainty-type: absolute
+        upper-uncertainty: 10 kelvin
+        lower-uncertainty: 5 kelvin
     ignition-delay:
       - 471.54 us
     pressure:
       - 220 kilopascal
     composition:
-      kind: mole fraction
+      kind: mole percent
       species:
         - species-name: H2
           InChI: 1S/H2/h1H
           amount:
-            - 10.0
+            - 0.444
         - species-name: O2
           InChI: 1S/O2/c1-2
           amount:
-            - 0.1
+            - 0.556
         - species-name: Ar
           InChI: 1S/Ar
           amount:
-            - 0.1
+            - 99.0
+    ignition-type:
+      target: pressure
+      type: d/dt max
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+      - uncertainty-type: relative
+        upper-uncertainty: 0.1
+        lower-uncertainty: 0.05
+    pressure:
+      - 220 kilopascal
+    composition:
+      kind: mole percent
+      species:
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.444
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.556
+        - species-name: Ar
+          InChI: 1S/Ar
+          amount:
+            - 99.0
     ignition-type:
       target: pressure
       type: d/dt max

@@ -12,6 +12,7 @@ import re
 import pkg_resources
 import yaml
 
+import numpy as np
 import pint
 from requests.exceptions import HTTPError, ConnectionError
 from cerberus import Validator
@@ -35,7 +36,8 @@ with open(schema_file, 'r') as f:
 # These top-level keys in the schema serve as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
 for key in ['author', 'value-unit-required', 'value-unit-optional',
-            'composition', 'ignition-type'
+            'composition', 'ignition-type', 'value-with-uncertainty',
+            'value-without-uncertainty',
             ]:
     del schema[key]
 
@@ -140,7 +142,7 @@ class OurValidator(Validator):
             field (`str`): property associated with quantity in question.
             value (`str`): string of the value of the quantity
         """
-        quantity = Q_(value)
+        quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
 
         try:
@@ -152,6 +154,30 @@ class OurValidator(Validator):
             self._error(field, 'incompatible units; should be consistent '
                         'with ' + property_units[field]
                         )
+
+    def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
+        """Checks for valid given value and appropriate units with uncertainty.
+
+        Args:
+            isvalid_uncertainty (bool): flag from schema indicating uncertainty to be checked
+            field (str): property associated with the quantity in question.
+            value (list): list with the string of the value of the quantity and a dictionary of
+                the uncertainty
+        """
+        self._validate_isvalid_quantity(True, field, value)
+
+        # This len check is necessary for reasons that aren't quite clear to me
+        # Cerberus calls this validation method even when lists have only one element
+        # and should therefore be validated only by isvalid_quantity
+        if len(value) > 1 and value[1]['uncertainty-type'] != 'relative':
+            if value[1].get('uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
+
+            if value[1].get('upper-uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
+
+            if value[1].get('lower-uncertainty') is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
@@ -276,3 +302,50 @@ class OurValidator(Validator):
                             value['name'] + '. Name associated with ORCID: ' +
                             ' '.join([given_name, family_name])
                             )
+
+    def _validate_isvalid_composition(self, isvalid_composition, field, value):
+        """Checks for valid specification of composition.
+
+        Args:
+            isvalid_composition (bool): flag from schema indicating
+                composition to be checked.
+            field (str): 'composition'
+            value (dict): dictionary of composition
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_composition': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+        """
+        if isvalid_composition:
+            sum_amount = 0.0
+            for sp in value['species']:
+
+                # protect against user error of not using list
+                if isinstance(sp['amount'], list):
+                    amount = sp['amount'][0]
+                else:
+                    amount = sp['amount']
+                sum_amount += amount
+
+                # Check that amount within bounds, based on kind specified
+                if ((value['kind'] in ['mass fraction', 'mole fraction'] and
+                    (amount < 0.0 or amount > 1.0)) or
+                    (value['kind'] == 'mole percent' and (amount < 0.0 or amount > 100.0))
+                    ):
+                    self._error(field, 'Species ' + sp['species-name'] + ' ' +
+                               value['kind'] + ' is out of bounds.'
+                               )
+
+            # Make sure mole/mass fraction sum to 1
+            if (value['kind'] in ['mass fraction', 'mole fraction'] and
+                not np.allclose(1.0, sum_amount)
+                ):
+                self._error(field, 'Species ' + value['kind'] + 's do not sum to 1.0: '
+                            '{:f}'.format(sum_amount)
+                            )
+            if value['kind'] == 'mole percent' and not np.allclose(100.0, sum_amount):
+                self._error(field, 'Species ' + value['kind'] + 's do not sum to 100.0: '
+                            '{:f}'.format(sum_amount)
+                            )
+
+            # TODO: validate InChI, SMILES, or elemental-composition/atomic-composition

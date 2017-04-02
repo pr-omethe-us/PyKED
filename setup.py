@@ -1,3 +1,6 @@
+    url='https://github.com/pr-omethe-us/PyKED',
+    packages=['pyked'],
+    package_dir={'pyked': 'pyked'},
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -26,8 +29,9 @@ setup(
     long_description=readme + '\n\n' + changelog,
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
-    url='https://github.com/Niemeyer-Research-Group/PyKED',
-    packages=['pyked', 'pyked.tests'],
+    url='https://github.com/pr-omethe-us/PyKED',
+    packages=['pyked'],
+    package_dir={'pyked': 'pyked'},
     include_package_data=True,
     package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
 
@@ -37,6 +41,7 @@ setup(
                       'numpy>=1.11.0',
                       'habanero>=0.2.6',
                       'orcid>=0.7.0',
+                      'uncertainties>=3.0.1'
                       ],
 
     license='BSD-3-Clause',

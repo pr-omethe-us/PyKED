@@ -5,6 +5,8 @@ Main ChemKED module
 from __future__ import print_function
 
 from collections import namedtuple
+from warnings import warn
+from copy import deepcopy
 
 import numpy as np
 
@@ -202,7 +204,7 @@ class ChemKED(object):
                 if col in species_list:
                     for s in d.composition:
                         if col == s['species-name']:
-                            row.append(s[d.composition_type])
+                            row.append(s['amount'])
                 elif 'reference' in col or 'apparatus' in col:
                     split_col = col.split(':')
                     if split_col[1] == 'authors':
@@ -248,27 +250,98 @@ class DataPoint(object):
                      'compression-time'
                      ]:
             if prop in properties:
-                quant = Q_(properties[prop])
+                quant = Q_(properties[prop][0])
+                if len(properties[prop]) > 1:
+                    unc = properties[prop][1]
+                    uncertainty = unc.get('uncertainty', False)
+                    upper_uncertainty = unc.get('upper-uncertainty', False)
+                    lower_uncertainty = unc.get('lower-uncertainty', False)
+                    uncertainty_type = unc.get('uncertainty-type')
+                    if uncertainty_type == 'relative':
+                        if uncertainty:
+                            quant = quant.plus_minus(float(uncertainty), relative=True)
+                        elif upper_uncertainty or lower_uncertainty:
+                            warn('Asymmetric uncertainties are not supported. The '
+                                 'maximum of lower-uncertainty and upper-uncertainty '
+                                 'has been used as the symmetric uncertainty.')
+                            uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
+                            quant = quant.plus_minus(uncertainty, relative=True)
+                        else:
+                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                             '"lower-uncertainty" need to be specified.')
+                    elif uncertainty_type == 'absolute':
+                        if uncertainty:
+                            uncertainty = Q_(uncertainty)
+                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                        elif upper_uncertainty or lower_uncertainty:
+                            warn('Asymmetric uncertainties are not supported. The '
+                                 'maximum of lower-uncertainty and upper-uncertainty '
+                                 'has been used as the symmetric uncertainty.')
+                            uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                        else:
+                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                             '"lower-uncertainty" need to be specified.')
+                    else:
+                        raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+
                 setattr(self, prop.replace('-', '_'), quant)
             else:
                 setattr(self, prop.replace('-', '_'), None)
 
-        self.composition = properties['composition']
-        self.composition_type = set([q for q in ['mole-fraction', 'mass-fraction', 'mole-percent']
-                                     for species in self.composition if q in species])
-        if len(self.composition_type) > 1:
-            raise TypeError('More than one of mole-fraction, mass-fraction, or mole-percent '
-                            'were specified in the data point.\n{}'.format(self.composition))
-        self.composition_type = self.composition_type.pop()
-        comp_sum = np.sum([species.get(self.composition_type) for species in self.composition])
-        if self.composition_type == 'mole-percent':
+        self.composition_type = properties['composition']['kind']
+        composition = deepcopy(properties['composition']['species'])
+        comp_sum = np.sum([species.get('amount')[0] for species in composition])
+
+        if self.composition_type == 'mole percent':
             if not np.isclose(comp_sum, 100.0):
-                raise ValueError('mole-percent for the data point do not sum to '
-                                 '100.0.\n{}'.format(self.composition))
+                raise ValueError('mole percent for the data point do not sum to '
+                                 '100.0.\n{}'.format(composition)
+                                 )
         else:
             if not np.isclose(comp_sum, 1.0):
                 raise ValueError('{} for the data point do not sum to '
-                                 '1.0.\n{}'.format(self.composition_type, self.composition))
+                                 '1.0.\n{}'.format(self.composition_type, composition)
+                                 )
+
+        for idx, species in enumerate(composition):
+            quant = Q_(species['amount'][0])
+            if len(species['amount']) > 1:
+                unc = species['amount'][1]
+                uncertainty = unc.get('uncertainty', False)
+                upper_uncertainty = unc.get('upper-uncertainty', False)
+                lower_uncertainty = unc.get('lower-uncertainty', False)
+                uncertainty_type = unc.get('uncertainty-type')
+                if uncertainty_type == 'relative':
+                    if uncertainty:
+                        quant = quant.plus_minus(float(uncertainty), relative=True)
+                    elif upper_uncertainty or lower_uncertainty:
+                        warn('Asymmetric uncertainties are not supported. The '
+                             'maximum of lower-uncertainty and upper-uncertainty '
+                             'has been used as the symmetric uncertainty.')
+                        uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
+                        quant = quant.plus_minus(uncertainty, relative=True)
+                    else:
+                        raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                         '"lower-uncertainty" need to be specified.')
+                elif uncertainty_type == 'absolute':
+                    if uncertainty:
+                        uncertainty = Q_(uncertainty)
+                        quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                    elif upper_uncertainty or lower_uncertainty:
+                        warn('Asymmetric uncertainties are not supported. The '
+                             'maximum of lower-uncertainty and upper-uncertainty '
+                             'has been used as the symmetric uncertainty.')
+                        uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                        quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                    else:
+                        raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                         '"lower-uncertainty" need to be specified.')
+                else:
+                    raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+
+            composition[idx]['amount'] = quant
+        setattr(self, 'composition', composition)
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
 
@@ -293,12 +366,14 @@ class DataPoint(object):
         Returns:
             `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
-        if self.composition_type == 'mole-fraction':
-            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-fraction']) for c in
-                              self.composition])
-        elif self.composition_type == 'mole-percent':
-            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mole-percent']/100.0) for
-                              c in self.composition])
+        if self.composition_type == 'mole fraction':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'],
+                             c['amount'].magnitude) for c in self.composition]
+                             )
+        elif self.composition_type == 'mole percent':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'],
+                             c['amount'].magnitude/100.0) for c in self.composition]
+                             )
         else:
             raise ValueError('Cannot get mole fractions from the given composition.\n'
                              '{}'.format(self.composition))
@@ -309,9 +384,11 @@ class DataPoint(object):
         Returns:
             `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
         """
-        if self.composition_type == 'mass-fraction':
-            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'], c['mass-fraction']) for c in
-                              self.composition])
+        if self.composition_type == 'mass fraction':
+            return ', '.join(['{!s}: {:.4e}'.format(c['species-name'],
+                             c['amount'].magnitude) for c in self.composition]
+                             )
         else:
             raise ValueError('Cannot get mass fractions from the given composition.\n'
-                             '{}'.format(self.composition))
+                             '{}'.format(self.composition)
+                             )

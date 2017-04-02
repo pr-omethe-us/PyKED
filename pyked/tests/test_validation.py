@@ -116,6 +116,7 @@ class TestValidator(object):
 
         def guard(*args, **kwargs):
             raise ConnectionError("No internet")
+
         socket.socket = guard
         yield
         socket.socket = old_socket
@@ -257,6 +258,7 @@ class TestValidator(object):
 
     @pytest.mark.parametrize("properties", [
         'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml', 'testfile_required.yaml',
+        'testfile_uncertainty.yaml'
     ], indirect=['properties'])
     def test_valid_yaml(self, properties):
         """Ensure ChemKED YAML is validated
@@ -323,18 +325,18 @@ class TestValidator(object):
     def test_incompatible_quantity(self, quantity, unit):
         """Ensure that incompatible quantities are validation errors
         """
-        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        quant_schema = {quantity: {'type': 'list', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: '-999 {}'.format(unit)})
+        v.validate({quantity: ['-999 {}'.format(unit)]})
         assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_dimensionality_error_quantity(self, quantity, unit):
         """Ensure that dimensionality errors are validation errors
         """
-        quant_schema = {quantity: {'type': 'string', 'isvalid_quantity': True}}
+        quant_schema = {quantity: {'type': 'list', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
-        v.validate({quantity: '1.0 {}'.format('candela*ampere')})
+        v.validate({quantity: ['1.0 {}'.format('candela*ampere')]})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
 
     @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
@@ -345,3 +347,203 @@ class TestValidator(object):
         v = OurValidator(unit_schema)
         v.validate({quantity: {'units': 'candela*ampere'}})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mole_fraction_bad_sum(self, properties):
+        """Ensure mole fractions that do not sum to 1.0 raise error
+        """
+        v.validate(properties)
+        assert ('Species mole fractions do not sum to 1.0: 0.300000' in
+                v.errors['datapoints'][0][0][0]['composition']
+                )
+
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mass_fraction_bad_sum(self, properties):
+        """Ensure mass fractions that do not sum to 1.0 raise validation error
+        """
+        v.validate(properties)
+        assert ('Species mass fractions do not sum to 1.0: 0.300000' in
+                v.errors['datapoints'][0][1][0]['composition']
+                )
+
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mole_percent_bad_sum(self, properties):
+        """Ensure mole percent that do not sum to 100. raise validation error
+        """
+        v.validate(properties)
+        assert ('Species mole percents do not sum to 100.0: 30.000000' in
+                v.errors['datapoints'][0][2][0]['composition']
+                )
+
+    def test_composition_bounded(self):
+        """Ensure that composition bounds errors fail validation.
+        """
+        v.validate({'datapoints': [{'composition':
+            {'kind': 'mass fraction',
+             'species': [{'species-name': 'A', 'amount': [1.2]},
+                         {'species-name': 'B', 'amount': [-0.1]}]
+             }}]}, update=True)
+        errors = v.errors['datapoints'][0][0][0]['composition']
+        assert 'Species A mass fraction is out of bounds.' in errors
+        assert 'Species B mass fraction is out of bounds.' in errors
+        assert 'Species mass fractions do not sum to 1.0: 1.100000' in errors
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_relative_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with relative uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'relative', 'uncertainty': 0.1}]})
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with absolute uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'absolute',
+                                       'uncertainty': '0.1 {}'.format(unit)}]})
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_asym_uncertainty_validation(self, quantity, unit):
+        """Ensure that quantites with absolute asymmetric uncertainty are validated properly.
+        """
+        uncertainty_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(uncertainty_schema)
+        assert v.validate({quantity: ['1.0 {}'.format(unit),
+                                      {'uncertainty-type': 'absolute',
+                                       'upper-uncertainty': '0.1 {}'.format(unit),
+                                       'lower-uncertainty': '0.1 {}'.format(unit)}]})
+
+    def test_missing_lower_upper_uncertainty(self):
+        """Test that having a single asymmetric uncertainty fails validation.
+
+        When https://github.com/nicolaiarocci/cerberus/issues/278 is resolved,
+        the errors that result from this validation should be checked to make
+        sure that the missing values are caught. For now, we just check that
+        the document doesn't validate.
+        """
+        result = v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                             {'uncertainty-type': 'relative',
+                                                              'upper-uncertainty': 0.1}]}]},
+                            update=True)
+        assert not result
+
+        result = v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                             {'uncertainty-type': 'relative',
+                                                              'lower-uncertainty': 0.1}]}]},
+                            update=True)
+        assert not result
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_sym_uncertainty(self, quantity, unit):
+        """Ensure that incompatible quantities are validation errors for symmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'uncertainty': '-999 {}'.format(unit)}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_sym_uncertainty(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors for symmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'uncertainty': '1 {}'.format('candela*ampere')}]})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_incompatible_asym_uncertainty(self, quantity, unit):
+        """Ensure that incompatible quantities are validation errors for asymmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'upper-uncertainty': '-999 {}'.format(unit),
+                                'lower-uncertainty': '-999 {}'.format(unit)}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'value must be greater than 0.0 {}'.format(unit)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_asym_uncertainty(self, quantity, unit):
+        """Ensure that dimensionality errors are validation errors for asymmetric uncertainties
+        """
+        quant_schema = {quantity: {'type': 'list', 'isvalid_uncertainty': True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: ['999 {}'.format(unit),
+                               {'uncertainty-type': 'absolute',
+                                'upper-uncertainty': '1 {}'.format('candela*ampere'),
+                                'lower-uncertainty': '1 {}'.format('candela*ampere')}
+                               ]
+                    })
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    def test_composition_relative_uncertainty_validation(self):
+        """Ensure composition with relative uncertainty are validated properly.
+        """
+        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
+                                                             'species': [{'amount': [1.0,
+                                                             {'uncertainty-type': 'relative',
+                                                              'uncertainty': 0.1}]}]
+                                                             }}]
+                             }, update=True)
+        assert result
+
+    def test_composition_absolute_uncertainty_validation(self):
+        """Ensure that quantites with absolute uncertainty are validated properly.
+        """
+        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
+                                                             'species': [{'amount': [1.0,
+                                                             {'uncertainty-type': 'absolute',
+                                                              'uncertainty': 0.1}]}]
+                                                             }}]
+                             }, update=True)
+        assert result
+
+    def test_composition_absolute_asym_uncertainty_validation(self):
+        """Ensure composition values with absolute asymmetric uncertainty are validated properly.
+        """
+        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
+                                                             'species': [{'amount': [1.0,
+                                                             {'uncertainty-type': 'relative',
+                                                              'upper-uncertainty': 0.1,
+                                                              'lower-uncertainty': 0.1}]}]
+                                                             }}]
+                             }, update=True)
+        assert result
+
+    def test_composition_missing_lower_upper_uncertainty(self):
+        """Test that having a single asymmetric uncertainty fails validation.
+
+        When https://github.com/nicolaiarocci/cerberus/issues/278 is resolved,
+        the errors that result from this validation should be checked to make
+        sure that the missing values are caught. For now, we just check that
+        the document doesn't validate.
+        """
+        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
+                                                             'species': [{'amount': [1.0,
+                                                             {'uncertainty-type': 'relative',
+                                                              'upper-uncertainty': 0.01}]}]
+                                                             }}]
+                             }, update=True)
+        assert not result
+
+        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
+                                                             'species': [{'amount': [1.0,
+                                                             {'uncertainty-type': 'relative',
+                                                              'lower-uncertainty': 0.01}]}]
+                                                             }}]
+                             }, update=True)
+        assert not result
