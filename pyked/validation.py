@@ -330,36 +330,34 @@ class OurValidator(Validator):
             {'isvalid_composition': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'dict'}}
         """
-        if isvalid_composition:
-            sum_amount = 0.0
-            for sp in value['species']:
+        sum_amount = 0.0
+        if value['kind'] in ['mass fraction', 'mole fraction']:
+            low_lim = 0.0
+            up_lim = 1.0
+            total_amount = 1.0
+        elif value['kind'] in ['mole percent']:
+            low_lim = 0.0
+            up_lim = 100.0
+            total_amount = 100.0
 
-                # protect against user error of not using list
-                if isinstance(sp['amount'], list):
-                    amount = sp['amount'][0]
-                else:
-                    amount = sp['amount']
-                sum_amount += amount
+        for sp in value['species']:
+            amount = sp['amount'][0]
+            sum_amount += amount
 
-                # Check that amount within bounds, based on kind specified
-                if ((value['kind'] in ['mass fraction', 'mole fraction'] and
-                    (amount < 0.0 or amount > 1.0)) or
-                    (value['kind'] == 'mole percent' and (amount < 0.0 or amount > 100.0))
-                    ):
-                    self._error(field, 'Species ' + sp['species-name'] + ' ' +
-                               value['kind'] + ' is out of bounds.'
-                               )
-
-            # Make sure mole/mass fraction sum to 1
-            if (value['kind'] in ['mass fraction', 'mole fraction'] and
-                not np.allclose(1.0, sum_amount)
-                ):
-                self._error(field, 'Species ' + value['kind'] + 's do not sum to 1.0: '
-                            '{:f}'.format(sum_amount)
+            # Check that amount within bounds, based on kind specified
+            if amount < low_lim:
+                self._error(field, 'Species ' + sp['species-name'] + ' ' +
+                            value['kind'] + ' must be greater than {:.1f}'.format(low_lim)
                             )
-            if value['kind'] == 'mole percent' and not np.allclose(100.0, sum_amount):
-                self._error(field, 'Species ' + value['kind'] + 's do not sum to 100.0: '
-                            '{:f}'.format(sum_amount)
+            elif amount > up_lim:
+                self._error(field, 'Species ' + sp['species-name'] + ' ' +
+                            value['kind'] + ' must be less than {:.1f}'.format(up_lim)
                             )
 
-            # TODO: validate InChI, SMILES, or elemental-composition/atomic-composition
+        # Make sure mole/mass fraction sum to 1
+        if not np.isclose(total_amount, sum_amount):
+            self._error(field, 'Species ' + value['kind'] +
+                        's do not sum to {:.1f}: '.format(total_amount) +
+                        '{:f}'.format(sum_amount)
+                        )
+        # TODO: validate InChI, SMILES, or elemental-composition/atomic-composition

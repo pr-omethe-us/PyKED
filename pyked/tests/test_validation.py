@@ -384,8 +384,8 @@ class TestValidator(object):
                          {'species-name': 'B', 'amount': [-0.1]}]
              }}]}, update=True)
         errors = v.errors['datapoints'][0][0][0]['composition']
-        assert 'Species A mass fraction is out of bounds.' in errors
-        assert 'Species B mass fraction is out of bounds.' in errors
+        assert 'Species A mass fraction must be less than 1.0' in errors
+        assert 'Species B mass fraction must be greater than 0.0' in errors
         assert 'Species mass fractions do not sum to 1.0: 1.100000' in errors
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
