@@ -302,4 +302,4 @@ experiment-type:
 file-author: *author
 file-version:
   required: true
-  type: string
+  type: integer

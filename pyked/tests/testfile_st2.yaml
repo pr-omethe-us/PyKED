@@ -2,7 +2,7 @@
 file-author:
   name: Kyle E Niemeyer
   ORCID: 0000-0003-4425-7097
-file-version: (1, 0)
+file-version: 0
 chemked-version: 0.0.1
 reference:
   doi: 10.1016/j.ijhydene.2007.04.008
