@@ -291,7 +291,7 @@ reference:
       type: string
 chemked-version:  # TODO: Implement proper version comparison
   allowed:
-    - 0.0.1
+    - [0.0.1, 0.1.0]
   required: true
   type: string
 experiment-type:

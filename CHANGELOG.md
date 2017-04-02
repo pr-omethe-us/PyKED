@@ -12,4 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 
- [Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.0.0...HEAD
+## [0.1.0] - 2017-04-02
+### Added
+- First minor release of PyKED, supporting autoignition experiments.
+- Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
+
+ [Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.0...HEAD
