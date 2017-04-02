@@ -77,22 +77,30 @@ def compare_name(given_name, family_name, question_name):
         name_split.reverse()
         question_name = ' '.join(name_split).strip()
 
+    # remove periods
+    question_name = question_name.replace('.', '')
+    given_name = given_name.replace('.', '')
+    family_name = family_name.replace('.', '')
+
+    # split names by , <space> - .
+    given_name = list(filter(None, re.split("[, \-.]+", given_name)))
+    num_family_names = len(list(filter(None, re.split("[, .]+", family_name))))
+
     # split name in question by , <space> - .
     name_split = list(filter(None, re.split("[, \-.]+", question_name)))
     first_name = [name_split[0]]
-    if len(name_split) == 3:
-        first_name += [name_split[1]]
+    if len(name_split) > 2:
+        first_name += [n for n in name_split[1 : -num_family_names]]
 
-    given_name = list(filter(None, re.split("[, \-.]+", given_name)))
-
-    if len(first_name) == 2 and len(given_name) == 2:
-        # both have first and middle name/initial
-        first_name[1] = first_name[1][0]
-        given_name[1] = given_name[1][0]
-    elif len(given_name) == 2 and len(first_name) == 1:
-        del given_name[1]
-    elif len(first_name) == 2 and len(given_name) == 1:
-        del first_name[1]
+    if len(first_name) > 1 and len(given_name) == len(first_name):
+        # both have same number of first and middle names/initials
+        for i in range(1, len(first_name)):
+            first_name[i] = first_name[i][0]
+            given_name[i] = given_name[i][0]
+    elif len(given_name) != len(first_name):
+        min_names = min(len(given_name), len(first_name))
+        first_name = first_name[:min_names]
+        given_name = given_name[:min_names]
 
     # first initial
     if len(first_name[0]) == 1 or len(given_name[0]) == 1:
@@ -100,11 +108,18 @@ def compare_name(given_name, family_name, question_name):
         first_name[0] = first_name[0][0]
 
     # first and middle initials combined
-    if len(first_name[0]) == 2 or len(given_name[0]) == 2:
+    if len(first_name[0]) > 1 or len(given_name[0]) > 1:
         given_name[0] = given_name[0][0]
         first_name[0] = name_split[0][0]
 
-    return given_name == first_name and family_name == name_split[-1]
+    # Hyphenated last name may need to be reconnected
+    if num_family_names == 1 and '-' in family_name:
+        num_hyphen = family_name.count('-')
+        family_name_compare = '-'.join(name_split[-(num_hyphen + 1):])
+    else:
+        family_name_compare = ' '.join(name_split[-num_family_names:])
+
+    return given_name == first_name and family_name == family_name_compare
 
 
 class OurValidator(Validator):

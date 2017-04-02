@@ -18,90 +18,47 @@ v = OurValidator(schema)
 class TestCompareName(object):
     """
     """
-    def test_matching_name(self):
-        """ Kyle Niemeyer vs Kyle Niemeyer
+    @pytest.mark.parametrize('given, family, question_name', [
+        ('Kyle', 'Niemeyer', 'Kyle Niemeyer'),
+        ('Kyle', 'Niemeyer', 'K Niemeyer'),
+        ('K', 'Niemeyer', 'Kyle Niemeyer'),
+        ('Kyle', 'Niemeyer', 'Kyle E. Niemeyer'),
+        ('K', 'Niemeyer', 'Kyle E. Niemeyer'),
+        ('Kyle', 'Niemeyer', 'K. E. Niemeyer'),
+        ('K', 'Niemeyer', 'K. E. Niemeyer'),
+        ('Kyle', 'Niemeyer', 'K E Niemeyer'),
+        ('K', 'Niemeyer', 'K E Niemeyer'),
+        ('Kyle', 'Niemeyer', 'KE Niemeyer'),
+        ('K', 'Niemeyer', 'KE Niemeyer'),
+        ('Chih-Jen', 'Sung', 'Chih-Jen Sung'),
+        ('Chih-Jen', 'Sung', 'C Sung'),
+        ('C', 'Sung', 'Chih-Jen Sung'),
+        ('Chih-Jen', 'Sung', 'C.-J. Sung'),
+        ('Chih-Jen', 'Sung', 'C J Sung'),
+        ('Chih-Jen', 'Sung', 'C-J Sung'),
+        ('C J', 'Sung', 'Chih-Jen Sung'),
+        ('C-J', 'Sung', 'Chih-Jen Sung'),
+        ('Chih-Jen', 'Sung', 'CJ Sung'),
+        ('CJ', 'Sung', 'Chih-Jen Sung'),
+        ('Kyle', 'Niemeyer', 'Niemeyer, Kyle E'),
+        ('Kyle', 'Niemeyer', 'Niemeyer, Kyle E.'),
+        ('Chih-Jen', 'Sung', 'Sung, Chih-Jen'),
+        ('Chih-Jen', 'Sung', 'Sung, C-J'),
+        ('Chih-Jen', 'Sung', 'Sung, C.-J.'),
+        ('Chih-Jen', 'Sung', 'Sung, C J'),
+        ('Chih-Jen', 'Sung', 'Sung, C. J.'),
+        ('Chih-Jen', 'Sung', 'Sung, CJ'),
+        ('F. M. S.', 'Last', 'F. M. S. Last'),
+        ('F. M. S.', 'Last', 'First Middle Second Last'),
+        ('First Middle Second', 'Last', 'F. M. S. Last'),
+        ('F. M. S.', 'Lastone Lasttwo', 'F. M. S. Lastone Lasttwo'),
+        ('First Middle Second', 'Lastone Lasttwo', 'First Middle Second Lastone Lasttwo'),
+        ('F. M. S.', 'Lastone-Lasttwo', 'F. M. S. Lastone-Lasttwo'),
+    ])
+    def test_matching_names(self, given, family, question_name):
+        """ Ensure that all tested names compare correctly.
         """
-        assert compare_name('Kyle', 'Niemeyer', 'Kyle Niemeyer')
-
-    def test_matching_first_initial(self):
-        """ Kyle Niemeyer vs K Niemeyer
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'K Niemeyer')
-        assert compare_name('K', 'Niemeyer', 'Kyle Niemeyer')
-
-    def test_matching_full_name(self):
-        """ Kyle Niemeyer vs Kyle E. Niemeyer
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'Kyle E. Niemeyer')
-        assert compare_name('K', 'Niemeyer', 'Kyle E. Niemeyer')
-
-    def test_matching_initials_periods(self):
-        """ Kyle Niemeyer vs K. E. Niemeyer
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'K. E. Niemeyer')
-        assert compare_name('K', 'Niemeyer', 'K. E. Niemeyer')
-
-    def test_matching_initials(self):
-        """ Kyle Niemeyer vs K E Niemeyer
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'K E Niemeyer')
-        assert compare_name('K', 'Niemeyer', 'K E Niemeyer')
-
-    def test_matching_initials_combined(self):
-        """ Kyle Niemeyer vs KE Niemeyer
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'KE Niemeyer')
-        assert compare_name('K', 'Niemeyer', 'KE Niemeyer')
-
-    def test_matching_name_hyphen(self):
-        """ Chih-Jen Sung vs Chih-Jen Sung
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'Chih-Jen Sung')
-
-    def test_matching_first_initial_hyphen(self):
-        """ Chih-Jen Sung vs C Sung
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'C Sung')
-        assert compare_name('C', 'Sung', 'Chih-Jen Sung')
-
-    def test_matching_initials_periods_hyphen(self):
-        """ Chih-Jen Sung vs C.-J. Sung
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'C.-J. Sung')
-
-    def test_matching_initials_hyphens(self):
-        """ Chih-Jen Sung vs C J Sung
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'C J Sung')
-        assert compare_name('Chih-Jen', 'Sung', 'C-J Sung')
-        assert compare_name('C J', 'Sung', 'Chih-Jen Sung')
-        assert compare_name('C-J', 'Sung', 'Chih-Jen Sung')
-
-    def test_matching_initials_combined_hyphen(self):
-        """ Chih-Jen Sung vs CJ Sung
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'CJ Sung')
-        assert compare_name('CJ', 'Sung', 'Chih-Jen Sung')
-
-    def test_matching_name_comma(self):
-        """ Kyle Niemeyer vs Niemeyer, Kyle E
-        """
-        assert compare_name('Kyle', 'Niemeyer', 'Niemeyer, Kyle E')
-        assert compare_name('Kyle', 'Niemeyer', 'Niemeyer, Kyle E.')
-
-    def test_matching_name_comma_hyphen(self):
-        """ Chih-Jen Sung vs Sung, Chih-Jen
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, Chih-Jen')
-
-    def test_matching_name_comma_hyphen_initials(self):
-        """ Chih-Jen Sung vs Sung, C-J
-        """
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, C-J')
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, C.-J.')
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, C J')
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, C. J.')
-        assert compare_name('Chih-Jen', 'Sung', 'Sung, CJ')
+        assert compare_name(given, family, question_name)
 
 
 class TestValidator(object):
