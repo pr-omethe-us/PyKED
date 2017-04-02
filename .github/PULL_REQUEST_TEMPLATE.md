@@ -7,4 +7,4 @@ Changes proposed in this pull request:
  -
  -
 
-@Niemeyer-Research-Group/ChemKED
+@pr-omethe-us/chemked
