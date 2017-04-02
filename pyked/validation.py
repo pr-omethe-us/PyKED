@@ -1,11 +1,7 @@
 """Validation class for ChemKED schema.
 """
 
-# Python 2 compatibility
-from __future__ import print_function
-from __future__ import division
-
-import sys
+from functools import reduce
 from warnings import warn
 import re
 
@@ -21,10 +17,6 @@ from orcid import SearchAPI
 
 # Local imports
 from .utils import units, Q_
-
-if sys.version_info > (3,):
-    long = int
-    from functools import reduce
 
 orcid_api = SearchAPI(sandbox=False)
 

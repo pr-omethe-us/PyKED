@@ -1,9 +1,6 @@
 """
 Main ChemKED module
 """
-# Python 2 compatibility
-from __future__ import print_function
-
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
