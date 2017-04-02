@@ -125,6 +125,10 @@ class OurValidator(Validator):
             isvalid_unit (`bool`): flag from schema indicating units to be checked.
             field (`str`): property associated with units in question.
             value (`dict`): dictionary of values from file associated with this property.
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
         """
         quantity = 1.0 * units(value['units'])
         try:
@@ -141,6 +145,10 @@ class OurValidator(Validator):
             isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.
             field (`str`): property associated with quantity in question.
             value (`str`): string of the value of the quantity
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
         """
         quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
@@ -189,6 +197,11 @@ class OurValidator(Validator):
             isvalid_reference (`bool`): flag from schema indicating reference to be checked.
             field (`str`): 'reference'
             value (`dict`): dictionary of reference metadata.
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_reference': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+
         """
         if isvalid_reference and 'doi' in value:
             try:
@@ -274,6 +287,11 @@ class OurValidator(Validator):
             isvalid_orcid (`bool`): flag from schema indicating ORCID to be checked.
             field (`str`): 'author'
             value (`dict`): dictionary of author metadata.
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_orcid': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+
         """
         if isvalid_orcid and 'ORCID' in value:
             try:
