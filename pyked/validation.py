@@ -167,10 +167,14 @@ class OurValidator(Validator):
         """Checks for valid given value and appropriate units with uncertainty.
 
         Args:
-            isvalid_uncertainty (bool): flag from schema indicating uncertainty to be checked
-            field (str): property associated with the quantity in question.
-            value (list): list with the string of the value of the quantity and a dictionary of
+            isvalid_uncertainty (`bool`): flag from schema indicating uncertainty to be checked
+            field (`str`): property associated with the quantity in question.
+            value (`list`): list with the string of the value of the quantity and a dictionary of
                 the uncertainty
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_uncertainty': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
         """
         self._validate_isvalid_quantity(True, field, value)
 
