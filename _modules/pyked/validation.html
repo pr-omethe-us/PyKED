@@ -46,11 +46,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Validation class for ChemKED schema.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="c1"># Python 2 compatibility</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
-
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
@@ -66,10 +62,6 @@
 
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">units</span><span class="p">,</span> <span class="n">Q_</span>
-
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-    <span class="n">long</span> <span class="o">=</span> <span class="nb">int</span>
-    <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
 
 <span class="n">orcid_api</span> <span class="o">=</span> <span class="n">SearchAPI</span><span class="p">(</span><span class="n">sandbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -383,39 +375,37 @@
 <span class="sd">            {&#39;isvalid_composition&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
 <span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">isvalid_composition</span><span class="p">:</span>
-            <span class="n">sum_amount</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]:</span>
+        <span class="n">sum_amount</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mass fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole fraction&#39;</span><span class="p">]:</span>
+            <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mole percent&#39;</span><span class="p">]:</span>
+            <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">100.0</span>
+            <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">100.0</span>
 
-                <span class="c1"># protect against user error of not using list</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                    <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
-                <span class="n">sum_amount</span> <span class="o">+=</span> <span class="n">amount</span>
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]:</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sum_amount</span> <span class="o">+=</span> <span class="n">amount</span>
 
-                <span class="c1"># Check that amount within bounds, based on kind specified</span>
-                <span class="k">if</span> <span class="p">((</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mass fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole fraction&#39;</span><span class="p">]</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">))</span> <span class="ow">or</span>
-                    <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mole percent&#39;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="mf">100.0</span><span class="p">))</span>
-                    <span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
-                               <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; is out of bounds.&#39;</span>
-                               <span class="p">)</span>
-
-            <span class="c1"># Make sure mole/mass fraction sum to 1</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mass fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole fraction&#39;</span><span class="p">]</span> <span class="ow">and</span>
-                <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">)</span>
-                <span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;s do not sum to 1.0: &#39;</span>
-                            <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
+            <span class="c1"># Check that amount within bounds, based on kind specified</span>
+            <span class="k">if</span> <span class="n">amount</span> <span class="o">&lt;</span> <span class="n">low_lim</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                            <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; must be greater than </span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low_lim</span><span class="p">)</span>
                             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mole percent&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;s do not sum to 100.0: &#39;</span>
-                            <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
-                            <span class="p">)</span></div>
+            <span class="k">elif</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="n">up_lim</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                            <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; must be less than </span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">up_lim</span><span class="p">)</span>
+                            <span class="p">)</span>
 
-            <span class="c1"># TODO: validate InChI, SMILES, or elemental-composition/atomic-composition</span>
+        <span class="c1"># Make sure mole/mass fraction sum to 1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">total_amount</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span>
+                        <span class="s1">&#39;s do not sum to </span><span class="si">{:.1f}</span><span class="s1">: &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total_amount</span><span class="p">)</span> <span class="o">+</span>
+                        <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
+                        <span class="p">)</span></div>
+        <span class="c1"># TODO: validate InChI, SMILES, or elemental-composition/atomic-composition</span>
 </pre></div>
 
           </div>
