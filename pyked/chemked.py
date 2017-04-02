@@ -288,18 +288,6 @@ class DataPoint(object):
 
         self.composition_type = properties['composition']['kind']
         composition = deepcopy(properties['composition']['species'])
-        comp_sum = np.sum([species.get('amount')[0] for species in composition])
-
-        if self.composition_type == 'mole percent':
-            if not np.isclose(comp_sum, 100.0):
-                raise ValueError('mole percent for the data point do not sum to '
-                                 '100.0.\n{}'.format(composition)
-                                 )
-        else:
-            if not np.isclose(comp_sum, 1.0):
-                raise ValueError('{} for the data point do not sum to '
-                                 '1.0.\n{}'.format(self.composition_type, composition)
-                                 )
 
         for idx, species in enumerate(composition):
             quant = Q_(species['amount'][0])
