@@ -4,6 +4,8 @@
 [![Build Status](https://travis-ci.org/pr-omethe-us/PyKED.svg?branch=master)](https://travis-ci.org/pr-omethe-us/PyKED)
 [![codecov](https://codecov.io/gh/pr-omethe-us/PyKED/branch/master/graph/badge.svg)](https://codecov.io/gh/pr-omethe-us/PyKED)
 [![Dependency Status](https://dependencyci.com/github/pr-omethe-us/PyKED/badge)](https://dependencyci.com/github/pr-omethe-us/PyKED)
+[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-green.svg)](http://contributor-covenant.org/version/1/4/)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 PyKED is a Python-based software package for validating and interacting with ChemKED (Chemical Kinetics Experimental Data format) files that describe fundamental experimental measurements of combustion phenomena.
 
