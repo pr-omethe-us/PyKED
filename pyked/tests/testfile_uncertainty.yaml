@@ -78,6 +78,9 @@ datapoints:
         lower-uncertainty: 5 kelvin
     ignition-delay:
       - 471.54 us
+      - uncertainty-type: absolute
+        upper-uncertainty: 3 us
+        lower-uncertainty: 10 us
     pressure:
       - 220 kilopascal
     composition:
@@ -100,6 +103,9 @@ datapoints:
       type: d/dt max
   - temperature:
       - 1164.48 kelvin
+      - uncertainty-type: relative
+        upper-uncertainty: 0.05
+        lower-uncertainty: 0.1
     ignition-delay:
       - 471.54 us
       - uncertainty-type: relative

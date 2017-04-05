@@ -258,8 +258,10 @@ class TestDataPoint(object):
         assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
                                         'maximum of lower-uncertainty and upper-uncertainty '
                                         'has been used as the symmetric uncertainty.')
-        assert d.temperature.value == Q_(1164.48, 'K')
-        assert d.temperature.error == Q_(10, 'K')
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(10, 'K'))
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(10, 'us'))
 
     def test_relative_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -268,9 +270,12 @@ class TestDataPoint(object):
         assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
                                         'maximum of lower-uncertainty and upper-uncertainty '
                                         'has been used as the symmetric uncertainty.')
-        assert d.ignition_delay.value == Q_(471.54, 'us')
-        assert d.ignition_delay.error == Q_(47.154, 'us')
-        assert d.ignition_delay.rel == 0.1
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
+        assert np.isclose(d.ignition_delay.rel, 0.1)
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(116.448, 'K'))
+        assert np.isclose(d.temperature.rel, 0.1)
 
     def test_missing_uncertainty_parts(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
