@@ -33,9 +33,9 @@ class TestChemKED(object):
         ignition_delays = Q_([471.54, 448.03, 291.57, 205.93, 88.11], 'us')
 
         for i, d in enumerate(c.datapoints):
-            assert d.ignition_delay == ignition_delays[i]
-            assert d.pressure == Q_(220., 'kPa')
-            assert d.temperature == temperatures[i]
+            assert np.isclose(d.ignition_delay, ignition_delays[i])
+            assert np.isclose(d.pressure, Q_(220., 'kPa'))
+            assert np.isclose(d.temperature, temperatures[i])
             assert d.pressure_rise is None
             assert d.volume_history is None
             assert d.compression_time is None
@@ -221,35 +221,35 @@ class TestDataPoint(object):
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.ignition_delay == Q_(471.54, 'us')
+        assert np.isclose(d.ignition_delay, Q_(471.54, 'us'))
 
     def test_temperature(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.temperature == Q_(1164.48, 'K')
+        assert np.isclose(d.temperature, Q_(1164.48, 'K'))
 
     def test_pressure(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.pressure == Q_(220.0, 'kPa')
+        assert np.isclose(d.pressure, Q_(220.0, 'kPa'))
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')
         d = DataPoint(properties[0])
-        assert d.pressure_rise == Q_(0.1, '1/ms')
+        assert np.isclose(d.pressure_rise, Q_(0.1, '1/ms'))
 
     def test_absolute_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
-        assert d.temperature.value == Q_(1164.48, 'K')
-        assert d.temperature.error == Q_(10, 'K')
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(10, 'K'))
 
     def test_relative_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[1])
-        assert d.ignition_delay.value == Q_(471.54, 'us')
-        assert d.ignition_delay.error == Q_(47.154, 'us')
-        assert d.ignition_delay.rel == 0.1
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
+        assert np.isclose(d.ignition_delay.rel, 0.1)
 
     def test_absolute_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
