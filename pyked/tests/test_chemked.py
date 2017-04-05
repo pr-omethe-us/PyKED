@@ -290,6 +290,17 @@ class TestDataPoint(object):
                 DataPoint(properties[1])
             properties[1]['ignition-delay'][1][prop] = save
 
+        for prop in ['upper-uncertainty', 'lower-uncertainty']:
+            save = properties[2]['temperature'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[2])
+            properties[0]['temperature'][1][prop] = save
+
+            save = properties[3]['ignition-delay'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[3])
+            properties[1]['ignition-delay'][1][prop] = save
+
     def test_volume_history(self):
         properties = self.load_properties('testfile_rcm.yaml')
         d = DataPoint(properties[0])
