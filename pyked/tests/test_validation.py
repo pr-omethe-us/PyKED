@@ -336,10 +336,10 @@ class TestValidator(object):
         """Ensure that composition bounds errors fail validation.
         """
         v.validate({'datapoints': [{'composition':
-            {'kind': 'mass fraction',
-             'species': [{'species-name': 'A', 'amount': [1.2]},
-                         {'species-name': 'B', 'amount': [-0.1]}]
-             }}]}, update=True)
+                   {'kind': 'mass fraction',
+                    'species': [{'species-name': 'A', 'amount': [1.2]},
+                                {'species-name': 'B', 'amount': [-0.1]}]
+                    }}]}, update=True)
         errors = v.errors['datapoints'][0][0][0]['composition']
         assert 'Species A mass fraction must be less than 1.0' in errors
         assert 'Species B mass fraction must be greater than 0.0' in errors
@@ -450,35 +450,26 @@ class TestValidator(object):
     def test_composition_relative_uncertainty_validation(self):
         """Ensure composition with relative uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative', 'uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_uncertainty_validation(self):
         """Ensure that quantites with absolute uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'absolute',
-                                                              'uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'absolute', 'uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_asym_uncertainty_validation(self):
         """Ensure composition values with absolute asymmetric uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'upper-uncertainty': 0.1,
-                                                              'lower-uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'upper-uncertainty': 0.1, 'lower-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_missing_lower_upper_uncertainty(self):
@@ -489,18 +480,14 @@ class TestValidator(object):
         sure that the missing values are caught. For now, we just check that
         the document doesn't validate.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'upper-uncertainty': 0.01}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'upper-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert not result
 
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'lower-uncertainty': 0.01}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'lower-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert not result
