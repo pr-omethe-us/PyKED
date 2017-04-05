@@ -207,6 +207,17 @@ class TestDataPoint(object):
         d = DataPoint(properties[2])
         assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
 
+    def test_composition(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[2])
+        assert len(d.composition) == 3
+        assert np.isclose(d.composition[0]['amount'], Q_(0.444))
+        assert d.composition[0]['species-name'] == 'H2'
+        assert np.isclose(d.composition[1]['amount'], Q_(0.556))
+        assert d.composition[1]['species-name'] == 'O2'
+        assert np.isclose(d.composition[2]['amount'], Q_(99.0))
+        assert d.composition[2]['species-name'] == 'Ar'
+
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
