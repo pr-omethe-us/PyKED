@@ -90,7 +90,7 @@ def compare_name(given_name, family_name, question_name):
     name_split = list(filter(None, re.split("[, \-.]+", question_name)))
     first_name = [name_split[0]]
     if len(name_split) > 2:
-        first_name += [n for n in name_split[1 : -num_family_names]]
+        first_name += [n for n in name_split[1:-num_family_names]]
 
     if len(first_name) > 1 and len(given_name) == len(first_name):
         # both have same number of first and middle names/initials
@@ -354,6 +354,10 @@ class OurValidator(Validator):
             low_lim = 0.0
             up_lim = 100.0
             total_amount = 100.0
+        else:
+            self._error(field, 'composition kind must be "mole percent", "mass fraction", or '
+                        '"mole fraction"')
+            return False
 
         for sp in value['species']:
             amount = sp['amount'][0]

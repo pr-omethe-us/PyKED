@@ -491,3 +491,13 @@ class TestValidator(object):
         dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
         result = v.validate(dp, update=True)
         assert not result
+
+    def test_incorrect_composition_kind(self):
+        """Test to make sure that bad composition kinds are rejected.
+        """
+        species = [dict(amount=[1.0])]
+        dp = dict(datapoints=[dict(composition=dict(kind='bad value', species=species))])
+        result = v.validate(dp, update=True)
+        assert not result
+        error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
+        assert v.errors['datapoints'][0][0][0]['composition'][0] == error_str
