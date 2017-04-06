@@ -205,6 +205,110 @@ class TestValidator(object):
         )
         assert ('Missing author: Tianfeng Lu') in v.errors['reference']
 
+    def test_wrong_year(self):
+        """Test that the wrong year in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 9999, 'authors': authors, 'volume': 161, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'year should be 2014' == v.errors['reference'][0]
+
+    def test_wrong_journal(self):
+        """Test that the wrong journal in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 161, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Bad Journal'}},
+            update=True
+        )
+        assert not result
+        assert 'journal should be Combustion and Flame' == v.errors['reference'][0]
+
+    def test_no_volume_in_DOI(self):
+        """Providing a volume should produce an error while no volume provided should pass
+        """
+        authors = [{'name': 'F. Xu'}, {'name': 'V. Nori'}, {'name': 'J. Basani'}]
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'volume': 9999, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions', 'year': 2013}},
+            update=True,
+        )
+        assert not result
+        assert ('Volume was specified in the YAML but is not present in '
+                'the DOI reference.') == v.errors['reference'][0]
+
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'year': 2013, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions'}},
+            update=True,
+        )
+        assert result
+
+    def test_wrong_volume(self):
+        """Test that the wrong volume in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 9999, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'volume should be 161' == v.errors['reference'][0]
+
+    def test_wrong_page(self):
+        """Test that the wrong page in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 161, 'pages': '999-999',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'pages should be 127-137' == v.errors['reference'][0]
+
+    def test_no_page_in_DOI(self):
+        """Providing a page should produce an error while no page provided should pass
+        """
+        authors = [{'name': 'F. Xu'}, {'name': 'V. Nori'}, {'name': 'J. Basani'}]
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'pages': '999-999', 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions', 'year': 2013}},
+            update=True,
+        )
+        assert not result
+        assert ('Pages were specified in the YAML but are not present in '
+                'the DOI reference.') == v.errors['reference'][0]
+
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'year': 2013, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions'}},
+            update=True,
+        )
+        assert result
+
     @pytest.fixture(scope='function')
     def properties(self, request):
         file_path = os.path.join(request.param)

@@ -214,7 +214,7 @@ class OurValidator(Validator):
              'value': {'type': 'dict'}}
 
         """
-        if isvalid_reference and 'doi' in value:
+        if 'doi' in value:
             try:
                 ref = habanero.Crossref().works(ids=value['doi'])['message']
             except (HTTPError, habanero.RequestError):
@@ -225,28 +225,42 @@ class OurValidator(Validator):
                 warn('network not available, DOI not validated.')
                 return
 
-            # check journal name
-            if ('journal' in value) and (value['journal'] not in ref['container-title']):
-                self._error(field, 'journal does not match: ' +
-                            ', '.join(ref['container-title'])
-                            )
-            # check year
-            pub_year = (ref.get('published-print')
-                        if 'published-print' in ref
-                        else ref.get('published-online')
-                        )['date-parts'][0][0]
+            # Assume that the reference returned by the DOI lookup always has a container-title
+            ref_container = ref.get('container-title')[0]
+            # TODO: Add other container types: value.get('journal') or value.get('report') or ...
+            # note that there's a type field in the ref that is journal-article, proceedings-article
+            container = value.get('journal')
+            if container is None or container != ref_container:
+                self._error(field, 'journal should be {}'.format(ref_container))
 
-            if ('year' in value) and (value['year'] != pub_year):
-                self._error(field, 'year should be ' + str(pub_year))
+            # Assume that the reference returned by DOI lookup always has a year
+            ref_year = ref.get('published-print') or ref.get('published-online')
+            ref_year = ref_year['date-parts'][0][0]
+            year = value.get('year')
+            if year is None or year != ref_year:
+                self._error(field, 'year should be {}'.format(ref_year))
 
-            # check volume number
-            if (('volume' in value) and ('volume' in ref) and
-                    (value['volume'] != int(ref['volume']))):
-                self._error(field, 'volume number should be ' + ref['volume'])
+            # Volume number might not be in the reference
+            ref_volume = ref.get('volume')
+            volume = value.get('volume')
+            if ref_volume is None:
+                if volume is not None:
+                    self._error(field, 'Volume was specified in the YAML but is not present in the '
+                                'DOI reference.')
+            else:
+                if volume is None or int(volume) != int(ref_volume):
+                    self._error(field, 'volume should be {}'.format(ref_volume))
 
-            # check pages
-            if ('pages' in value) and ('page' in ref) and value['pages'] != ref['page']:
-                self._error(field, 'pages should be ' + ref['page'])
+            # Pages might not be in the reference
+            ref_pages = ref.get('page')
+            pages = value.get('pages')
+            if ref_pages is None:
+                if pages is not None:
+                    self._error(field, 'Pages were specified in the YAML but are not present in '
+                                'the DOI reference.')
+            else:
+                if pages is None or pages != ref_pages:
+                    self._error(field, 'pages should be {}'.format(ref_pages))
 
             # check that all authors present
             authors = value['authors'][:]
