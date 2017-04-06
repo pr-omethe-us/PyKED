@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Tests of the composition uncertainty in the DataPoint
+- Tests of the values in the references
 
 ### Fixed
 
@@ -26,3 +28,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
  [Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.1...HEAD
  [0.1.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.0...v0.1.1
+ [0.1.0]: https://github.com/pr-omethe-us/PyKED/compare/75ecf67766a0be2a80e2377391fd9eca420f152c...v0.1.0

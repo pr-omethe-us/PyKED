@@ -33,9 +33,9 @@ class TestChemKED(object):
         ignition_delays = Q_([471.54, 448.03, 291.57, 205.93, 88.11], 'us')
 
         for i, d in enumerate(c.datapoints):
-            assert d.ignition_delay == ignition_delays[i]
-            assert d.pressure == Q_(220., 'kPa')
-            assert d.temperature == temperatures[i]
+            assert np.isclose(d.ignition_delay, ignition_delays[i])
+            assert np.isclose(d.pressure, Q_(220., 'kPa'))
+            assert np.isclose(d.temperature, temperatures[i])
             assert d.pressure_rise is None
             assert d.volume_history is None
             assert d.compression_time is None
@@ -207,38 +207,62 @@ class TestDataPoint(object):
         d = DataPoint(properties[2])
         assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
 
+    def test_composition(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[2])
+        assert len(d.composition) == 3
+        assert np.isclose(d.composition[0]['amount'], Q_(0.444))
+        assert d.composition[0]['species-name'] == 'H2'
+        assert np.isclose(d.composition[1]['amount'], Q_(0.556))
+        assert d.composition[1]['species-name'] == 'O2'
+        assert np.isclose(d.composition[2]['amount'], Q_(99.0))
+        assert d.composition[2]['species-name'] == 'Ar'
+
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.ignition_delay == Q_(471.54, 'us')
+        assert np.isclose(d.ignition_delay, Q_(471.54, 'us'))
 
     def test_temperature(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.temperature == Q_(1164.48, 'K')
+        assert np.isclose(d.temperature, Q_(1164.48, 'K'))
 
     def test_pressure(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.pressure == Q_(220.0, 'kPa')
+        assert np.isclose(d.pressure, Q_(220.0, 'kPa'))
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')
         d = DataPoint(properties[0])
-        assert d.pressure_rise == Q_(0.1, '1/ms')
+        assert np.isclose(d.pressure_rise, Q_(0.1, '1/ms'))
 
     def test_absolute_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
-        assert d.temperature.value == Q_(1164.48, 'K')
-        assert d.temperature.error == Q_(10, 'K')
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(10, 'K'))
+
+    def test_absolute_sym_comp_uncertainty(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        d = DataPoint(properties[0])
+        assert np.isclose(d.composition[1]['amount'].value, Q_(0.556))
+        assert np.isclose(d.composition[1]['amount'].error, Q_(0.002))
 
     def test_relative_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[1])
-        assert d.ignition_delay.value == Q_(471.54, 'us')
-        assert d.ignition_delay.error == Q_(47.154, 'us')
-        assert d.ignition_delay.rel == 0.1
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
+        assert np.isclose(d.ignition_delay.rel, 0.1)
+
+    def test_relative_sym_comp_uncertainty(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        d = DataPoint(properties[0])
+        assert np.isclose(d.composition[0]['amount'].value, Q_(0.444))
+        assert np.isclose(d.composition[0]['amount'].error, Q_(0.00444))
+        assert np.isclose(d.composition[0]['amount'].rel, 0.01)
 
     def test_absolute_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -247,8 +271,10 @@ class TestDataPoint(object):
         assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
                                         'maximum of lower-uncertainty and upper-uncertainty '
                                         'has been used as the symmetric uncertainty.')
-        assert d.temperature.value == Q_(1164.48, 'K')
-        assert d.temperature.error == Q_(10, 'K')
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(10, 'K'))
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(10, 'us'))
 
     def test_relative_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -257,9 +283,45 @@ class TestDataPoint(object):
         assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
                                         'maximum of lower-uncertainty and upper-uncertainty '
                                         'has been used as the symmetric uncertainty.')
-        assert d.ignition_delay.value == Q_(471.54, 'us')
-        assert d.ignition_delay.error == Q_(47.154, 'us')
-        assert d.ignition_delay.rel == 0.1
+        assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
+        assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
+        assert np.isclose(d.ignition_delay.rel, 0.1)
+        assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
+        assert np.isclose(d.temperature.error, Q_(116.448, 'K'))
+        assert np.isclose(d.temperature.rel, 0.1)
+
+    def test_absolute_asym_comp_uncertainty(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        with pytest.warns(UserWarning) as w:
+            d = DataPoint(properties[0])
+        assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
+                                        'maximum of lower-uncertainty and upper-uncertainty '
+                                        'has been used as the symmetric uncertainty.')
+        assert np.isclose(d.composition[2]['amount'].value, Q_(99.0))
+        assert np.isclose(d.composition[2]['amount'].error, Q_(1.0))
+
+        with pytest.warns(UserWarning) as w:
+            d = DataPoint(properties[1])
+        assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
+                                        'maximum of lower-uncertainty and upper-uncertainty '
+                                        'has been used as the symmetric uncertainty.')
+        assert np.isclose(d.composition[2]['amount'].value, Q_(99.0))
+        assert np.isclose(d.composition[2]['amount'].error, Q_(1.0))
+
+    def test_relative_asym_comp_uncertainty(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        with pytest.warns(UserWarning) as w:
+            d = DataPoint(properties[1])
+        assert w[0].message.args[0] == ('Asymmetric uncertainties are not supported. The '
+                                        'maximum of lower-uncertainty and upper-uncertainty '
+                                        'has been used as the symmetric uncertainty.')
+        assert np.isclose(d.composition[0]['amount'].value, Q_(0.444))
+        assert np.isclose(d.composition[0]['amount'].error, Q_(0.0444))
+        assert np.isclose(d.composition[0]['amount'].rel, 0.1)
+
+        assert np.isclose(d.composition[1]['amount'].value, Q_(0.556))
+        assert np.isclose(d.composition[1]['amount'].error, Q_(0.0556))
+        assert np.isclose(d.composition[1]['amount'].rel, 0.1)
 
     def test_missing_uncertainty_parts(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -273,6 +335,41 @@ class TestDataPoint(object):
             with pytest.raises(ValueError):
                 DataPoint(properties[1])
             properties[1]['ignition-delay'][1][prop] = save
+
+        for prop in ['upper-uncertainty', 'lower-uncertainty']:
+            save = properties[2]['temperature'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[2])
+            properties[0]['temperature'][1][prop] = save
+
+            save = properties[3]['ignition-delay'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[3])
+            properties[1]['ignition-delay'][1][prop] = save
+
+    def test_missing_comp_uncertainty_parts(self):
+        properties = self.load_properties('testfile_uncertainty.yaml')
+        for prop in ['uncertainty', 'uncertainty-type']:
+            save = properties[0]['composition']['species'][0]['amount'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[0])
+            properties[0]['composition']['species'][0]['amount'][1][prop] = save
+
+            save = properties[0]['composition']['species'][1]['amount'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[0])
+            properties[0]['composition']['species'][1]['amount'][1][prop] = save
+
+        for prop in ['upper-uncertainty', 'lower-uncertainty']:
+            save = properties[0]['composition']['species'][2]['amount'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[0])
+            properties[0]['composition']['species'][2]['amount'][1][prop] = save
+
+            save = properties[1]['composition']['species'][2]['amount'][1].pop(prop)
+            with pytest.raises(ValueError):
+                DataPoint(properties[1])
+            properties[1]['composition']['species'][2]['amount'][1][prop] = save
 
     def test_volume_history(self):
         properties = self.load_properties('testfile_rcm.yaml')

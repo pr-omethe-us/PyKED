@@ -205,6 +205,110 @@ class TestValidator(object):
         )
         assert ('Missing author: Tianfeng Lu') in v.errors['reference']
 
+    def test_wrong_year(self):
+        """Test that the wrong year in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 9999, 'authors': authors, 'volume': 161, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'year should be 2014' == v.errors['reference'][0]
+
+    def test_wrong_journal(self):
+        """Test that the wrong journal in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 161, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Bad Journal'}},
+            update=True
+        )
+        assert not result
+        assert 'journal should be Combustion and Flame' == v.errors['reference'][0]
+
+    def test_no_volume_in_DOI(self):
+        """Providing a volume should produce an error while no volume provided should pass
+        """
+        authors = [{'name': 'F. Xu'}, {'name': 'V. Nori'}, {'name': 'J. Basani'}]
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'volume': 9999, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions', 'year': 2013}},
+            update=True,
+        )
+        assert not result
+        assert ('Volume was specified in the YAML but is not present in '
+                'the DOI reference.') == v.errors['reference'][0]
+
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'year': 2013, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions'}},
+            update=True,
+        )
+        assert result
+
+    def test_wrong_volume(self):
+        """Test that the wrong volume in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 9999, 'pages': '127-137',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'volume should be 161' == v.errors['reference'][0]
+
+    def test_wrong_page(self):
+        """Test that the wrong page in the YAML compared to DOI lookup is an error.
+        """
+        authors = [{'name': 'Zhuyin Ren'}, {'name': 'Yufeng Liu'},
+                   {'name': 'Liuyan Lu'}, {'name': 'Oluwayemisi O Oluwole'},
+                   {'name': 'Graham M Goldin'}, {'name': 'Tianfeng Lu'}
+                   ]
+        result = v.validate(
+            {'reference': {'year': 2014, 'authors': authors, 'volume': 161, 'pages': '999-999',
+                           'doi': '10.1016/j.combustflame.2013.08.018',
+                           'journal': 'Combustion and Flame'}},
+            update=True
+        )
+        assert not result
+        assert 'pages should be 127-137' == v.errors['reference'][0]
+
+    def test_no_page_in_DOI(self):
+        """Providing a page should produce an error while no page provided should pass
+        """
+        authors = [{'name': 'F. Xu'}, {'name': 'V. Nori'}, {'name': 'J. Basani'}]
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'pages': '999-999', 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions', 'year': 2013}},
+            update=True,
+        )
+        assert not result
+        assert ('Pages were specified in the YAML but are not present in '
+                'the DOI reference.') == v.errors['reference'][0]
+
+        result = v.validate(
+            {'reference': {'doi': '10.1115/GT2013-94282', 'year': 2013, 'authors': authors,
+             'journal': 'Volume 1A: Combustion, Fuels and Emissions'}},
+            update=True,
+        )
+        assert result
+
     @pytest.fixture(scope='function')
     def properties(self, request):
         file_path = os.path.join(request.param)
@@ -336,10 +440,10 @@ class TestValidator(object):
         """Ensure that composition bounds errors fail validation.
         """
         v.validate({'datapoints': [{'composition':
-            {'kind': 'mass fraction',
-             'species': [{'species-name': 'A', 'amount': [1.2]},
-                         {'species-name': 'B', 'amount': [-0.1]}]
-             }}]}, update=True)
+                   {'kind': 'mass fraction',
+                    'species': [{'species-name': 'A', 'amount': [1.2]},
+                                {'species-name': 'B', 'amount': [-0.1]}]
+                    }}]}, update=True)
         errors = v.errors['datapoints'][0][0][0]['composition']
         assert 'Species A mass fraction must be less than 1.0' in errors
         assert 'Species B mass fraction must be greater than 0.0' in errors
@@ -450,35 +554,26 @@ class TestValidator(object):
     def test_composition_relative_uncertainty_validation(self):
         """Ensure composition with relative uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative', 'uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_uncertainty_validation(self):
         """Ensure that quantites with absolute uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'absolute',
-                                                              'uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'absolute', 'uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_asym_uncertainty_validation(self):
         """Ensure composition values with absolute asymmetric uncertainty are validated properly.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'upper-uncertainty': 0.1,
-                                                              'lower-uncertainty': 0.1}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'upper-uncertainty': 0.1, 'lower-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert result
 
     def test_composition_missing_lower_upper_uncertainty(self):
@@ -489,18 +584,24 @@ class TestValidator(object):
         sure that the missing values are caught. For now, we just check that
         the document doesn't validate.
         """
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'upper-uncertainty': 0.01}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'upper-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert not result
 
-        result = v.validate({'datapoints': [{'composition': {'kind': 'mole fraction',
-                                                             'species': [{'amount': [1.0,
-                                                             {'uncertainty-type': 'relative',
-                                                              'lower-uncertainty': 0.01}]}]
-                                                             }}]
-                             }, update=True)
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'lower-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        result = v.validate(dp, update=True)
         assert not result
+
+    def test_incorrect_composition_kind(self):
+        """Test to make sure that bad composition kinds are rejected.
+        """
+        species = [dict(amount=[1.0])]
+        dp = dict(datapoints=[dict(composition=dict(kind='bad value', species=species))])
+        result = v.validate(dp, update=True)
+        assert not result
+        error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
+        assert v.errors['datapoints'][0][0][0]['composition'][0] == error_str

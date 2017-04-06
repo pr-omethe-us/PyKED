@@ -257,7 +257,7 @@ class DataPoint(object):
                     if uncertainty_type == 'relative':
                         if uncertainty:
                             quant = quant.plus_minus(float(uncertainty), relative=True)
-                        elif upper_uncertainty or lower_uncertainty:
+                        elif upper_uncertainty and lower_uncertainty:
                             warn('Asymmetric uncertainties are not supported. The '
                                  'maximum of lower-uncertainty and upper-uncertainty '
                                  'has been used as the symmetric uncertainty.')
@@ -270,7 +270,7 @@ class DataPoint(object):
                         if uncertainty:
                             uncertainty = Q_(uncertainty)
                             quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                        elif upper_uncertainty or lower_uncertainty:
+                        elif upper_uncertainty and lower_uncertainty:
                             warn('Asymmetric uncertainties are not supported. The '
                                  'maximum of lower-uncertainty and upper-uncertainty '
                                  'has been used as the symmetric uncertainty.')
@@ -300,7 +300,7 @@ class DataPoint(object):
                 if uncertainty_type == 'relative':
                     if uncertainty:
                         quant = quant.plus_minus(float(uncertainty), relative=True)
-                    elif upper_uncertainty or lower_uncertainty:
+                    elif upper_uncertainty and lower_uncertainty:
                         warn('Asymmetric uncertainties are not supported. The '
                              'maximum of lower-uncertainty and upper-uncertainty '
                              'has been used as the symmetric uncertainty.')
@@ -313,7 +313,7 @@ class DataPoint(object):
                     if uncertainty:
                         uncertainty = Q_(uncertainty)
                         quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                    elif upper_uncertainty or lower_uncertainty:
+                    elif upper_uncertainty and lower_uncertainty:
                         warn('Asymmetric uncertainties are not supported. The '
                              'maximum of lower-uncertainty and upper-uncertainty '
                              'has been used as the symmetric uncertainty.')
