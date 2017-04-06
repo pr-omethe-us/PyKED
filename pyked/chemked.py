@@ -28,7 +28,7 @@ Reference.year.__doc__ = '(`str`) The year the article was published'
 Reference.pages.__doc__ = '(`str`) The pages in the journal where the article was published'
 
 Apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
-Apparatus.__doc__ = '(`str`) Information about the experimental apparatus used to generate the data'
+Apparatus.__doc__ = 'Information about the experimental apparatus used to generate the data'
 Apparatus.kind.__doc__ = '(`str`) The kind of experimental apparatus'
 Apparatus.institution.__doc__ = '(`str`) The institution where the experiment is located'
 Apparatus.facility.__doc__ = '(`str`) The particular experimental facility at the location'
