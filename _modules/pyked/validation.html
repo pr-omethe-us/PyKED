@@ -135,7 +135,7 @@
     <span class="n">name_split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">question_name</span><span class="p">)))</span>
     <span class="n">first_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name_split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">first_name</span> <span class="o">+=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name_split</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="o">-</span><span class="n">num_family_names</span><span class="p">]]</span>
+        <span class="n">first_name</span> <span class="o">+=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name_split</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">num_family_names</span><span class="p">]]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">):</span>
         <span class="c1"># both have same number of first and middle names/initials</span>
@@ -259,7 +259,7 @@
 <span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">isvalid_reference</span> <span class="ow">and</span> <span class="s1">&#39;doi&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;doi&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ref</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;doi&#39;</span><span class="p">])[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
             <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">):</span>
@@ -270,28 +270,42 @@
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;network not available, DOI not validated.&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
 
-            <span class="c1"># check journal name</span>
-            <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;journal&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;journal&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;container-title&#39;</span><span class="p">]):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;journal does not match: &#39;</span> <span class="o">+</span>
-                            <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;container-title&#39;</span><span class="p">])</span>
-                            <span class="p">)</span>
-            <span class="c1"># check year</span>
-            <span class="n">pub_year</span> <span class="o">=</span> <span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;published-print&#39;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="s1">&#39;published-print&#39;</span> <span class="ow">in</span> <span class="n">ref</span>
-                        <span class="k">else</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;published-online&#39;</span><span class="p">)</span>
-                        <span class="p">)[</span><span class="s1">&#39;date-parts&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Assume that the reference returned by the DOI lookup always has a container-title</span>
+            <span class="n">ref_container</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;container-title&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># TODO: Add other container types: value.get(&#39;journal&#39;) or value.get(&#39;report&#39;) or ...</span>
+            <span class="c1"># note that there&#39;s a type field in the ref that is journal-article, proceedings-article</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">container</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">container</span> <span class="o">!=</span> <span class="n">ref_container</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;journal should be </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_container</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;year&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pub_year</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;year should be &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pub_year</span><span class="p">))</span>
+            <span class="c1"># Assume that the reference returned by DOI lookup always has a year</span>
+            <span class="n">ref_year</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;published-print&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;published-online&#39;</span><span class="p">)</span>
+            <span class="n">ref_year</span> <span class="o">=</span> <span class="n">ref_year</span><span class="p">[</span><span class="s1">&#39;date-parts&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">!=</span> <span class="n">ref_year</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;year should be </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_year</span><span class="p">))</span>
 
-            <span class="c1"># check volume number</span>
-            <span class="k">if</span> <span class="p">((</span><span class="s1">&#39;volume&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;volume&#39;</span> <span class="ow">in</span> <span class="n">ref</span><span class="p">)</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]))):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;volume number should be &#39;</span> <span class="o">+</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">])</span>
+            <span class="c1"># Volume number might not be in the reference</span>
+            <span class="n">ref_volume</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ref_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Volume was specified in the YAML but is not present in the &#39;</span>
+                                <span class="s1">&#39;DOI reference.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref_volume</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;volume should be </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_volume</span><span class="p">))</span>
 
-            <span class="c1"># check pages</span>
-            <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;pages&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;page&#39;</span> <span class="ow">in</span> <span class="n">ref</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;pages&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;page&#39;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;pages should be &#39;</span> <span class="o">+</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;page&#39;</span><span class="p">])</span>
+            <span class="c1"># Pages might not be in the reference</span>
+            <span class="n">ref_pages</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page&#39;</span><span class="p">)</span>
+            <span class="n">pages</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pages&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ref_pages</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Pages were specified in the YAML but are not present in &#39;</span>
+                                <span class="s1">&#39;the DOI reference.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">pages</span> <span class="o">!=</span> <span class="n">ref_pages</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;pages should be </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_pages</span><span class="p">))</span>
 
             <span class="c1"># check that all authors present</span>
             <span class="n">authors</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;authors&#39;</span><span class="p">][:]</span>
@@ -399,6 +413,10 @@
             <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">100.0</span>
             <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;composition kind must be &quot;mole percent&quot;, &quot;mass fraction&quot;, or &#39;</span>
+                        <span class="s1">&#39;&quot;mole fraction&quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
         <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]:</span>
             <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -454,7 +472,7 @@
       &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
