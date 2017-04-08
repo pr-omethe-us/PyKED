@@ -17,16 +17,21 @@ with open(path.join(here, 'README.md')) as readme_file:
 with open(path.join(here, 'CHANGELOG.md')) as changelog_file:
     changelog = changelog_file.read()
 
+with open(path.join(here, 'CITATION.md')) as citation_file:
+    citation = citation_file.read()
+
+desc = readme + '\n\n' + changelog + '\n\n' + citation
+try:
+    import pypandoc
+    long_description = pypandoc.convert_text(desc, 'rst', format='md')
+except ImportError:
+    long_description = desc
+
 setup(
     name='pyked',
-
-    # Versions should comply with PEP440.  For a discussion on single-sourcing
-    # the version across setup.py and the project code, see
-    # https://packaging.python.org/en/latest/single_source_version.html
     version=__version__,
-
     description='Package for manipulating Chemical Kinetics Experimental Data (ChemKED) files.',
-    long_description=readme + '\n\n' + changelog,
+    long_description=long_description,
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
     url='https://github.com/pr-omethe-us/PyKED',
@@ -59,7 +64,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Chemistry',
     ],
-
     test_suite='tests',
     tests_require=[
         'pytest>=3.0.1',
