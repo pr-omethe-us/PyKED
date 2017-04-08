@@ -4,14 +4,17 @@
 from setuptools import setup
 # To use a consistent encoding
 from codecs import open
+from os import path
 
-with open('pyked/_version.py') as version_file:
+here = path.abspath(path.dirname(__file__))
+
+with open(path.join(here, 'pyked', '_version.py')) as version_file:
     exec(version_file.read())
 
-with open('README.md') as readme_file:
+with open(path.join(here, 'README.md')) as readme_file:
     readme = readme_file.read()
 
-with open('CHANGELOG.md') as changelog_file:
+with open(path.join(here, 'CHANGELOG.md')) as changelog_file:
     changelog = changelog_file.read()
 
 setup(
