@@ -39,17 +39,15 @@ setup(
     package_dir={'pyked': 'pyked'},
     include_package_data=True,
     package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
-
     install_requires=[
         'pyyaml>=3.12,<4.0',
         'cerberus>=1.0.0',
         'pint>=0.7.2',
         'numpy>=1.11.0',
         'habanero>=0.2.6',
-        'orcid>=0.7.0',
+        'orcid>=0.7.0,<1.0',
         'uncertainties>=3.0.1',
     ],
-
     license='BSD-3-Clause',
     zip_safe=False,
     keywords=['chemical kinetics'],
