@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from setuptools import setup
-# To use a consistent encoding
 from codecs import open
 from os import path
 
