@@ -1,6 +1,7 @@
 from setuptools import setup
 from codecs import open
 from os import path
+import sys
 
 here = path.abspath(path.dirname(__file__))
 
@@ -23,6 +24,28 @@ try:
 except ImportError:
     long_description = desc
 
+install_requires = [
+    'pyyaml>=3.12,<4.0',
+    'cerberus>=1.0.0',
+    'pint>=0.7.2',
+    'numpy>=1.11.0',
+    'habanero>=0.2.6',
+    'orcid>=0.7.0,<1.0',
+    'uncertainties>=3.0.1',
+]
+
+tests_require = [
+    'pytest>=3.0.1',
+    'pytest-cov',
+]
+
+extras_require = {
+    'dataframes': ['pandas'],
+}
+
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+setup_requires = ['pytest-runner'] if needs_pytest else []
+
 setup(
     name='pyked',
     version=__version__,
@@ -35,15 +58,7 @@ setup(
     package_dir={'pyked': 'pyked'},
     include_package_data=True,
     package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
-    install_requires=[
-        'pyyaml>=3.12,<4.0',
-        'cerberus>=1.0.0',
-        'pint>=0.7.2',
-        'numpy>=1.11.0',
-        'habanero>=0.2.6',
-        'orcid>=0.7.0,<1.0',
-        'uncertainties>=3.0.1',
-    ],
+    install_requires=install_requires,
     license='BSD-3-Clause',
     zip_safe=False,
     keywords=['chemical kinetics'],
@@ -58,9 +73,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Chemistry',
     ],
-    test_suite='tests',
-    tests_require=[
-        'pytest>=3.0.1',
-        'pytest-cov',
-    ],
+    tests_require=tests_require,
+    extras_require=extras_require,
+    setup_requires=setup_requires,
 )
