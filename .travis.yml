@@ -41,9 +41,6 @@ install:
     - conda info -a
     - conda list
 
-    # just until conda-forge recipes available
-    - pip install habanero orcid
-
 # command to run tests
 #script: pytest -vv --cov=./ && pylint pyked/
 script:

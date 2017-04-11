@@ -10,8 +10,7 @@ dependencies:
   - python=${PYTHON}
   - cerberus>=1.0.0
   - pint>=0.7.2
-  - beautifulsoup4
-  - simplejson
-  - requests
   - pandas
   - uncertainties
+  - habanero
+  - orcid
