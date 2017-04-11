@@ -9,10 +9,16 @@ language: generic
 matrix:
   include:
     - os: linux
+      env: PYTHON="2.7"
+
+    - os: linux
       env: PYTHON="3.5"
 
     - os: linux
       env: PYTHON="3.6"
+
+    - os: os x
+      env: PYTHON="2.7"
 
     - os: osx
       env: PYTHON="3.5"
