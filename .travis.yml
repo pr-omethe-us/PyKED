@@ -70,3 +70,11 @@ after_success:
   - if [[ -z "$TRAVIS_TAG" ]]; then
       bash <(curl -s https://codecov.io/bash);
     fi
+
+deploy:
+  provider: pypi
+  user: ...
+  password: ...
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
