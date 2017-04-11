@@ -35,8 +35,12 @@ install:
     - conda update -q conda
     - conda config --append channels conda-forge
     - sed -i -e "s/\${PYTHON}/"${PYTHON}"/" test-environment.yaml
-    - conda env create -qf test-environment.yaml
-    - source activate test-environment
+    - if [[ -z "$TRAVIS_TAG" ]]; then
+        conda env create -qf test-environment.yaml;
+        source activate test-environment;
+      else
+        conda install -q conda-build anaconda-client;
+      fi
       # Useful for debugging any issues with conda
     - conda info -a
     - conda list
@@ -45,8 +49,9 @@ install:
 #script: pytest -vv --cov=./ && pylint pyked/
 script:
   - set -e
-  - pytest -vv --cov=./
-  - if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
+  - if [[ -z "$TRAVIS_TAG" ]]; then
+      python setup.py test;
+      if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
         git checkout -- test-environment.yaml;
         conda install -q sphinx doctr;
         python setup.py install;
@@ -54,8 +59,14 @@ script:
         make html SPHINXOPTS="-W";
         cd ..;
         doctr deploy .;
+      fi
+    else
+      conda build conda.recipe --python=${PYTHON};
+      anaconda -t $ANACONDA_TOKEN upload $HOME/miniconda/conda-bld/*/pyked*.tar.bz2;
     fi
   - set +e
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - if [[ -z "$TRAVIS_TAG" ]]; then
+      bash <(curl -s https://codecov.io/bash);
+    fi
