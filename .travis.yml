@@ -71,8 +71,10 @@ after_success:
 
 deploy:
   provider: pypi
-  user: ...
-  password: ...
+  user: bryanwweber
+  password:
+    secure: "KtGv9Suy3Yi6H2h6V8A6TwJS6/9V4cXu0z8K8oFZXZAGG2ineTESOfxkkURj410yIlGo3OACjtbSVcY967AQ4mhWXWTo5iEz4wj0DlI4/BO2MTCkElFvjm2FB1bk6u2OjjWfN6u8EN2wRyXDtvHDNOoF56RWC2lIq28vfRbR9iwg/z5d4Yy3AXIBEe6c9NAhtQIlxoH18WCuZh7zJLPScW4IYISgCJEw0yUI4Tel85gSVXcvRvmeNXg95M+ejVmQ9zU2uQ7mNRDEcNhbMMRL0dKS0+wTzwCy+UWGAVJJZopYUJ6syRqbeIJ669bwMlevqb271FkbMTiF1jOOxnSc94WPPb8V/hvWuT4tYS2pvHS1SoUvSSLubZpBzbm9UJaI7ydpb4XYvz+6FseTUubOD3BfZJ/FIX6RCoPps92/FoomKuW1p0vB+O+Ywn0AkqTOIqLbpQV5jEwFVdY8rgPMyIvJbdyOsD3QoIRRI9jtwnDMhUMcrNZMXmcZuhmBmi1lLLtz5k9dRXI1rORCr62mKfprLbrd1Qz9yTE2X2BKSMcUSV77e3CPdsvBHETikVNwdEF48ox7sevnhzEq7mVpOOSg+71RHVfTdKuuq9nxDKC4HzjscbCrOX/JZvUyh660AvKXEi/OolsNIphqzPHE4VbtY+Hah6CEJMS9PjcDqrA="
+  server: https://testpypi.python.org/pypi  # Remove after testing
   on:
     tags: true
   distributions: "sdist bdist_wheel"
