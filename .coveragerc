@@ -12,3 +12,4 @@ ignore_errors = True
 omit =
     pyked/tests/*
     setup.py
+    pyked/_version.py

@@ -1,0 +1,50 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: pyked
+  version: {{ data['version'] }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python >=3.5,{{PY_VER}}*
+    - setuptools
+
+  run:
+    - python {{PY_VER}}*
+    - pyyaml >=3.12,<4.0
+    - cerberus >=1.0.0
+    - pint >=0.7.2
+    - numpy >=1.11.0
+    - habanero >=0.2.6
+    - orcid >=0.7.0,<1.0
+    - uncertainties >=3.0.1
+    - pandas
+
+test:
+  imports:
+    - pyked
+
+  requires:
+    - pytest >=3.0.1
+    - pytest-cov >=2.3.1
+
+  commands:
+    - pytest -vv --pyargs pyked
+
+about:
+  home: data['url']
+  license: BSD 3-Clause
+  license_file: LICENSE
+  license_family: BSD
+
+  summary: data['description']
+  description: data['long_description']
+  doc_url: https://pr-omethe-us.github.io/PyKED
+  dev_url: data['url']

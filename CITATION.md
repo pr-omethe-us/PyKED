@@ -21,5 +21,5 @@ A BibTeX entry for LaTeX users is
 In both cases, please update the entry with the version used. The DOI for the latest version can be found in the badge at the top.
 If you would like to cite a specific, older version, the DOIs for each release are:
 
- * v0.1.1: [`10.5281/zenodo.439720`](https://doi.org/10.5281/zenodo.439720)
- * v0.1: [`10.5281/zenodo.439716`](https://doi.org/10.5281/zenodo.439716)
+ * v0.1.1: [10.5281/zenodo.439720](https://doi.org/10.5281/zenodo.439720)
+ * v0.1.0: [10.5281/zenodo.439716](https://doi.org/10.5281/zenodo.439716)

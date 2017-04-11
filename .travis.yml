@@ -2,6 +2,7 @@ sudo: false
 env:
   global:
     - secure: "BJScAQqZ93wF2MTL/52lsz9NN7einCoKC5SvdOzQ+MBGO6DOdEql3DqHPrys5xUHX0bejvdVbknS4GP5lRM+iv0+TF7jGz1FGCOA33WocOXMM7GxGAZq3Arnk9R2efNc0RplnF0kVQqOKa1hYtLmFCf9SZRltKCScewr1vKKf8k4R9egciSK+QTFZa+njCxFEVYJAOyifCukqcPRx1L7hJn2od0oaRctSRWhdWl8gPKAP4JLMdWqgmXEuDG3pTm8vq6JM2W7fhEXdlNr8P+txowGKBDw47m0LJc9q6ReH7FnqcpWMXdsIxGEeBd1nzvpqeNbBSKFwcEjqWKMqeImaySaVvSbcnLFZzU2MPb20sWRGiqP1oN8scQDnTG57hL/DeVY6gM7SFXZxD3akpvl865zNO9PlG4sCdANZv/ZEwSqAcMEQAXa32R1//iP+36HB6PHcNbDsi3o17/kfJRBnG7EFeLMfapyM1WiD5FJ39nS7MaLAIDFYus68J+VK/szpUjpL0623l2+RbmcQ660WGR+RV5mL/n6xtcCOTKnGRiVhvnYpqTAvU+jg2DBXlXWGTztZCqPoOHBtlVA+vwO7SYTl3W1/2ECPP6ogx6YRYjcasD/sj8Z8P8cbtpqSmPwR0D7J+vz+DX8qf01aG3NETcgGXhFq6i/WpRbUEXpK1U="
+    - secure: "O9+casIBiis/r75aOu27gmKJow8VK1V/+7OHQF9QT4be+YD1L9PRaiqF0KQ6i5iQljcZx4uL/UGX+7sxf89ybkogw0zIYXuMTvaAmTI6MB3HTD8/sJn9J2gaoNlZMN5r0cVp/5zqX/1r4frhjVxcp2tiYS3Qiaky8h2P+gxRRo87DjBRyz3zvdT8mKopv/J4SpzU5r01Fbit95W9t/OzY3wis/V7YNaEeyQUFJb37qwpmc5v+UpknWsrJj/F53mwMAy32c0Z4fuERh6AdhsDeQ9ScEOu6HivIx8BV/Zcb63rH0jbjvNP0dg8Ckmv3gnzArw/EMTJoNrDc3cDm8630fwgIxQQPxopda9Qmfo/KmtNm2WbSZZmaXQ2Bn0dFShjKnvt+JYLHqIG6DhI+rXbtfnGKF7zoonNnXO9pnIPnD1pnbdvhKxwgkgzQmW6SPbCL5ThhHqeIJ1HRUAUxWOgUhx9lEFoHoqUUW9aMUOLz6/wj3OuPlqci0t4y7O0N9n0ocx5oWe+h5t2u08EKj7mNwxxMiDphd27OE4RlWpUEtf1Z6Tbx0jwnov0MBiNlcwVPZedEJkF/qmdpz4WiS7UZIKyOM/hr/ZtYGsCThgBfhFVfAfsRWXlb5fU3hB+rnoNylDudD27uvTw+VNSQZLk8A3FBL7nt+L6xzNzSK6KeN8="
 
 language: generic
 
@@ -19,10 +20,7 @@ matrix:
     - os: osx
       env: PYTHON="3.6"
 
-
 install:
-      # We do this conditionally because it saves us some downloading if the
-      # Miniconda version is the same as the test environment.
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -35,21 +33,23 @@ install:
     - conda update -q conda
     - conda config --append channels conda-forge
     - sed -i -e "s/\${PYTHON}/"${PYTHON}"/" test-environment.yaml
-    - conda env create -qf test-environment.yaml
-    - source activate test-environment
+    - if [[ -z "$TRAVIS_TAG" ]]; then
+        conda env create -qf test-environment.yaml;
+        source activate test-environment;
+      else
+        conda install -q conda-build anaconda-client;
+      fi
       # Useful for debugging any issues with conda
     - conda info -a
     - conda list
-
-    # just until conda-forge recipes available
-    - pip install habanero orcid
 
 # command to run tests
 #script: pytest -vv --cov=./ && pylint pyked/
 script:
   - set -e
-  - pytest -vv --cov=./
-  - if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
+  - if [[ -z "$TRAVIS_TAG" ]]; then
+      python setup.py test;
+      if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
         git checkout -- test-environment.yaml;
         conda install -q sphinx doctr;
         python setup.py install;
@@ -57,8 +57,24 @@ script:
         make html SPHINXOPTS="-W";
         cd ..;
         doctr deploy .;
+      fi
+    else
+      conda build conda.recipe --python=${PYTHON};
+      anaconda -t $ANACONDA_TOKEN upload $HOME/miniconda/conda-bld/*/pyked*.tar.bz2;
     fi
   - set +e
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - if [[ -z "$TRAVIS_TAG" ]]; then
+      bash <(curl -s https://codecov.io/bash);
+    fi
+
+deploy:
+  provider: pypi
+  user: bryanwweber
+  password:
+    secure: "KtGv9Suy3Yi6H2h6V8A6TwJS6/9V4cXu0z8K8oFZXZAGG2ineTESOfxkkURj410yIlGo3OACjtbSVcY967AQ4mhWXWTo5iEz4wj0DlI4/BO2MTCkElFvjm2FB1bk6u2OjjWfN6u8EN2wRyXDtvHDNOoF56RWC2lIq28vfRbR9iwg/z5d4Yy3AXIBEe6c9NAhtQIlxoH18WCuZh7zJLPScW4IYISgCJEw0yUI4Tel85gSVXcvRvmeNXg95M+ejVmQ9zU2uQ7mNRDEcNhbMMRL0dKS0+wTzwCy+UWGAVJJZopYUJ6syRqbeIJ669bwMlevqb271FkbMTiF1jOOxnSc94WPPb8V/hvWuT4tYS2pvHS1SoUvSSLubZpBzbm9UJaI7ydpb4XYvz+6FseTUubOD3BfZJ/FIX6RCoPps92/FoomKuW1p0vB+O+Ywn0AkqTOIqLbpQV5jEwFVdY8rgPMyIvJbdyOsD3QoIRRI9jtwnDMhUMcrNZMXmcZuhmBmi1lLLtz5k9dRXI1rORCr62mKfprLbrd1Qz9yTE2X2BKSMcUSV77e3CPdsvBHETikVNwdEF48ox7sevnhzEq7mVpOOSg+71RHVfTdKuuq9nxDKC4HzjscbCrOX/JZvUyh660AvKXEi/OolsNIphqzPHE4VbtY+Hah6CEJMS9PjcDqrA="
+  server: https://testpypi.python.org/pypi  # Remove after testing
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
