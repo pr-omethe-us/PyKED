@@ -21,7 +21,9 @@ desc = readme + '\n\n' + changelog + '\n\n' + citation
 try:
     import pypandoc
     long_description = pypandoc.convert_text(desc, 'rst', format='md')
-except ImportError:
+    with open(path.join(here, 'README.rst'), 'w') as rst_readme:
+        rst_readme.write(long_description)
+except (ImportError, OSError, IOError):
     long_description = desc
 
 install_requires = [
