@@ -6,6 +6,10 @@ env:
 
 language: generic
 
+addons:
+  apt_packages:
+    - pandoc
+
 matrix:
   include:
     - os: linux
@@ -69,6 +73,9 @@ after_success:
       bash <(curl -s https://codecov.io/bash);
     fi
 
+before_deploy:
+  - pip install pypandoc
+
 deploy:
   provider: pypi
   user: bryanwweber
@@ -78,3 +85,4 @@ deploy:
   on:
     tags: true
   distributions: "sdist bdist_wheel"
+  skip_upload_docs: true
