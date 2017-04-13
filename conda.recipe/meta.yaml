@@ -13,7 +13,7 @@ build:
 
 requirements:
   build:
-    - python >=3.5|2.7,{{PY_VER}}*
+    - python >=2.7,<3|>=3.5,{{PY_VER}}*
     - setuptools
 
   run:
