@@ -6,12 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Add back Python 2.7 support
-- Add Appveyor builds for Windows conda packages
 
 ### Fixed
 
 ### Changed
+
+## [0.1.3] - 2017-04-13
+### Added
+- Add back Python 2.7 support
+- Add Appveyor builds for Windows conda packages
 
 ## [0.1.2] - 2017-04-13
 ### Added
@@ -36,7 +39,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/pr-omethe-us/PyKED/compare/75ecf67766a0be2a80e2377391fd9eca420f152c...v0.1.0
