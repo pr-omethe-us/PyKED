@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyked.chemked &#8212; PyKED 0.1.2 documentation</title>
+    <title>pyked.chemked &#8212; PyKED 0.1.3a1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.2',
+        VERSION:     '0.1.3a1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -46,9 +46,11 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Main ChemKED module</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">version_info</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -57,26 +59,29 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">Q_</span>
 
 <span class="n">VolumeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VolumeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">])</span>
-<span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment&#39;</span>
-<span class="n">VolumeHistory</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the time during the experiment&#39;</span>
-<span class="n">VolumeHistory</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the volume during the experiment&#39;</span>
+<span class="k">if</span> <span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment&#39;</span>
+    <span class="n">VolumeHistory</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the time during the experiment&#39;</span>
+    <span class="n">VolumeHistory</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the volume during the experiment&#39;</span>
 
 <span class="n">Reference</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
                        <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;journal&#39;</span><span class="p">,</span> <span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="s1">&#39;detail&#39;</span><span class="p">,</span> <span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;pages&#39;</span><span class="p">])</span>
-<span class="n">Reference</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the article or report where the data can be found&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The journal volume&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">journal</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The name of the journal&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">doi</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The Digital Object Identifier of the article&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`list`) The list of authors of the article&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">detail</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) Detail about where the data can be found in the article&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The year the article was published&#39;</span>
-<span class="n">Reference</span><span class="o">.</span><span class="n">pages</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The pages in the journal where the article was published&#39;</span>
+<span class="k">if</span> <span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the article or report where the data can be found&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The journal volume&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">journal</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The name of the journal&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">doi</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The Digital Object Identifier of the article&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`list`) The list of authors of the article&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">detail</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) Detail about where the data can be found in the article&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The year the article was published&#39;</span>
+    <span class="n">Reference</span><span class="o">.</span><span class="n">pages</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The pages in the journal where the article was published&#39;</span>
 
 <span class="n">Apparatus</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Apparatus&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;institution&#39;</span><span class="p">,</span> <span class="s1">&#39;facility&#39;</span><span class="p">])</span>
-<span class="n">Apparatus</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the experimental apparatus used to generate the data&#39;</span>
-<span class="n">Apparatus</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The kind of experimental apparatus&#39;</span>
-<span class="n">Apparatus</span><span class="o">.</span><span class="n">institution</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The institution where the experiment is located&#39;</span>
-<span class="n">Apparatus</span><span class="o">.</span><span class="n">facility</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The particular experimental facility at the location&#39;</span>
+<span class="k">if</span> <span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="n">Apparatus</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the experimental apparatus used to generate the data&#39;</span>
+    <span class="n">Apparatus</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The kind of experimental apparatus&#39;</span>
+    <span class="n">Apparatus</span><span class="o">.</span><span class="n">institution</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The institution where the experiment is located&#39;</span>
+    <span class="n">Apparatus</span><span class="o">.</span><span class="n">facility</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The particular experimental facility at the location&#39;</span>
 
 
 <div class="viewcode-block" id="ChemKED"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED">[docs]</a><span class="k">class</span> <span class="nc">ChemKED</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyked.validation &#8212; PyKED 0.1.2 documentation</title>
+    <title>pyked.validation &#8212; PyKED 0.1.3a1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.2',
+        VERSION:     '0.1.3a1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -128,11 +128,11 @@
     <span class="n">family_name</span> <span class="o">=</span> <span class="n">family_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
     <span class="c1"># split names by , &lt;space&gt; - .</span>
-    <span class="n">given_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">given_name</span><span class="p">)))</span>
+    <span class="n">given_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">given_name</span><span class="p">)))</span>
     <span class="n">num_family_names</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[, .]+&quot;</span><span class="p">,</span> <span class="n">family_name</span><span class="p">))))</span>
 
     <span class="c1"># split name in question by , &lt;space&gt; - .</span>
-    <span class="n">name_split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">question_name</span><span class="p">)))</span>
+    <span class="n">name_split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">question_name</span><span class="p">)))</span>
     <span class="n">first_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name_split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">first_name</span> <span class="o">+=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name_split</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">num_family_names</span><span class="p">]]</span>
