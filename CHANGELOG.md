@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Changed
+- All fixed DOIs in CITATION.md are now specified with placeholders
 
 ## [0.1.1] - 2017-04-02
 ### Added
