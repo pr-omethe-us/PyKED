@@ -84,6 +84,6 @@ deploy:
   server: https://testpypi.python.org/pypi  # Remove after testing
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME == "linux" && $PYTHON == "3.6"
+    condition: $TRAVIS_OS_NAME == "linux" && $PYTHON == "3.5"
   distributions: "sdist bdist_wheel"
   skip_upload_docs: true
