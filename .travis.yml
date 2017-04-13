@@ -17,7 +17,7 @@ matrix:
     - os: linux
       env: PYTHON="3.6"
 
-    - os: os x
+    - os: osx
       env: PYTHON="2.7"
 
     - os: osx
