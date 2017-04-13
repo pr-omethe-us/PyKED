@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Add back Python 2.7 support
+- Add Appveyor builds for Windows conda packages
 
 ### Fixed
 
