@@ -6,10 +6,6 @@ env:
 
 language: generic
 
-addons:
-  apt_packages:
-    - pandoc
-
 matrix:
   include:
     - os: linux
@@ -74,7 +70,8 @@ after_success:
     fi
 
 before_deploy:
-  - conda install pypandoc
+  - conda install pandoc
+  - pip install pypandoc
 
 deploy:
   provider: pypi
@@ -84,6 +81,6 @@ deploy:
   server: https://testpypi.python.org/pypi  # Remove after testing
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME == "linux" && $PYTHON == "3.5"
+    condition: $TRAVIS_OS_NAME == "linux" && $PYTHON == "3.6"
   distributions: "sdist bdist_wheel"
   skip_upload_docs: true
