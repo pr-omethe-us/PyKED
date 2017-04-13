@@ -83,11 +83,11 @@ def compare_name(given_name, family_name, question_name):
     family_name = family_name.replace('.', '')
 
     # split names by , <space> - .
-    given_name = list(filter(None, re.split("[, \-.]+", given_name)))
+    given_name = list(filter(None, re.split(r"[, \-.]+", given_name)))
     num_family_names = len(list(filter(None, re.split("[, .]+", family_name))))
 
     # split name in question by , <space> - .
-    name_split = list(filter(None, re.split("[, \-.]+", question_name)))
+    name_split = list(filter(None, re.split(r"[, \-.]+", question_name)))
     first_name = [name_split[0]]
     if len(name_split) > 2:
         first_name += [n for n in name_split[1:-num_family_names]]
