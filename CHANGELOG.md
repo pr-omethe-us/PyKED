@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Tests of the composition uncertainty in the DataPoint
 - Tests of the values in the references
+- Add Anaconda-Server badge to README
 
 ### Fixed
 

@@ -6,6 +6,7 @@
 [![Dependency Status](https://dependencyci.com/github/pr-omethe-us/PyKED/badge)](https://dependencyci.com/github/pr-omethe-us/PyKED)
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-green.svg)](http://contributor-covenant.org/version/1/4/)
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Anaconda-Server Badge](https://anaconda.org/pr-omethe-us/pyked/badges/version.svg)](https://anaconda.org/pr-omethe-us/pyked)
 
 PyKED is a Python-based software package for validating and interacting with ChemKED (Chemical Kinetics Experimental Data format) files that describe fundamental experimental measurements of combustion phenomena.
 
@@ -19,4 +20,4 @@ Please adhere to this code of conduct in any interactions you have in the PyKED 
 
 PyKED is released under the BSD-3 clause license, see LICENSE for details.
 
-If you use this package as part of a scholarly work, please refer to CITATION for guidance on citing this resource.
+If you use this package as part of a scholarly work, please refer to CITATION.md for guidance on citing this resource.
