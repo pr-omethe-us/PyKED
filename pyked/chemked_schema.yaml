@@ -293,6 +293,8 @@ chemked-version:  # TODO: Implement proper version comparison
   allowed:
     - 0.0.1
     - 0.1.0
+    - 0.1.1
+    - 0.1.2
   required: true
   type: string
 experiment-type:
