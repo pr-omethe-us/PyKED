@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Add `skip_validation` keyword argument to the `ChemKED` initializer
 
 ### Fixed
 
