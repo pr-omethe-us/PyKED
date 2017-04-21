@@ -45,6 +45,8 @@ class ChemKED(object):
         yaml_file (`str`, optional): The filename of the YAML database in ChemKED format.
         dict_input (`str`, optional): A dictionary with the parsed ouput of YAML file in ChemKED
             format.
+        skip_validation (`bool`, optional): Whether validation of the ChemKED should be done. Must
+            be supplied as a keyword-argument.
 
     Attributes:
         datapoints (`list`): List of `DataPoint` objects storing each datapoint in the database.
@@ -59,7 +61,7 @@ class ChemKED(object):
         file_author (`dict`): Information about the author of the ChemKED database file.
         file_version (`str`): Version of the ChemKED database file.
     """
-    def __init__(self, yaml_file=None, dict_input=None):
+    def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
             with open(yaml_file, 'r') as f:
                 properties = yaml.safe_load(f)
@@ -68,7 +70,8 @@ class ChemKED(object):
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
-        self.validate_yaml(properties)
+        if not skip_validation:
+            self.validate_yaml(properties)
 
         self.datapoints = []
         for point in properties['datapoints']:

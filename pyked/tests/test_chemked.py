@@ -26,6 +26,11 @@ class TestChemKED(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         ChemKED(filename)
 
+    def test_skip_validation(self):
+        file_path = os.path.join('testfile_bad.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        ChemKED(filename, skip_validation=True)
+
     def test_datapoints(self):
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
