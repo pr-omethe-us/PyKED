@@ -1,5 +1,5 @@
 ./_modules/index.html
-./_modules/pint/unit.html
+./_modules/pint/registry.html
 ./_modules/pyked/chemked.html
 ./_modules/pyked/validation.html
 ./_sources/chemked.rst.txt
