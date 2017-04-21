@@ -1,11 +1,9 @@
 """
 Main ChemKED module
 """
-from __future__ import print_function, division
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
-from sys import version_info
 
 import numpy as np
 
@@ -14,29 +12,26 @@ from .validation import schema, OurValidator, yaml
 from .utils import Q_
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
-if version_info.major >= 3:
-    VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
-    VolumeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
-    VolumeHistory.volume.__doc__ = '(`~numpy.ndarray`): the volume during the experiment'
+VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
+VolumeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
+VolumeHistory.volume.__doc__ = '(`~numpy.ndarray`): the volume during the experiment'
 
 Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
-if version_info.major >= 3:
-    Reference.__doc__ = 'Information about the article or report where the data can be found'
-    Reference.volume.__doc__ = '(`str`) The journal volume'
-    Reference.journal.__doc__ = '(`str`) The name of the journal'
-    Reference.doi.__doc__ = '(`str`) The Digital Object Identifier of the article'
-    Reference.authors.__doc__ = '(`list`) The list of authors of the article'
-    Reference.detail.__doc__ = '(`str`) Detail about where the data can be found in the article'
-    Reference.year.__doc__ = '(`str`) The year the article was published'
-    Reference.pages.__doc__ = '(`str`) The pages in the journal where the article was published'
+Reference.__doc__ = 'Information about the article or report where the data can be found'
+Reference.volume.__doc__ = '(`str`) The journal volume'
+Reference.journal.__doc__ = '(`str`) The name of the journal'
+Reference.doi.__doc__ = '(`str`) The Digital Object Identifier of the article'
+Reference.authors.__doc__ = '(`list`) The list of authors of the article'
+Reference.detail.__doc__ = '(`str`) Detail about where the data can be found in the article'
+Reference.year.__doc__ = '(`str`) The year the article was published'
+Reference.pages.__doc__ = '(`str`) The pages in the journal where the article was published'
 
 Apparatus = namedtuple('Apparatus', ['kind', 'institution', 'facility'])
-if version_info.major >= 3:
-    Apparatus.__doc__ = 'Information about the experimental apparatus used to generate the data'
-    Apparatus.kind.__doc__ = '(`str`) The kind of experimental apparatus'
-    Apparatus.institution.__doc__ = '(`str`) The institution where the experiment is located'
-    Apparatus.facility.__doc__ = '(`str`) The particular experimental facility at the location'
+Apparatus.__doc__ = 'Information about the experimental apparatus used to generate the data'
+Apparatus.kind.__doc__ = '(`str`) The kind of experimental apparatus'
+Apparatus.institution.__doc__ = '(`str`) The institution where the experiment is located'
+Apparatus.facility.__doc__ = '(`str`) The particular experimental facility at the location'
 
 
 class ChemKED(object):
@@ -50,6 +45,8 @@ class ChemKED(object):
         yaml_file (`str`, optional): The filename of the YAML database in ChemKED format.
         dict_input (`str`, optional): A dictionary with the parsed ouput of YAML file in ChemKED
             format.
+        skip_validation (`bool`, optional): Whether validation of the ChemKED should be done. Must
+            be supplied as a keyword-argument.
 
     Attributes:
         datapoints (`list`): List of `DataPoint` objects storing each datapoint in the database.
@@ -64,7 +61,7 @@ class ChemKED(object):
         file_author (`dict`): Information about the author of the ChemKED database file.
         file_version (`str`): Version of the ChemKED database file.
     """
-    def __init__(self, yaml_file=None, dict_input=None):
+    def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
             with open(yaml_file, 'r') as f:
                 properties = yaml.safe_load(f)
@@ -73,7 +70,8 @@ class ChemKED(object):
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
-        self.validate_yaml(properties)
+        if not skip_validation:
+            self.validate_yaml(properties)
 
         self.datapoints = []
         for point in properties['datapoints']:

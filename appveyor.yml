@@ -4,9 +4,6 @@ environment:
     secure: agG4yvYjpYq1nzjLhnZ92Z6ZFVM+KA5JyYIYwX2YVQxpuRj7myqJNfttUVTqynIg
 
   matrix:
-    - PYTHON_LOC: "C:\\Miniconda-x64"
-      PYTHON_VERSION: "2.7"
-
     - PYTHON_LOC: "C:\\Miniconda36-x64"
       PYTHON_VERSION: "3.5"
 
