@@ -4,7 +4,6 @@ Test module for chemked.py
 # Standard libraries
 import os
 import pkg_resources
-import warnings
 
 # Third-party libraries
 import numpy as np
@@ -15,7 +14,6 @@ from ..validation import schema, OurValidator, yaml
 from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
 
-warnings.simplefilter("always")
 
 class TestChemKED(object):
     """
