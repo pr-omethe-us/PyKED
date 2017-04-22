@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Changed
+- Improved tests with no internet
+- Improved tests with no warning
 
 ## [0.1.4] - 2017-04-21
 ### Added
