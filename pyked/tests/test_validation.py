@@ -81,14 +81,18 @@ class TestValidator(object):
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning) as w:
             v.validate({'reference': {'doi': '10.1016/j.combustflame.2009.12.022'}}, update=True)
+
+        assert w[0].message.args[0] == 'network not available, DOI not validated.'
 
     def test_orcid_missing_internet(self, disable_socket):
         """Ensure that ORCID validation fails gracefully with no Internet.
         """
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning) as w:
             v.validate({'file-author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
+
+        assert w[0].message.args[0] == 'network not available, ORCID not validated.'
 
     def test_invalid_DOI(self):
         """Test for proper response to incorrect/invalid DOI.
