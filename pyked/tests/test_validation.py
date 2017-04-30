@@ -6,11 +6,28 @@ Tests for the utils
 import os
 import pkg_resources
 from requests.exceptions import ConnectionError
+import socket
 
 import pytest
 import yaml
 
 from ..validation import schema, OurValidator, compare_name, property_units
+
+
+def no_internet(host='8.8.8.8', port=53, timeout=1):
+    """Test whether internet is available
+
+    http://stackoverflow.com/a/33117579/2449192
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return False
+    except OSError:
+        return True
+
+
+internet_missing = pytest.mark.skipif(no_internet(), reason='Internet not available')
 
 v = OurValidator(schema)
 
@@ -81,21 +98,27 @@ class TestValidator(object):
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning) as w:
             v.validate({'reference': {'doi': '10.1016/j.combustflame.2009.12.022'}}, update=True)
+
+        assert w[0].message.args[0] == 'network not available, DOI not validated.'
 
     def test_orcid_missing_internet(self, disable_socket):
         """Ensure that ORCID validation fails gracefully with no Internet.
         """
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning) as w:
             v.validate({'file-author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
 
+        assert w[0].message.args[0] == 'network not available, ORCID not validated.'
+
+    @internet_missing
     def test_invalid_DOI(self):
         """Test for proper response to incorrect/invalid DOI.
         """
         v.validate({'reference': {'doi': '10.1000/invalid.doi'}}, update=True)
         assert v.errors['reference'][0] == 'DOI not found'
 
+    @internet_missing
     def test_invalid_ORCID(self):
         """Test for proper response to incorrect/invalid ORCID.
         """
@@ -104,6 +127,7 @@ class TestValidator(object):
                    )
         assert v.errors['file-author'][0] == 'ORCID incorrect or invalid for Kyle Niemeyer'
 
+    @internet_missing
     def test_invalid_ORCID_name(self):
         """Test for proper response to incorrect name with ORCID.
         """
@@ -115,6 +139,7 @@ class TestValidator(object):
                                               'Kyle Niemeyer'
                                               )
 
+    @internet_missing
     def test_suggest_ORCID(self):
         """Test for proper suggestion for missing ORCID.
         """
@@ -128,6 +153,7 @@ class TestValidator(object):
                 update=True,
             )
 
+    @internet_missing
     def test_missing_author(self):
         """Test for proper error for missing author.
         """
@@ -140,6 +166,7 @@ class TestValidator(object):
         )
         assert ('Missing author: Xin Hui') in v.errors['reference']
 
+    @internet_missing
     def test_valid_reference_authors(self):
         """Ensure correct validation of reference authors
         """
@@ -149,6 +176,7 @@ class TestValidator(object):
                    ]
         assert v.validate({'reference': {'authors': authors}}, update=True)
 
+    @internet_missing
     def test_unmatching_ORCIDs(self):
         """Ensure appropriate error for author ORCID not matching that via DOI
         """
@@ -166,6 +194,7 @@ class TestValidator(object):
                 'Given: ' + authors[0]['ORCID']
                 ) in v.errors['reference']
 
+    @internet_missing
     def test_extra_authors(self):
         """Ensure appropriate error for extra authors given.
         """
@@ -180,6 +209,7 @@ class TestValidator(object):
         )
         assert ('Extra author(s) given: Bryan W Weber') in v.errors['reference']
 
+    @internet_missing
     def test_two_authors_same_surname(self):
         """Ensure author validation can distinguish authors with same surname.
         """
@@ -205,6 +235,7 @@ class TestValidator(object):
         )
         assert ('Missing author: Tianfeng Lu') in v.errors['reference']
 
+    @internet_missing
     def test_wrong_year(self):
         """Test that the wrong year in the YAML compared to DOI lookup is an error.
         """
@@ -221,6 +252,7 @@ class TestValidator(object):
         assert not result
         assert 'year should be 2014' == v.errors['reference'][0]
 
+    @internet_missing
     def test_wrong_journal(self):
         """Test that the wrong journal in the YAML compared to DOI lookup is an error.
         """
@@ -237,6 +269,7 @@ class TestValidator(object):
         assert not result
         assert 'journal should be Combustion and Flame' == v.errors['reference'][0]
 
+    @internet_missing
     def test_no_volume_in_DOI(self):
         """Providing a volume should produce an error while no volume provided should pass
         """
@@ -257,6 +290,7 @@ class TestValidator(object):
         )
         assert result
 
+    @internet_missing
     def test_wrong_volume(self):
         """Test that the wrong volume in the YAML compared to DOI lookup is an error.
         """
@@ -273,6 +307,7 @@ class TestValidator(object):
         assert not result
         assert 'volume should be 161' == v.errors['reference'][0]
 
+    @internet_missing
     def test_wrong_page(self):
         """Test that the wrong page in the YAML compared to DOI lookup is an error.
         """
@@ -289,6 +324,7 @@ class TestValidator(object):
         assert not result
         assert 'pages should be 127-137' == v.errors['reference'][0]
 
+    @internet_missing
     def test_no_page_in_DOI(self):
         """Providing a page should produce an error while no page provided should pass
         """
