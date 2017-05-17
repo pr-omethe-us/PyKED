@@ -2,3 +2,6 @@ include LICENSE
 include AUTHORS.md
 include CODE_OF_CONDUCT.md
 include CONTRIBUTING.md
+include pyked/tests/*.yaml
+include pyked/tests/*.csv
+include pyked/schemas/*.yaml

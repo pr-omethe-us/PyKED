@@ -59,7 +59,6 @@ setup(
     packages=['pyked', 'pyked.tests'],
     package_dir={'pyked': 'pyked'},
     include_package_data=True,
-    package_data={'pyked': ['chemked_schema.yaml', 'tests/*.yaml', 'tests/dataframe_st.csv']},
     install_requires=install_requires,
     license='BSD-3-Clause',
     zip_safe=False,
