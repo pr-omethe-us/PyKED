@@ -21,7 +21,7 @@ from .utils import units, Q_
 orcid_api = SearchAPI(sandbox=False)
 
 # Load the ChemKED schema definition file
-schema_file = resource_filename(__name__, 'chemked_schema.yaml')
+schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
 with open(schema_file, 'r') as f:
     schema_list = f.readlines()
 
@@ -41,7 +41,7 @@ for l_num, l in enumerate(schema_list):
             raise SchemaError('All included files must be first in the main schema')
 
         inc_fname = l.split('!include')[1].strip()
-        inc_fname = resource_filename(__name__, inc_fname)
+        inc_fname = resource_filename(__name__, 'schemas/' + inc_fname)
         with open(inc_fname, 'r') as f:
             inc_list.extend(f.readlines())
     else:
