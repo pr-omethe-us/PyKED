@@ -400,7 +400,7 @@ class TestValidator(object):
         """
         properties['datapoints'] = []
         v.validate(properties)
-        assert v.errors['datapoints'][0] == 'min length is 1'
+        assert v.errors['datapoints'][0]['oneof'][1]['oneof definition 0'][0] == 'min length is 1'
 
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error
@@ -449,6 +449,17 @@ class TestValidator(object):
     def test_mole_fraction_bad_sum(self, properties):
         """Ensure mole fractions that do not sum to 1.0 raise error
         """
+        result = v.validate(properties)
+        assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mole_fraction_bad_sum_message(self, properties):
+        """Ensure mole fractions that do not sum to 1.0 raise error
+
+        This test will fail until https://github.com/pyeve/cerberus/issues/278
+        in Cerberus is fixed.
+        """
         v.validate(properties)
         assert ('Species mole fractions do not sum to 1.0: 0.300000' in
                 v.errors['datapoints'][0][0][0]['composition']
@@ -457,6 +468,17 @@ class TestValidator(object):
     @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
     def test_mass_fraction_bad_sum(self, properties):
         """Ensure mass fractions that do not sum to 1.0 raise validation error
+        """
+        result = v.validate(properties)
+        assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mass_fraction_bad_sum_message(self, properties):
+        """Ensure mass fractions that do not sum to 1.0 raise validation error
+
+        This test will fail until https://github.com/pyeve/cerberus/issues/278
+        in Cerberus is fixed.
         """
         v.validate(properties)
         assert ('Species mass fractions do not sum to 1.0: 0.300000' in
@@ -467,6 +489,17 @@ class TestValidator(object):
     def test_mole_percent_bad_sum(self, properties):
         """Ensure mole percent that do not sum to 100. raise validation error
         """
+        result = v.validate(properties)
+        assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
+    def test_mole_percent_bad_sum_message(self, properties):
+        """Ensure mole percent that do not sum to 100. raise validation error
+
+        This test will fail until https://github.com/pyeve/cerberus/issues/278
+        in Cerberus is fixed.
+        """
         v.validate(properties)
         assert ('Species mole percents do not sum to 100.0: 30.000000' in
                 v.errors['datapoints'][0][2][0]['composition']
@@ -474,6 +507,20 @@ class TestValidator(object):
 
     def test_composition_bounded(self):
         """Ensure that composition bounds errors fail validation.
+        """
+        result = v.validate({'datapoints': [{'composition':
+                            {'kind': 'mass fraction',
+                             'species': [{'species-name': 'A', 'amount': [1.2]},
+                                         {'species-name': 'B', 'amount': [-0.1]}]
+                             }}]}, update=True)
+        assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    def test_composition_bounded_message(self):
+        """Ensure that composition bounds errors fail validation.
+
+        This test will fail until https://github.com/pyeve/cerberus/issues/278
+        in Cerberus is fixed.
         """
         v.validate({'datapoints': [{'composition':
                    {'kind': 'mass fraction',
@@ -517,11 +564,6 @@ class TestValidator(object):
 
     def test_missing_lower_upper_uncertainty(self):
         """Test that having a single asymmetric uncertainty fails validation.
-
-        When https://github.com/nicolaiarocci/cerberus/issues/278 is resolved,
-        the errors that result from this validation should be checked to make
-        sure that the missing values are caught. For now, we just check that
-        the document doesn't validate.
         """
         result = v.validate({'datapoints': [{'temperature': ['1000 kelvin',
                                                              {'uncertainty-type': 'relative',
@@ -534,6 +576,27 @@ class TestValidator(object):
                                                               'lower-uncertainty': 0.1}]}]},
                             update=True)
         assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    def test_missing_lower_upper_uncertainty_message(self):
+        """Test that having a single asymmetric uncertainty fails validation.
+
+        When https://github.com/pyeve/cerberus/issues/278 is resolved,
+        the errors that result from this validation should be checked to make
+        sure that the missing values are caught. For now, we just check that
+        the document doesn't validate.
+        """
+        v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                    {'uncertainty-type': 'relative',
+                                                     'upper-uncertainty': 0.1}]}]},
+                   update=True)
+        assert v.errors
+
+        v.validate({'datapoints': [{'temperature': ['1000 kelvin',
+                                                    {'uncertainty-type': 'relative',
+                                                     'lower-uncertainty': 0.1}]}]},
+                   update=True)
+        assert v.errors
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_sym_uncertainty(self, quantity, unit):
@@ -614,11 +677,6 @@ class TestValidator(object):
 
     def test_composition_missing_lower_upper_uncertainty(self):
         """Test that having a single asymmetric uncertainty fails validation.
-
-        When https://github.com/nicolaiarocci/cerberus/issues/278 is resolved,
-        the errors that result from this validation should be checked to make
-        sure that the missing values are caught. For now, we just check that
-        the document doesn't validate.
         """
         species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
                                       'upper-uncertainty': 0.1}])]
@@ -632,6 +690,27 @@ class TestValidator(object):
         result = v.validate(dp, update=True)
         assert not result
 
+    @pytest.mark.xfail(raises=NotImplementedError)
+    def test_composition_missing_lower_upper_uncertainty_message(self):
+        """Test that having a single asymmetric uncertainty fails validation.
+
+        When https://github.com/pyeve/cerberus/issues/278 is resolved,
+        the errors that result from this validation should be checked to make
+        sure that the missing values are caught. For now, we just check that
+        the document doesn't validate.
+        """
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'upper-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        v.validate(dp, update=True)
+        assert v.errors
+
+        species = [dict(amount=[1.0, {'uncertainty-type': 'relative',
+                                      'lower-uncertainty': 0.1}])]
+        dp = dict(datapoints=[dict(composition=dict(kind='mole fraction', species=species))])
+        v.validate(dp, update=True)
+        assert v.errors
+
     def test_incorrect_composition_kind(self):
         """Test to make sure that bad composition kinds are rejected.
         """
@@ -639,5 +718,16 @@ class TestValidator(object):
         dp = dict(datapoints=[dict(composition=dict(kind='bad value', species=species))])
         result = v.validate(dp, update=True)
         assert not result
+
+    @pytest.mark.xfail(raises=NotImplementedError)
+    def test_incorrect_composition_kind_message(self):
+        """Test to make sure that bad composition kinds are rejected.
+
+        This test will fail until https://github.com/pyeve/cerberus/issues/278
+        in Cerberus is fixed.
+        """
+        species = [dict(amount=[1.0])]
+        dp = dict(datapoints=[dict(composition=dict(kind='bad value', species=species))])
+        v.validate(dp, update=True)
         error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
         assert v.errors['datapoints'][0][0][0]['composition'][0] == error_str

@@ -1,0 +1,95 @@
+---
+######################################################
+# Put extra schema files to include here. All included
+# files must go at the top of this file.
+# value_unit_schema.yaml and composition_schema.yaml
+# must be the first two includes.
+!include value_unit_schema.yaml
+!include composition_schema.yaml
+!include ignition_delay_schema.yaml
+######################################################
+
+# Common reference for authors' information
+author: &author
+  type: dict
+  required: true
+  isvalid_orcid: true
+  schema:
+    ORCID:
+      type: string
+    name:
+      required: true
+      type: string
+
+# Start the ChemKED schema
+common-properties:
+  type: dict
+  schema:
+    pressure: *value-unit-optional
+    ignition-type: *ignition-type
+    composition: *composition
+    pressure-rise: *value-unit-optional
+
+apparatus:
+  required: true
+  type: dict
+  schema:
+    kind:
+      allowed:
+        - shock tube
+        - rapid compression machine
+      required: true
+      type: string
+    institution:
+      type: string
+    facility:
+      type: string
+datapoints:
+  required: true
+  oneof:
+    - *ignition-delay-schema
+reference:
+  required: true
+  type: dict
+  isvalid_reference: true
+  schema:
+    volume:
+      min: 0
+      type: integer
+    journal:
+      required: true
+      type: string
+    doi:
+      type: string
+    authors:
+      type: list
+      required: true
+      minlength: 1
+      schema: *author
+    detail:
+      type: string
+    year:
+      min: 1600
+      required: true
+      type: integer
+    pages:
+      type: string
+chemked-version:  # TODO: Implement proper version comparison
+  allowed:
+    - 0.0.1
+    - 0.1.0
+    - 0.1.1
+    - 0.1.2
+    - 0.1.3
+    - 0.1.4
+  required: true
+  type: string
+experiment-type:
+  allowed:
+    - ignition delay
+  required: true
+  type: string
+file-author: *author
+file-version:
+  required: true
+  type: integer

@@ -5,13 +5,13 @@ from functools import reduce
 from warnings import warn
 import re
 
-import pkg_resources
+from pkg_resources import resource_filename
 import yaml
 
 import numpy as np
 import pint
 from requests.exceptions import HTTPError, ConnectionError
-from cerberus import Validator
+from cerberus import Validator, SchemaError
 import habanero
 from orcid import SearchAPI
 
@@ -21,9 +21,41 @@ from .utils import units, Q_
 orcid_api = SearchAPI(sandbox=False)
 
 # Load the ChemKED schema definition file
-schema_file = pkg_resources.resource_filename(__name__, 'chemked_schema.yaml')
+schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
 with open(schema_file, 'r') as f:
-    schema = yaml.safe_load(f)
+    schema_list = f.readlines()
+
+inc_start = None
+inc_end = None
+inc_list = []
+no_includes = False
+for l_num, l in enumerate(schema_list):
+    if l.startswith('!include'):
+        if no_includes:  # pragma: no cover
+            raise SchemaError('All included files must be first in the main schema')
+
+        if inc_start is None:
+            inc_start = l_num
+
+        if inc_end is not None:  # pragma: no cover
+            raise SchemaError('All included files must be first in the main schema')
+
+        inc_fname = l.split('!include')[1].strip()
+        inc_fname = resource_filename(__name__, 'schemas/' + inc_fname)
+        with open(inc_fname, 'r') as f:
+            inc_list.extend(f.readlines())
+    else:
+        if not l.strip() or l.startswith('#') or l.startswith('---'):
+            continue
+
+        if inc_start is None:  # pragma: no cover
+            no_includes = True
+
+        if inc_start is not None and inc_end is None:
+            inc_end = l_num
+
+schema_list[inc_start:inc_end] = inc_list
+schema = yaml.safe_load(''.join(schema_list))
 
 # These top-level keys in the schema serve as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
