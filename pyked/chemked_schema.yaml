@@ -1,3 +1,14 @@
+---
+######################################################
+# Put extra schema files to include here. All included
+# files must go at the top of this file.
+# value_unit_schema.yaml and composition_schema.yaml
+# must be the first two includes.
+!include value_unit_schema.yaml
+!include composition_schema.yaml
+!include ignition_delay_schema.yaml
+######################################################
+
 # Common reference for authors' information
 author: &author
   type: dict
@@ -9,185 +20,6 @@ author: &author
     name:
       required: true
       type: string
-#
-# Common reference for value-unit schema
-value-with-uncertainty: &value-with-uncertainty
-  isvalid_uncertainty: true
-  items:
-    - type: string
-    - type: dict
-      schema:
-        uncertainty-type:
-          required: true
-          type: string
-          allowed:
-            - absolute
-            - relative
-        uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - upper-uncertainty
-            - lower-uncertainty
-        upper-uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - lower-uncertainty
-        lower-uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - upper-uncertainty
-value-without-uncertainty: &value-without-uncertainty
-  isvalid_quantity: true
-  items:
-    - type: string
-value-unit-required: &value-unit-required
-  type: list
-  required: true
-  oneof:
-    - *value-with-uncertainty
-    - *value-without-uncertainty
-value-unit-optional: &value-unit-optional
-  type: list
-  oneof:
-    - *value-with-uncertainty
-    - *value-without-uncertainty
-#
-# Common reference for composition schema
-composition: &composition
-  isvalid_composition: true
-  type: dict
-  schema:
-    kind:
-      type: string
-      allowed: ['mass fraction', 'mole fraction', 'mole percent']
-    species:
-      type: list
-      required: true
-      minlength: 1
-      schema:
-        type: dict
-        required: true
-        schema:
-          species-name:
-            type: string
-            required: true
-          InChI:
-            type: string
-            required: true
-            excludes:
-              - atomic-composition
-              - SMILES
-              - elemental-composition
-          SMILES:
-            type: string
-            required: true
-            excludes:
-              - atomic-composition
-              - InChI
-              - elemental-composition
-          atomic-composition:
-            type: list
-            minlength: 1
-            required: true
-            excludes:
-              - InChI
-              - SMILES
-              - elemental-composition
-            schema:
-              type: dict
-              schema:
-                element:
-                  type: string
-                amount:
-                  type: float
-                  min: 0.0
-                  # TODO: option for float or int?
-          elemental-composition:
-            type: list
-            minlength: 1
-            required: true
-            excludes:
-              - InChI
-              - SMILES
-              - atomic-composition
-            schema:
-              type: dict
-              schema:
-                element:
-                  type: string
-                amount:
-                  type: float
-                  min: 0.0
-                  # TODO: option for float or int?
-          amount:
-            required: true
-            type: list
-            oneof:
-              - items:
-                - type: float
-              - items:
-                - type: float
-                - type: dict
-                  schema:
-                    uncertainty-type:
-                      required: true
-                      type: string
-                      allowed:
-                        - absolute
-                        - relative
-                    uncertainty:
-                      required: true
-                      type: float
-                      excludes:
-                        - upper-uncertainty
-                        - lower-uncertainty
-                    upper-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: lower-uncertainty
-                    lower-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: upper-uncertainty
-#
-# Common reference for ignition-type
-ignition-type: &ignition-type
-  type: dict
-  required: true
-  schema:
-    target:
-      required: true
-      type: string
-      allowed:
-        - temperature
-        - pressure
-        - OH
-        - OH*
-        - CH
-        - CH*
-    type:
-      allowed:
-        - d/dt max
-        - max
-        - 1/2 max
-        - min
-      required: true
-      type: string
 
 # Start the ChemKED schema
 common-properties:
@@ -197,6 +29,7 @@ common-properties:
     ignition-type: *ignition-type
     composition: *composition
     pressure-rise: *value-unit-optional
+
 apparatus:
   required: true
   type: dict
@@ -213,56 +46,8 @@ apparatus:
       type: string
 datapoints:
   required: true
-  type: list
-  minlength: 1
-  schema:
-    type: dict
-    schema:
-      pressure-rise: *value-unit-optional
-      compression-time: *value-unit-optional
-      pressure: *value-unit-required
-      ignition-type: *ignition-type
-      ignition-delay: *value-unit-required
-      temperature: *value-unit-required
-      composition: *composition
-      equivalence-ratio:
-        type: float
-        min: 0.0
-      volume-history:
-        type: dict
-        schema:
-          volume:
-            required: true
-            type: dict
-            isvalid_unit: true
-            schema:
-              units:
-                required: true
-                type: string
-              column:
-                required: true
-                type: integer
-                allowed: [0, 1]
-          time:
-            required: true
-            type: dict
-            isvalid_unit: true
-            schema:
-              units:
-                required: true
-                type: string
-              column:
-                required: true
-                type: integer
-                allowed: [0, 1]
-          values:
-            required: true
-            type: list
-            schema:
-              type: list
-              items:
-                - type: float
-                - type: float
+  oneof:
+    - *ignition-delay-schema
 reference:
   required: true
   type: dict
