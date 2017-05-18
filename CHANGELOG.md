@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Remove Python 2.7 classifier from `setup.py`
+- DataFrame output for datapoints lists with multiple compositions (i.e., a species not in all compositions)
 
 ### Changed
 - Improved tests with no internet
