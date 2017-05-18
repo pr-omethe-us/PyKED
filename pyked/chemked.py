@@ -152,6 +152,13 @@ class ChemKED(object):
                 Only the first author is printed when ``Reference`` or ``Reference:Authors`` is
                 selected because the whole author list may be quite long.
 
+        Note:
+            If the Composition is selected as an output type, the composition specified in the
+            `DataPoint` is used. No attempt is made to convert to a consistent basis; mole fractions
+            will remain mole fractions, mass fractions will remain mass fractions, and mole percent
+            will remain mole percent. Therefore, it is possible to end up with more than one type of
+            composition specification in a given column. Caveat Emptor.
+
         Examples:
             >>> df = ChemKED(yaml_file).get_dataframe()
             >>> df = ChemKED(yaml_file).get_dataframe(['Temperature', 'Ignition Delay'])
