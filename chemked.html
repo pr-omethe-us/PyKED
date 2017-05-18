@@ -187,6 +187,14 @@ selected because the whole author list may be quite long.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the Composition is selected as an output type, the composition specified in the
+<a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal"><span class="pre">DataPoint</span></code></a> is used. No attempt is made to convert to a consistent basis; mole fractions
+will remain mole fractions, mass fractions will remain mass fractions, and mole percent
+will remain mole percent. Therefore, it is possible to end up with more than one type of
+composition specification in a given column. Caveat Emptor.</p>
+</div>
 <p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">([</span><span class="s1">&#39;Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Ignition Delay&#39;</span><span class="p">])</span>

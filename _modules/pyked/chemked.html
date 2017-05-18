@@ -197,6 +197,13 @@
 <span class="sd">                Only the first author is printed when ``Reference`` or ``Reference:Authors`` is</span>
 <span class="sd">                selected because the whole author list may be quite long.</span>
 
+<span class="sd">        Note:</span>
+<span class="sd">            If the Composition is selected as an output type, the composition specified in the</span>
+<span class="sd">            `DataPoint` is used. No attempt is made to convert to a consistent basis; mole fractions</span>
+<span class="sd">            will remain mole fractions, mass fractions will remain mass fractions, and mole percent</span>
+<span class="sd">            will remain mole percent. Therefore, it is possible to end up with more than one type of</span>
+<span class="sd">            composition specification in a given column. Caveat Emptor.</span>
+
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; df = ChemKED(yaml_file).get_dataframe()</span>
 <span class="sd">            &gt;&gt;&gt; df = ChemKED(yaml_file).get_dataframe([&#39;Temperature&#39;, &#39;Ignition Delay&#39;])</span>
@@ -245,11 +252,14 @@
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
             <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">d_species</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">species_list</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]:</span>
-                            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d_species</span><span class="p">:</span>
+                        <span class="n">s_idx</span> <span class="o">=</span> <span class="n">d_species</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">[</span><span class="n">s_idx</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;reference&#39;</span> <span class="ow">in</span> <span class="n">col</span> <span class="ow">or</span> <span class="s1">&#39;apparatus&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
                     <span class="n">split_col</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;authors&#39;</span><span class="p">:</span>
