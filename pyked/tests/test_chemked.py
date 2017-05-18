@@ -167,6 +167,15 @@ class TestDataFrameOutput(object):
         with pytest.raises(ValueError):
             ChemKED(yaml_filename).get_dataframe(['bad column'])
 
+    def test_many_species(self, pd):
+        yaml_file = os.path.join('testfile_many_species.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        c = ChemKED(yaml_filename).get_dataframe()
+        assert c.iloc[0]['New-Species-1'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[0]['New-Species-2'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[1]['H2'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[1]['O2'] == Q_(0.0, 'dimensionless')
+
 
 class TestDataPoint(object):
     """
