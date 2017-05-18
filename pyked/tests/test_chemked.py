@@ -94,9 +94,15 @@ class TestChemKED(object):
 class TestDataFrameOutput(object):
     """
     """
-    def test_get_dataframe(self):
-        pd = pytest.importorskip('pandas')
-        pdt = pytest.importorskip('pandas.util.testing')
+    @pytest.fixture(scope='session')
+    def pd(self):
+        return pytest.importorskip('pandas')
+
+    @pytest.fixture(scope='session')
+    def pdt(self):
+        return pytest.importorskip('pandas.util.testing')
+
+    def test_get_dataframe(self, pd, pdt):
         yaml_file = os.path.join('testfile_st.yaml')
         yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
         c = ChemKED(yaml_filename).get_dataframe()
@@ -113,9 +119,7 @@ class TestDataFrameOutput(object):
         df = pd.read_csv(csv_filename, index_col=0, converters=converters)
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
-    def test_custom_dataframe(self):
-        pd = pytest.importorskip('pandas')
-        pdt = pytest.importorskip('pandas.util.testing')
+    def test_custom_dataframe(self, pd, pdt):
         yaml_file = os.path.join('testfile_st.yaml')
         yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
         cols_to_get = ['composition', 'Reference', 'apparatus', 'temperature', 'ignition delay']
@@ -138,9 +142,7 @@ class TestDataFrameOutput(object):
         df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
-    def test_custom_dataframe_2(self):
-        pd = pytest.importorskip('pandas')
-        pdt = pytest.importorskip('pandas.util.testing')
+    def test_custom_dataframe_2(self, pd, pdt):
         yaml_file = os.path.join('testfile_st.yaml')
         yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
         cols_to_get = ['temperature', 'ignition delay', 'Pressure']
@@ -159,14 +161,20 @@ class TestDataFrameOutput(object):
         df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
-    def test_invalid_column(self):
-        pytest.importorskip('pandas')
-        pytest.importorskip('pandas.util.testing')
-
+    def test_invalid_column(self, pd):
         yaml_file = os.path.join('testfile_st.yaml')
         yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
         with pytest.raises(ValueError):
             ChemKED(yaml_filename).get_dataframe(['bad column'])
+
+    def test_many_species(self, pd):
+        yaml_file = os.path.join('testfile_many_species.yaml')
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        c = ChemKED(yaml_filename).get_dataframe()
+        assert c.iloc[0]['New-Species-1'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[0]['New-Species-2'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[1]['H2'] == Q_(0.0, 'dimensionless')
+        assert c.iloc[1]['O2'] == Q_(0.0, 'dimensionless')
 
 
 class TestDataPoint(object):
