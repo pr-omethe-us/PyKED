@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Schema can now be split into multiple files via `!include` directive
 
 ### Fixed
+- Remove Python 2.7 classifier from `setup.py`
 
 ### Changed
 - Improved tests with no internet
@@ -17,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.1.4] - 2017-04-21
 ### Added
 - Add `skip_validation` keyword argument to the `ChemKED` initializer
+
+### Removed
+- Python 2.7 support is removed again
 
 ## [0.1.3] - 2017-04-13
 ### Added
