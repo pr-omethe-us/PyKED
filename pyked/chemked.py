@@ -200,11 +200,14 @@ class ChemKED(object):
         data = []
         for d in self.datapoints:
             row = []
+            d_species = [s['species-name'] for s in d.composition]
             for col in col_labels:
                 if col in species_list:
-                    for s in d.composition:
-                        if col == s['species-name']:
-                            row.append(s['amount'])
+                    if col in d_species:
+                        s_idx = d_species.index(col)
+                        row.append(d.composition[s_idx]['amount'])
+                    else:
+                        row.append(Q_(0.0, 'dimensionless'))
                 elif 'reference' in col or 'apparatus' in col:
                     split_col = col.split(':')
                     if split_col[1] == 'authors':
