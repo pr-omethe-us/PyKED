@@ -15,7 +15,7 @@ PyKED is a Python-based software package for validating and interacting with Che
 
 In order to have a more open and welcoming community, PyKED adheres to a code of conduct adapted from the [Contributor Covenant](http://contributor-covenant.org) code of conduct. The code of conduct for PyKED is available in the GitHub Repository  in the [CODE_OF_CONDUCT.md](https://github.com/pr-omethe-us/PyKED/blob/master/CODE_OF_CONDUCT.md) file.
 
-Please adhere to this code of conduct in any interactions you have in the PyKED community. It is strictly enforced on all official PyKED repositories, websites, and resources. If you encounter someone violating these terms, please let a maintainer (@kyleniemeyer, @bryanwweber, via email at chemked@googlegroups.com) know and we will address it as soon as possible.
+Please adhere to this code of conduct in any interactions you have in the PyKED community. It is strictly enforced on all official PyKED repositories, websites, and resources. If you encounter someone violating these terms, please let a maintainer ([@kyleniemeyer](https://github.com/kyleniemeyer), [@bryanwweber](https://github.com/bryanwweber), or via email at chemked@googlegroups.com) know and we will address it as soon as possible.
 
 ## License
 
