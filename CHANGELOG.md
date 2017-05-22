@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Fixed
+
+### Changed
+
+
+## [0.1.5] - 2017-05-22
+### Added
 - Schema can now be split into multiple files via `!include` directive
 
 ### Fixed
@@ -51,7 +59,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.1...v0.1.2
