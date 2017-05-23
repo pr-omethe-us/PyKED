@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PyKED's documentation!
-=================================
+PyKED
+=====
+
+.. image:: /_static/pyked-logo.png
+   :width: 25 %
+   :alt: PyKED logo
 
 .. toctree::
    :maxdepth: 2

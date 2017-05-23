@@ -1,3 +1,6 @@
+# Logo
+<img src="logo/pyked-logo.png" align="right" width="150" />
+
 This directory contains the logo files for PyKED.
 
 The logo combines images used under license from Shutterstock.com:
