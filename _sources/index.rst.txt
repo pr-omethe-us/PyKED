@@ -8,6 +8,7 @@ PyKED
 
 .. image:: /_static/pyked-logo.png
    :width: 25 %
+   :align: right
    :alt: PyKED logo
 
 .. toctree::
