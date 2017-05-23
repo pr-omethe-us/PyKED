@@ -1,5 +1,5 @@
 # PyKED
-<img src="logo/pyked-logo.svg" align="right" width="150" />
+<img src="logo/pyked-logo.png" align="right" width="150" />
 
 [![DOI](https://zenodo.org/badge/66023863.svg)](https://zenodo.org/badge/latestdoi/66023863)
 [![Travis Build Status](https://travis-ci.org/pr-omethe-us/PyKED.svg?branch=master)](https://travis-ci.org/pr-omethe-us/PyKED)
