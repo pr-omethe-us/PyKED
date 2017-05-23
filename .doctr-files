@@ -1,3 +1,4 @@
+./_images/pyked-logo.png
 ./_modules/index.html
 ./_modules/pint/registry.html
 ./_modules/pyked/chemked.html
@@ -23,6 +24,7 @@
 ./_static/minus.png
 ./_static/plus.png
 ./_static/pygments.css
+./_static/pyked-logo.png
 ./_static/searchtools.js
 ./_static/underscore-1.3.1.js
 ./_static/underscore.js
