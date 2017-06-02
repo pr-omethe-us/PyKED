@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Changed
+- Added Zenodo collection DOI to CITATION.md
 
 
 ## [0.1.5] - 2017-05-22
