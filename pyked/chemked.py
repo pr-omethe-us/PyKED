@@ -1,6 +1,8 @@
 """
 Main ChemKED module
 """
+# Standard libraries
+from os.path import exists
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
@@ -60,41 +62,43 @@ class ChemKED(object):
         experiment_type (`str`): Type of exeperimental data contained in this database.
         file_author (`dict`): Information about the author of the ChemKED database file.
         file_version (`str`): Version of the ChemKED database file.
+        _properties (`dict`): Original dictionary read from ChemKED database file, meant for
+            internal use.
     """
     def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
             with open(yaml_file, 'r') as f:
-                properties = yaml.safe_load(f)
+                self._properties = yaml.safe_load(f)
         elif dict_input is not None:
-            properties = dict_input
+            self._properties = dict_input
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
         if not skip_validation:
-            self.validate_yaml(properties)
+            self.validate_yaml(self._properties)
 
         self.datapoints = []
-        for point in properties['datapoints']:
+        for point in self._properties['datapoints']:
             self.datapoints.append(DataPoint(point))
 
         self.reference = Reference(
-            volume=properties['reference'].get('volume'),
-            journal=properties['reference'].get('journal'),
-            doi=properties['reference'].get('doi'),
-            authors=properties['reference'].get('authors'),
-            detail=properties['reference'].get('detail'),
-            year=properties['reference'].get('year'),
-            pages=properties['reference'].get('pages'),
+            volume=self._properties['reference'].get('volume'),
+            journal=self._properties['reference'].get('journal'),
+            doi=self._properties['reference'].get('doi'),
+            authors=self._properties['reference'].get('authors'),
+            detail=self._properties['reference'].get('detail'),
+            year=self._properties['reference'].get('year'),
+            pages=self._properties['reference'].get('pages'),
         )
 
         self.apparatus = Apparatus(
-            kind=properties['apparatus'].get('kind'),
-            institution=properties['apparatus'].get('institution'),
-            facility=properties['apparatus'].get('facility'),
+            kind=self._properties['apparatus'].get('kind'),
+            institution=self._properties['apparatus'].get('institution'),
+            facility=self._properties['apparatus'].get('facility'),
         )
 
         for prop in ['chemked-version', 'experiment-type', 'file-author', 'file-version']:
-            setattr(self, prop.replace('-', '_'), properties[prop])
+            setattr(self, prop.replace('-', '_'), self._properties[prop])
 
     def validate_yaml(self, properties):
         """Validate the parsed YAML file for adherance to the ChemKED format.
@@ -232,6 +236,30 @@ class ChemKED(object):
         col_labels = [a.title() for a in col_labels]
         columns = pd.Index(col_labels)
         return pd.DataFrame(data=data, columns=columns)
+
+    def write_file(self, filename, *, overwrite=False):
+        """Write new ChemKED YAML file based on object.
+
+        Arguments:
+            filename (`str`): Filename for target YAML file
+            overwrite (`bool`, optional): Whether to overwrite file with given name if present.
+                Must be supplied as a keyword-argument.
+
+        Raises:
+            `NameError`: If `filename` is already present, and `overwrite` is not `True`.
+
+        Example:
+            >>> dataset = ChemKED(yaml_file)
+            >>> dataset.write_file(new_yaml_file)
+        """
+        # Ensure file isn't already present
+        if exists(filename) and not overwrite:
+            raise NameError(filename + ' already present. Specify "overwrite=True" '
+                            'to overwrite, or rename.'
+                            )
+
+        with open(filename, 'w') as yaml_file:
+            yaml.dump(self._properties, yaml_file)
 
 
 class DataPoint(object):

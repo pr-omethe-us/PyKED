@@ -17,6 +17,30 @@ from ..utils import Q_
 
 warnings.simplefilter('always')
 
+# Create temporary directory for tests that need to create files
+# Taken from http://stackoverflow.com/a/22726782/1569494
+try:
+    from tempfile import TemporaryDirectory
+except ImportError:
+    from contextlib import contextmanager
+    import shutil
+    import tempfile
+    import errno
+
+    @contextmanager
+    def TemporaryDirectory():
+        name = tempfile.mkdtemp()
+        try:
+            yield name
+        finally:
+            try:
+                shutil.rmtree(name)
+            except OSError as e:
+                # Reraise unless ENOENT: No such file or directory
+                # (ok if directory has already been deleted)
+                if e.errno != errno.ENOENT:
+                    raise
+
 
 class TestChemKED(object):
     """
@@ -175,6 +199,59 @@ class TestDataFrameOutput(object):
         assert c.iloc[0]['New-Species-2'] == Q_(0.0, 'dimensionless')
         assert c.iloc[1]['H2'] == Q_(0.0, 'dimensionless')
         assert c.iloc[1]['O2'] == Q_(0.0, 'dimensionless')
+
+
+class TestWriteFile(object):
+    """
+    """
+    def test_file_exists(self):
+        """
+        """
+        yaml_file = 'testfile_st.yaml'
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        c = ChemKED(yaml_filename)
+
+        with pytest.raises(NameError):
+            c.write_file(yaml_filename)
+
+    def test_overwrite(self):
+        """
+        """
+        yaml_file = 'testfile_st.yaml'
+        yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
+        with open(yaml_filename, 'r') as f:
+            lines = f.readlines()
+
+        with TemporaryDirectory() as temp_dir:
+            newfile_path = os.path.join(temp_dir, 'testfile.yaml')
+            with open(newfile_path, 'w') as f:
+                f.writelines(lines)
+            c = ChemKED(newfile_path)
+
+            # Expected error
+            with pytest.raises(NameError):
+                c.write_file(newfile_path)
+
+            # Now successful
+            assert c.write_file(newfile_path, overwrite=True) is None
+
+    @pytest.mark.parametrize("filename", [
+        'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml',
+        'testfile_required.yaml', 'testfile_uncertainty.yaml'
+        ])
+    def test_write_files(self, filename):
+        """
+        """
+        c = ChemKED(os.path.join('pyked/tests', filename))
+
+        with TemporaryDirectory() as temp_dir:
+            c.write_file(os.path.join(temp_dir, 'testfile.yaml'))
+
+            # Now read in the file
+            with open(os.path.join(temp_dir, 'testfile.yaml'), 'r') as f:
+                properties = yaml.safe_load(f)
+
+        assert properties == c._properties
 
 
 class TestDataPoint(object):
