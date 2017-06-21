@@ -239,15 +239,33 @@ class TestDataPoint(object):
         d = DataPoint(properties[0])
         assert np.isclose(d.ignition_delay, Q_(471.54, 'us'))
 
+    def test_first_stage_ignition_delay(self):
+        properties = self.load_properties('testfile_rcm2.yaml')
+        d = DataPoint(properties[0])
+        print(d.first_stage_ignition_delay)
+        assert np.isclose(d.first_stage_ignition_delay.value, Q_(0.5, 'ms'))
+        assert np.isclose(d.first_stage_ignition_delay.error, Q_(0.005, 'ms'))
+
     def test_temperature(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
         assert np.isclose(d.temperature, Q_(1164.48, 'K'))
 
+    def test_compressed_temperature(self):
+        properties = self.load_properties('testfile_rcm2.yaml')
+        d = DataPoint(properties[0])
+        assert np.isclose(d.compressed_temperature.value, Q_(765, 'K'))
+        assert np.isclose(d.compressed_temperature.error, Q_(7.65, 'K'))
+
     def test_pressure(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
         assert np.isclose(d.pressure, Q_(220.0, 'kPa'))
+
+    def test_compressed_pressure(self):
+        properties = self.load_properties('testfile_rcm2.yaml')
+        d = DataPoint(properties[0])
+        assert np.isclose(d.compressed_pressure, Q_(7.1, 'bar'))
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')
