@@ -33,6 +33,9 @@ ignition-delay-schema: &ignition-delay-schema
       pressure: *value-unit-required
       ignition-type: *ignition-type
       ignition-delay: *value-unit-required
+      first-stage-ignition-delay: *value-unit-optional
+      compressed-pressure: *value-unit-optional
+      compressed-temperature: *value-unit-optional
       temperature: *value-unit-required
       composition: *composition
       equivalence-ratio:

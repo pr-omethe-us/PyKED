@@ -251,14 +251,23 @@ class DataPoint(object):
         pressure_rise (pint.Quantity, optional): The amount of pressure rise during the induction
             period of a shock tube experiment.
         compression_time (pint.Quantity, optional): The compression time for an RCM experiment.
+        compressed_pressure (pint.Quantity, optional): The pressure at the end of compression for
+            an RCM experiment.
+        compressed_temperature (pint.Quantity, optional): The temperature at the end of compression
+            for an RCM experiment.
+        first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the
+            experiment.
+        compression_time (pint.Quantity, optional): The compression time for an RCM experiment.
         ignition_type (`dict`): Dictionary with the ignition target and type.
         volume_history (`~collections.namedtuple`, optional): The volume history of the reactor
             during an RCM experiment.
     """
     def __init__(self, properties):
-        for prop in ['ignition-delay', 'temperature', 'pressure', 'pressure-rise',
-                     'compression-time'
-                     ]:
+        value_unit_props = [
+            'ignition-delay', 'temperature', 'pressure', 'pressure-rise', 'compression-time',
+            'compressed-temperature', 'compressed-pressure', 'first-stage-ignition-delay',
+        ]
+        for prop in value_unit_props:
             if prop in properties:
                 quant = Q_(properties[prop][0])
                 if len(properties[prop]) > 1:
