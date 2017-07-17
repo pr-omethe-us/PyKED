@@ -66,14 +66,18 @@ for key in ['author', 'value-unit-required', 'value-unit-optional',
     del schema[key]
 
 # SI units for available value-type properties
-property_units = {'temperature': 'kelvin',
-                  'pressure': 'pascal',
-                  'ignition-delay': 'second',
-                  'pressure-rise': '1.0 / second',
-                  'compression-time': 'second',
-                  'volume': 'meter**3',
-                  'time': 'second',
-                  }
+property_units = {
+    'temperature': 'kelvin',
+    'compressed-temperature': 'kelvin',
+    'pressure': 'pascal',
+    'compressed-pressure': 'pascal',
+    'ignition-delay': 'second',
+    'first-stage-ignition-delay': 'second',
+    'pressure-rise': '1.0 / second',
+    'compression-time': 'second',
+    'volume': 'meter**3',
+    'time': 'second',
+}
 
 
 def compare_name(given_name, family_name, question_name):

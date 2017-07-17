@@ -355,7 +355,7 @@ class TestValidator(object):
 
     @pytest.mark.parametrize("properties", [
         'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml', 'testfile_required.yaml',
-        'testfile_uncertainty.yaml'
+        'testfile_uncertainty.yaml', 'testfile_rcm2.yaml',
     ], indirect=['properties'])
     def test_valid_yaml(self, properties):
         """Ensure ChemKED YAML is validated
