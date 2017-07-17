@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Fixed
+
+### Changed
+
+## [0.1.6] - 2017-07-17
+### Added
 - Added logo files to repo
 - Added `first_stage_ignition_delay`, `compressed_pressure`, and `compressed_temperature` as properties
 
@@ -61,7 +68,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.2...v0.1.3
