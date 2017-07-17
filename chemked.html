@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -36,7 +36,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -83,10 +83,10 @@ the the reference information, versions, and file author.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>yaml_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) &#8211; The filename of the YAML database in ChemKED format.</li>
-<li><strong>dict_input</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) &#8211; A dictionary with the parsed ouput of YAML file in ChemKED
+<li><strong>yaml_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – The filename of the YAML database in ChemKED format.</li>
+<li><strong>dict_input</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – A dictionary with the parsed ouput of YAML file in ChemKED
 format.</li>
-<li><strong>skip_validation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; Whether validation of the ChemKED should be done. Must
+<li><strong>skip_validation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) – Whether validation of the ChemKED should be done. Must
 be supplied as a keyword-argument.</li>
 </ul>
 </td>
@@ -96,13 +96,13 @@ be supplied as a keyword-argument.</li>
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.datapoints">
 <code class="descname">datapoints</code><a class="headerlink" href="#pyked.chemked.ChemKED.datapoints" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> &#8211; List of <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal"><span class="pre">DataPoint</span></code></a> objects storing each datapoint in the database.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> – List of <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal"><span class="pre">DataPoint</span></code></a> objects storing each datapoint in the database.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.reference">
 <code class="descname">reference</code><a class="headerlink" href="#pyked.chemked.ChemKED.reference" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a> &#8211; Attributes include <code class="docutils literal"><span class="pre">volume</span></code>, <code class="docutils literal"><span class="pre">journal</span></code>, <code class="docutils literal"><span class="pre">doi</span></code>,
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a> – Attributes include <code class="docutils literal"><span class="pre">volume</span></code>, <code class="docutils literal"><span class="pre">journal</span></code>, <code class="docutils literal"><span class="pre">doi</span></code>,
 <code class="docutils literal"><span class="pre">authors</span></code>, <code class="docutils literal"><span class="pre">detail</span></code>, <code class="docutils literal"><span class="pre">year</span></code>, and <code class="docutils literal"><span class="pre">pages</span></code> describing the reference from which the
 datapoints are derived.</p>
 </dd></dl>
@@ -110,7 +110,7 @@ datapoints are derived.</p>
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.apparatus">
 <code class="descname">apparatus</code><a class="headerlink" href="#pyked.chemked.ChemKED.apparatus" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a> &#8211; Attributes include <code class="docutils literal"><span class="pre">kind</span></code> of experimental
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a> – Attributes include <code class="docutils literal"><span class="pre">kind</span></code> of experimental
 apparatus, and the <code class="docutils literal"><span class="pre">institution</span></code> and <code class="docutils literal"><span class="pre">facility</span></code> where the experimental apparatus is
 located.</p>
 </dd></dl>
@@ -118,25 +118,25 @@ located.</p>
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.chemked_version">
 <code class="descname">chemked_version</code><a class="headerlink" href="#pyked.chemked.ChemKED.chemked_version" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> &#8211; Version of the ChemKED database schema used in this file.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> – Version of the ChemKED database schema used in this file.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.experiment_type">
 <code class="descname">experiment_type</code><a class="headerlink" href="#pyked.chemked.ChemKED.experiment_type" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> &#8211; Type of exeperimental data contained in this database.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> – Type of exeperimental data contained in this database.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.file_author">
 <code class="descname">file_author</code><a class="headerlink" href="#pyked.chemked.ChemKED.file_author" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a> &#8211; Information about the author of the ChemKED database file.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a> – Information about the author of the ChemKED database file.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.file_version">
 <code class="descname">file_version</code><a class="headerlink" href="#pyked.chemked.ChemKED.file_version" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> &#8211; Version of the ChemKED database file.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> – Version of the ChemKED database file.</p>
 </dd></dl>
 
 <dl class="method">
@@ -147,7 +147,7 @@ located.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>output_columns</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>, optional) &#8211; <p>List of strings specifying the columns to include
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>output_columns</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>, optional) – <p>List of strings specifying the columns to include
 in the output DataFrame. The default is <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">None</span></code></a>, which outputs all of the
 columns. Options include (not case sensitive):</p>
 <blockquote>
@@ -210,7 +210,7 @@ composition specification in a given column. Caveat Emptor.</p>
 </dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.20.1)"><code class="xref py py-obj docutils literal"><span class="pre">DataFrame</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.20.3)"><code class="xref py py-obj docutils literal"><span class="pre">DataFrame</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -224,9 +224,9 @@ composition specification in a given column. Caveat Emptor.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>) &#8211; Dictionary created from the parsed YAML file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>) – Dictionary created from the parsed YAML file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> &#8211; If the YAML file cannot be validated, a <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> is raised whose
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> – If the YAML file cannot be validated, a <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> is raised whose
 string contains the errors that are present.</td>
 </tr>
 </tbody>
@@ -245,57 +245,84 @@ parsed from the <a class="reference internal" href="#pyked.chemked.ChemKED" titl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>) &#8211; Dictionary adhering to the ChemKED format for <code class="docutils literal"><span class="pre">datapoints</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>) – Dictionary adhering to the ChemKED format for <code class="docutils literal"><span class="pre">datapoints</span></code></td>
 </tr>
 </tbody>
 </table>
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.composition">
 <code class="descname">composition</code><a class="headerlink" href="#pyked.chemked.DataPoint.composition" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> &#8211; List of dictionaries representing the species and their quantities</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> – List of dictionaries representing the species and their quantities</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.ignition_delay">
 <code class="descname">ignition_delay</code><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> &#8211; The ignition delay of the experiment</p>
+<dd><p><em>pint.Quantity</em> – The ignition delay of the experiment</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.temperature">
 <code class="descname">temperature</code><a class="headerlink" href="#pyked.chemked.DataPoint.temperature" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> &#8211; The temperature of the experiment</p>
+<dd><p><em>pint.Quantity</em> – The temperature of the experiment</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.pressure">
 <code class="descname">pressure</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> &#8211; The pressure of the experiment</p>
+<dd><p><em>pint.Quantity</em> – The pressure of the experiment</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.pressure_rise">
 <code class="descname">pressure_rise</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_rise" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> &#8211; The amount of pressure rise during the induction
+<dd><p><em>pint.Quantity, optional</em> – The amount of pressure rise during the induction
 period of a shock tube experiment.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.compression_time">
 <code class="descname">compression_time</code><a class="headerlink" href="#pyked.chemked.DataPoint.compression_time" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> &#8211; The compression time for an RCM experiment.</p>
+<dd><p><em>pint.Quantity, optional</em> – The compression time for an RCM experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.compressed_pressure">
+<code class="descname">compressed_pressure</code><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>pint.Quantity, optional</em> – The pressure at the end of compression for
+an RCM experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.compressed_temperature">
+<code class="descname">compressed_temperature</code><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>pint.Quantity, optional</em> – The temperature at the end of compression
+for an RCM experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.first_stage_ignition_delay">
+<code class="descname">first_stage_ignition_delay</code><a class="headerlink" href="#pyked.chemked.DataPoint.first_stage_ignition_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>pint.Quantity, optional</em> – The first stage ignition delay of the
+experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">compression_time</code></dt>
+<dd><p><em>pint.Quantity, optional</em> – The compression time for an RCM experiment.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.ignition_type">
 <code class="descname">ignition_type</code><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_type" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a> &#8211; Dictionary with the ignition target and type.</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a> – Dictionary with the ignition target and type.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.volume_history">
 <code class="descname">volume_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.volume_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional &#8211; The volume history of the reactor
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The volume history of the reactor
 during an RCM experiment.</p>
 </dd></dl>
 
@@ -388,13 +415,13 @@ during an RCM experiment.</p>
 <dl class="attribute">
 <dt id="pyked.chemked.VolumeHistory.time">
 <code class="descname">time</code><a class="headerlink" href="#pyked.chemked.VolumeHistory.time" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.12)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) &#8211; the time during the experiment</p>
+<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.13)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) – the time during the experiment</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.VolumeHistory.volume">
 <code class="descname">volume</code><a class="headerlink" href="#pyked.chemked.VolumeHistory.volume" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.12)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) &#8211; the volume during the experiment</p>
+<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.13)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) – the volume during the experiment</p>
 </dd></dl>
 
 </dd></dl>
@@ -440,7 +467,7 @@ during an RCM experiment.</p>
       &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

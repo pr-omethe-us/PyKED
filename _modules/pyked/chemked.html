@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -34,7 +34,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -296,14 +296,23 @@
 <span class="sd">        pressure_rise (pint.Quantity, optional): The amount of pressure rise during the induction</span>
 <span class="sd">            period of a shock tube experiment.</span>
 <span class="sd">        compression_time (pint.Quantity, optional): The compression time for an RCM experiment.</span>
+<span class="sd">        compressed_pressure (pint.Quantity, optional): The pressure at the end of compression for</span>
+<span class="sd">            an RCM experiment.</span>
+<span class="sd">        compressed_temperature (pint.Quantity, optional): The temperature at the end of compression</span>
+<span class="sd">            for an RCM experiment.</span>
+<span class="sd">        first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the</span>
+<span class="sd">            experiment.</span>
+<span class="sd">        compression_time (pint.Quantity, optional): The compression time for an RCM experiment.</span>
 <span class="sd">        ignition_type (`dict`): Dictionary with the ignition target and type.</span>
 <span class="sd">        volume_history (`~collections.namedtuple`, optional): The volume history of the reactor</span>
 <span class="sd">            during an RCM experiment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure-rise&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;compression-time&#39;</span>
-                     <span class="p">]:</span>
+        <span class="n">value_unit_props</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure-rise&#39;</span><span class="p">,</span> <span class="s1">&#39;compression-time&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;compressed-temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;compressed-pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;first-stage-ignition-delay&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">value_unit_props</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
                 <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -468,7 +477,7 @@
       &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

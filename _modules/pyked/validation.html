@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -34,7 +34,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -111,14 +111,18 @@
     <span class="k">del</span> <span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 <span class="c1"># SI units for available value-type properties</span>
-<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;pascal&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;ignition-delay&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;pressure-rise&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0 / second&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;compression-time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="s1">&#39;meter**3&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
-                  <span class="p">}</span>
+<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compressed-temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;kelvin&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;pascal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compressed-pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;pascal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ignition-delay&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;first-stage-ignition-delay&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pressure-rise&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0 / second&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compression-time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="s1">&#39;meter**3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="compare_name"><a class="viewcode-back" href="../../validation.html#pyked.validation.compare_name">[docs]</a><span class="k">def</span> <span class="nf">compare_name</span><span class="p">(</span><span class="n">given_name</span><span class="p">,</span> <span class="n">family_name</span><span class="p">,</span> <span class="n">question_name</span><span class="p">):</span>
@@ -504,7 +508,7 @@
       &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
