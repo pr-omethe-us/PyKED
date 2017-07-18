@@ -11,9 +11,19 @@ PyKED
    :align: right
    :alt: PyKED logo
 
+User's Guide
+------------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   install
+
+Code API
+--------
+
+.. toctree::
+   :maxdepth: 2
 
    chemked
    utils
