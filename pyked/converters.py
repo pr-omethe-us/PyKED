@@ -41,14 +41,14 @@ class KeywordError(ParseError):
         self.keywords = keywords
 
     def __str__(self):
-        return repr('Error: {}.'.format(self.keywords))
+        return repr('Error: {}.'.format(self.keywords[0]))
 
 class MissingElementError(KeywordError):
     """Raised for missing required elements."""
 
     def __str__(self):
         return repr('Error: Required element {} is missing.'.format(
-            self.keywords))
+            self.keywords[0]))
 
 class MissingAttributeError(KeywordError):
     """Raised for missing required attribute."""
@@ -61,7 +61,7 @@ class UndefinedKeywordError(KeywordError):
     """Raised for undefined keywords."""
 
     def __str__(self):
-        return repr('Error: Keyword not defined: {}'.format(self.keywords))
+        return repr('Error: Keyword not defined: {}'.format(self.keywords[0]))
 
 
 def get_file_metadata(root):
@@ -84,7 +84,10 @@ def get_file_metadata(root):
     try:
         properties['file-author']['name'] = root.find('fileAuthor').text
     except AttributeError:
-        print('Warning: no fileAuthor given')
+        raise AttributeError('Error: no fileAuthor given')
+
+    if properties['file-author']['name'] == '':
+        raise AttributeError('Error: no fileAuthor given')
 
     # Default version is 0
     version = '0'
@@ -95,7 +98,8 @@ def get_file_metadata(root):
         try:
             version = elem.find('major').text + '.' + elem.find('minor').text
         except AttributeError:
-            print('Warning: missing fileVersion major/minor')
+            print('Error: missing fileVersion major/minor')
+            raise
     properties['file-version'] = int(float(version))
 
     # Default ChemKED version
@@ -120,23 +124,22 @@ def get_reference(root):
     """
     reference = {}
     elem = root.find('bibliographyLink')
+    if elem is None:
+        raise AttributeError('Error: missing bibliographyLink')
 
     # Try to get reference info via DOI
     try:
         reference['doi'] = elem.attrib['doi']
-    except KeyError:
-        print('Warning: missing doi attribute in bibliographyLink')
-
-    if reference.get('doi') is not None:
         ref = None
         try:
             ref = habanero.Crossref().works(ids=reference['doi'])['message']
         except (HTTPError, habanero.RequestError):
-            self._error(field, 'DOI not found')
-            return
+            print('DOI not found')
+            raise KeyError
         # TODO: remove UnboundLocalError after habanero fixed
         except (ConnectionError, UnboundLocalError):
-            warn('network not available, DOI not found.')
+            warn('network not available, DOI not validated.')
+            raise KeyError
 
         if ref is not None:
             ## Now get elements of the reference data
@@ -156,12 +159,16 @@ def get_reference(root):
                     auth['ORCID'] = orcid
                 reference['authors'].append(auth)
 
-    else:
-        print('Setting "citation" key as a fallback; please update')
+    except KeyError:
+        print('Warning: missing doi attribute in bibliographyLink')
+        print('Setting "detail" key as a fallback; please update.')
         try:
-            reference['citation'] = elem.attrib['preferredKey']
+            reference['detail'] = elem.attrib['preferredKey']
+            if reference['detail'][-1] != '.':
+                reference['detail'] += '.'
         except KeyError:
-            print('Warning: missing preferredKey attribute in bibliographyLink')
+            # Need one of DOI or preferredKey
+            raise KeyError('Error: missing preferredKey attribute in bibliographyLink')
 
     return reference
 
@@ -460,7 +467,9 @@ def read_experiment(filename):
     # get reference info
     properties['reference'] = get_reference(root)
     # Save name of original data filename
-    properties['reference']['detail'] = 'Converted from ' + os.path.basename(filename)
+    if properties['reference'].get('detail') is None:
+        properties['reference']['detail'] = ''
+    properties['reference']['detail'] += 'Converted from XML file ' + os.path.basename(filename)
 
     # Ensure ignition delay, and get which kind of experiment
     properties.update(get_experiment_kind(root))
@@ -502,14 +511,6 @@ def read_experiment(filename):
                            'cannot be specified'
                            )
 
-    # Now go through datapoints and apply common properties
-    for idx in range(len(properties['datapoints'])):
-        for prop in properties['common-properties']:
-            properties['datapoints'][idx][prop] = properties['common-properties'][prop]
-
-    # compression time doesn't belong in common-properties
-    properties['common-properties'].pop('compression-time', None)
-
     return properties
 
 
@@ -545,6 +546,14 @@ def convert_ReSpecTh_to_ChemKED(filename_xml, output='', file_author='',
         properties['file-author']['name'] = file_author
     if file_author_orcid:
         properties['file-author']['ORCID'] = file_author_orcid
+
+    # Now go through datapoints and apply common properties
+    for idx in range(len(properties['datapoints'])):
+        for prop in properties['common-properties']:
+            properties['datapoints'][idx][prop] = properties['common-properties'][prop]
+
+    # compression time doesn't belong in common-properties
+    properties['common-properties'].pop('compression-time', None)
 
     filename_yaml = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
