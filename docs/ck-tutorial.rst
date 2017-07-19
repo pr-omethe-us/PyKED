@@ -202,7 +202,8 @@ included in the ``common-properties`` key. This is an intentional decision, and 
 the anchor and reference syntax to avoid having to write the same value multiple times.
 
 Values in data points can also have an associated uncertainty. This uncertainty can be absolute or
-relative, and is specified in the following way:
+relative, and is specified in the following way (the values in this example are arbitrary, and don't
+represent actual experimental results):
 
 .. code-block:: yaml
 

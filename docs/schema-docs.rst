@@ -10,18 +10,53 @@ main schema file (``chemked_schema.yaml``) and must appear at the top of the fil
 directive is **not** supported in any actual ChemKED files.
 
 Examples of constructing a ChemKED format file, as well as examples of files themselves, are located
-in :doc:`ck-tutorial`.
+in :doc:`ck-tutorial`. The sections laid out in this file roughly correspond to the sections
+discussed in the tutorial.
 
 .. contents::
     :local:
 
+.. _meta-keys:
+
 Meta Keys
 ---------
 
-The keys in this section encode the "meta" information about the ChemKED file. All of the top-level
-keys in this section are required in every ChemKED file, although some of the sub-keys are optional.
+The keys in this section encode the "meta" information about the ChemKED file. All of the keys in
+this section are required in every ChemKED file.
 
-.. _meta-apparatus:
+.. _meta-chemked-version:
+
+* ``chemked-version``: string, required
+    A string with the version of the ChemKED schema that this file targets.
+
+.. _meta-datapoints:
+
+* ``datapoints``: sequence, required
+    A sequence of mappings representing the data encoded in the file. Each element of the sequence
+    must conform to the schema described in :ref:`ignition-delay-keys` (for now).
+
+.. _meta-file-version:
+
+* ``file-version``: integer, required
+    An integer that represents the version of the file. Should be incremented every time a change is
+    committed to a file in the database.
+
+.. _meta-file-author:
+
+* ``file-author``: mapping, required
+    The author of the ChemKED file, which may be different from the authors of the referenced work.
+    Must conform to the :ref:`author <schema-author>` schema.
+
+.. _reference-keys:
+
+Reference Keys
+--------------
+
+The keys in this section are related to the reference for the experiment, the article where the data
+is published, and the apparatus used to conduct the experiment. All the top-level keys in this
+section are required, although some of the sub-keys are optional.
+
+.. _reference-apparatus:
 
 * ``apparatus``: mapping, required
     This mapping provides information about the apparatus used to conduct the experiments. Fields:
@@ -36,36 +71,13 @@ keys in this section are required in every ChemKED file, although some of the su
         A unique name or identifier for the apparatus, if the institution has several that are
         similar
 
-.. _meta-chemked-version:
-
-* ``chemked-version``: string, required
-    A string with the version of the ChemKED schema that this file targets.
-
-.. _meta-datapoints:
-
-* ``datapoints``: sequence, required
-    A sequence of mappings representing the data encoded in the file. Each element of the sequence
-    must conform to the schema described in :ref:`ignition-delay-keys` (for now).
-
-.. _meta-experiment-type:
+.. _reference-experiment-type:
 
 * ``experiment-type``: string, required
     The type of experiment encoded in this file. Currently, the only allowed value is
     ``ignition delay``, which is case sensitive.
 
-.. _meta-file-version:
-
-* ``file-version``: integer, required
-    An integer that represents the version of the file. Should be incremented every time a change is
-    committed to a file in the database.
-
-.. _meta-file-author:
-
-* ``file-author``: mapping, required
-    The author of the ChemKED file, which may be different from the authors of the referenced work.
-    Must conform to the :ref:`author <schema-author>` schema.
-
-.. _meta-reference:
+.. _reference-reference:
 
 * ``reference``: mapping, required
     The reference contains the information about the article where the data in the file are
@@ -94,6 +106,8 @@ keys in this section are required in every ChemKED file, although some of the su
     - ``pages``: string, optional
         The pages in the journal where the article is published (not the pages where the data are
         located, that would go in the ``detail`` field.)
+
+.. _common-property-keys:
 
 Common Property Keys
 --------------------
@@ -296,6 +310,8 @@ for the :ref:`datapoints <meta-datapoints>` schema.
               - 2.0
             - - 3.0
               - 3.0
+
+.. _schema-only-keys:
 
 Schema-Only Keys
 ----------------
