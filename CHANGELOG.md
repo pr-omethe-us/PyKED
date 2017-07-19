@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Adds ChemKED method to write new file, with tests
+- Adds converter for ReSpecTh files
 
 ### Fixed
 
