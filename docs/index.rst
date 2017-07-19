@@ -26,6 +26,7 @@ User's Guide
    install
    ck-tutorial
    schema-docs
+   pyked-examples
 
 Code API
 --------
