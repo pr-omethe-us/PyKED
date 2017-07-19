@@ -11,6 +11,12 @@ PyKED
    :align: right
    :alt: PyKED logo
 
+PyKED is a Python package that currently provides the reference implementation of the interface to
+ChemKED files. PyKED reads ChemKED files, validates their structure and content, and allows the user
+to interact with the data contained in the ChemKED file. PyKED is licensed under the permissive,
+open-source BSD 3-clause license. The source code is publicly available on GitHub at
+https://github.com/pr-omethe-us/PyKED.
+
 User's Guide
 ------------
 
