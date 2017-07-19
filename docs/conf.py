@@ -55,6 +55,8 @@ intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
 }
 
+modindex_common_prefix = ['pyked.']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
