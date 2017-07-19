@@ -36,6 +36,12 @@ article where the data is published, and a "data" section that contains the actu
 experiment. A full listing of the keys and their associated meanings can be found in the full
 schema.
 
+ChemKED files have the extension ``.yaml``. Within the file, indentation must be by spaces only, and
+each level should be indented by two spaces relative to the previous level. Please set your text
+editor to produce UNIX-style line endings (``\n``), not DOS style (``\r\n``). Note that all keys and
+values are case-sensitive and should be written entirely in lower case (except author names, journal
+names, and apparatus institution and facility, where standard case conventions may be used).
+
 The Meta Section
 ----------------
 
