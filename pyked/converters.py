@@ -502,6 +502,14 @@ def read_experiment(filename):
                            'cannot be specified'
                            )
 
+    # Now go through datapoints and apply common properties
+    for idx in range(len(properties['datapoints'])):
+        for prop in properties['common-properties']:
+            properties['datapoints'][idx][prop] = properties['common-properties'][prop]
+
+    # compression time doesn't belong in common-properties
+    properties['common-properties'].pop('compression-time', None)
+
     return properties
 
 
@@ -537,14 +545,6 @@ def convert_ReSpecTh_to_ChemKED(filename_xml, output='', file_author='',
         properties['file-author']['name'] = file_author
     if file_author_orcid:
         properties['file-author']['ORCID'] = file_author_orcid
-
-    # Now go through datapoints and apply common properties
-    for idx in range(len(properties['datapoints'])):
-        for prop in properties['common-properties']:
-            properties['datapoints'][idx][prop] = properties['common-properties'][prop]
-
-    # compression time doesn't belong in common-properties
-    properties['common-properties'].pop('compression-time', None)
 
     filename_yaml = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
