@@ -33,8 +33,8 @@ include all of the information necessary to simulate a given experiment and can 
 conceptually in three main sections, a "meta" section that contains information about the ChemKED
 file itself, a "reference" section that contains information about the type of experiment and the
 article where the data is published, and a "data" section that contains the actual data for the
-experiment. A full listing of the keys and their associated meanings can be found in the full
-schema.
+experiment. A full listing of the keys and their associated meanings can be found in the
+:doc:`schema-docs`.
 
 ChemKED files have the extension ``.yaml``. Within the file, indentation must be by spaces only, and
 each level should be indented by two spaces relative to the previous level. Please set your text
