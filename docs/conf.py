@@ -55,7 +55,14 @@ intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
 }
 
+# Make the module index more useful by sorting on the module name
+# instead of the package name
 modindex_common_prefix = ['pyked.']
+
+# Suppress duplicate citation warnings.
+# WARNING: Also suppresses undefined citation warnings and unused
+# reference warnings.
+suppress_warnings = ['ref.citation']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
