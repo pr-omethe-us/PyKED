@@ -23,6 +23,7 @@ except ImportError:
             raise
 
 # Local imports
+from .validation import yaml
 from .chemked import ChemKED, DataPoint
 from .utils import units
 from ._version import __version__
@@ -541,6 +542,9 @@ def convert_ReSpecTh_to_ChemKED(filename_xml, output='', file_author='',
     for idx in range(len(properties['datapoints'])):
         for prop in properties['common-properties']:
             properties['datapoints'][idx][prop] = properties['common-properties'][prop]
+
+    # compression time doesn't belong in common-properties
+    properties['common-properties'].pop('compression-time', None)
 
     filename_yaml = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
