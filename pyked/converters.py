@@ -9,6 +9,7 @@ import numpy
 
 from requests.exceptions import HTTPError, ConnectionError
 import habanero
+import pint
 
 try:
     from lxml import etree
@@ -23,9 +24,9 @@ except ImportError:
             raise
 
 # Local imports
-from .validation import yaml
+from .validation import yaml, property_units
 from .chemked import ChemKED, DataPoint
-from .utils import units
+from .utils import units as unit_registry
 from ._version import __version__
 
 
@@ -192,17 +193,17 @@ def get_experiment_kind(root):
         properties['experiment-type'] = 'ignition delay'
     else:
         #TODO: support additional experimentTypes
-        raise KeywordError('experimentType not ignition delay measurement')
+        raise KeyError('experimentType not ignition delay measurement')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
     try:
         kind = root.find('apparatus/kind').text
-        if kind in ['shock tube', 'rapid compression machine']:
-            properties['apparatus']['kind'] = kind
-        else:
-            raise NotImplementedError(kind + ' experiment not (yet) supported')
     except:
-        raise MissingElementError('apparatus/kind')
+        raise AttributeError('Missing apparatus/kind')
+    if kind in ['shock tube', 'rapid compression machine']:
+        properties['apparatus']['kind'] = kind
+    else:
+        raise NotImplementedError(kind + ' experiment not (yet) supported')
 
     return properties
 
@@ -251,33 +252,25 @@ def get_common_properties(root):
                 if not composition_type:
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
-                    raise KeywordError('inconsistent initial composition units')
+                    raise KeyError('inconsistent initial composition units')
             assert composition_type in ['mole fraction', 'mass fraction']
             properties['composition']['kind'] = composition_type
 
-        elif name == 'temperature':
-            # Common initial temperature
-            properties['temperature'] = [' '.join([elem.find('value').text, elem.attrib['units']])]
-
-        elif name == 'pressure':
-            # Common initial pressure
+        elif name in ['temperature', 'pressure', 'pressure rise', 'compression time']:
+            field = name.replace(' ', '-')
             units = elem.attrib['units']
             if units == 'Torr':
                 units = 'torr'
-            properties['pressure'] = [' '.join([elem.find('value').text, units])]
+            quantity = 1.0 * unit_registry(units)
+            try:
+                quantity.to(property_units[field])
+            except pint.DimensionalityError:
+                raise KeyError('Error: units incompatible for property ' + name)
 
-        elif name == 'pressure rise':
-            # Constant pressure rise, given in % of initial pressure
-            # per unit of time
-            if root.find('apparatus/kind').text == 'rapid compression machine':
-                raise KeywordError('Pressure rise cannot be defined for RCM.')
-            properties['pressure-rise'] = [' '.join([elem.find('value').text, elem.attrib['units']])]
+            properties[field] = [' '.join([elem.find('value').text, units])]
 
-        elif name == 'compression time':
-            # RCM compression time, given in time units
-            if root.find('apparatus/kind').text == 'shock tube':
-                raise KeywordError('Compression time cannot be defined for shock tube.')
-            properties['compression-time'] = [' '.join([elem.find('value').text, elem.attrib['units']])]
+        else:
+            raise KeyError('Property ' + name + ' not supported as common property.')
 
     return properties
 
@@ -300,20 +293,20 @@ def get_ignition_type(root):
     elem = root.find('ignitionType')
 
     if elem is None:
-        raise MissingElementError('ignitionType')
+        raise AttributeError('missing ignitionType')
 
     try:
         ign_target = elem.attrib['target'].rstrip(';').upper()
     except KeyError:
-        raise MissingAttributeError('ignitionType target')
+        raise AttributeError('missing ignitionType/target')
     try:
         ign_type = elem.attrib['type']
     except KeyError:
-        raise MissingAttributeError('ignitionType type')
+        raise AttributeError('missing ignitionType/type')
 
     # ReSpecTh allows multiple ignition targets
     if len(ign_target.split(';')) > 1:
-        raise NotImplementedError('Multiple ignition targets not implemented.')
+        raise NotImplementedError('Multiple ignition targets not supported.')
 
     # Acceptable ignition targets include pressure, temperature, and species
     # concentrations
@@ -323,19 +316,10 @@ def get_ignition_type(root):
         ign_target = 'CH*'
 
     if ign_target not in ['P', 'T', 'OH', 'OH*', 'CH*', 'CH']:
-        raise UndefinedKeywordError(ign_target)
+        raise KeyError(ign_target + ' not valid ignition target')
 
-    if ign_type not in ['max', 'd/dt max',
-                        'baseline max intercept from d/dt',
-                        'baseline min intercept from d/dt',
-                        'concentration', 'relative concentration'
-                        ]:
-        raise UndefinedKeywordError(ign_type)
-
-    if ign_type in ['baseline max intercept from d/dt',
-                    'baseline min intercept from d/dt'
-                    ]:
-        raise NotImplementedError(ign_type + ' not supported')
+    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
+        raise KeyError(ign_type + ' not valid ignition type')
 
     if ign_target == 'P':
         ign_target = 'pressure'
@@ -344,20 +328,6 @@ def get_ignition_type(root):
 
     ignition['type'] = ign_type
     ignition['target'] = ign_target
-
-    if ign_type in ['concentration', 'relative concentration']:
-        try:
-            amt = elem.attrib['amount']
-        except KeyError:
-            raise MissingAttributeError('ignitionType amount')
-        try:
-            amt_units = elem.attrib['units']
-        except KeyError:
-            raise MissingAttributeError('ignitionType units')
-
-        raise NotImplementedError('concentration ignition delay type '
-                                  'not supported'
-                                  )
 
     return ignition
 
@@ -498,6 +468,16 @@ def read_experiment(filename):
           not any(['time' in dp for dp in properties['datapoints']])
           ):
         raise KeywordError('Time values needed for volume history')
+
+    if ('compression-time' in properties['common-properties'] or
+        any([dp for dp in properties['datapoints'] if dp.get('compression-time')])
+        ) and properties['apparatus']['kind'] == 'shock tube':
+        raise KeyError('Compression time cannot be defined for shock tube.')
+
+    if ('pressure-rise' in properties['common-properties'] or
+        any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
+        ) and properties['apparatus']['kind'] == 'rapid compression machine':
+        raise KeyError('Pressure rise cannot be defined for RCM.')
 
     if (('volume' in properties['common-properties'] and
          'pressure-rise' in properties['common-properties']
