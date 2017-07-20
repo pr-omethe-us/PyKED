@@ -24,12 +24,37 @@ except ImportError:
             print("Failed to import ElementTree from any known place")
             raise
 
+# Create temporary directory for tests that need to create files
+# Taken from http://stackoverflow.com/a/22726782/1569494
+try:
+    from tempfile import TemporaryDirectory
+except ImportError:
+    from contextlib import contextmanager
+    import shutil
+    import tempfile
+    import errno
+
+    @contextmanager
+    def TemporaryDirectory():
+        name = tempfile.mkdtemp()
+        try:
+            yield name
+        finally:
+            try:
+                shutil.rmtree(name)
+            except OSError as e:
+                # Reraise unless ENOENT: No such file or directory
+                # (ok if directory has already been deleted)
+                if e.errno != errno.ENOENT:
+                    raise
+
 # Local imports
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
-                          read_experiment, convert_ReSpecTh_to_ChemKED
+                          convert_ReSpecTh,
                           )
 from .._version import __version__
+from ..chemked import ChemKED
 
 class TestFileMetadata(object):
     """
@@ -571,7 +596,6 @@ class TestGetDatapoints(object):
             assert datapoint['temperature'] == [str(temp) + ' K']
             assert datapoint['ignition-delay'] == [str(ignition_delay) + ' us']
 
-
     def test_valid_datapoints_two_datagroup(self):
         """Test valid parsing of datapoints when in a two dataGroups.
         """
@@ -656,8 +680,6 @@ class TestGetDatapoints(object):
             datapoints = get_datapoints(root)
         assert 'Error: need at least one dataPoint.' in str(excinfo.value)
 
-
-
     def test_multiple_datagroups_shocktube(self):
         """Raise error when multiple dataGroups with shock tube.
         """
@@ -736,3 +758,35 @@ class TestGetDatapoints(object):
         with pytest.raises(NotImplementedError) as excinfo:
             datapoints = get_datapoints(root)
         assert 'More than two DataGroups not supported.' in str(excinfo.value)
+
+
+class TestConvertReSpecTh(object):
+    """
+    """
+    @pytest.mark.parametrize('filename_xml', ['testfile_st.xml', 'testfile_rcm.xml'])
+    def test_valid_conversion(self, filename_xml):
+        """Test proper conversion of ReSpecTh files.
+        """
+        file_path = os.path.join(filename_xml)
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = convert_ReSpecTh(filename, output=temp_dir,
+                                       file_author='Kyle Niemeyer',
+                                       file_author_orcid='0000-0003-4425-7097'
+                                       )
+
+            c = ChemKED(yaml_file=newfile)
+
+        # compare with ChemKED file of same experiment
+        file_path = os.path.join(os.path.splitext(filename_xml)[0] + '.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c_true = ChemKED(yaml_file=filename)
+
+        assert c.file_author['name'] == 'Kyle Niemeyer'
+        assert c.file_author['ORCID'] == '0000-0003-4425-7097'
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
