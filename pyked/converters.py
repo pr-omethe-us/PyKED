@@ -418,38 +418,46 @@ def get_datapoints(root):
     return datapoints
 
 
-def read_experiment(filename):
-    """Reads experiment data from ReSpecTh XML file.
+def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=''):
+    """Convert ReSpecTh XML file to ChemKED YAML file.
 
     Parameters
     ----------
-    filename : str
-        XML filename in ReSpecTh format with experimental data
+    filename_xml : str
+        Name of ReSpecTh XML file to be converted.
+    output : str
+        Optional; output path for converted file.
+    file_author : str
+        Optional; name to override original file author
+    file_author_orcid : str
+        Optional; ORCID of file author
 
     Returns
     -------
-    properties : dict
-        Dictionary with group of experimental properties
+    filename_yaml : str
+        Name of newly created ChemKED YAML file.
 
     """
+    assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
 
+    # get all information from XML file
     try:
-        tree = etree.parse(filename)
+        tree = etree.parse(filename_xml)
     except OSError:
-        raise OSError('Unable to open file ' + filename)
+        raise OSError('Unable to open file ' + filename_xml)
     root = tree.getroot()
 
-    properties = {}
-
     # get file metadata
-    properties.update(get_file_metadata(root))
+    properties = get_file_metadata(root)
 
     # get reference info
     properties['reference'] = get_reference(root)
     # Save name of original data filename
     if properties['reference'].get('detail') is None:
         properties['reference']['detail'] = ''
-    properties['reference']['detail'] += 'Converted from XML file ' + os.path.basename(filename)
+    properties['reference']['detail'] += ('Converted from XML file ' +
+                                          os.path.basename(filename_xml)
+                                          )
 
     # Ensure ignition delay, and get which kind of experiment
     properties.update(get_experiment_kind(root))
@@ -500,36 +508,6 @@ def read_experiment(filename):
         raise KeywordError('Both volume history and pressure rise '
                            'cannot be specified'
                            )
-
-    return properties
-
-
-def convert_ReSpecTh_to_ChemKED(filename_xml, output='', file_author='',
-                                file_author_orcid=''
-                                ):
-    """Convert ReSpecTh XML file to ChemKED YAML file.
-
-    Parameters
-    ----------
-    filename_xml : str
-        Name of ReSpecTh XML file to be converted.
-    output : str
-        Optional; output path for converted file.
-    file_author : str
-        Optional; name to override original file author
-    file_author_orcid : str
-        Optional; ORCID of file author
-
-    Returns
-    -------
-    filename_yaml : str
-        Name of newly created ChemKED YAML file.
-
-    """
-    assert os.path.isfile(filename_xml), filename_xml + ' file missing'
-
-    # get all information from XML file
-    properties = read_experiment(filename_xml)
 
     # apply any overrides
     if file_author:
