@@ -242,7 +242,9 @@ class TestWriteFile(object):
     def test_write_files(self, filename):
         """
         """
-        c = ChemKED(os.path.join('pyked/tests', filename))
+        file_path = os.path.join(filename)
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
 
         with TemporaryDirectory() as temp_dir:
             c.write_file(os.path.join(temp_dir, 'testfile.yaml'))
