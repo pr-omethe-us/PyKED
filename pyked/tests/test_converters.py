@@ -10,6 +10,7 @@ import socket
 
 import pytest
 import yaml
+import numpy
 
 try:
     from lxml import etree
@@ -534,3 +535,204 @@ class TestIgnitionType(object):
         with pytest.raises(NotImplementedError) as excinfo:
             ignition = get_ignition_type(root)
         assert 'Multiple ignition targets not supported.' in str(excinfo.value)
+
+
+class TestGetDatapoints(object):
+    """
+    """
+    def test_valid_datapoints_single_datagroup(self):
+        """Test valid parsing of datapoints when in a single dataGroup.
+        """
+        root = etree.Element('experiment')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+
+        num_points = 10
+        temps = numpy.random.uniform(low=300.0, high=1000.0, size=(num_points,))
+        ignition_delays = numpy.random.uniform(low=100., high=700., size=(num_points,))
+
+        for temp, ignition_delay in zip(temps, ignition_delays):
+            datapoint = etree.SubElement(datagroup, 'dataPoint')
+            x1 = etree.SubElement(datapoint, 'x1')
+            x1.text = str(temp)
+            x2 = etree.SubElement(datapoint, 'x2')
+            x2.text = str(ignition_delay)
+
+        datapoints = get_datapoints(root)
+        assert len(datapoints) == num_points
+        for datapoint, temp, ignition_delay in zip(datapoints, temps, ignition_delays):
+            assert datapoint['temperature'] == [str(temp) + ' K']
+            assert datapoint['ignition-delay'] == [str(ignition_delay) + ' us']
+
+
+    def test_valid_datapoints_two_datagroup(self):
+        """Test valid parsing of datapoints when in a two dataGroups.
+        """
+        root = etree.Element('experiment')
+        apparatus = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(apparatus, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+
+        temp = numpy.random.uniform(low=300.0, high=1000.0)
+        ignition_delay = numpy.random.uniform(low=100., high=700.)
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(temp)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(ignition_delay)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x4')
+        prop.set('name', 'time')
+        prop.set('units', 's')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x5')
+        prop.set('name', 'volume')
+        prop.set('units', 'cm3')
+
+        num_points = 100
+        times = numpy.linspace(0., 10.e-2, num_points)
+        volumes = numpy.cos(times * 20. * numpy.pi)
+        for time, volume in zip(times, volumes):
+            datapoint = etree.SubElement(datagroup, 'dataPoint')
+            x1 = etree.SubElement(datapoint, 'x4')
+            x1.text = str(time)
+            x2 = etree.SubElement(datapoint, 'x5')
+            x2.text = str(volume)
+
+        datapoints = get_datapoints(root)
+
+        assert len(datapoints) == 1
+        datapoint = datapoints[0]
+        assert datapoint['temperature'] == [str(temp) + ' K']
+        assert datapoint['ignition-delay'] == [str(ignition_delay) + ' us']
+
+        volume_history = datapoint['volume-history']
+        assert len(volume_history['values']) == num_points
+        assert volume_history['time']['units'] == 's'
+        assert volume_history['time']['column'] == 0
+        assert volume_history['volume']['units'] == 'cm3'
+        assert volume_history['volume']['column'] == 1
+        for datapoint, time, volume in zip(volume_history['values'], times, volumes):
+            assert datapoint == [float(str(time)), float(str(volume))]
+
+    def test_missing_datagroup_property_datapoint(self):
+        """Raise error when missing a dataGroup, property, or dataPoint.
+        """
+        root = etree.Element('experiment')
+        with pytest.raises(AttributeError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Error: at least one dataGroup needed.' in str(excinfo.value)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        with pytest.raises(AttributeError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Error: at least one property needed in dataGroup.' in str(excinfo.value)
+
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+
+        with pytest.raises(AttributeError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Error: need at least one dataPoint.' in str(excinfo.value)
+
+
+
+    def test_multiple_datagroups_shocktube(self):
+        """Raise error when multiple dataGroups with shock tube.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'shock tube'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        with pytest.raises(AssertionError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Second dataGroup only valid for RCM.' in str(excinfo.value)
+
+    def test_single_datapoint_volume_history(self):
+        """Raise error if multiple datapoints with single volume history.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        with pytest.raises(AssertionError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Multiple datapoints for single volume history.' in str(excinfo.value)
+
+    def test_morethan_two_datagroups(self):
+        """Raise error if more than two datagroups.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        with pytest.raises(NotImplementedError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'More than two DataGroups not supported.' in str(excinfo.value)

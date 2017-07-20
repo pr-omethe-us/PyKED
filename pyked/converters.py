@@ -346,10 +346,11 @@ def get_datapoints(root):
         Dictionary with ignition delay data
 
     """
-    datapoints = []
     # Shock tube experiment will have one data group, while RCM may have one
     # or two (one for ignition delay, one for volume-history)
     dataGroups = root.findall('dataGroup')
+    if not dataGroups:
+        raise AttributeError('Error: at least one dataGroup needed.')
 
     # all situations will have main experimental data in first dataGroup
     dataGroup = dataGroups[0]
@@ -358,12 +359,16 @@ def get_datapoints(root):
     # get properties of dataGroup
     for prop in dataGroup.findall('property'):
         unit_id[prop.attrib['id']] = prop.attrib['units']
-
-        property_id[prop.attrib['id']] = prop.attrib['name']
-        if prop.attrib['name'] == 'ignition delay':
-            property_id[prop.attrib['id']] = 'ignition-delay'
+        property_id[prop.attrib['id']] = prop.attrib['name'].replace(' ', '-')
+        if property_id[prop.attrib['id']] not in [
+            'temperature', 'pressure', 'ignition-delay', 'pressure-rise'
+            ]:
+            raise KeyError(property_id[prop.attrib['id']] + ' not valid dataPoint property')
+    if property_id == {}:
+        raise AttributeError('Error: at least one property needed in dataGroup.')
 
     # now get data points
+    datapoints = []
     for dp in dataGroup.findall('dataPoint'):
         datapoint = {}
         for val in dp:
@@ -373,10 +378,15 @@ def get_datapoints(root):
             datapoint[property_id[val.tag]] = [val.text + ' ' + units]
         datapoints.append(datapoint)
 
+    if len(datapoints) == 0:
+        raise AttributeError('Error: need at least one dataPoint.')
+
     # RCM files may have a second dataGroup with volume-time history
     if len(dataGroups) == 2:
-        assert root.find('apparatus/kind').text == 'rapid compression machine'
-        assert len(datapoints) == 1
+        assert root.find('apparatus/kind').text == 'rapid compression machine', \
+               'Second dataGroup only valid for RCM.'
+
+        assert len(datapoints) == 1, 'Multiple datapoints for single volume history.'
 
         dataGroup = dataGroups[1]
         for prop in dataGroup.findall('property'):
