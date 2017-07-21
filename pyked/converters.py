@@ -307,7 +307,7 @@ def get_datapoints(root):
     # Shock tube experiment will have one data group, while RCM may have one
     # or two (one for ignition delay, one for volume-history)
     dataGroups = root.findall('dataGroup')
-    if not dataGroups:
+    if dataGroups is not None:
         raise MissingElementError('dataGroup')
 
     # all situations will have main experimental data in first dataGroup
