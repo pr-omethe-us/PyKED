@@ -46,12 +46,52 @@ except ImportError:
                     raise
 
 # Local imports
+from ..converters import (ParseError, KeywordError, MissingElementError,
+                          MissingAttributeError, UndefinedKeywordError
+                          )
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
                           convert_ReSpecTh, convert_to_ReSpecTh
                           )
 from .._version import __version__
 from ..chemked import ChemKED
+
+
+class TestErrors(object):
+    """
+    """
+    def test_parse_error(self):
+        """(Very) basic test of ParseError.
+        """
+        with pytest.raises(ParseError) as excinfo:
+            raise ParseError('this is an error')
+        assert 'this is an error' in str(excinfo.value)
+
+    def test_keyword_error(self):
+        """Basic test of KeywordError.
+        """
+        with pytest.raises(KeywordError) as excinfo:
+            raise KeywordError('this is a test')
+        assert 'Error: this is a test.' in str(excinfo.value)
+
+    def test_missing_element_error(self):
+        """Basic test of MissingElementError.
+        """
+        with pytest.raises(MissingElementError) as excinfo:
+            raise MissingElementError('fileAuthor')
+        assert 'Error: Required element fileAuthor is missing.'
+
+    def test_missing_attribute_error(self):
+        """Basic test of MissingAttributeError.
+        """
+        with pytest.raises(MissingAttributeError) as excinfo:
+            raise MissingAttributeError('preferredKey', 'bibliographyLink')
+        assert 'Error: Required attribute preferredKey of bibliographyLink is missing.'
+
+        with pytest.raises(MissingAttributeError) as excinfo:
+            raise MissingAttributeError('preferredKey')
+        assert 'Error: Required attribute preferredKey is missing.'
+
 
 class TestFileMetadata(object):
     """

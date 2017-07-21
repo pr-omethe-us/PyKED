@@ -52,8 +52,14 @@ class MissingAttributeError(KeywordError):
     """Raised for missing required attribute."""
 
     def __str__(self):
-        return repr('Error: Required attribute {} of {} is missing.'.format(
-            self.keywords))
+        if len(self.keywords) == 1:
+            return repr('Error: Required attribute {} is missing.'.format(
+                self.keywords[0])
+                )
+        elif len(self.keywords) == 2:
+            return repr('Error: Required attribute {} of {} is missing.'.format(
+                self.keywords[0], self.keyword[1])
+                )
 
 class UndefinedKeywordError(KeywordError):
     """Raised for undefined keywords."""
