@@ -215,7 +215,7 @@ def get_common_properties(root):
                     spec['InChI'] = child.find('speciesLink').attrib['InChI']
                 except KeyError:
                     # TODO: add InChI validator/search
-                    print('Warning: missing InChI for species ' + spec['species-name'])
+                    warn('Missing InChI for species ' + spec['species-name'])
                     pass
 
                 # amount of that species
@@ -264,14 +264,16 @@ def get_ignition_type(root):
 
     if elem is None:
         raise MissingElementError('ignitionType')
+    elem = elem.attrib
 
-    try:
-        ign_target = elem.attrib['target'].rstrip(';').upper()
-    except KeyError:
+    if 'target' in elem:
+        ign_target = elem['target'].rstrip(';').upper()
+    else:
         raise MissingAttributeError('target', 'ignitionType')
-    try:
-        ign_type = elem.attrib['type']
-    except KeyError:
+
+    if 'type' in elem:
+        ign_type = elem['type']
+    else:
         raise MissingAttributeError('type', 'ignitionType')
 
     # ReSpecTh allows multiple ignition targets
@@ -284,17 +286,16 @@ def get_ignition_type(root):
         ign_target = 'OH*'
     elif ign_target == 'CHEX':
         ign_target = 'CH*'
+    elif ign_target == 'P':
+        ign_target = 'pressure'
+    elif ign_target == 'T':
+        ign_target = 'temperature'
 
-    if ign_target not in ['P', 'T', 'OH', 'OH*', 'CH*', 'CH']:
+    if ign_target not in ['pressure', 'temperature', 'OH', 'OH*', 'CH*', 'CH']:
         raise KeywordError(ign_target + ' not valid ignition target')
 
     if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
         raise KeywordError(ign_type + ' not valid ignition type')
-
-    if ign_target == 'P':
-        ign_target = 'pressure'
-    elif ign_target == 'T':
-        ign_target = 'temperature'
 
     ignition['type'] = ign_type
     ignition['target'] = ign_target
