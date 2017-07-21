@@ -79,18 +79,14 @@ class TestErrors(object):
         """
         with pytest.raises(MissingElementError) as excinfo:
             raise MissingElementError('fileAuthor')
-        assert 'Error: Required element fileAuthor is missing.'
+        assert 'Error: required element fileAuthor is missing.'
 
     def test_missing_attribute_error(self):
         """Basic test of MissingAttributeError.
         """
         with pytest.raises(MissingAttributeError) as excinfo:
             raise MissingAttributeError('preferredKey', 'bibliographyLink')
-        assert 'Error: Required attribute preferredKey of bibliographyLink is missing.'
-
-        with pytest.raises(MissingAttributeError) as excinfo:
-            raise MissingAttributeError('preferredKey')
-        assert 'Error: Required attribute preferredKey is missing.'
+        assert 'Error: required attribute preferredKey of bibliographyLink is missing.'
 
 
 class TestFileMetadata(object):
@@ -123,10 +119,9 @@ class TestFileMetadata(object):
         minor_version = etree.SubElement(version, 'minor')
         minor_version.text = '0'
 
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             meta = get_file_metadata(root)
-
-        assert 'Error: no fileAuthor given' in str(excinfo.value)
+        assert 'Error: required element fileAuthor is missing.' in str(excinfo.value)
 
     def test_blank_fileauthor(self):
         """Ensure blank file author raises error.
@@ -140,10 +135,9 @@ class TestFileMetadata(object):
         minor_version = etree.SubElement(version, 'minor')
         minor_version.text = '0'
 
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             meta = get_file_metadata(root)
-
-        assert 'Error: no fileAuthor given' in str(excinfo.value)
+        assert 'Error: required element fileAuthor is missing' in str(excinfo.value)
 
     def test_missing_version(self, capfd):
         """Ensure missing version raises warning.
@@ -157,7 +151,7 @@ class TestFileMetadata(object):
         out, err = capfd.readouterr()
         assert out == ('Warning: no fileVersion given\n')
 
-    def test_missing_version_majorminor(self, capfd):
+    def test_missing_version_majorminor(self):
         """Ensure missing version major/minor raises error.
         """
         root = etree.Element('experiment')
@@ -167,11 +161,9 @@ class TestFileMetadata(object):
         major_version = etree.SubElement(version, 'major')
         major_version.text = '1'
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(MissingElementError) as excinfo:
             meta = get_file_metadata(root)
-
-        out, err = capfd.readouterr()
-        assert out == ('Error: missing fileVersion major/minor\n')
+        assert ('Error: required element major/minor is missing.' in str(excinfo.value))
 
 
 class TestGetReference(object):
@@ -220,9 +212,9 @@ class TestGetReference(object):
         """Test for completely missing bibliography element.
         """
         root = etree.Element('experiment')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             ref = get_reference(root)
-        assert 'Error: missing bibliographyLink' in str(excinfo.value)
+        assert 'Error: required element bibliographyLink is missing' in str(excinfo.value)
 
     def test_missing_doi(self, capfd):
         """Ensure can handle missing DOI.
@@ -294,6 +286,23 @@ class TestGetReference(object):
                                  'Fig. 12., right, open diamond.'
                                  )
 
+    def test_missing_doi_preferredkey(self, capfd):
+        """Ensure error if missing both DOI and preferredKey.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
+
+        with pytest.raises(MissingAttributeError) as excinfo:
+            ref = get_reference(root)
+
+        out, err = capfd.readouterr()
+        assert ('Warning: missing doi attribute in bibliographyLink\n'
+                'Setting "detail" key as a fallback; please update.\n'
+                ) in out
+        assert ('Error: required attribute preferredKey of bibliographyLink '
+                'is missing.' in str(excinfo.value)
+                )
+
 class TestGetExperiment(object):
     """
     """
@@ -328,7 +337,7 @@ class TestGetExperiment(object):
         exp = etree.SubElement(root, 'experimentType')
         exp.text = experiment_type
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             ref = get_experiment_kind(root)
         assert 'experimentType not ignition delay measurement' in str(excinfo.value)
 
@@ -358,18 +367,18 @@ class TestGetExperiment(object):
         exp.text = 'Ignition delay measurement'
         app = etree.SubElement(root, 'apparatus')
 
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             ref = get_experiment_kind(root)
-        assert 'Missing apparatus/kind' in str(excinfo.value)
+        assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
         # missing apparatus altogether
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
         exp.text = 'Ignition delay measurement'
 
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             ref = get_experiment_kind(root)
-        assert 'Missing apparatus/kind' in str(excinfo.value)
+        assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
 
 class TestCommonProperties(object):
@@ -421,7 +430,7 @@ class TestCommonProperties(object):
         prop_value = etree.SubElement(prop, 'value')
         prop_value.text = value
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             common = get_common_properties(root)
         assert 'Error: units incompatible for property ' + physical_property in str(excinfo.value)
 
@@ -463,9 +472,11 @@ class TestCommonProperties(object):
         prop = etree.SubElement(properties, 'property')
         prop.set('name', 'ignition delay')
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             common = get_common_properties(root)
-        assert 'Property ignition delay not supported as common property.' in str(excinfo.value)
+        assert ('Error: Property ignition delay not supported as '
+                'common property.' in str(excinfo.value)
+                )
 
     def test_species_missing_inchi(self, capfd):
         """Check for warning when species missing InChI.
@@ -510,9 +521,9 @@ class TestCommonProperties(object):
         amount.set('units', 'mass fraction')
         amount.text = '0.5'
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             common = get_common_properties(root)
-        assert 'inconsistent initial composition units' in str(excinfo.value)
+        assert 'Error: inconsistent initial composition units' in str(excinfo.value)
 
 
 class TestIgnitionType(object):
@@ -536,23 +547,23 @@ class TestIgnitionType(object):
         """Check for error upon missing attributes
         """
         root = etree.Element('experiment')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             ignition = get_ignition_type(root)
-        assert 'missing ignitionType' in str(excinfo.value)
+        assert 'Error: required element ignitionType is missing.' in str(excinfo.value)
 
         root = etree.Element('experiment')
         ignition = etree.SubElement(root, 'ignitionType')
         ignition.set('target', 'P')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingAttributeError) as excinfo:
             ignition = get_ignition_type(root)
-        assert 'missing ignitionType/type' in str(excinfo.value)
+        assert 'Error: required attribute type of ignitionType is missing.' in str(excinfo.value)
 
         root = etree.Element('experiment')
         ignition = etree.SubElement(root, 'ignitionType')
         ignition.set('type', 'max')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingAttributeError) as excinfo:
             ignition = get_ignition_type(root)
-        assert 'missing ignitionType/target' in str(excinfo.value)
+        assert 'Error: required attribute target of ignitionType is missing.' in str(excinfo.value)
 
     @pytest.mark.parametrize('ignition_type',
                              ['baseline max intercept from d/dt',
@@ -568,9 +579,9 @@ class TestIgnitionType(object):
         ignition.set('target', 'P')
         ignition.set('type', ignition_type)
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             ignition = get_ignition_type(root)
-        assert ignition_type + ' not valid ignition type' in str(excinfo.value)
+        assert 'Error: ' + ignition_type + ' not valid ignition type' in str(excinfo.value)
 
     @pytest.mark.parametrize('ignition_target', ['O2', 'CO', 'density'])
     def test_unsupported_ignition_types(self, ignition_target):
@@ -582,9 +593,11 @@ class TestIgnitionType(object):
         ignition.set('target', ignition_target)
         ignition.set('type', 'max')
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeywordError) as excinfo:
             ignition = get_ignition_type(root)
-        assert ignition_target.upper() + ' not valid ignition target' in str(excinfo.value)
+        assert ('Error: ' + ignition_target.upper() + ' not valid ignition target'
+                in str(excinfo.value)
+                )
 
     def test_multiple_targets(self):
         """Check for error with multiple ignition targets.
@@ -699,23 +712,23 @@ class TestGetDatapoints(object):
         """Raise error when missing a dataGroup, property, or dataPoint.
         """
         root = etree.Element('experiment')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             datapoints = get_datapoints(root)
-        assert 'Error: at least one dataGroup needed.' in str(excinfo.value)
+        assert 'Error: required element dataGroup is missing.' in str(excinfo.value)
 
         datagroup = etree.SubElement(root, 'dataGroup')
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             datapoints = get_datapoints(root)
-        assert 'Error: at least one property needed in dataGroup.' in str(excinfo.value)
+        assert 'Error: required element property is missing.' in str(excinfo.value)
 
         prop = etree.SubElement(datagroup, 'property')
         prop.set('id', 'x1')
         prop.set('name', 'temperature')
         prop.set('units', 'K')
 
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(MissingElementError) as excinfo:
             datapoints = get_datapoints(root)
-        assert 'Error: need at least one dataPoint.' in str(excinfo.value)
+        assert 'Error: required element dataPoint is missing.' in str(excinfo.value)
 
     def test_multiple_datagroups_shocktube(self):
         """Raise error when multiple dataGroups with shock tube.

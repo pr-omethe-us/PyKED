@@ -45,27 +45,22 @@ class MissingElementError(KeywordError):
     """Raised for missing required elements."""
 
     def __str__(self):
-        return repr('Error: Required element {} is missing.'.format(
+        return repr('Error: required element {} is missing.'.format(
             self.keywords[0]))
 
 class MissingAttributeError(KeywordError):
     """Raised for missing required attribute."""
 
     def __str__(self):
-        if len(self.keywords) == 1:
-            return repr('Error: Required attribute {} is missing.'.format(
-                self.keywords[0])
-                )
-        elif len(self.keywords) == 2:
-            return repr('Error: Required attribute {} of {} is missing.'.format(
-                self.keywords[0], self.keyword[1])
-                )
+        return repr('Error: required attribute {} of {} is missing.'.format(
+            self.keywords[0], self.keywords[1])
+            )
 
 class UndefinedKeywordError(KeywordError):
     """Raised for undefined keywords."""
 
     def __str__(self):
-        return repr('Error: Keyword not defined: {}'.format(self.keywords[0]))
+        return repr('Error: keyword not defined: {}'.format(self.keywords[0]))
 
 
 def get_file_metadata(root):
@@ -83,10 +78,10 @@ def get_file_metadata(root):
     try:
         properties['file-author']['name'] = root.find('fileAuthor').text
     except AttributeError:
-        raise AttributeError('Error: no fileAuthor given')
+        raise MissingElementError('fileAuthor')
 
     if properties['file-author']['name'] == '':
-        raise AttributeError('Error: no fileAuthor given')
+        raise MissingElementError('fileAuthor')
 
     # Default version is 0
     version = '0'
@@ -97,8 +92,7 @@ def get_file_metadata(root):
         try:
             version = elem.find('major').text + '.' + elem.find('minor').text
         except AttributeError:
-            print('Error: missing fileVersion major/minor')
-            raise
+            raise MissingElementError('major/minor')
     properties['file-version'] = int(float(version))
 
     # Default ChemKED version
@@ -119,7 +113,7 @@ def get_reference(root):
     reference = {}
     elem = root.find('bibliographyLink')
     if elem is None:
-        raise AttributeError('Error: missing bibliographyLink')
+        raise MissingElementError('bibliographyLink')
 
     # Try to get reference info via DOI
     try:
@@ -162,7 +156,7 @@ def get_reference(root):
                 reference['detail'] += '.'
         except KeyError:
             # Need one of DOI or preferredKey
-            raise KeyError('Error: missing preferredKey attribute in bibliographyLink')
+            raise MissingAttributeError('preferredKey', 'bibliographyLink')
 
     return reference
 
@@ -181,13 +175,13 @@ def get_experiment_kind(root):
         properties['experiment-type'] = 'ignition delay'
     else:
         #TODO: support additional experimentTypes
-        raise KeyError('experimentType not ignition delay measurement')
+        raise KeywordError('experimentType not ignition delay measurement')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
     try:
         kind = root.find('apparatus/kind').text
     except:
-        raise AttributeError('Missing apparatus/kind')
+        raise MissingElementError('apparatus/kind')
     if kind in ['shock tube', 'rapid compression machine']:
         properties['apparatus']['kind'] = kind
     else:
@@ -235,7 +229,7 @@ def get_common_properties(root):
                 if not composition_type:
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
-                    raise KeyError('inconsistent initial composition units')
+                    raise KeywordError('inconsistent initial composition units')
             assert composition_type in ['mole fraction', 'mass fraction']
             properties['composition']['kind'] = composition_type
 
@@ -248,12 +242,12 @@ def get_common_properties(root):
             try:
                 quantity.to(property_units[field])
             except pint.DimensionalityError:
-                raise KeyError('Error: units incompatible for property ' + name)
+                raise KeywordError('units incompatible for property ' + name)
 
             properties[field] = [' '.join([elem.find('value').text, units])]
 
         else:
-            raise KeyError('Property ' + name + ' not supported as common property.')
+            raise KeywordError('Property ' + name + ' not supported as common property.')
 
     return properties
 
@@ -271,16 +265,16 @@ def get_ignition_type(root):
     elem = root.find('ignitionType')
 
     if elem is None:
-        raise AttributeError('missing ignitionType')
+        raise MissingElementError('ignitionType')
 
     try:
         ign_target = elem.attrib['target'].rstrip(';').upper()
     except KeyError:
-        raise AttributeError('missing ignitionType/target')
+        raise MissingAttributeError('target', 'ignitionType')
     try:
         ign_type = elem.attrib['type']
     except KeyError:
-        raise AttributeError('missing ignitionType/type')
+        raise MissingAttributeError('type', 'ignitionType')
 
     # ReSpecTh allows multiple ignition targets
     if len(ign_target.split(';')) > 1:
@@ -294,10 +288,10 @@ def get_ignition_type(root):
         ign_target = 'CH*'
 
     if ign_target not in ['P', 'T', 'OH', 'OH*', 'CH*', 'CH']:
-        raise KeyError(ign_target + ' not valid ignition target')
+        raise KeywordError(ign_target + ' not valid ignition target')
 
     if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
-        raise KeyError(ign_type + ' not valid ignition type')
+        raise KeywordError(ign_type + ' not valid ignition type')
 
     if ign_target == 'P':
         ign_target = 'pressure'
@@ -323,7 +317,7 @@ def get_datapoints(root):
     # or two (one for ignition delay, one for volume-history)
     dataGroups = root.findall('dataGroup')
     if not dataGroups:
-        raise AttributeError('Error: at least one dataGroup needed.')
+        raise MissingElementError('dataGroup')
 
     # all situations will have main experimental data in first dataGroup
     dataGroup = dataGroups[0]
@@ -338,7 +332,7 @@ def get_datapoints(root):
             ]:
             raise KeyError(property_id[prop.attrib['id']] + ' not valid dataPoint property')
     if property_id == {}:
-        raise AttributeError('Error: at least one property needed in dataGroup.')
+        raise MissingElementError('property')
 
     # now get data points
     datapoints = []
@@ -352,7 +346,7 @@ def get_datapoints(root):
         datapoints.append(datapoint)
 
     if len(datapoints) == 0:
-        raise AttributeError('Error: need at least one dataPoint.')
+        raise MissingElementError('dataPoint')
 
     # RCM files may have a second dataGroup with volume-time history
     if len(dataGroups) == 2:
@@ -455,12 +449,12 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
     if ('compression-time' in properties['common-properties'] or
         any([dp for dp in properties['datapoints'] if dp.get('compression-time')])
         ) and properties['apparatus']['kind'] == 'shock tube':
-        raise KeyError('Compression time cannot be defined for shock tube.')
+        raise KeywordError('Compression time cannot be defined for shock tube.')
 
     if ('pressure-rise' in properties['common-properties'] or
         any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
         ) and properties['apparatus']['kind'] == 'rapid compression machine':
-        raise KeyError('Pressure rise cannot be defined for RCM.')
+        raise KeywordError('Pressure rise cannot be defined for RCM.')
 
     if (('volume' in properties['common-properties'] and
          'pressure-rise' in properties['common-properties']
