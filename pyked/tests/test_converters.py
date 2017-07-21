@@ -107,7 +107,8 @@ class TestFileMetadata(object):
         meta = get_file_metadata(root)
         assert meta['chemked-version'] == __version__
         assert meta['file-author']['name'] == 'Kyle Niemeyer'
-        assert meta['file-version'] == int(float(1.0))
+        # ChemKED version will always start at 0
+        assert meta['file-version'] == 0
 
     def test_missing_fileauthor(self):
         """Ensure missing file author raises error.
@@ -138,32 +139,6 @@ class TestFileMetadata(object):
         with pytest.raises(MissingElementError) as excinfo:
             meta = get_file_metadata(root)
         assert 'Error: required element fileAuthor is missing' in str(excinfo.value)
-
-    def test_missing_version(self, capfd):
-        """Ensure missing version raises warning.
-        """
-        root = etree.Element('experiment')
-        author = etree.SubElement(root, 'fileAuthor')
-        author.text = 'Kyle Niemeyer'
-
-        meta = get_file_metadata(root)
-
-        out, err = capfd.readouterr()
-        assert out == ('Warning: no fileVersion given\n')
-
-    def test_missing_version_majorminor(self):
-        """Ensure missing version major/minor raises error.
-        """
-        root = etree.Element('experiment')
-        author = etree.SubElement(root, 'fileAuthor')
-        author.text = 'Kyle Niemeyer'
-        version = etree.SubElement(root, 'fileVersion')
-        major_version = etree.SubElement(version, 'major')
-        major_version.text = '1'
-
-        with pytest.raises(MissingElementError) as excinfo:
-            meta = get_file_metadata(root)
-        assert ('Error: required element major/minor is missing.' in str(excinfo.value))
 
 
 class TestGetReference(object):

@@ -83,17 +83,8 @@ def get_file_metadata(root):
     if properties['file-author']['name'] == '':
         raise MissingElementError('fileAuthor')
 
-    # Default version is 0
-    version = '0'
-    elem = root.find('fileVersion')
-    if elem is None:
-        print('Warning: no fileVersion given')
-    else:
-        try:
-            version = elem.find('major').text + '.' + elem.find('minor').text
-        except AttributeError:
-            raise MissingElementError('major/minor')
-    properties['file-version'] = int(float(version))
+    # Default version is 0 for the ChemKED file
+    properties['file-version'] = 0
 
     # Default ChemKED version
     properties['chemked-version'] = __version__
