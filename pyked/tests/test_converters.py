@@ -16,13 +16,10 @@ try:
     from lxml import etree
 except ImportError:
     try:
-        import xml.etree.cElementTree as etree
+        import xml.etree.ElementTree as etree
     except ImportError:
-        try:
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            print("Failed to import ElementTree from any known place")
-            raise
+        print("Failed to import ElementTree from any known place")
+        raise
 
 # Create temporary directory for tests that need to create files
 # Taken from http://stackoverflow.com/a/22726782/1569494
