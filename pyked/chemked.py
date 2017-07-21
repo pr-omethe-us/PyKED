@@ -248,7 +248,7 @@ class ChemKED(object):
                 Must be supplied as a keyword-argument.
 
         Raises:
-            `NameError`: If `filename` is already present, and `overwrite` is not `True`.
+            `NameError`: If ``filename`` is already present, and ``overwrite`` is not ``True``.
 
         Example:
             >>> dataset = ChemKED(yaml_file)
