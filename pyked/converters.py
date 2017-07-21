@@ -500,7 +500,7 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
     return filename_yaml
 
 
-def convert_to_ReSpecTh(filename_ck, filename_out=''):
+def convert_to_ReSpecTh(filename_ck, output_path=''):
     """Convert ChemKED file to ReSpecTh XML file.
 
     This converter uses common information in a ChemKED file to generate a
@@ -509,7 +509,7 @@ def convert_to_ReSpecTh(filename_ck, filename_out=''):
 
     Arguments:
         filename_ck (`str`): Filename of existing ChemKED YAML file to be converted.
-        filename_out (`str`, optional): Filename\path for output ReSpecTh XML file.
+        output_path (`str`, optional): Path for output ReSpecTh XML file.
     """
     c = ChemKED(yaml_file=filename_ck)
 
@@ -579,9 +579,7 @@ def convert_to_ReSpecTh(filename_ck, filename_out=''):
     # If multiple datapoints present, then find any common properties. If only
     # one datapoint, then composition should be the only "common" property.
     if len(c.datapoints) > 1:
-        for prop_name in ['temperature', 'pressure', 'ignition delay',
-                          'pressure rise', 'compression time'
-                          ]:
+        for prop_name in ['temperature', 'pressure', 'ignition delay', 'pressure rise']:
             attribute = prop_name.replace(' ', '_')
             quantity = getattr(c.datapoints[0], attribute)
             if (quantity != None and
@@ -609,9 +607,7 @@ def convert_to_ReSpecTh(filename_ck, filename_out=''):
               'ignition delay': 'tau', 'pressure rise': 'dP/dt',
               }
 
-    for prop_name in ['temperature', 'pressure', 'ignition delay',
-                      'pressure rise', 'compression time'
-                      ]:
+    for prop_name in ['temperature', 'pressure', 'ignition delay', 'pressure rise']:
         attribute = prop_name.replace(' ', '_')
         if (prop_name not in common and
             any([getattr(dp, attribute, None) for dp in c.datapoints])
@@ -677,7 +673,7 @@ def convert_to_ReSpecTh(filename_ck, filename_out=''):
         prop.set('description', '')
         prop.set('name', 'volume')
         prop.set('units', str(volume_history.volume.units))
-        volume_idx = 'x{}'.format(len(property_idx) + 1)
+        volume_idx = 'x{}'.format(len(property_idx) + 2)
         prop.set('id', volume_idx)
         prop.set('label', 'V')
 
@@ -700,9 +696,13 @@ def convert_to_ReSpecTh(filename_ck, filename_out=''):
     ignition.set('type', c.datapoints[0].ignition_type['type'])
 
     et = etree.ElementTree(root)
-    if not filename_out:
-         filename_out = os.path.splitext(os.path.basename(filename_ck))[0] + '.xml'
+    filename_out = os.path.join(
+        output_path,
+        os.path.splitext(os.path.basename(filename_ck))[0] + '.xml'
+        )
     et.write(filename_out, pretty_print=True, encoding='utf-8', xml_declaration=True)
+
+    return filename_out
 
 
 if __name__ == '__main__':
@@ -736,6 +736,6 @@ if __name__ == '__main__':
                         )
 
     args = parser.parse_args()
-    convert_ReSpecTh_to_ChemKED(args.input, args.output,
-                                args.file_author, args.file_author_orcid
-                                )
+    convert_ReSpecTh(args.input, args.output,
+                     args.file_author, args.file_author_orcid
+                     )
