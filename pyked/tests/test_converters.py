@@ -51,7 +51,7 @@ except ImportError:
 # Local imports
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
-                          convert_ReSpecTh,
+                          convert_ReSpecTh, convert_to_ReSpecTh
                           )
 from .._version import __version__
 from ..chemked import ChemKED
@@ -790,3 +790,22 @@ class TestConvertReSpecTh(object):
         assert c.experiment_type == c_true.experiment_type
         assert c.reference.doi == c_true.reference.doi
         assert len(c.datapoints) == len(c_true.datapoints)
+
+
+class TestToReSpecTh(object):
+    """
+    """
+    @pytest.mark.parametrize('filename_ck', ['testfile_st.yaml', 'testfile_rcm.yaml'])
+    def test_conversion_to_respecth(self, filename_ck):
+        """Test proper conversion to ReSpecTh XML.
+        """
+        file_path = os.path.join(filename_ck)
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = convert_to_ReSpecTh(filename, temp_dir)
+
+            # convert back to ChemKED, then parse
+            newfile = convert_ReSpecTh(newfile, output=temp_dir)
+
+            c = ChemKED(newfile)
