@@ -109,19 +109,23 @@ def get_reference(root):
     if elem is None:
         raise MissingElementError('bibliographyLink')
 
-    # Try to get reference info via DOI
-    try:
+    # Try to get reference info via DOI, fall back on preferredKey if necessary.
+    ref_doi = elem.get('doi', None)
+    ref_key = elem.get('preferredKey', None)
+
+    if ref_doi is not None:
+        if ref_key is not None:
+            warn('Using DOI to obtain reference information, rather than preferredKey.')
         reference['doi'] = elem.attrib['doi']
         ref = None
         try:
             ref = habanero.Crossref().works(ids=reference['doi'])['message']
         except (HTTPError, habanero.RequestError):
-            print('DOI not found')
-            raise KeyError
+            raise KeywordError('DOI not found')
         # TODO: remove UnboundLocalError after habanero fixed
         except (ConnectionError, UnboundLocalError):
-            warn('network not available, DOI not validated.')
-            raise KeyError
+            warn('Network not available, DOI not validated.')
+            ref_doi = None
 
         if ref is not None:
             ## Now get elements of the reference data
@@ -141,16 +145,16 @@ def get_reference(root):
                     auth['ORCID'] = orcid
                 reference['authors'].append(auth)
 
-    except KeyError:
-        print('Warning: missing doi attribute in bibliographyLink')
-        print('Setting "detail" key as a fallback; please update.')
-        try:
-            reference['detail'] = elem.attrib['preferredKey']
-            if reference['detail'][-1] != '.':
-                reference['detail'] += '.'
-        except KeyError:
-            # Need one of DOI or preferredKey
-            raise MissingAttributeError('preferredKey', 'bibliographyLink')
+    if ref_key is not None and ref_doi is None:
+        warn('Missing doi attribute in bibliographyLink. '
+             'Setting "detail" key as a fallback; please update.'
+             )
+        reference['detail'] = ref_key
+        if reference['detail'][-1] != '.':
+            reference['detail'] += '.'
+    elif ref_key is None and ref_doi is None:
+        # Need one of DOI or preferredKey
+        raise MissingAttributeError('preferredKey', 'bibliographyLink')
 
     return reference
 

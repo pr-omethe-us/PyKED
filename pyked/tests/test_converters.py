@@ -170,7 +170,11 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        ref = get_reference(root)
+        with pytest.warns(UserWarning) as w:
+            ref = get_reference(root)
+        assert w[0].message.args[0] == ('Using DOI to obtain reference information, '
+                                        'rather than preferredKey.'
+                                        )
 
         assert ref['doi'] == '10.1016/j.ijhydene.2007.04.008'
         assert ref['journal'] == 'International Journal of Hydrogen Energy'
@@ -191,7 +195,7 @@ class TestGetReference(object):
             ref = get_reference(root)
         assert 'Error: required element bibliographyLink is missing' in str(excinfo.value)
 
-    def test_missing_doi(self, capfd):
+    def test_missing_doi(self):
         """Ensure can handle missing DOI.
         """
         root = etree.Element('experiment')
@@ -202,12 +206,11 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        ref = get_reference(root)
-
-        out, err = capfd.readouterr()
-        assert out == ('Warning: missing doi attribute in bibliographyLink\n'
-                       'Setting "detail" key as a fallback; please update.\n'
-                       )
+        with pytest.warns(UserWarning) as w:
+            ref = get_reference(root)
+        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink. '
+                                        'Setting "detail" key as a fallback; please update.'
+                                        )
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                                  'Fig. 12., right, open diamond.'
@@ -224,19 +227,11 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        ref = get_reference(root)
+        with pytest.raises(KeywordError) as excinfo:
+            ref = get_reference(root)
+        assert 'Error: DOI not found' in str(excinfo.value)
 
-        out, err = capfd.readouterr()
-        assert out == ('DOI not found\n'
-                       'Warning: missing doi attribute in bibliographyLink\n'
-                       'Setting "detail" key as a fallback; please update.\n'
-                       )
-        assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
-                                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
-                                 'Fig. 12., right, open diamond.'
-                                 )
-
-    def test_doi_missing_internet(self, capfd, disable_socket):
+    def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
         root = etree.Element('experiment')
@@ -250,18 +245,21 @@ class TestGetReference(object):
         ref = get_reference(root)
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
+        assert len(w) == 3
+        assert w[0].message.args[0] == ('Using DOI to obtain reference information, '
+                                        'rather than preferredKey.'
+                                        )
+        assert w[1].message.args[0] == 'Network not available, DOI not validated.'
 
-        out, err = capfd.readouterr()
-        assert w[0].message.args[0] == 'network not available, DOI not validated.'
-        assert ('Warning: missing doi attribute in bibliographyLink\n'
-                'Setting "detail" key as a fallback; please update.\n'
-                ) in out
+        assert w[2].message.args[0] == ('Missing doi attribute in bibliographyLink. '
+                                        'Setting "detail" key as a fallback; please update.'
+                                        )
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                                  'Fig. 12., right, open diamond.'
                                  )
 
-    def test_missing_doi_preferredkey(self, capfd):
+    def test_missing_doi_preferredkey(self):
         """Ensure error if missing both DOI and preferredKey.
         """
         root = etree.Element('experiment')
@@ -269,11 +267,6 @@ class TestGetReference(object):
 
         with pytest.raises(MissingAttributeError) as excinfo:
             ref = get_reference(root)
-
-        out, err = capfd.readouterr()
-        assert ('Warning: missing doi attribute in bibliographyLink\n'
-                'Setting "detail" key as a fallback; please update.\n'
-                ) in out
         assert ('Error: required attribute preferredKey of bibliographyLink '
                 'is missing.' in str(excinfo.value)
                 )
