@@ -325,9 +325,11 @@ def get_datapoints(root):
     # get properties of dataGroup
     for prop in dataGroup.findall('property'):
         unit_id[prop.attrib['id']] = prop.attrib['units']
-        property_id[prop.attrib['id']] = prop.attrib['name']
-        if property_id[prop.attrib['id']] not in datagroup_properties:
-            raise KeyError(property_id[prop.attrib['id']] + ' not valid dataPoint property')
+        temp_prop = prop.attrib['name']
+        if temp_prop not in datagroup_properties:
+            raise KeyError(temp_prop + ' not valid dataPoint property')
+        property_id[prop.attrib['id']] = temp_prop
+
     if not property_id:
         raise MissingElementError('property')
 
