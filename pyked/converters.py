@@ -166,7 +166,7 @@ def get_experiment_kind(root):
         properties['experiment-type'] = 'ignition delay'
     else:
         #TODO: support additional experimentTypes
-        raise KeywordError('experimentType not ignition delay measurement')
+        raise NotImplementedError(root.find('experimentType').text + ' not (yet) supported')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
     try:

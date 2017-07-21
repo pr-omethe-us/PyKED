@@ -312,9 +312,9 @@ class TestGetExperiment(object):
         exp = etree.SubElement(root, 'experimentType')
         exp.text = experiment_type
 
-        with pytest.raises(KeywordError) as excinfo:
+        with pytest.raises(NotImplementedError) as excinfo:
             ref = get_experiment_kind(root)
-        assert 'experimentType not ignition delay measurement' in str(excinfo.value)
+        assert experiment_type + ' not (yet) supported' in str(excinfo.value)
 
     @pytest.mark.parametrize('apparatus', [
         'perfectly stirred reactor', 'internal combustion engine', 'flow reactor'
