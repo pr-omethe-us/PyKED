@@ -68,16 +68,11 @@ class UndefinedKeywordError(KeywordError):
 def get_file_metadata(root):
     """Read and parse ReSpecTh XML file metadata (file author, version, etc.)
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    properties : dict
-        Dictionary with file metadata
-
+    Returns:
+        properties (`dict`): Dictionary with file metadata
     """
     properties = {}
 
@@ -112,16 +107,11 @@ def get_file_metadata(root):
 def get_reference(root):
     """Read reference info from root of ReSpecTh XML file.
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    reference : dict
-        Dictionary with reference information
-
+    Returns:
+        properties (`dict`): Dictionary with reference information
     """
     reference = {}
     elem = root.find('bibliographyLink')
@@ -177,16 +167,11 @@ def get_reference(root):
 def get_experiment_kind(root):
     """Read common properties from root of ReSpecTh XML file.
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    properties : dict
-        Dictionary with experiment type and apparatus information.
-
+    Returns:
+        properties (`dict`): Dictionary with experiment type and apparatus information.
     """
     properties = {}
     if root.find('experimentType').text == 'Ignition delay measurement':
@@ -211,16 +196,11 @@ def get_experiment_kind(root):
 def get_common_properties(root):
     """Read common properties from root of ReSpecTh XML file.
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    properties : dict
-        Dictionary with common properties added
-
+    Returns:
+        properties (`dict`): Dictionary with common properties
     """
     properties = {}
 
@@ -278,16 +258,11 @@ def get_common_properties(root):
 def get_ignition_type(root):
     """Gets ignition type and target.
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    ignition : dict
-        Dictionary with ignition type/target information
-
+    Returns:
+        properties (`dict`): Dictionary with ignition type/target information
     """
     ignition = {}
     elem = root.find('ignitionType')
@@ -335,16 +310,11 @@ def get_ignition_type(root):
 def get_datapoints(root):
     """Parse datapoints with ignition delay from file.
 
-    Parameters
-    ----------
-    root : ``etree.Element``
-        root of ReSpecTh XML file
+    Args:
+        root (`etree.Element`): Root of ReSpecTh XML file
 
-    Returns
-    -------
-    properties : dict
-        Dictionary with ignition delay data
-
+    Returns:
+        properties (`dict`): Dictionary with ignition delay data
     """
     # Shock tube experiment will have one data group, while RCM may have one
     # or two (one for ignition delay, one for volume-history)
@@ -421,22 +391,14 @@ def get_datapoints(root):
 def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=''):
     """Convert ReSpecTh XML file to ChemKED YAML file.
 
-    Parameters
-    ----------
-    filename_xml : str
-        Name of ReSpecTh XML file to be converted.
-    output : str
-        Optional; output path for converted file.
-    file_author : str
-        Optional; name to override original file author
-    file_author_orcid : str
-        Optional; ORCID of file author
+    Args:
+        filename_xml (`str`): Name of ReSpecTh XML file to be converted.
+        output (`str`, optional): Output path for converted file.
+        file_author (`str`, optional): Name to override original file author
+        file_author_orcid (`str`, optional): ORCID of file author
 
-    Returns
-    -------
-    filename_yaml : str
-        Name of newly created ChemKED YAML file.
-
+    Returns:
+        filename_yaml (`str`): Name of newly created ChemKED YAML file.
     """
     assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
 
