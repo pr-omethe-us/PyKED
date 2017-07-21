@@ -4,7 +4,11 @@
 ./_modules/pyked/chemked.html
 ./_modules/pyked/validation.html
 ./_sources/chemked.rst.txt
+./_sources/ck-tutorial.rst.txt
 ./_sources/index.rst.txt
+./_sources/install.rst.txt
+./_sources/pyked-examples.rst.txt
+./_sources/schema-docs.rst.txt
 ./_sources/utils.rst.txt
 ./_sources/validation.rst.txt
 ./_static/README
@@ -32,10 +36,14 @@
 ./_static/up.png
 ./_static/websupport.js
 ./chemked.html
+./ck-tutorial.html
 ./genindex.html
 ./index.html
+./install.html
 ./objects.inv
 ./py-modindex.html
+./pyked-examples.html
+./schema-docs.html
 ./search.html
 ./searchindex.js
 ./utils.html
