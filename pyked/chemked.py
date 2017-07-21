@@ -173,9 +173,10 @@ class ChemKED(object):
         """
         import pandas as pd
 
-        valid_labels = [a.replace('_', ' ') for a in self.__dict__ if not a.startswith('__')]
+        valid_labels = [a.replace('_', ' ') for a in self.__dict__
+                        if not (a.startswith('__') or a.startswith('_'))
+                        ]
         valid_labels.remove('datapoints')
-        valid_labels.remove(' properties')
         valid_labels.extend(
             ['composition', 'ignition delay', 'temperature', 'pressure', 'equivalence ratio']
         )
