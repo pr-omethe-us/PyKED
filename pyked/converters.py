@@ -27,6 +27,9 @@ from .utils import units as unit_registry
 from ._version import __version__
 
 
+# Valid properties for ReSpecTh dataGroup
+datagroup_properties = ['temperature', 'pressure', 'ignition delay', 'pressure rise']
+
 # Exceptions
 class ParseError(Exception):
     """Base class for errors."""
@@ -307,7 +310,7 @@ def get_datapoints(root):
     # Shock tube experiment will have one data group, while RCM may have one
     # or two (one for ignition delay, one for volume-history)
     dataGroups = root.findall('dataGroup')
-    if dataGroups is not None:
+    if len(dataGroups) == 0:
         raise MissingElementError('dataGroup')
 
     # all situations will have main experimental data in first dataGroup
@@ -317,10 +320,8 @@ def get_datapoints(root):
     # get properties of dataGroup
     for prop in dataGroup.findall('property'):
         unit_id[prop.attrib['id']] = prop.attrib['units']
-        property_id[prop.attrib['id']] = prop.attrib['name'].replace(' ', '-')
-        if property_id[prop.attrib['id']] not in [
-            'temperature', 'pressure', 'ignition-delay', 'pressure-rise'
-            ]:
+        property_id[prop.attrib['id']] = prop.attrib['name']
+        if property_id[prop.attrib['id']] not in datagroup_properties:
             raise KeyError(property_id[prop.attrib['id']] + ' not valid dataPoint property')
     if property_id == {}:
         raise MissingElementError('property')
@@ -333,7 +334,7 @@ def get_datapoints(root):
             units = unit_id[val.tag]
             if units == 'Torr':
                 units = 'torr'
-            datapoint[property_id[val.tag]] = [val.text + ' ' + units]
+            datapoint[property_id[val.tag].replace(' ', '-')] = [val.text + ' ' + units]
         datapoints.append(datapoint)
 
     if len(datapoints) == 0:
@@ -567,7 +568,7 @@ def convert_to_ReSpecTh(filename_ck, output_path=''):
     # If multiple datapoints present, then find any common properties. If only
     # one datapoint, then composition should be the only "common" property.
     if len(c.datapoints) > 1:
-        for prop_name in ['temperature', 'pressure', 'ignition delay', 'pressure rise']:
+        for prop_name in datagroup_properties:
             attribute = prop_name.replace(' ', '_')
             quantity = getattr(c.datapoints[0], attribute)
             if (quantity != None and
