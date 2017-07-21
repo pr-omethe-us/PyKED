@@ -323,7 +323,7 @@ def get_datapoints(root):
         property_id[prop.attrib['id']] = prop.attrib['name']
         if property_id[prop.attrib['id']] not in datagroup_properties:
             raise KeyError(property_id[prop.attrib['id']] + ' not valid dataPoint property')
-    if property_id == {}:
+    if not property_id:
         raise MissingElementError('property')
 
     # now get data points
