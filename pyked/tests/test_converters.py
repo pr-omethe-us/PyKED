@@ -188,6 +188,50 @@ class TestGetReference(object):
                                  'Fig. 12., right, open diamond.'
                                  )
 
+    def test_missing_doi_period_at_end(self):
+        """Ensure can handle missing DOI with period at end of reference.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
+
+        ref.set('preferredKey', 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
+                'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
+                'Fig. 12., right, open diamond.'
+                )
+
+        with pytest.warns(UserWarning) as w:
+            ref = get_reference(root)
+        assert len(w) == 1
+        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink. '
+                                        'Setting "detail" key as a fallback; '
+                                        'please update to the appropriate fields.'
+                                        )
+        assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
+                                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
+                                 'Fig. 12., right, open diamond.'
+                                 )
+
+    def test_missing_preferredkey(self):
+        """Ensure can handle DOI with missing ``preferredKey``.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
+
+        ref.set('doi', '10.1016/j.ijhydene.2007.04.008')
+
+        ref = get_reference(root)
+
+        assert ref['doi'] == '10.1016/j.ijhydene.2007.04.008'
+        assert ref['journal'] == 'International Journal of Hydrogen Energy'
+        assert ref['year'] == 2007
+        assert ref['volume'] == 32
+        assert ref['pages'] == '2216-2226'
+        assert len(ref['authors']) == 4
+        assert {'name': 'N CHAUMEIX'} in ref['authors']
+        assert {'name': 'S PICHON'} in ref['authors']
+        assert {'name': 'F LAFOSSE'} in ref['authors']
+        assert {'name': 'C PAILLARD'} in ref['authors']
+
     def test_incorrect_doi(self, capfd):
         """Ensure can handle invalid DOI.
         """
@@ -206,6 +250,36 @@ class TestGetReference(object):
                                         'Setting "detail" key as a fallback; please update to '
                                         'the appropriate fields.'
                                         )
+        assert ref['detail'] == (
+                'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
+                'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
+                'Fig. 12., right, open diamond.'
+                )
+
+    def test_incorrect_doi_period_at_end(self, capfd):
+        """Ensure can handle invalid DOI with period at end.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
+        ref.set('doi', '10.1000/invalid.doi')
+        ref.set('preferredKey', 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
+                'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
+                'Fig. 12., right, open diamond.'
+                )
+
+        with pytest.warns(UserWarning) as w:
+            ref = get_reference(root)
+        assert len(w) == 1
+        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
+                                        'Setting "detail" key as a fallback; please update to '
+                                        'the appropriate fields.'
+                                        )
+        assert ref['detail'] == (
+                'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
+                'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
+                'Fig. 12., right, open diamond.'
+                )
+
 
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
@@ -231,7 +305,7 @@ class TestGetReference(object):
                                  )
 
     def test_missing_doi_preferredkey(self):
-        """Ensure error if missing both DOI and preferredKey.
+        """Ensure error if missing both DOI and ``preferredKey``.
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
@@ -242,7 +316,7 @@ class TestGetReference(object):
         assert ('DOI not found and preferredKey attribute not set' in str(excinfo.value))
 
     def test_doi_missing_preferredkey(self):
-        """Ensure error if missing preferredKey and not found DOI.
+        """Ensure error if missing ``preferredKey`` and not found DOI.
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
