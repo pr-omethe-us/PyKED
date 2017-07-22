@@ -327,6 +327,30 @@ class TestGetReference(object):
                 'is missing.' in str(excinfo.value)
                 )
 
+    def test_doi_author_orcid(self):
+        """Test proper addition of author ORCID if present.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
+        ref.set('doi', '10.1016/j.cpc.2017.02.004')
+
+        ref = get_reference(root)
+
+        assert ref['doi'] == '10.1016/j.cpc.2017.02.004'
+        assert ref['journal'] == 'Computer Physics Communications'
+        assert ref['year'] == 2017
+        assert ref['volume'] == 215
+        assert ref['pages'] == '188-203'
+        assert len(ref['authors']) == 3
+        assert {'name': 'Kyle E. Niemeyer',
+                'ORCID': '0000-0003-4425-7097'
+                } in ref['authors']
+        assert {'name': 'Nicholas J. Curtis',
+                'ORCID': '0000-0002-0303-4711'
+                } in ref['authors']
+        assert {'name': 'Chih-Jen Sung'} in ref['authors']
+
+
 class TestGetExperiment(object):
     """
     """
