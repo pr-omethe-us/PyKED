@@ -235,6 +235,17 @@ class TestGetReference(object):
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
+        ref.set('doi', '10.1000/invalid.doi')
+
+        with pytest.raises(KeywordError) as excinfo:
+            ref = get_reference(root)
+        assert ('DOI not found and preferredKey attribute not set' in str(excinfo.value))
+
+    def test_doi_missing_preferredkey(self):
+        """Ensure error if missing preferredKey and not found DOI.
+        """
+        root = etree.Element('experiment')
+        ref = etree.SubElement(root, 'bibliographyLink')
 
         with pytest.raises(MissingAttributeError) as excinfo:
             ref = get_reference(root)
