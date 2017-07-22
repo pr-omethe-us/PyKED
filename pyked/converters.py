@@ -5,20 +5,12 @@
 import os
 from argparse import ArgumentParser
 from warnings import warn
-import numpy
+import xml.etree.ElementTree as etree
 
+import numpy
 from requests.exceptions import HTTPError, ConnectionError
 import habanero
 import pint
-
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        import xml.etree.ElementTree as etree
-    except ImportError:
-        print("Failed to import ElementTree from any known place")
-        raise
 
 # Local imports
 from .validation import yaml, property_units
@@ -671,7 +663,7 @@ def convert_to_ReSpecTh(filename_ck, filename_xml=''):
     if not filename_xml:
         filename_xml = os.path.splitext(os.path.basename(filename_ck))[0] + '.xml'
 
-    et.write(filename_xml, pretty_print=True, encoding='utf-8', xml_declaration=True)
+    et.write(filename_xml, encoding='utf-8', xml_declaration=True)
     print('Converted to ' + filename_xml)
 
 

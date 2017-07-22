@@ -8,19 +8,11 @@ import pkg_resources
 from requests.exceptions import ConnectionError
 import socket
 from tempfile import TemporaryDirectory
+import xml.etree.ElementTree as etree
 
 import pytest
 import yaml
 import numpy
-
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        import xml.etree.ElementTree as etree
-    except ImportError:
-        print("Failed to import ElementTree from any known place")
-        raise
 
 
 # Local imports

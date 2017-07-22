@@ -34,7 +34,6 @@ install_requires = [
     'habanero>=0.2.6',
     'orcid>=0.7.0,<1.0',
     'uncertainties>=3.0.1',
-    'lxml>=3.8.0',
 ]
 
 tests_require = [
