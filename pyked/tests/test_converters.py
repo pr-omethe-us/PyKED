@@ -25,7 +25,7 @@ except ImportError:
 
 # Local imports
 from ..converters import (ParseError, KeywordError, MissingElementError,
-                          MissingAttributeError, UndefinedKeywordError
+                          MissingAttributeError
                           )
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,

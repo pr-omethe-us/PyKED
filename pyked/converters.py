@@ -59,12 +59,6 @@ class MissingAttributeError(KeywordError):
             self.keywords[0], self.keywords[1])
             )
 
-class UndefinedKeywordError(KeywordError):
-    """Raised for undefined keywords."""
-
-    def __str__(self):
-        return repr('Error: keyword not defined: {}'.format(self.keywords[0]))
-
 
 def get_file_metadata(root):
     """Read and parse ReSpecTh XML file metadata (file author, version, etc.)
