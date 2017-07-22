@@ -114,21 +114,23 @@ def get_reference(root):
     ref_key = elem.get('preferredKey', None)
 
     if ref_doi is not None:
-        if ref_key is not None:
-            warn('Using DOI to obtain reference information, rather than preferredKey.')
-        reference['doi'] = elem.attrib['doi']
-        ref = None
         try:
-            ref = habanero.Crossref().works(ids=reference['doi'])['message']
-        except (HTTPError, habanero.RequestError):
-            raise KeywordError('DOI not found')
-        # TODO: remove UnboundLocalError after habanero fixed
-        except (ConnectionError, UnboundLocalError):
-            warn('Network not available, DOI not validated.')
-            ref_doi = None
-
-        if ref is not None:
-            ## Now get elements of the reference data
+            ref = habanero.Crossref().works(ids=ref_doi)['message']
+        except (HTTPError, habanero.RequestError, ConnectionError, UnboundLocalError):
+            if ref_key is None:
+                raise KeywordError('DOI not found and preferredKey attribute not set')
+            else:
+                warn('Missing doi attribute in bibliographyLink or lookup failed. '
+                     'Setting "detail" key as a fallback; please update to the appropriate fields.'
+                     )
+                reference['detail'] = ref_key
+                if reference['detail'][-1] != '.':
+                    reference['detail'] += '.'
+        else:
+            if ref_key is not None:
+                warn('Using DOI to obtain reference information, rather than preferredKey.')
+            reference['doi'] = elem.attrib['doi']
+            # Now get elements of the reference data
             # Assume that the reference returned by the DOI lookup always has a container-title
             reference['journal'] = ref.get('container-title')[0]
             ref_year = ref.get('published-print') or ref.get('published-online')
@@ -145,14 +147,14 @@ def get_reference(root):
                     auth['ORCID'] = orcid
                 reference['authors'].append(auth)
 
-    if ref_key is not None and ref_doi is None:
+    elif ref_key is not None:
         warn('Missing doi attribute in bibliographyLink. '
-             'Setting "detail" key as a fallback; please update.'
+             'Setting "detail" key as a fallback; please update to the appropriate fields.'
              )
         reference['detail'] = ref_key
         if reference['detail'][-1] != '.':
             reference['detail'] += '.'
-    elif ref_key is None and ref_doi is None:
+    else:
         # Need one of DOI or preferredKey
         raise MissingAttributeError('preferredKey', 'bibliographyLink')
 
@@ -231,7 +233,7 @@ def get_common_properties(root):
             assert composition_type in ['mole fraction', 'mass fraction']
             properties['composition']['kind'] = composition_type
 
-        elif name in ['temperature', 'pressure', 'pressure rise', 'compression time']:
+        elif name in ['temperature', 'pressure', 'pressure rise', ]:
             field = name.replace(' ', '-')
             units = elem.attrib['units']
             if units == 'Torr':
@@ -245,7 +247,7 @@ def get_common_properties(root):
             properties[field] = [' '.join([elem.find('value').text, units])]
 
         else:
-            raise KeywordError('Property ' + name + ' not supported as common property.')
+            raise KeywordError('Property ' + name + ' not supported as common property')
 
     return properties
 
@@ -384,25 +386,19 @@ def get_datapoints(root):
     return datapoints
 
 
-def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=''):
+def convert_from_ReSpecTh(filename_xml, filename_ck='', file_author='', file_author_orcid=''):
     """Convert ReSpecTh XML file to ChemKED YAML file.
 
     Args:
         filename_xml (`str`): Name of ReSpecTh XML file to be converted.
-        output (`str`, optional): Output path for converted file.
+        filename_ck (`str`, optional): Name of output ChemKED file to be produced.
         file_author (`str`, optional): Name to override original file author
         file_author_orcid (`str`, optional): ORCID of file author
-
-    Returns:
-        filename_yaml (`str`): Name of newly created ChemKED YAML file.
     """
     assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
 
     # get all information from XML file
-    try:
-        tree = etree.parse(filename_xml)
-    except OSError:
-        raise OSError('Unable to open file ' + filename_xml)
+    tree = etree.parse(filename_xml)
     root = tree.getroot()
 
     # get file metadata
@@ -413,7 +409,7 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
     # Save name of original data filename
     if properties['reference'].get('detail') is None:
         properties['reference']['detail'] = ''
-    properties['reference']['detail'] += ('Converted from XML file ' +
+    properties['reference']['detail'] += ('Converted from ReSpecTh XML file ' +
                                           os.path.basename(filename_xml)
                                           )
 
@@ -429,12 +425,6 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
     # Now parse ignition delay datapoints
     properties['datapoints'] = get_datapoints(root)
 
-    # Get compression time for RCM, if volume history given
-    # if 'volume' in properties and 'compression-time' not in properties:
-    #     min_volume_idx = numpy.argmin(properties['volume'])
-    #     min_volume_time = properties['time'][min_volume_idx]
-    #     properties['compression-time'] = min_volume_time
-
     # Ensure combinations of volume, time, pressure-rise are correct.
     if ('volume' in properties['common-properties'] and
         'time' not in properties['common-properties']
@@ -444,11 +434,6 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
           not any(['time' in dp for dp in properties['datapoints']])
           ):
         raise KeywordError('Time values needed for volume history')
-
-    if ('compression-time' in properties['common-properties'] or
-        any([dp for dp in properties['datapoints'] if dp.get('compression-time')])
-        ) and properties['apparatus']['kind'] == 'shock tube':
-        raise KeywordError('Compression time cannot be defined for shock tube.')
 
     if ('pressure-rise' in properties['common-properties'] or
         any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
@@ -481,22 +466,19 @@ def convert_ReSpecTh(filename_xml, output='', file_author='', file_author_orcid=
     # compression time doesn't belong in common-properties
     properties['common-properties'].pop('compression-time', None)
 
-    filename_yaml = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
+    # set output filename and path
+    if not filename_ck:
+        filename_ck = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
-    # add path
-    filename_yaml = os.path.join(output, filename_yaml)
-
-    with open(filename_yaml, 'w') as outfile:
+    with open(filename_ck, 'w') as outfile:
         outfile.write(yaml.dump(properties, default_flow_style=False))
-    print('Converted to ' + filename_yaml)
+    print('Converted to ' + filename_ck)
 
     # now validate
-    ChemKED(yaml_file=filename_yaml)
-
-    return filename_yaml
+    ChemKED(yaml_file=filename_ck)
 
 
-def convert_to_ReSpecTh(filename_ck, output_path=''):
+def convert_to_ReSpecTh(filename_ck, filename_xml=''):
     """Convert ChemKED file to ReSpecTh XML file.
 
     This converter uses common information in a ChemKED file to generate a
@@ -504,8 +486,8 @@ def convert_to_ReSpecTh(filename_ck, output_path=''):
     some additional attributes.
 
     Arguments:
-        filename_ck (`str`): Filename of existing ChemKED YAML file to be converted.
-        output_path (`str`, optional): Path for output ReSpecTh XML file.
+        filename_ck (`str`): Name of ChemKED YAML file to be converted.
+        filename_xml (`str`, optional): Name of output ReSpecTh XML file to be produced.
     """
     c = ChemKED(yaml_file=filename_ck)
 
@@ -603,7 +585,7 @@ def convert_to_ReSpecTh(filename_ck, output_path=''):
               'ignition delay': 'tau', 'pressure rise': 'dP/dt',
               }
 
-    for prop_name in ['temperature', 'pressure', 'ignition delay', 'pressure rise']:
+    for prop_name in datagroup_properties:
         attribute = prop_name.replace(' ', '_')
         if (prop_name not in common and
             any([getattr(dp, attribute, None) for dp in c.datapoints])
@@ -692,29 +674,30 @@ def convert_to_ReSpecTh(filename_ck, output_path=''):
     ignition.set('type', c.datapoints[0].ignition_type['type'])
 
     et = etree.ElementTree(root)
-    filename_out = os.path.join(
-        output_path,
-        os.path.splitext(os.path.basename(filename_ck))[0] + '.xml'
+    if not filename_xml:
+        filename_xml = os.path.splitext(os.path.basename(filename_ck))[0] + '.xml'
+
+    et.write(filename_xml, pretty_print=True, encoding='utf-8', xml_declaration=True)
+    print('Converted to ' + filename_xml)
+
+
+def main(argv):
+    """
+    """
+    parser = ArgumentParser(
+        description='Convert between ReSpecTh XML file and ChemKED YAML file '
+                    'automatically based on file extension.'
         )
-    et.write(filename_out, pretty_print=True, encoding='utf-8', xml_declaration=True)
-
-    return filename_out
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Convert ReSpecTh XML file to ChemKED '
-                                        'YAML file.'
-                            )
     parser.add_argument('-i', '--input',
                         type=str,
                         required=True,
-                        help='Input XML filename'
+                        help='Input filename (e.g., "file1.yaml" or "file2.xml")'
                         )
     parser.add_argument('-o', '--output',
                         type=str,
                         required=False,
                         default='',
-                        help='Output directory for file'
+                        help='Output filename (e.g., "file1.xml" or "file2.yaml")'
                         )
     parser.add_argument('-fa', '--file-author',
                         dest='file_author',
@@ -731,7 +714,31 @@ if __name__ == '__main__':
                         help='File author ORCID'
                         )
 
-    args = parser.parse_args()
-    convert_ReSpecTh(args.input, args.output,
-                     args.file_author, args.file_author_orcid
-                     )
+    args = parser.parse_args(argv)
+
+    if (os.path.splitext(args.input)[1] == '.xml' and
+        os.path.splitext(args.output)[1] == '.yaml'
+        ):
+        convert_from_ReSpecTh(args.input, args.output, args.file_author, args.file_author_orcid)
+    elif (os.path.splitext(args.input)[1] == '.yaml' and
+          os.path.splitext(args.output)[1] == '.xml'
+          ):
+        convert_to_ReSpecTh(args.input, args.output)
+    elif (os.path.splitext(args.input)[1] == '.xml' and
+          os.path.splitext(args.output)[1] == '.xml'
+          ):
+        raise KeywordError('Cannot convert .xml to .xml.')
+    elif (os.path.splitext(args.input)[1] == '.yaml' and
+          os.path.splitext(args.output)[1] == '.yaml'
+          ):
+        raise KeywordError('Cannot convert .yaml to .yaml.')
+    else:
+        raise KeywordError('Input/output args need to be .xml/.yaml')
+
+
+def script_entry_point():
+    main(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

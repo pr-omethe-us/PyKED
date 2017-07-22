@@ -7,6 +7,7 @@ import os
 import pkg_resources
 from requests.exceptions import ConnectionError
 import socket
+from tempfile import TemporaryDirectory
 
 import pytest
 import yaml
@@ -21,29 +22,6 @@ except ImportError:
         print("Failed to import ElementTree from any known place")
         raise
 
-# Create temporary directory for tests that need to create files
-# Taken from http://stackoverflow.com/a/22726782/1569494
-try:
-    from tempfile import TemporaryDirectory
-except ImportError:
-    from contextlib import contextmanager
-    import shutil
-    import tempfile
-    import errno
-
-    @contextmanager
-    def TemporaryDirectory():
-        name = tempfile.mkdtemp()
-        try:
-            yield name
-        finally:
-            try:
-                shutil.rmtree(name)
-            except OSError as e:
-                # Reraise unless ENOENT: No such file or directory
-                # (ok if directory has already been deleted)
-                if e.errno != errno.ENOENT:
-                    raise
 
 # Local imports
 from ..converters import (ParseError, KeywordError, MissingElementError,
@@ -51,7 +29,7 @@ from ..converters import (ParseError, KeywordError, MissingElementError,
                           )
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
-                          convert_ReSpecTh, convert_to_ReSpecTh
+                          convert_from_ReSpecTh, convert_to_ReSpecTh
                           )
 from .._version import __version__
 from ..chemked import ChemKED
@@ -208,8 +186,10 @@ class TestGetReference(object):
 
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
+        assert len(w) == 1
         assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink. '
-                                        'Setting "detail" key as a fallback; please update.'
+                                        'Setting "detail" key as a fallback; '
+                                        'please update to the appropriate fields.'
                                         )
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
@@ -227,9 +207,13 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        with pytest.raises(KeywordError) as excinfo:
+        with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
-        assert 'Error: DOI not found' in str(excinfo.value)
+        assert len(w) == 1
+        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
+                                        'Setting "detail" key as a fallback; please update to '
+                                        'the appropriate fields.'
+                                        )
 
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
@@ -242,17 +226,12 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        ref = get_reference(root)
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
-        assert len(w) == 3
-        assert w[0].message.args[0] == ('Using DOI to obtain reference information, '
-                                        'rather than preferredKey.'
-                                        )
-        assert w[1].message.args[0] == 'Network not available, DOI not validated.'
-
-        assert w[2].message.args[0] == ('Missing doi attribute in bibliographyLink. '
-                                        'Setting "detail" key as a fallback; please update.'
+        assert len(w) == 1
+        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
+                                        'Setting "detail" key as a fallback; please update to '
+                                        'the appropriate fields.'
                                         )
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
@@ -360,7 +339,6 @@ class TestCommonProperties(object):
         ('pressure', '1000', 'mbar'),
         ('temperature', '1000.0', 'K'),
         ('pressure rise', '0.10', '1/ms'),
-        ('compression time', '38.0', 'ms'),
         ])
     def test_proper_common_properties(self, physical_property, value, units):
         """Ensure proper handling of correct common properties.
@@ -385,7 +363,6 @@ class TestCommonProperties(object):
         ('pressure', '2.18', 'K'),
         ('temperature', '1000.0', 'Pa'),
         ('pressure rise', '0.10', 'ms'),
-        ('compression time', '38.0', '1/ms'),
         ])
     def test_common_property_invalid_units(self, physical_property, value, units):
         """Ensure error raised when improper units given for common properties.
@@ -461,9 +438,9 @@ class TestCommonProperties(object):
         amount.set('units', 'mole fraction')
         amount.text = '1.0'
 
-        common = get_common_properties(root)
-        out, err = capfd.readouterr()
-        assert out == 'Warning: missing InChI for species H2\n'
+        with pytest.warns(UserWarning) as w:
+            common = get_common_properties(root)
+        assert w[0].message.args[0] == ('Missing InChI for species H2')
 
     def test_inconsistent_composition_type(self):
         """Check for error when inconsistent composition types.
@@ -789,10 +766,11 @@ class TestConvertReSpecTh(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with TemporaryDirectory() as temp_dir:
-            newfile = convert_ReSpecTh(filename, output=temp_dir,
-                                       file_author='Kyle Niemeyer',
-                                       file_author_orcid='0000-0003-4425-7097'
-                                       )
+            newfile = os.path.join(temp_dir, 'test.yaml')
+            convert_from_ReSpecTh(filename, filename_ck=newfile,
+                                  file_author='Kyle Niemeyer',
+                                  file_author_orcid='0000-0003-4425-7097'
+                                  )
 
             c = ChemKED(yaml_file=newfile)
 
@@ -821,9 +799,11 @@ class TestToReSpecTh(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with TemporaryDirectory() as temp_dir:
-            newfile = convert_to_ReSpecTh(filename, temp_dir)
+            newfile = os.path.join(temp_dir, 'test.xml')
+            convert_to_ReSpecTh(filename, newfile)
 
             # convert back to ChemKED, then parse
-            newfile = convert_ReSpecTh(newfile, output=temp_dir)
+            testfile = os.path.join(temp_dir, 'test.yaml')
+            convert_from_ReSpecTh(newfile, testfile)
 
-            c = ChemKED(newfile)
+            c = ChemKED(testfile)

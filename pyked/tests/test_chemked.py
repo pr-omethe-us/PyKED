@@ -5,6 +5,7 @@ Test module for chemked.py
 import os
 import pkg_resources
 import warnings
+from tempfile import TemporaryDirectory
 
 # Third-party libraries
 import numpy as np
@@ -16,30 +17,6 @@ from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
 
 warnings.simplefilter('always')
-
-# Create temporary directory for tests that need to create files
-# Taken from http://stackoverflow.com/a/22726782/1569494
-try:
-    from tempfile import TemporaryDirectory
-except ImportError:
-    from contextlib import contextmanager
-    import shutil
-    import tempfile
-    import errno
-
-    @contextmanager
-    def TemporaryDirectory():
-        name = tempfile.mkdtemp()
-        try:
-            yield name
-        finally:
-            try:
-                shutil.rmtree(name)
-            except OSError as e:
-                # Reraise unless ENOENT: No such file or directory
-                # (ok if directory has already been deleted)
-                if e.errno != errno.ENOENT:
-                    raise
 
 
 class TestChemKED(object):
