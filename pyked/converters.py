@@ -531,8 +531,8 @@ def convert_to_ReSpecTh(filename_ck, filename_xml=''):
     kind.text = c.apparatus.kind
 
     common_properties = etree.SubElement(root, 'commonProperties')
-    # ChemKED objects have no common properties once loaded... can we check for properties
-    # among datapoints that tend to be common?
+    # ChemKED objects have no common properties once loaded. Check for properties
+    # among datapoints that tend to be common
     common = []
     composition = c.datapoints[0].composition
     # Composition type *has* to be the same
