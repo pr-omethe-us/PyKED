@@ -619,7 +619,6 @@ class TestIgnitionType(object):
     def test_unsupported_ignition_types(self, ignition_type):
         """Check error returned for unsupported/invalid ignition types.
         """
-
         root = etree.Element('experiment')
         ignition = etree.SubElement(root, 'ignitionType')
         ignition.set('target', 'P')
@@ -630,10 +629,9 @@ class TestIgnitionType(object):
         assert 'Error: ' + ignition_type + ' not valid ignition type' in str(excinfo.value)
 
     @pytest.mark.parametrize('ignition_target', ['O2', 'CO', 'density'])
-    def test_unsupported_ignition_types(self, ignition_target):
+    def test_unsupported_ignition_targets(self, ignition_target):
         """Check error returned for unsupported/invalid ignition targets.
         """
-
         root = etree.Element('experiment')
         ignition = etree.SubElement(root, 'ignitionType')
         ignition.set('target', ignition_target)
