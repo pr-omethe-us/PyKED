@@ -350,6 +350,8 @@ def get_datapoints(root):
             elif prop.attrib['name'] == 'volume':
                 volume_dict = {'units': prop.attrib['units'], 'column': 1}
                 volume_tag = prop.attrib['id']
+            else:
+                raise KeywordError('Only volume and time allowed in volume history dataGroup.')
 
         volume_history = {'time': time_dict, 'volume': volume_dict, 'values': []}
 
@@ -362,6 +364,10 @@ def get_datapoints(root):
                     time = float(val.text)
                 elif val.tag == volume_tag:
                     volume = float(val.text)
+                else:
+                    raise KeywordError('Only volume and time values allowed in '
+                                       'volume-history dataPoint.'
+                                       )
             volume_history['values'].append([time, volume])
 
         datapoints[0]['volume-history'] = volume_history

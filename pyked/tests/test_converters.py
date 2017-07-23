@@ -798,6 +798,30 @@ class TestGetDatapoints(object):
             datapoints = get_datapoints(root)
         assert 'Second dataGroup only valid for RCM.' in str(excinfo.value)
 
+    def test_datapoint_invalid_property(self):
+        """Raise error when invalid property for a ``dataPoint``.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'shock tube'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'compression time')
+        prop.set('units', 'ms')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(30.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        with pytest.raises(KeyError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'compression time not valid dataPoint property' in str(excinfo.value)
+
     def test_single_datapoint_volume_history(self):
         """Raise error if multiple datapoints with single volume history.
         """
@@ -852,6 +876,69 @@ class TestGetDatapoints(object):
         with pytest.raises(NotImplementedError) as excinfo:
             datapoints = get_datapoints(root)
         assert 'More than two DataGroups not supported.' in str(excinfo.value)
+
+    def test_volume_history_extra_property(self):
+        """Ensure error when extra property in volume history dataGroup.
+        """
+        root = etree.Element('experiment')
+        apparatus = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(apparatus, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'time')
+        prop.set('units', 's')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x4')
+        prop.set('name', 'volume')
+        prop.set('units', 'cm3')
+
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x5')
+        prop.set('name', 'pressure')
+        prop.set('units', 'Pa')
+
+        num_points = 100
+        time = 0.0
+        volume = 50.0
+        pressure = 101325.0
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(time)
+        x4 = etree.SubElement(datapoint, 'x4')
+        x4.text = str(volume)
+        x5 = etree.SubElement(datapoint, 'x5')
+        x5.text = str(volume)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'Only volume and time allowed in volume history dataGroup.' in str(excinfo.value)
+
+        # remove bad property description, but retain bad extra dataPoint value
+        datagroup.remove(prop)
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Only volume and time values allowed in volume-history dataPoint.'
+                in str(excinfo.value)
+                )
 
 
 class TestConvertReSpecTh(object):
