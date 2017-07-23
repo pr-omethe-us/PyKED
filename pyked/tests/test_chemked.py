@@ -217,7 +217,7 @@ class TestWriteFile(object):
         'testfile_required.yaml', 'testfile_uncertainty.yaml'
         ])
     def test_write_files(self, filename):
-        """
+        """Test proper writing of ChemKED files.
         """
         file_path = os.path.join(filename)
         filename = pkg_resources.resource_filename(__name__, file_path)
@@ -231,6 +231,46 @@ class TestWriteFile(object):
                 properties = yaml.safe_load(f)
 
         assert properties == c._properties
+
+
+class TestConvertToReSpecTh(object):
+    """Tests for conversion of ChemKED to ReSpecTh
+    """
+    @pytest.mark.parametrize('filename_ck', ['testfile_st.yaml', 'testfile_rcm.yaml'])
+    def test_conversion_to_respecth(self, filename_ck):
+        """Test proper conversion to ReSpecTh XML.
+        """
+        file_path = os.path.join(filename_ck)
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            c.convert_to_ReSpecTh(newfile)
+
+            # convert back to ChemKED, then parse
+            testfile = os.path.join(temp_dir, 'test.yaml')
+            ReSpecTh_to_ChemKED(newfile, testfile)
+
+            c = ChemKED(testfile)
+
+    @pytest.mark.parametrize('experiment_type', [
+        'Laminar flame speed measurement', 'Species profile measurement',
+        'Outlet concentration measurement', 'Burner stabilized flame speciation measurement',
+        'Jet-stirred reactor measurement', 'Reaction rate coefficient measurement'
+        ])
+    def test_conversion_to_respecth_error(self, experiment_type):
+        """Test for conversion errors.
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        c.experiment_type = experiment_type
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            c.convert_to_ReSpecTh('test.xml')
+        assert 'Only ignition delay type supported for conversion.' in str(excinfo.value)
 
 
 class TestDataPoint(object):

@@ -22,7 +22,7 @@ from ..converters import (ParseError, KeywordError, MissingElementError,
                           )
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
-                          convert_from_ReSpecTh, convert_to_ReSpecTh, main
+                          ReSpecTh_to_ChemKED, main
                           )
 from .._version import __version__
 from ..chemked import ChemKED
@@ -1009,7 +1009,7 @@ class TestConvertReSpecTh(object):
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.yaml')
-            convert_from_ReSpecTh(filename, filename_ck=newfile,
+            ReSpecTh_to_ChemKED(filename, filename_ck=newfile,
                                   file_author='Kyle Niemeyer',
                                   file_author_orcid='0000-0003-4425-7097'
                                   )
@@ -1029,7 +1029,7 @@ class TestConvertReSpecTh(object):
         assert c.reference.doi == c_true.reference.doi
         assert len(c.datapoints) == len(c_true.datapoints)
 
-    def test_valid_conversion_no_output_name(self):
+    def test_valid_conversion_from_respecth_no_output_name(self):
         """Test proper conversion when no output name given.
         """
         file_path = os.path.join('testfile_st.xml')
@@ -1038,7 +1038,7 @@ class TestConvertReSpecTh(object):
         with TemporaryDirectory() as temp_dir:
             copy(filename, temp_dir)
             filename = os.path.join(temp_dir, 'testfile_st.xml')
-            convert_from_ReSpecTh(filename)
+            ReSpecTh_to_ChemKED(filename)
 
     def test_error_rcm_pressurerise(self):
         """Test for appropriate error if RCM file has pressure rise.
@@ -1063,7 +1063,7 @@ class TestConvertReSpecTh(object):
             et.write(filename, encoding='utf-8', xml_declaration=True)
 
             with pytest.raises(KeywordError) as excinfo:
-                convert_from_ReSpecTh(filename)
+                ReSpecTh_to_ChemKED(filename)
             assert 'Pressure rise cannot be defined for RCM.' in str(excinfo.value)
 
     def test_error_st_volumehistory(self):
@@ -1097,29 +1097,8 @@ class TestConvertReSpecTh(object):
             et.write(filename, encoding='utf-8', xml_declaration=True)
 
             with pytest.raises(KeywordError) as excinfo:
-                convert_from_ReSpecTh(filename)
+                ReSpecTh_to_ChemKED(filename)
             assert 'Volume history cannot be defined for shock tube.' in str(excinfo.value)
-
-
-class TestToReSpecTh(object):
-    """
-    """
-    @pytest.mark.parametrize('filename_ck', ['testfile_st.yaml', 'testfile_rcm.yaml'])
-    def test_conversion_to_respecth(self, filename_ck):
-        """Test proper conversion to ReSpecTh XML.
-        """
-        file_path = os.path.join(filename_ck)
-        filename = pkg_resources.resource_filename(__name__, file_path)
-
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.xml')
-            convert_to_ReSpecTh(filename, newfile)
-
-            # convert back to ChemKED, then parse
-            testfile = os.path.join(temp_dir, 'test.yaml')
-            convert_from_ReSpecTh(newfile, testfile)
-
-            c = ChemKED(testfile)
 
 
 class TestConverterMain(object):

@@ -6,12 +6,14 @@ from os.path import exists
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
+import xml.etree.ElementTree as etree
 
 import numpy as np
 
 # Local imports
 from .validation import schema, OurValidator, yaml
 from .utils import Q_
+from .converters import datagroup_properties
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
 VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
@@ -45,7 +47,7 @@ class ChemKED(object):
 
     Args:
         yaml_file (`str`, optional): The filename of the YAML database in ChemKED format.
-        dict_input (`str`, optional): A dictionary with the parsed ouput of YAML file in ChemKED
+        dict_input (`dict`, optional): A dictionary with the parsed ouput of YAML file in ChemKED
             format.
         skip_validation (`bool`, optional): Whether validation of the ChemKED should be done. Must
             be supplied as a keyword-argument.
@@ -262,6 +264,207 @@ class ChemKED(object):
 
         with open(filename, 'w') as yaml_file:
             yaml.dump(self._properties, yaml_file)
+
+    def convert_to_ReSpecTh(self, filename):
+        """Convert ChemKED record to ReSpecTh XML file.
+
+        This converter uses common information in a ChemKED file to generate a
+        ReSpecTh XML file. Note that some information may be lost, as ChemKED stores
+        some additional attributes.
+
+        Arguments:
+            filename (`str`): Filename for output ReSpecTh XML file.
+
+        Example:
+            >>> dataset = ChemKED(yaml_file)
+            >>> dataset.convert_to_ReSpecTh(xml_file)
+        """
+        root = etree.Element('experiment')
+
+        file_author = etree.SubElement(root, 'fileAuthor')
+        file_author.text = self.file_author['name']
+
+        # right now ChemKED just uses an integer file version
+        file_version = etree.SubElement(root, 'fileVersion')
+        major_version = etree.SubElement(file_version, 'major')
+        major_version.text = str(self.file_version)
+        minor_version = etree.SubElement(file_version, 'minor')
+        minor_version.text = '0'
+
+        respecth_version = etree.SubElement(root, 'ReSpecThVersion')
+        major_version = etree.SubElement(respecth_version, 'major')
+        major_version.text = '1'
+        minor_version = etree.SubElement(respecth_version, 'minor')
+        minor_version.text = '0'
+
+        # Only ignition delay currently supported
+        exp = etree.SubElement(root, 'experimentType')
+        if self.experiment_type == 'ignition delay':
+            exp.text = 'Ignition delay measurement'
+        else:
+            raise NotImplementedError('Only ignition delay type supported for conversion.')
+
+        reference = etree.SubElement(root, 'bibliographyLink')
+        citation = ''
+        for author in self.reference.authors:
+            citation += author['name'] + ', '
+        citation += (self.reference.journal + ' (' + str(self.reference.year) + ') ' +
+                     str(self.reference.volume) + ':' + self.reference.pages + '. ' +
+                     self.reference.detail
+                     )
+        reference.set('preferredKey', citation)
+        reference.set('doi', self.reference.doi)
+
+        apparatus = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(apparatus, 'kind')
+        kind.text = self.apparatus.kind
+
+        common_properties = etree.SubElement(root, 'commonProperties')
+        # ChemKED objects have no common properties once loaded. Check for properties
+        # among datapoints that tend to be common
+        common = []
+        composition = self.datapoints[0].composition
+        # Composition type *has* to be the same
+        composition_type = self.datapoints[0].composition_type
+        if all([composition == dp.composition for dp in self.datapoints]):
+            # initial composition is common
+            common.append('composition')
+            prop = etree.SubElement(common_properties, 'property')
+            prop.set('name', 'initial composition')
+
+            for species in composition:
+                component = etree.SubElement(prop, 'component')
+                species_link = etree.SubElement(component, 'speciesLink')
+                species_link.set('preferredKey', species['species-name'])
+                if species.get('InChI'):
+                    species_link.set('InChI', species['InChI'])
+
+                amount = etree.SubElement(component, 'amount')
+                amount.set('units', composition_type)
+                amount.text = str(species['amount'].magnitude)
+
+        # If multiple datapoints present, then find any common properties. If only
+        # one datapoint, then composition should be the only "common" property.
+        if len(self.datapoints) > 1:
+            for prop_name in datagroup_properties:
+                attribute = prop_name.replace(' ', '_')
+                quantity = getattr(self.datapoints[0], attribute)
+                if (quantity != None and
+                    all([quantity == getattr(dp, attribute) for dp in self.datapoints])
+                    ):
+                    common.append(prop_name)
+                    prop = etree.SubElement(common_properties, 'property')
+                    prop.set('description', '')
+                    prop.set('name', prop_name)
+                    prop.set('units', str(quantity.units))
+
+                    value = etree.SubElement(prop, 'value')
+                    value.text = str(quantity.magnitude)
+
+        # Ignition delay can't be common, unless only a single datapoint.
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        datagroup.set('id', 'dg1')
+        datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
+        datagroup_link.set('dataGroupID', '')
+        datagroup_link.set('dataPointID', '')
+
+        property_idx = {}
+        labels = {'temperature': 'T', 'pressure': 'P',
+                  'ignition delay': 'tau', 'pressure rise': 'dP/dt',
+                  }
+
+        for prop_name in datagroup_properties:
+            attribute = prop_name.replace(' ', '_')
+            if (prop_name not in common and
+                any([getattr(dp, attribute, None) for dp in self.datapoints])
+                ):
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+                prop.set('name', prop_name)
+                prop.set('units', str(getattr(self.datapoints[0], attribute).units))
+                idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[idx] = prop_name
+                prop.set('id', idx)
+                prop.set('label', labels[prop_name])
+
+        if 'composition' not in common:
+            for species in self.datapoints[0].composition:
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+
+                idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[idx] = species['species-name']
+                prop.set('id', idx)
+                prop.set('label', '[' + species['species-name'] + ']')
+                prop.set('name', 'composition')
+                prop.set('units', self.datapoints[0].composition_type)
+
+                species_link = etree.SubElement(prop, 'speciesLink')
+                species_link.set('preferredKey', species['species-name'])
+                if species.get('InChI'):
+                    species_link.set('InChI', species['InChI'])
+
+        for dp in self.datapoints:
+            datapoint = etree.SubElement(datagroup, 'dataPoint')
+            for idx in property_idx:
+                value = etree.SubElement(datapoint, idx)
+                value.text = str(getattr(dp, property_idx[idx].replace(' ', '_')).magnitude)
+
+        # if RCM and has volume history, need a second dataGroup
+        if (len(self.datapoints) > 1 and
+            any([getattr(dp, 'volume_history', None) for dp in self.datapoints])
+            ):
+            raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
+                                      'with a volume history.'
+                                      )
+            # TODO: what if they share the same history? Does this happen?
+        elif getattr(self.datapoints[0], 'volume_history', None):
+            datagroup = etree.SubElement(root, 'dataGroup')
+            datagroup.set('id', 'dg1')
+            datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
+            datagroup_link.set('dataGroupID', '')
+            datagroup_link.set('dataPointID', '')
+
+            # Volume history has two properties: time and volume.
+            volume_history = self.datapoints[0].volume_history
+            prop = etree.SubElement(datagroup, 'property')
+            prop.set('description', '')
+            prop.set('name', 'time')
+            prop.set('units', str(volume_history.time.units))
+            time_idx = 'x{}'.format(len(property_idx) + 1)
+            prop.set('id', time_idx)
+            prop.set('label', 't')
+
+            prop = etree.SubElement(datagroup, 'property')
+            prop.set('description', '')
+            prop.set('name', 'volume')
+            prop.set('units', str(volume_history.volume.units))
+            volume_idx = 'x{}'.format(len(property_idx) + 2)
+            prop.set('id', volume_idx)
+            prop.set('label', 'V')
+
+            for time, volume in zip(volume_history.time, volume_history.volume):
+                datapoint = etree.SubElement(datagroup, 'dataPoint')
+                value = etree.SubElement(datapoint, time_idx)
+                value.text = str(time.magnitude)
+                value = etree.SubElement(datapoint, volume_idx)
+                value.text = str(volume.magnitude)
+
+        # In ReSpecTh files all datapoints share ignition type
+        ignition = etree.SubElement(root, 'ignitionType')
+        if self.datapoints[0].ignition_type['target'] == 'pressure':
+            ignition.set('target', 'P')
+        elif self.datapoints[0].ignition_type['target'] == 'temperature':
+            ignition.set('target', 'T')
+        else:
+            # options left are species
+            ignition.set('target', self.datapoints[0].ignition_type['target'])
+        ignition.set('type', self.datapoints[0].ignition_type['type'])
+
+        et = etree.ElementTree(root)
+        et.write(filename, encoding='utf-8', xml_declaration=True)
+        print('Converted to ' + filename_xml)
 
 
 class DataPoint(object):
