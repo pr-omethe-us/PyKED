@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError
 import socket
 from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as etree
+from shutil import copy
 
 import pytest
 import yaml
@@ -21,7 +22,7 @@ from ..converters import (ParseError, KeywordError, MissingElementError,
                           )
 from ..converters import (get_file_metadata, get_reference, get_experiment_kind,
                           get_common_properties, get_ignition_type, get_datapoints,
-                          convert_from_ReSpecTh, convert_to_ReSpecTh
+                          convert_from_ReSpecTh, convert_to_ReSpecTh, main
                           )
 from .._version import __version__
 from ..chemked import ChemKED
@@ -774,30 +775,6 @@ class TestGetDatapoints(object):
             datapoints = get_datapoints(root)
         assert 'Error: required element dataPoint is missing.' in str(excinfo.value)
 
-    def test_multiple_datagroups_shocktube(self):
-        """Raise error when multiple dataGroups with shock tube.
-        """
-        root = etree.Element('experiment')
-        exp = etree.SubElement(root, 'experimentType')
-        exp.text = 'Ignition delay measurement'
-        app = etree.SubElement(root, 'apparatus')
-        kind = etree.SubElement(app, 'kind')
-        kind.text = 'shock tube'
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        prop = etree.SubElement(datagroup, 'property')
-        prop.set('id', 'x1')
-        prop.set('name', 'temperature')
-        prop.set('units', 'K')
-        datapoint = etree.SubElement(datagroup, 'dataPoint')
-        x1 = etree.SubElement(datapoint, 'x1')
-        x1.text = str(1000.0)
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        with pytest.raises(AssertionError) as excinfo:
-            datapoints = get_datapoints(root)
-        assert 'Second dataGroup only valid for RCM.' in str(excinfo.value)
-
     def test_datapoint_invalid_property(self):
         """Raise error when invalid property for a ``dataPoint``.
         """
@@ -821,33 +798,6 @@ class TestGetDatapoints(object):
         with pytest.raises(KeyError) as excinfo:
             datapoints = get_datapoints(root)
         assert 'compression time not valid dataPoint property' in str(excinfo.value)
-
-    def test_single_datapoint_volume_history(self):
-        """Raise error if multiple datapoints with single volume history.
-        """
-        root = etree.Element('experiment')
-        exp = etree.SubElement(root, 'experimentType')
-        exp.text = 'Ignition delay measurement'
-        app = etree.SubElement(root, 'apparatus')
-        kind = etree.SubElement(app, 'kind')
-        kind.text = 'rapid compression machine'
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        prop = etree.SubElement(datagroup, 'property')
-        prop.set('id', 'x1')
-        prop.set('name', 'temperature')
-        prop.set('units', 'K')
-        datapoint = etree.SubElement(datagroup, 'dataPoint')
-        x1 = etree.SubElement(datapoint, 'x1')
-        x1.text = str(1000.0)
-        datapoint = etree.SubElement(datagroup, 'dataPoint')
-        x1 = etree.SubElement(datapoint, 'x1')
-        x1.text = str(1000.0)
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        with pytest.raises(AssertionError) as excinfo:
-            datapoints = get_datapoints(root)
-        assert 'Multiple datapoints for single volume history.' in str(excinfo.value)
 
     def test_morethan_two_datagroups(self):
         """Raise error if more than two datagroups.
@@ -1079,6 +1029,77 @@ class TestConvertReSpecTh(object):
         assert c.reference.doi == c_true.reference.doi
         assert len(c.datapoints) == len(c_true.datapoints)
 
+    def test_valid_conversion_no_output_name(self):
+        """Test proper conversion when no output name given.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            copy(filename, temp_dir)
+            filename = os.path.join(temp_dir, 'testfile_st.xml')
+            convert_from_ReSpecTh(filename)
+
+    def test_error_rcm_pressurerise(self):
+        """Test for appropriate error if RCM file has pressure rise.
+        """
+        file_path = os.path.join('testfile_rcm.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        # add pressure rise to common properties
+        tree = etree.parse(filename)
+        root = tree.getroot()
+        properties = root.find('commonProperties')
+        prop = etree.SubElement(properties, 'property')
+        prop.set('name', 'pressure rise')
+        prop.set('units', '1/ms')
+        prop_value = etree.SubElement(prop, 'value')
+        prop_value.text = '0.10'
+
+        # write new file, and try to load
+        et = etree.ElementTree(root)
+        with TemporaryDirectory() as temp_dir:
+            filename = os.path.join(temp_dir, 'test.xml')
+            et.write(filename, encoding='utf-8', xml_declaration=True)
+
+            with pytest.raises(KeywordError) as excinfo:
+                convert_from_ReSpecTh(filename)
+            assert 'Pressure rise cannot be defined for RCM.' in str(excinfo.value)
+
+    def test_error_st_volumehistory(self):
+        """Test for appropriate error if shock tube file has volume history.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        # add pressure rise to common properties
+        tree = etree.parse(filename)
+        root = tree.getroot()
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'time')
+        prop.set('units', 's')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'volume')
+        prop.set('units', 'cm3')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(0.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(10.0)
+
+        # write new file, and try to load
+        et = etree.ElementTree(root)
+        with TemporaryDirectory() as temp_dir:
+            filename = os.path.join(temp_dir, 'test.xml')
+            et.write(filename, encoding='utf-8', xml_declaration=True)
+
+            with pytest.raises(KeywordError) as excinfo:
+                convert_from_ReSpecTh(filename)
+            assert 'Volume history cannot be defined for shock tube.' in str(excinfo.value)
+
 
 class TestToReSpecTh(object):
     """
@@ -1099,3 +1120,61 @@ class TestToReSpecTh(object):
             convert_from_ReSpecTh(newfile, testfile)
 
             c = ChemKED(testfile)
+
+
+class TestConverterMain(object):
+    """
+    """
+    def test_conversion_main(self):
+        """Test converter when used via command-line arguments.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.yaml')
+            main(['-i', filename, '-o', newfile,
+                  '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
+                  ])
+
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            main(['-i', filename, '-o', newfile,
+                  '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
+                  ])
+
+    def test_conversion_main_invalid(self):
+        """Test converter main raises errors when invalid filetypes.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+
+            with pytest.raises(KeywordError) as excinfo:
+                main(['-i', filename, '-o', newfile])
+            assert 'Cannot convert .xml to .xml' in str(excinfo.value)
+
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.yaml')
+
+            with pytest.raises(KeywordError) as excinfo:
+                main(['-i', filename, '-o', newfile])
+            assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
+
+        file_path = os.path.join('dataframe_st.csv')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.py')
+
+            with pytest.raises(KeywordError) as excinfo:
+                main(['-i', filename, '-o', newfile])
+            assert 'Input/output args need to be .xml/.yaml' in str(excinfo.value)

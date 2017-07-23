@@ -337,11 +337,6 @@ def get_datapoints(root):
 
     # RCM files may have a second dataGroup with volume-time history
     if len(dataGroups) == 2:
-        assert root.find('apparatus/kind').text == 'rapid compression machine', \
-               'Second dataGroup only valid for RCM.'
-
-        assert len(datapoints) == 1, 'Multiple datapoints for single volume history.'
-
         dataGroup = dataGroups[1]
         time_tag = None
         volume_tag = None
@@ -424,23 +419,16 @@ def convert_from_ReSpecTh(filename_xml, filename_ck='', file_author='', file_aut
     # Now parse ignition delay datapoints
     properties['datapoints'] = get_datapoints(root)
 
-    # Ensure combinations of volume, time, pressure-rise are correct.
+    # Ensure inclusion of pressure rise or volume history matches apparatus.
     if ('pressure-rise' in properties['common-properties'] or
         any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
         ) and properties['apparatus']['kind'] == 'rapid compression machine':
         raise KeywordError('Pressure rise cannot be defined for RCM.')
 
-    if (('volume' in properties['common-properties'] and
-         'pressure-rise' in properties['common-properties']
-         ) or ('volume' in properties['common-properties'] and
-               any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
-               ) or ('pressure-rise' in properties['common-properties'] and
-                     any([dp for dp in properties['datapoints'] if dp.get('volume')])
-                     )
-        ):
-        raise KeywordError('Both volume history and pressure rise '
-                           'cannot be specified'
-                           )
+    if ('volume-history' in properties['common-properties'] or
+        any([dp for dp in properties['datapoints'] if dp.get('volume-history')])
+        ) and properties['apparatus']['kind'] == 'shock tube':
+        raise KeywordError('Volume history cannot be defined for shock tube.')
 
     # apply any overrides
     if file_author:
@@ -717,17 +705,13 @@ def main(argv):
     elif (os.path.splitext(args.input)[1] == '.xml' and
           os.path.splitext(args.output)[1] == '.xml'
           ):
-        raise KeywordError('Cannot convert .xml to .xml.')
+        raise KeywordError('Cannot convert .xml to .xml')
     elif (os.path.splitext(args.input)[1] == '.yaml' and
           os.path.splitext(args.output)[1] == '.yaml'
           ):
-        raise KeywordError('Cannot convert .yaml to .yaml.')
+        raise KeywordError('Cannot convert .yaml to .yaml')
     else:
         raise KeywordError('Input/output args need to be .xml/.yaml')
-
-
-def script_entry_point():
-    main(sys.argv[1:])
 
 
 if __name__ == '__main__':
