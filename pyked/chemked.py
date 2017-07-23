@@ -464,7 +464,7 @@ class ChemKED(object):
 
         et = etree.ElementTree(root)
         et.write(filename, encoding='utf-8', xml_declaration=True)
-        print('Converted to ' + filename_xml)
+        print('Converted to ' + filename)
 
 
 class DataPoint(object):
