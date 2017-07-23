@@ -273,6 +273,28 @@ class TestConvertToReSpecTh(object):
             c.convert_to_ReSpecTh('test.xml')
         assert 'Only ignition delay type supported for conversion.' in str(excinfo.value)
 
+    def test_conversion_datapoints_different_composition(self):
+        """Test for appropriate handling of datapoints with different composition.
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        c.datapoints[0].composition = [{'InChI': '1S/H2/h1H',
+                                        'amount': Q_(0.1, 'dimensionless'),
+                                        'species-name': 'H2'},
+                                       {'InChI': '1S/O2/c1-2',
+                                        'amount': Q_(0.1, 'dimensionless'),
+                                        'species-name': 'O2'},
+                                       {'InChI': '1S/Ar',
+                                        'amount': Q_(0.8, 'dimensionless'),
+                                        'species-name': 'Ar'}
+                                       ]
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            c.convert_to_ReSpecTh(newfile)
+
 
 class TestDataPoint(object):
     """

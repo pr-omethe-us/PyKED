@@ -409,7 +409,14 @@ class ChemKED(object):
             datapoint = etree.SubElement(datagroup, 'dataPoint')
             for idx in property_idx:
                 value = etree.SubElement(datapoint, idx)
-                value.text = str(getattr(dp, property_idx[idx].replace(' ', '_')).magnitude)
+                # handle regular properties a bit differently than composition
+                if property_idx[idx] in datagroup_properties:
+                    value.text = str(getattr(dp, property_idx[idx].replace(' ', '_')).magnitude)
+                else:
+                    # composition
+                    for item in dp.composition:
+                        if item['species-name'] == property_idx[idx]:
+                            value.text = str(item['amount'].magnitude)
 
         # if RCM and has volume history, need a second dataGroup
         if (len(self.datapoints) > 1 and
