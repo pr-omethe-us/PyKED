@@ -6,6 +6,7 @@ import os
 import pkg_resources
 import warnings
 from tempfile import TemporaryDirectory
+import xml.etree.ElementTree as etree
 
 # Third-party libraries
 import numpy as np
@@ -293,6 +294,49 @@ class TestConvertToReSpecTh(object):
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
             c.convert_to_ReSpecTh(newfile)
+
+    def test_conversion_to_respecth_error_volume_history_datapoints(self):
+        """Test for error raised if RCM with multiple datapoints with volume history.
+        """
+        file_path = os.path.join('testfile_rcm.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        # Repeat datapoint, such that two with volume histories
+        c.datapoints.append(c.datapoints[0])
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            c.convert_to_ReSpecTh('test.xml')
+        assert ('Error: ReSpecTh files do not support multiple datapoints with a '
+                'volume history.' in str(excinfo.value)
+                )
+
+    @pytest.mark.parametrize('ignition_target', ['pressure', 'temperature', 'OH', 'CH'])
+    def test_conversion_to_respecth_ignition_targets(self, ignition_target):
+        """Test proper conversion for different ignition types.
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        for idx, dp in enumerate(c.datapoints):
+            c.datapoints[idx].ignition_type['target'] = ignition_target
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            c.convert_to_ReSpecTh(newfile)
+
+            tree = etree.parse(newfile)
+            root = tree.getroot()
+            elem = root.find('ignitionType')
+            elem = elem.attrib
+
+            if ignition_target == 'pressure':
+                assert elem['target'] == 'P'
+            elif ignition_target == 'temperature':
+                assert elem['target'] == 'T'
+            else:
+                assert elem['target'] == ignition_target
 
 
 class TestDataPoint(object):
