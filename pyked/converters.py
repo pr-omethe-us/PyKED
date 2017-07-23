@@ -343,6 +343,8 @@ def get_datapoints(root):
         assert len(datapoints) == 1, 'Multiple datapoints for single volume history.'
 
         dataGroup = dataGroups[1]
+        time_tag = None
+        volume_tag = None
         for prop in dataGroup.findall('property'):
             if prop.attrib['name'] == 'time':
                 time_dict = {'units': prop.attrib['units'], 'column': 0}
@@ -353,6 +355,8 @@ def get_datapoints(root):
             else:
                 raise KeywordError('Only volume and time allowed in volume history dataGroup.')
 
+        if time_tag is None or volume_tag is None:
+            raise KeywordError('Both time and volume properties required for volume history.')
         volume_history = {'time': time_dict, 'volume': volume_dict, 'values': []}
 
         # collect volume-time history
@@ -368,6 +372,10 @@ def get_datapoints(root):
                     raise KeywordError('Only volume and time values allowed in '
                                        'volume-history dataPoint.'
                                        )
+            if time is None or volume is None:
+                raise KeywordError('Both time and volume values required in each '
+                                   'volume-history dataPoint.'
+                                   )
             volume_history['values'].append([time, volume])
 
         datapoints[0]['volume-history'] = volume_history
@@ -399,11 +407,10 @@ def convert_from_ReSpecTh(filename_xml, filename_ck='', file_author='', file_aut
     # get reference info
     properties['reference'] = get_reference(root)
     # Save name of original data filename
-    if properties['reference'].get('detail') is None:
-        properties['reference']['detail'] = ''
-    properties['reference']['detail'] += ('Converted from ReSpecTh XML file ' +
-                                          os.path.basename(filename_xml)
-                                          )
+    properties['reference']['detail'] = (properties['reference'].get('detail', '') +
+                                         'Converted from ReSpecTh XML file ' +
+                                         os.path.basename(filename_xml)
+                                         )
 
     # Ensure ignition delay, and get which kind of experiment
     properties.update(get_experiment_kind(root))
@@ -418,15 +425,6 @@ def convert_from_ReSpecTh(filename_xml, filename_ck='', file_author='', file_aut
     properties['datapoints'] = get_datapoints(root)
 
     # Ensure combinations of volume, time, pressure-rise are correct.
-    if ('volume' in properties['common-properties'] and
-        'time' not in properties['common-properties']
-        ):
-        raise KeywordError('Time values needed for volume history')
-    elif (any(['volume' in dp for dp in properties['datapoints']]) and
-          not any(['time' in dp for dp in properties['datapoints']])
-          ):
-        raise KeywordError('Time values needed for volume history')
-
     if ('pressure-rise' in properties['common-properties'] or
         any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
         ) and properties['apparatus']['kind'] == 'rapid compression machine':

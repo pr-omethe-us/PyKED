@@ -916,17 +916,13 @@ class TestGetDatapoints(object):
         prop.set('name', 'pressure')
         prop.set('units', 'Pa')
 
-        num_points = 100
-        time = 0.0
-        volume = 50.0
-        pressure = 101325.0
         datapoint = etree.SubElement(datagroup, 'dataPoint')
         x3 = etree.SubElement(datapoint, 'x3')
-        x3.text = str(time)
+        x3.text = str(0.0)
         x4 = etree.SubElement(datapoint, 'x4')
-        x4.text = str(volume)
+        x4.text = str(50.0)
         x5 = etree.SubElement(datapoint, 'x5')
-        x5.text = str(volume)
+        x5.text = str(101325.0)
 
         with pytest.raises(KeywordError) as excinfo:
             datapoints = get_datapoints(root)
@@ -940,6 +936,116 @@ class TestGetDatapoints(object):
                 in str(excinfo.value)
                 )
 
+    def test_volume_history_missing_property(self):
+        """Ensure error when missing property in volume history dataGroup.
+        """
+        root = etree.Element('experiment')
+        apparatus = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(apparatus, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'time')
+        prop.set('units', 's')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(0.0)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Both time and volume properties required for volume history.'
+                in str(excinfo.value)
+                )
+
+        # try the same with volume, and time missing
+        datagroup.remove(prop)
+        datagroup.remove(datapoint)
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x4')
+        prop.set('name', 'volume')
+        prop.set('units', 'cm3')
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x3 = etree.SubElement(datapoint, 'x4')
+        x3.text = str(50.0)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Both time and volume properties required for volume history.'
+                in str(excinfo.value)
+                )
+
+    def test_volume_history_missing_value(self):
+        """Ensure error when missing value in volume history dataGroup.
+        """
+        root = etree.Element('experiment')
+        apparatus = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(apparatus, 'kind')
+        kind.text = 'rapid compression machine'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'time')
+        prop.set('units', 's')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x4')
+        prop.set('name', 'volume')
+        prop.set('units', 'cm3')
+
+        # Have time, but missing volume
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(0.0)
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Both time and volume values required in each volume-history dataPoint.'
+                in str(excinfo.value)
+                )
+
+        # try again with volume, but missing time
+        datapoint.remove(x3)
+        x4 = etree.SubElement(datapoint, 'x4')
+        x4.text = str(50.0)
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Both time and volume values required in each volume-history dataPoint.'
+                in str(excinfo.value)
+                )
 
 class TestConvertReSpecTh(object):
     """
