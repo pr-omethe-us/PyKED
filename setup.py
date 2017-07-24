@@ -77,4 +77,7 @@ setup(
     tests_require=tests_require,
     extras_require=extras_require,
     setup_requires=setup_requires,
+    entry_points = {
+        'console_scripts': ['converter=pyked.converters:main'],
+    }
 )
