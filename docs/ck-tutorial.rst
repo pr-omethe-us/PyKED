@@ -490,6 +490,52 @@ shock tube at Stanford.
     ...
 
 
+Converting from ReSpecTh
+------------------------
+
+PyKED provides converter functions from (and to) the ReSpecTh XML format
+[Varga2015a]_, [Varga2015b]_, though ChemKED files created in this manner may
+require manual edits to fully satisfy our schema.
+
+Given a ReSpecTh XML file ``file.xml``, a corresponding ChemKED file can be created
+either from the command line
+
+.. code-block:: bash
+
+    python converter -i file.xml -o file.yaml
+
+or via Python:
+
+.. code-block:: Python
+
+    from pyked.converters import ReSpecTh_to_ChemKED
+    ReSpecTh_to_ChemKED('file.xml', 'file.yaml')
+
+Information about the person creating this new ChemKED file (e.g., file author name
+and their ORCID) may also be added via the ``file_author`` and ``file_author_orcid``
+arguments in Python or the corresponding command-line options `-fa` and `-fo`. More
+details can be found via ``python converter --help`` or
+``help(pyked.converters.ReSpecTh_to_ChemKED)``, respectively.
+
+PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
+Given a ChemKED file ``file.yaml``, a corresponding ReSpecTh file can be created
+from the command line via
+
+.. code-block:: bash
+
+    python converter -i file.yaml -o file.xml
+
+or from inside Python with
+
+.. code-block:: Python
+
+    from pyked import ChemKED
+    c = ChemKED('file.yaml')
+    c.convert_to_ReSpecTh('file.xml')
+
+Note that some information, or granularity of details, may be lost in this conversion.
+
+
 Works Cited
 -----------
 
@@ -506,3 +552,11 @@ Works Cited
                  Ignition Delay Times for the Butanol Isomers." *Combustion and Flame*
                  159 (2): 516–27.
                  doi:\ `10.1016/j.combustflame.2011.08.014 <https://doi.org/10.1016/j.combustflame.2011.08.014>`__.
+
+.. [Varga2015a] Varga, Tamás, Tamás Turányi, Eszter Czinki, Tibor Furtenbacher, Attila G. Császár,
+                "ReSpecTh: a joint reaction kinetics, spectroscopy, and thermochemistry information
+                system." 2015. Proceedings of the 7th European Combustion Meeting,
+                Budapest, Hungary.
+
+.. [Varga2015b] Varga, Tamás. "ReSpecTh Kinetics Data Format Specification v1.0." 2015.
+                http://respecth.hu/
