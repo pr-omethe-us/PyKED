@@ -421,14 +421,16 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     properties['datapoints'] = get_datapoints(root)
 
     # Ensure inclusion of pressure rise or volume history matches apparatus.
-    if ('pressure-rise' in properties['common-properties'] or
-        any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
-        ) and properties['apparatus']['kind'] == 'rapid compression machine':
+    has_pres_rise = ('pressure-rise' in properties['common-properties'] or
+                     any([True for dp in properties['datapoints'] if 'pressure-rise' in dp])
+                     )
+    if has_pres_rise and properties['apparatus']['kind'] == 'rapid compression machine':
         raise KeywordError('Pressure rise cannot be defined for RCM.')
 
-    if ('volume-history' in properties['common-properties'] or
-        any([dp for dp in properties['datapoints'] if dp.get('volume-history')])
-        ) and properties['apparatus']['kind'] == 'shock tube':
+    has_vol_hist = ('volume-history' in properties['common-properties'] or
+                    any([True for dp in properties['datapoints'] if 'volume-history' in dp])
+                    )
+    if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
         raise KeywordError('Volume history cannot be defined for shock tube.')
 
     # apply any overrides
