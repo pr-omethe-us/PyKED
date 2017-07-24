@@ -570,7 +570,7 @@ class TestCommonProperties(object):
 
         with pytest.raises(KeywordError) as excinfo:
             common = get_common_properties(root)
-        assert 'Error: inconsistent initial composition units' in str(excinfo.value)
+        assert 'Error: initial composition units need to be consistent' in str(excinfo.value)
 
 
 class TestIgnitionType(object):
