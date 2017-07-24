@@ -12,6 +12,8 @@
 
 PyKED is a Python-based software package for validating and interacting with ChemKED (Chemical Kinetics Experimental Data format) files that describe fundamental experimental measurements of combustion phenomena.
 
+An installation guide, usage examples, and API docs are provided in the online documentation: https://pr-omethe-us.github.io/PyKED/
+
 ## Code of Conduct
 
 In order to have a more open and welcoming community, PyKED adheres to a code of conduct adapted from the [Contributor Covenant](http://contributor-covenant.org) code of conduct. The code of conduct for PyKED is available in the GitHub Repository  in the [CODE_OF_CONDUCT.md](https://github.com/pr-omethe-us/PyKED/blob/master/CODE_OF_CONDUCT.md) file.
