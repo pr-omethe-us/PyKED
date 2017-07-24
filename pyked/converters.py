@@ -211,7 +211,7 @@ def get_common_properties(root):
                 properties['composition']['species'].append(spec)
 
                 # check consistency of composition type
-                if not composition_type:
+                if composition_type is None:
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
                     raise KeywordError('inconsistent initial composition units')
