@@ -19,6 +19,7 @@ from ._version import __version__
 
 # Valid properties for ReSpecTh dataGroup
 datagroup_properties = ['temperature', 'pressure', 'ignition delay', 'pressure rise']
+"""`list`: Valid properties for a ReSpecTh dataGroup"""
 
 # Exceptions
 class ParseError(Exception):
