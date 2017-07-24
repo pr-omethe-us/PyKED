@@ -248,7 +248,7 @@ def get_ignition_type(root):
     Returns:
         properties (`dict`): Dictionary with ignition type/target information
     """
-    ignition = {}
+    properties = {}
     elem = root.find('ignitionType')
 
     if elem is None:
@@ -286,10 +286,10 @@ def get_ignition_type(root):
     if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
         raise KeywordError(ign_type + ' not valid ignition type')
 
-    ignition['type'] = ign_type
-    ignition['target'] = ign_target
+    properties['type'] = ign_type
+    properties['target'] = ign_target
 
-    return ignition
+    return properties
 
 
 def get_datapoints(root):
