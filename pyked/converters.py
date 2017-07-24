@@ -163,11 +163,11 @@ def get_experiment_kind(root):
         raise NotImplementedError(root.find('experimentType').text + ' not (yet) supported')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
-    try:
-        kind = root.find('apparatus/kind').text
-    except:
+    kind = getattr(root.find('apparatus/kind'), 'text', False)
+    # Test for missing attribute or empty string
+    if not kind:
         raise MissingElementError('apparatus/kind')
-    if kind in ['shock tube', 'rapid compression machine']:
+    elif kind in ['shock tube', 'rapid compression machine']:
         properties['apparatus']['kind'] = kind
     else:
         raise NotImplementedError(kind + ' experiment not (yet) supported')
