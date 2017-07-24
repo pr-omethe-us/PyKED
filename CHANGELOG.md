@@ -18,8 +18,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added logo files to repo
 - Added `first_stage_ignition_delay`, `compressed_pressure`, and `compressed_temperature` as properties
 
-### Fixed
-
 ### Changed
 - Added Zenodo collection DOI to CITATION.md
 
