@@ -160,7 +160,6 @@ def get_experiment_kind(root):
     if root.find('experimentType').text == 'Ignition delay measurement':
         properties['experiment-type'] = 'ignition delay'
     else:
-        #TODO: support additional experimentTypes
         raise NotImplementedError(root.find('experimentType').text + ' not (yet) supported')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
