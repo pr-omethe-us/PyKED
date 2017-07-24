@@ -393,8 +393,6 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     """
     from .chemked import ChemKED
 
-    assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
-
     # get all information from XML file
     tree = etree.parse(filename_xml)
     root = tree.getroot()
