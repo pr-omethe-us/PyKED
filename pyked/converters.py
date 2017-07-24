@@ -391,7 +391,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         file_author (`str`, optional): Name to override original file author
         file_author_orcid (`str`, optional): ORCID of file author
     """
-    from pyked.chemked import ChemKED
+    from .chemked import ChemKED
 
     assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
 
@@ -462,7 +462,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
 def main(argv):
     """
     """
-    from pyked.chemked import ChemKED
+    from .chemked import ChemKED
     parser = ArgumentParser(
         description='Convert between ReSpecTh XML file and ChemKED YAML file '
                     'automatically based on file extension.'
