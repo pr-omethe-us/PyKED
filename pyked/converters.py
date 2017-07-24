@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 from warnings import warn
 import xml.etree.ElementTree as etree
 
-import numpy
 from requests.exceptions import HTTPError, ConnectionError
 import habanero
 import pint
