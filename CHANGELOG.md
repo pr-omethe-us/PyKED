@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Adds ChemKED method to write new file, with tests
 - Adds converters to and from ReSpecTh files, with tests
+- Adds command-line entry point for converter
 
 ### Fixed
 
