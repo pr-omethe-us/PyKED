@@ -65,14 +65,12 @@ def get_file_metadata(root):
     """
     properties = {}
 
-    properties['file-author'] = {'name': ''}
-    try:
-        properties['file-author']['name'] = root.find('fileAuthor').text
-    except AttributeError:
+    file_author = getattr(root.find('fileAuthor'), 'text', False)
+    # Test for missing attribute or empty string in the same statement
+    if not file_author:
         raise MissingElementError('fileAuthor')
-
-    if properties['file-author']['name'] == '':
-        raise MissingElementError('fileAuthor')
+    else:
+        properties['file-author'] = {'name': file_author}
 
     # Default version is 0 for the ChemKED file
     properties['file-version'] = 0
