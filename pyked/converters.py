@@ -21,10 +21,11 @@ from ._version import __version__
 datagroup_properties = ['temperature', 'pressure', 'ignition delay', 'pressure rise']
 """`list`: Valid properties for a ReSpecTh dataGroup"""
 
-# Exceptions
+
 class ParseError(Exception):
     """Base class for errors."""
     pass
+
 
 class KeywordError(ParseError):
     """Raised for errors in keyword parsing."""
@@ -35,12 +36,14 @@ class KeywordError(ParseError):
     def __str__(self):
         return repr('Error: {}.'.format(self.keywords[0]))
 
+
 class MissingElementError(KeywordError):
     """Raised for missing required elements."""
 
     def __str__(self):
         return repr('Error: required element {} is missing.'.format(
             self.keywords[0]))
+
 
 class MissingAttributeError(KeywordError):
     """Raised for missing required attribute."""
