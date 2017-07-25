@@ -217,7 +217,7 @@ def get_common_properties(root):
                     raise KeywordError('initial composition units need to be consistent')
             assert composition_type in ['mole fraction', 'mass fraction', 'mole percent'], \
                 'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
-                
+
             properties['composition']['kind'] = composition_type
 
         elif name in ['temperature', 'pressure', 'pressure rise', ]:
@@ -445,15 +445,12 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         for prop in properties['common-properties']:
             properties['datapoints'][idx][prop] = properties['common-properties'][prop]
 
-    # compression time doesn't belong in common-properties
-    properties['common-properties'].pop('compression-time', None)
-
     # set output filename and path
     if not filename_ck:
         filename_ck = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
     with open(filename_ck, 'w') as outfile:
-        outfile.write(yaml.dump(properties, default_flow_style=False))
+        yaml.dump(properties, outfile, default_flow_style=False)
     print('Converted to ' + filename_ck)
 
     # now validate
