@@ -1024,6 +1024,10 @@ class TestConvertReSpecTh(object):
         assert c.file_author['name'] == 'Kyle Niemeyer'
         assert c.file_author['ORCID'] == '0000-0003-4425-7097'
 
+        assert c.reference.detail == ('Converted from ReSpecTh XML file ' + filename_xml +
+                                      '. Original author: Kyle E. Niemeyer'
+                                      )
+
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
         assert c.reference.doi == c_true.reference.doi

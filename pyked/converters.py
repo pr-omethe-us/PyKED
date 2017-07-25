@@ -215,9 +215,9 @@ def get_common_properties(root):
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
                     raise KeywordError('initial composition units need to be consistent')
-            assert (composition_type in ['mole fraction', 'mass fraction', 'mole percent'],
-                    'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
-                    )
+            assert composition_type in ['mole fraction', 'mass fraction', 'mole percent'], \
+                'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
+                
             properties['composition']['kind'] = composition_type
 
         elif name in ['temperature', 'pressure', 'pressure rise', ]:
@@ -435,6 +435,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
 
     # apply any overrides
     if file_author:
+        properties['reference']['detail'] += '. Original author: ' + properties['file-author']['name']
         properties['file-author']['name'] = file_author
     if file_author_orcid:
         properties['file-author']['ORCID'] = file_author_orcid
