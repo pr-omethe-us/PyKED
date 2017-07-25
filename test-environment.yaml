@@ -14,4 +14,3 @@ dependencies:
   - uncertainties
   - habanero
   - orcid
-  - lxml>=3.8.0
