@@ -384,33 +384,42 @@ class ChemKED(object):
 
         for prop_name in datagroup_properties:
             attribute = prop_name.replace(' ', '_')
-            if (prop_name not in common and
-                any([getattr(dp, attribute, None) for dp in self.datapoints])
-                ):
-                prop = etree.SubElement(datagroup, 'property')
-                prop.set('description', '')
-                prop.set('name', prop_name)
-                prop.set('units', str(getattr(self.datapoints[0], attribute).units))
-                idx = 'x{}'.format(len(property_idx) + 1)
-                property_idx[idx] = prop_name
-                prop.set('id', idx)
-                prop.set('label', labels[prop_name])
+            # This can't be hasattr because properties are set to the value None
+            # if no value is specified in the file, so the attribute always exists
+            prop_indices = [i for i, dp in enumerate(self.datapoints)
+                            if getattr(dp, attribute) is not None
+                            ]
+            if prop_name in common or not prop_indices:
+                continue
+
+            prop = etree.SubElement(datagroup, 'property')
+            prop.set('description', '')
+            prop.set('name', prop_name)
+            units = str(getattr(self.datapoints[prop_indices[0]], attribute).units)
+            prop.set('units', units)
+            idx = 'x{}'.format(len(property_idx) + 1)
+            property_idx[idx] = {'name': prop_name, 'units': units}
+            prop.set('id', idx)
+            prop.set('label', labels[prop_name])
 
         # Need to handle datapoints with possibly different species in the initial composition
         if 'composition' not in common:
             for dp in self.datapoints:
                 for species in dp.composition:
                     # Only add new property for species not already considered
-                    if species['species-name'] not in property_idx.values():
+                    has_spec = any([species['species-name'] in d.values()
+                                    for d in property_idx.values()
+                                    ])
+                    if not has_spec:
                         prop = etree.SubElement(datagroup, 'property')
                         prop.set('description', '')
 
                         idx = 'x{}'.format(len(property_idx) + 1)
-                        property_idx[idx] = species['species-name']
+                        property_idx[idx] = {'name': species['species-name']}
                         prop.set('id', idx)
                         prop.set('label', '[' + species['species-name'] + ']')
                         prop.set('name', 'composition')
-                        prop.set('units', dp.composition_type)
+                        prop.set('units', self.datapoints[0].composition_type)
 
                         species_link = etree.SubElement(prop, 'speciesLink')
                         species_link.set('preferredKey', species['species-name'])
@@ -419,15 +428,16 @@ class ChemKED(object):
 
         for dp in self.datapoints:
             datapoint = etree.SubElement(datagroup, 'dataPoint')
-            for idx in property_idx:
+            for idx, val in property_idx.items():
                 value = etree.SubElement(datapoint, idx)
                 # handle regular properties a bit differently than composition
-                if property_idx[idx] in datagroup_properties:
-                    value.text = str(getattr(dp, property_idx[idx].replace(' ', '_')).magnitude)
+                if val['name'] in datagroup_properties:
+                    quantity = getattr(dp, val['name'].replace(' ', '_')).to(val['units'])
+                    value.text = str(quantity.magnitude)
                 else:
                     # composition
                     for item in dp.composition:
-                        if item['species-name'] == property_idx[idx]:
+                        if item['species-name'] == val['name']:
                             value.text = str(item['amount'].magnitude)
 
         # if RCM and has volume history, need a second dataGroup
