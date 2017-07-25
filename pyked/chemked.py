@@ -424,13 +424,12 @@ class ChemKED(object):
                             value.text = str(item['amount'].magnitude)
 
         # if RCM and has volume history, need a second dataGroup
-        if (len(self.datapoints) > 1 and
-            any([getattr(dp, 'volume_history', None) for dp in self.datapoints])
-            ):
+        has_volume_history = any([hasattr(dp, 'volume_history') for dp in self.datapoints])
+        if len(self.datapoints) > 1 and has_volume_history:
             raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
                                       'with a volume history.'
                                       )
-            # TODO: what if they share the same history? Does this happen?
+                                      
         elif getattr(self.datapoints[0], 'volume_history', None):
             datagroup = etree.SubElement(root, 'dataGroup')
             datagroup.set('id', 'dg1')
