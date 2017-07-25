@@ -432,7 +432,7 @@ class ChemKED(object):
 
         elif hasattr(self.datapoints[0], 'volume_history'):
             datagroup = etree.SubElement(root, 'dataGroup')
-            datagroup.set('id', 'dg1')
+            datagroup.set('id', 'dg2')
             datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
             datagroup_link.set('dataGroupID', '')
             datagroup_link.set('dataPointID', '')
