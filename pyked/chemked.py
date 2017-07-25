@@ -258,9 +258,9 @@ class ChemKED(object):
         """
         # Ensure file isn't already present
         if exists(filename) and not overwrite:
-            raise NameError(filename + ' already present. Specify "overwrite=True" '
-                            'to overwrite, or rename.'
-                            )
+            raise OSError(filename + ' already present. Specify "overwrite=True" '
+                          'to overwrite, or rename.'
+                          )
 
         with open(filename, 'w') as yaml_file:
             yaml.dump(self._properties, yaml_file)
