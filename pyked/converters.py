@@ -2,6 +2,7 @@
 """
 
 # Standard libraries
+import sys
 import os
 from argparse import ArgumentParser
 from warnings import warn
@@ -493,25 +494,17 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    if (os.path.splitext(args.input)[1] == '.xml' and
-        os.path.splitext(args.output)[1] == '.yaml'
-        ):
+    if os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.yaml':
         ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
 
-    elif (os.path.splitext(args.input)[1] == '.yaml' and
-          os.path.splitext(args.output)[1] == '.xml'
-          ):
+    elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.xml':
         c = ChemKED(yaml_file=args.input)
         c.convert_to_ReSpecTh(args.output)
 
-    elif (os.path.splitext(args.input)[1] == '.xml' and
-          os.path.splitext(args.output)[1] == '.xml'
-          ):
+    elif os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.xml':
         raise KeywordError('Cannot convert .xml to .xml')
 
-    elif (os.path.splitext(args.input)[1] == '.yaml' and
-          os.path.splitext(args.output)[1] == '.yaml'
-          ):
+    elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.yaml':
         raise KeywordError('Cannot convert .yaml to .yaml')
 
     else:
