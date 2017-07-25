@@ -429,8 +429,8 @@ class ChemKED(object):
             raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
                                       'with a volume history.'
                                       )
-                                      
-        elif getattr(self.datapoints[0], 'volume_history', None):
+
+        elif hasattr(self.datapoints[0], 'volume_history'):
             datagroup = etree.SubElement(root, 'dataGroup')
             datagroup.set('id', 'dg1')
             datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
