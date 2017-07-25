@@ -308,7 +308,8 @@ class TestConvertToReSpecTh(object):
                                         'amount': Q_(0.1, 'dimensionless'),
                                         'species-name': 'O2'},
                                        {'amount': Q_(0.8, 'dimensionless'),
-                                        'species-name': 'Ar'}
+                                        'species-name': 'N2',
+                                        'InChI': '1S/N2/c1-2'}
                                        ]
 
         with TemporaryDirectory() as temp_dir:

@@ -20,7 +20,7 @@ from . import chemked
 
 # Valid properties for ReSpecTh dataGroup
 datagroup_properties = ['temperature', 'pressure', 'ignition delay',
-                        'pressure rise', 'composition'
+                        'pressure rise',
                         ]
 """`list`: Valid properties for a ReSpecTh dataGroup"""
 
@@ -193,12 +193,12 @@ def get_common_properties(root):
         name = elem.attrib['name']
 
         if name == 'initial composition':
-            properties['composition'] = {'species': []}
-            composition_type = None
+            properties['composition'] = {'species': [], 'kind': None}
 
             for child in elem.iter('component'):
                 spec = {}
                 spec['species-name'] = child.find('speciesLink').attrib['preferredKey']
+                units = child.find('amount').attrib['units']
 
                 # use InChI for unique species identifier (if present)
                 try:
@@ -208,26 +208,41 @@ def get_common_properties(root):
                     warn('Missing InChI for species ' + spec['species-name'])
                     pass
 
-                # amount of that species
-                spec['amount'] = [float(child.find('amount').text)]
+                # If mole or mass fraction, just set value
+                if units in ['mole fraction', 'mass fraction', 'mole percent']:
+                    spec['amount'] = [float(child.find('amount').text)]
+                elif units == 'percent':
+                    # assume this means mole percent
+                    warn('Assuming percent in composition means mole percent')
+                    spec['amount'] = [float(child.find('amount').text)]
+                    units = 'mole percent'
+                elif units == 'ppm':
+                    # assume molar ppm, convert to mole fraction
+                    warn('Assuming molar ppm in composition and converting to mole fraction')
+                    spec['amount'] = [float(child.find('amount').text) * 1.e-6]
+                    units = 'mole fraction'
+                elif units == 'ppb':
+                    # assume molar ppb, convert to mole fraction
+                    warn('Assuming molar ppb in composition and converting to mole fraction')
+                    spec['amount'] = [float(child.find('amount').text) * 1.e-9]
+                    units = 'mole fraction'
+                else:
+                    raise KeywordError('Composition units need to be one of: mole fraction, '
+                                       'mass fraction, mole percent, percent, ppm, or ppb.'
+                                       )
 
                 properties['composition']['species'].append(spec)
 
                 # check consistency of composition type
-                if composition_type is None:
-                    composition_type = child.find('amount').attrib['units']
-                elif composition_type != child.find('amount').attrib['units']:
-                    raise KeywordError(
-                        'composition units ' + child.find('amount').attrib['units'] +
-                        ' not consistent with ' + composition_type
-                        )
+                if properties['composition']['kind'] is None:
+                    properties['composition']['kind'] = units
+                elif properties['composition']['kind'] != units:
+                    raise KeywordError('composition units ' + units +
+                                       ' not consistent with ' +
+                                       properties['composition']['kind']
+                                       )
 
-            assert composition_type in ['mole fraction', 'mass fraction', 'mole percent'], \
-                'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
-
-            properties['composition']['kind'] = composition_type
-
-        elif name in ['temperature', 'pressure', 'pressure rise', ]:
+        elif name in datagroup_properties:
             field = name.replace(' ', '-')
             units = elem.attrib['units']
             if units == 'Torr':
@@ -318,13 +333,25 @@ def get_datapoints(root):
     dataGroup = dataGroups[0]
     property_id = {}
     unit_id = {}
+    species_id = {}
     # get properties of dataGroup
     for prop in dataGroup.findall('property'):
         unit_id[prop.attrib['id']] = prop.attrib['units']
         temp_prop = prop.attrib['name']
-        if temp_prop not in datagroup_properties:
+        if temp_prop not in datagroup_properties + ['composition']:
             raise KeyError(temp_prop + ' not valid dataPoint property')
         property_id[prop.attrib['id']] = temp_prop
+
+        if temp_prop == 'composition':
+            spec = {'species-name': prop.find('speciesLink').attrib['preferredKey']}
+            # use InChI for unique species identifier (if present)
+            try:
+                spec['InChI'] = prop.find('speciesLink').attrib['InChI']
+            except KeyError:
+                # TODO: add InChI validator/search
+                warn('Missing InChI for species ' + spec['species-name'])
+                pass
+            species_id[prop.attrib['id']] = spec
 
     if not property_id:
         raise MissingElementError('property')
@@ -333,11 +360,55 @@ def get_datapoints(root):
     datapoints = []
     for dp in dataGroup.findall('dataPoint'):
         datapoint = {}
+        if 'composition' in property_id.values():
+            datapoint['composition'] = {'species': [], 'kind': None}
+
         for val in dp:
             units = unit_id[val.tag]
             if units == 'Torr':
                 units = 'torr'
-            datapoint[property_id[val.tag].replace(' ', '-')] = [val.text + ' ' + units]
+            # handle "regular" properties differently than composition
+            if property_id[val.tag] in datagroup_properties:
+                datapoint[property_id[val.tag].replace(' ', '-')] = [val.text + ' ' + units]
+            elif property_id[val.tag] == 'composition':
+                spec = {}
+                spec['species-name'] = species_id[val.tag]['species-name']
+                spec['InChI'] = species_id[val.tag].get('InChI')
+
+                # If mole or mass fraction, just set value
+                if units in ['mole fraction', 'mass fraction', 'mole percent']:
+                    spec['amount'] = [float(val.text)]
+                elif units == 'percent':
+                    # assume this means mole percent
+                    warn('Assuming percent in composition means mole percent')
+                    spec['amount'] = [float(val.text)]
+                    units = 'mole percent'
+                elif units == 'ppm':
+                    # assume molar ppm, convert to mole fraction
+                    warn('Assuming molar ppm in composition and converting to mole fraction')
+                    spec['amount'] = [float(val.text) * 1.e-6]
+                    units = 'mole fraction'
+                elif units == 'ppb':
+                    # assume molar ppb, convert to mole fraction
+                    warn('Assuming molar ppb in composition and converting to mole fraction')
+                    spec['amount'] = [float(val.text) * 1.e-9]
+                    units = 'mole fraction'
+                else:
+                    raise KeywordError('Composition units need to be one of: mole fraction, '
+                                       'mass fraction, mole percent, percent, ppm, or ppb.'
+                                       )
+
+                # check consistency of composition type
+                if datapoint['composition']['kind'] is None:
+                    datapoint['composition']['kind'] = units
+                elif datapoint['composition']['kind'] != units:
+                    raise KeywordError(
+                        'composition units ' + units +
+                        ' not consistent with ' + datapoint['composition']['kind']
+                        )
+
+                datapoint['composition']['species'].append(spec)
+
         datapoints.append(datapoint)
 
     if len(datapoints) == 0:

@@ -13,7 +13,8 @@ from shutil import copy
 
 import pytest
 import yaml
-import numpy
+import numpy.random
+from numpy.testing import assert_allclose
 
 
 # Local imports
@@ -517,11 +518,11 @@ class TestCommonProperties(object):
         root = etree.Element('experiment')
         properties = etree.SubElement(root, 'commonProperties')
         prop = etree.SubElement(properties, 'property')
-        prop.set('name', 'ignition delay')
+        prop.set('name', 'compression time')
 
         with pytest.raises(KeywordError) as excinfo:
             common = get_common_properties(root)
-        assert ('Error: Property ignition delay not supported as '
+        assert ('Error: Property compression time not supported as '
                 'common property.' in str(excinfo.value)
                 )
 
@@ -573,6 +574,79 @@ class TestCommonProperties(object):
         assert ('Error: composition units mass fraction not consistent '
                 'with mole fraction'
                 ) in str(excinfo.value)
+
+    def test_common_composition_units_ppm_ppb(self):
+        """Test proper handling of common composition unit conversion for ppm and ppb.
+        """
+        root = etree.Element('experiment')
+        properties = etree.SubElement(root, 'commonProperties')
+        initial_composition = etree.SubElement(properties, 'property')
+        initial_composition.set('name', 'initial composition')
+
+        species_refs = [{'name': 'H2', 'inchi': '1S/H2/h1H',
+                         'amount': 100, 'units': 'ppb'
+                         },
+                        {'name': 'O2', 'inchi': '1S/O2/c1-2',
+                         'amount': 10, 'units': 'ppm',
+                         },
+                        {'name': 'Ar', 'inchi': '1S/Ar',
+                         'amount': 0.999985, 'units': 'mole fraction'},
+                        ]
+        for spec in species_refs:
+            component = etree.SubElement(initial_composition, 'component')
+            species = etree.SubElement(component, 'speciesLink')
+            species.set('preferredKey', spec['name'])
+            species.set('InChI', spec['inchi'])
+            amount = etree.SubElement(component, 'amount')
+            amount.set('units', spec['units'])
+            amount.text = str(spec['amount'])
+
+        with pytest.warns(UserWarning) as w:
+            common = get_common_properties(root)
+        assert w[0].message.args[0] == ('Assuming molar ppb in composition and '
+            'converting to mole fraction'
+            )
+        assert w[1].message.args[0] == ('Assuming molar ppm in composition and '
+            'converting to mole fraction'
+            )
+        assert common['composition']['kind'] == 'mole fraction'
+        assert len(common['composition']['species']) == 3
+        assert common['composition']['species'][0]['species-name'] == 'H2'
+        assert common['composition']['species'][0]['InChI'] == '1S/H2/h1H'
+        assert_allclose(common['composition']['species'][0]['amount'], [100.e-9])
+        assert common['composition']['species'][1]['species-name'] == 'O2'
+        assert common['composition']['species'][1]['InChI'] == '1S/O2/c1-2'
+        assert_allclose(common['composition']['species'][1]['amount'], [10.e-6])
+        assert common['composition']['species'][2]['species-name'] == 'Ar'
+        assert common['composition']['species'][2]['InChI'] == '1S/Ar'
+        assert_allclose(common['composition']['species'][2]['amount'], [0.999985])
+
+    def test_common_composition_units_percent(self):
+        """Test proper handling of common composition unit conversion for (mole) percent.
+        """
+        root = etree.Element('experiment')
+        properties = etree.SubElement(root, 'commonProperties')
+        initial_composition = etree.SubElement(properties, 'property')
+        initial_composition.set('name', 'initial composition')
+
+        species_refs = [{'name': 'Ar', 'inchi': '1S/Ar', 'amount': 1.0, 'units': 'percent'},]
+        for spec in species_refs:
+            component = etree.SubElement(initial_composition, 'component')
+            species = etree.SubElement(component, 'speciesLink')
+            species.set('preferredKey', spec['name'])
+            species.set('InChI', spec['inchi'])
+            amount = etree.SubElement(component, 'amount')
+            amount.set('units', spec['units'])
+            amount.text = str(spec['amount'])
+
+        with pytest.warns(UserWarning) as w:
+            common = get_common_properties(root)
+        assert w[0].message.args[0] == 'Assuming percent in composition means mole percent'
+        assert common['composition']['kind'] == 'mole percent'
+        assert len(common['composition']['species']) == 1
+        assert common['composition']['species'][0]['species-name'] == 'Ar'
+        assert common['composition']['species'][0]['InChI'] == '1S/Ar'
+        assert_allclose(common['composition']['species'][0]['amount'], [1.0])
 
 
 class TestIgnitionType(object):

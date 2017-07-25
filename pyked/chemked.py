@@ -364,10 +364,10 @@ class ChemKED(object):
                     prop = etree.SubElement(common_properties, 'property')
                     prop.set('description', '')
                     prop.set('name', prop_name)
-                    prop.set('units', str(quantity[0].units))
+                    prop.set('units', str(quantities[0].units))
 
                     value = etree.SubElement(prop, 'value')
-                    value.text = str(quantity[0].magnitude)
+                    value.text = str(quantities[0].magnitude)
 
         # Ignition delay can't be common, unless only a single datapoint.
 
@@ -429,25 +429,26 @@ class ChemKED(object):
         for dp in self.datapoints:
             datapoint = etree.SubElement(datagroup, 'dataPoint')
             for idx, val in property_idx.items():
-                value = etree.SubElement(datapoint, idx)
                 # handle regular properties a bit differently than composition
                 if val['name'] in datagroup_properties:
+                    value = etree.SubElement(datapoint, idx)
                     quantity = getattr(dp, val['name'].replace(' ', '_')).to(val['units'])
                     value.text = str(quantity.magnitude)
                 else:
                     # composition
                     for item in dp.composition:
                         if item['species-name'] == val['name']:
+                            value = etree.SubElement(datapoint, idx)
                             value.text = str(item['amount'].magnitude)
 
         # if RCM and has volume history, need a second dataGroup
-        has_volume_history = any([hasattr(dp, 'volume_history') for dp in self.datapoints])
+        has_volume_history = any([dp.volume_history is not None for dp in self.datapoints])
         if len(self.datapoints) > 1 and has_volume_history:
             raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
                                       'with a volume history.'
                                       )
 
-        elif hasattr(self.datapoints[0], 'volume_history'):
+        elif self.datapoints[0].volume_history is not None:
             datagroup = etree.SubElement(root, 'dataGroup')
             datagroup.set('id', 'dg2')
             datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
