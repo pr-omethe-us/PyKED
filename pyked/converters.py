@@ -218,7 +218,7 @@ def get_common_properties(root):
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
                     raise KeywordError(
-                        'composition units ' + child.find('amount').attrib['units']
+                        'composition units ' + child.find('amount').attrib['units'] +
                         ' not consistent with ' + composition_type
                         )
 

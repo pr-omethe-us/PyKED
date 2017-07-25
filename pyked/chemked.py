@@ -325,8 +325,14 @@ class ChemKED(object):
         # among datapoints that tend to be common
         common = []
         composition = self.datapoints[0].composition
+
         # Composition type *has* to be the same
         composition_type = self.datapoints[0].composition_type
+        if not all(dp.composition_type == composition_type for dp in self.datapoints):
+            raise NotImplementedError('Error: ReSpecTh does not support varying composition '
+                                      'type among datapoints.'
+                                      )
+
         if all([composition == dp.composition for dp in self.datapoints]):
             # initial composition is common
             common.append('composition')
@@ -337,7 +343,7 @@ class ChemKED(object):
                 component = etree.SubElement(prop, 'component')
                 species_link = etree.SubElement(component, 'speciesLink')
                 species_link.set('preferredKey', species['species-name'])
-                if species.get('InChI') is not None
+                if species.get('InChI') is not None:
                     species_link.set('InChI', species['InChI'])
 
                 amount = etree.SubElement(component, 'amount')

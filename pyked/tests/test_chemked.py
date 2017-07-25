@@ -319,6 +319,18 @@ class TestConvertToReSpecTh(object):
         root = tree.getroot()
         datapoints = get_datapoints(root)
 
+    def test_conversion_error_datapoints_different_composition_type(self):
+        """Test for appropriate erorr of datapoints with different composition type.
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+        c.datapoints[0].composition_type = 'mass fraction'
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            c.convert_to_ReSpecTh('test.xml')
+        assert ('Error: ReSpecTh does not support varying composition '
+                'type among datapoints.') in str(excinfo.value)
 
     def test_conversion_to_respecth_error_volume_history_datapoints(self):
         """Test for error raised if RCM with multiple datapoints with volume history.
