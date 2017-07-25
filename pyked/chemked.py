@@ -355,18 +355,19 @@ class ChemKED(object):
         if len(self.datapoints) > 1:
             for prop_name in datagroup_properties:
                 attribute = prop_name.replace(' ', '_')
-                quantity = getattr(self.datapoints[0], attribute)
-                if (quantity != None and
-                    all([quantity == getattr(dp, attribute) for dp in self.datapoints])
-                    ):
+                quantities = [getattr(dp, attribute, False) for dp in self.datapoints]
+
+                # All quantities must have the property in question and all the
+                # values must be equal
+                if all(quantities) and quantities.count(quantities[0]) == len(quantities):
                     common.append(prop_name)
                     prop = etree.SubElement(common_properties, 'property')
                     prop.set('description', '')
                     prop.set('name', prop_name)
-                    prop.set('units', str(quantity.units))
+                    prop.set('units', str(quantity[0].units))
 
                     value = etree.SubElement(prop, 'value')
-                    value.text = str(quantity.magnitude)
+                    value.text = str(quantity[0].magnitude)
 
         # Ignition delay can't be common, unless only a single datapoint.
 
