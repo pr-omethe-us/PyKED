@@ -16,7 +16,7 @@ import pint
 from .validation import yaml, property_units
 from .utils import units as unit_registry
 from ._version import __version__
-
+from . import chemked
 
 # Valid properties for ReSpecTh dataGroup
 datagroup_properties = ['temperature', 'pressure', 'ignition delay',
@@ -394,8 +394,6 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         file_author (`str`, optional): Name to override original file author
         file_author_orcid (`str`, optional): ORCID of file author
     """
-    from .chemked import ChemKED
-
     # get all information from XML file
     tree = etree.parse(filename_xml)
     root = tree.getroot()
@@ -457,13 +455,12 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     print('Converted to ' + filename_ck)
 
     # now validate
-    ChemKED(yaml_file=filename_ck)
+    chemked.ChemKED(yaml_file=filename_ck)
 
 
 def main(argv):
     """
     """
-    from .chemked import ChemKED
     parser = ArgumentParser(
         description='Convert between ReSpecTh XML file and ChemKED YAML file '
                     'automatically based on file extension.'
@@ -500,7 +497,7 @@ def main(argv):
         ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
 
     elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.xml':
-        c = ChemKED(yaml_file=args.input)
+        c = chemked.ChemKED(yaml_file=args.input)
         c.convert_to_ReSpecTh(args.output)
 
     elif os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.xml':
