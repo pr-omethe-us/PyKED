@@ -16,7 +16,7 @@ import pytest
 from ..validation import schema, OurValidator, yaml
 from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
-from ..converters import ReSpecTh_to_ChemKED
+from ..converters import ReSpecTh_to_ChemKED, get_datapoints
 
 warnings.simplefilter('always')
 
@@ -190,7 +190,7 @@ class TestWriteFile(object):
         yaml_filename = pkg_resources.resource_filename(__name__, yaml_file)
         c = ChemKED(yaml_filename)
 
-        with pytest.raises(NameError):
+        with pytest.raises(OSError):
             c.write_file(yaml_filename)
 
     def test_overwrite(self):
@@ -208,7 +208,7 @@ class TestWriteFile(object):
             c = ChemKED(newfile_path)
 
             # Expected error
-            with pytest.raises(NameError):
+            with pytest.raises(OSError):
                 c.write_file(newfile_path)
 
             # Now successful
@@ -314,6 +314,11 @@ class TestConvertToReSpecTh(object):
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
             c.convert_to_ReSpecTh(newfile)
+
+            tree = etree.parse(newfile)
+        root = tree.getroot()
+        datapoints = get_datapoints(root)
+
 
     def test_conversion_to_respecth_error_volume_history_datapoints(self):
         """Test for error raised if RCM with multiple datapoints with volume history.

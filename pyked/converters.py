@@ -19,7 +19,9 @@ from ._version import __version__
 
 
 # Valid properties for ReSpecTh dataGroup
-datagroup_properties = ['temperature', 'pressure', 'ignition delay', 'pressure rise']
+datagroup_properties = ['temperature', 'pressure', 'ignition delay',
+                        'pressure rise', 'composition'
+                        ]
 """`list`: Valid properties for a ReSpecTh dataGroup"""
 
 

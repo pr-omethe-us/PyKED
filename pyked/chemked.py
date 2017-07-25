@@ -7,6 +7,7 @@ from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
 import xml.etree.ElementTree as etree
+import xml.dom.minidom as minidom
 
 import numpy as np
 
@@ -388,22 +389,26 @@ class ChemKED(object):
                 prop.set('id', idx)
                 prop.set('label', labels[prop_name])
 
+        # Need to handle datapoints with possibly different species in the initial composition
         if 'composition' not in common:
-            for species in self.datapoints[0].composition:
-                prop = etree.SubElement(datagroup, 'property')
-                prop.set('description', '')
+            for dp in self.datapoints:
+                for species in dp.composition:
+                    # Only add new property for species not already considered
+                    if species['species-name'] not in property_idx.values():
+                        prop = etree.SubElement(datagroup, 'property')
+                        prop.set('description', '')
 
-                idx = 'x{}'.format(len(property_idx) + 1)
-                property_idx[idx] = species['species-name']
-                prop.set('id', idx)
-                prop.set('label', '[' + species['species-name'] + ']')
-                prop.set('name', 'composition')
-                prop.set('units', self.datapoints[0].composition_type)
+                        idx = 'x{}'.format(len(property_idx) + 1)
+                        property_idx[idx] = species['species-name']
+                        prop.set('id', idx)
+                        prop.set('label', '[' + species['species-name'] + ']')
+                        prop.set('name', 'composition')
+                        prop.set('units', dp.composition_type)
 
-                species_link = etree.SubElement(prop, 'speciesLink')
-                species_link.set('preferredKey', species['species-name'])
-                if species.get('InChI'):
-                    species_link.set('InChI', species['InChI'])
+                        species_link = etree.SubElement(prop, 'speciesLink')
+                        species_link.set('preferredKey', species['species-name'])
+                        if species.get('InChI'):
+                            species_link.set('InChI', species['InChI'])
 
         for dp in self.datapoints:
             datapoint = etree.SubElement(datagroup, 'dataPoint')
@@ -471,6 +476,13 @@ class ChemKED(object):
 
         et = etree.ElementTree(root)
         et.write(filename, encoding='utf-8', xml_declaration=True)
+
+        # now dp a "pretty" rewrite
+        xml = minidom.parse(filename)
+        xml_string = xml.toprettyxml(indent='    ')
+        with open(filename, 'w') as f:
+            f.write(xml_string)
+
         print('Converted to ' + filename)
 
 
