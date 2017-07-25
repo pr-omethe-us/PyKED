@@ -2,12 +2,12 @@
 """
 
 # Standard libraries
+import sys
 import os
 from argparse import ArgumentParser
 from warnings import warn
 import xml.etree.ElementTree as etree
 
-import numpy
 from requests.exceptions import HTTPError, ConnectionError
 import habanero
 import pint
@@ -16,15 +16,19 @@ import pint
 from .validation import yaml, property_units
 from .utils import units as unit_registry
 from ._version import __version__
-from . import chemked
+
 
 # Valid properties for ReSpecTh dataGroup
-datagroup_properties = ['temperature', 'pressure', 'ignition delay', 'pressure rise']
+datagroup_properties = ['temperature', 'pressure', 'ignition delay',
+                        'pressure rise', 'composition'
+                        ]
+"""`list`: Valid properties for a ReSpecTh dataGroup"""
 
-# Exceptions
+
 class ParseError(Exception):
     """Base class for errors."""
     pass
+
 
 class KeywordError(ParseError):
     """Raised for errors in keyword parsing."""
@@ -35,12 +39,14 @@ class KeywordError(ParseError):
     def __str__(self):
         return repr('Error: {}.'.format(self.keywords[0]))
 
+
 class MissingElementError(KeywordError):
     """Raised for missing required elements."""
 
     def __str__(self):
         return repr('Error: required element {} is missing.'.format(
             self.keywords[0]))
+
 
 class MissingAttributeError(KeywordError):
     """Raised for missing required attribute."""
@@ -62,14 +68,12 @@ def get_file_metadata(root):
     """
     properties = {}
 
-    properties['file-author'] = {'name': ''}
-    try:
-        properties['file-author']['name'] = root.find('fileAuthor').text
-    except AttributeError:
+    file_author = getattr(root.find('fileAuthor'), 'text', False)
+    # Test for missing attribute or empty string in the same statement
+    if not file_author:
         raise MissingElementError('fileAuthor')
-
-    if properties['file-author']['name'] == '':
-        raise MissingElementError('fileAuthor')
+    else:
+        properties['file-author'] = {'name': file_author}
 
     # Default version is 0 for the ChemKED file
     properties['file-version'] = 0
@@ -159,15 +163,14 @@ def get_experiment_kind(root):
     if root.find('experimentType').text == 'Ignition delay measurement':
         properties['experiment-type'] = 'ignition delay'
     else:
-        #TODO: support additional experimentTypes
         raise NotImplementedError(root.find('experimentType').text + ' not (yet) supported')
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
-    try:
-        kind = root.find('apparatus/kind').text
-    except:
+    kind = getattr(root.find('apparatus/kind'), 'text', False)
+    # Test for missing attribute or empty string
+    if not kind:
         raise MissingElementError('apparatus/kind')
-    if kind in ['shock tube', 'rapid compression machine']:
+    elif kind in ['shock tube', 'rapid compression machine']:
         properties['apparatus']['kind'] = kind
     else:
         raise NotImplementedError(kind + ' experiment not (yet) supported')
@@ -211,11 +214,13 @@ def get_common_properties(root):
                 properties['composition']['species'].append(spec)
 
                 # check consistency of composition type
-                if not composition_type:
+                if composition_type is None:
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
-                    raise KeywordError('inconsistent initial composition units')
-            assert composition_type in ['mole fraction', 'mass fraction']
+                    raise KeywordError('initial composition units need to be consistent')
+            assert composition_type in ['mole fraction', 'mass fraction', 'mole percent'], \
+                'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
+
             properties['composition']['kind'] = composition_type
 
         elif name in ['temperature', 'pressure', 'pressure rise', ]:
@@ -246,7 +251,7 @@ def get_ignition_type(root):
     Returns:
         properties (`dict`): Dictionary with ignition type/target information
     """
-    ignition = {}
+    properties = {}
     elem = root.find('ignitionType')
 
     if elem is None:
@@ -284,10 +289,10 @@ def get_ignition_type(root):
     if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
         raise KeywordError(ign_type + ' not valid ignition type')
 
-    ignition['type'] = ign_type
-    ignition['target'] = ign_target
+    properties['type'] = ign_type
+    properties['target'] = ign_target
 
-    return ignition
+    return properties
 
 
 def get_datapoints(root):
@@ -389,7 +394,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         file_author (`str`, optional): Name to override original file author
         file_author_orcid (`str`, optional): ORCID of file author
     """
-    assert os.path.isfile(filename_xml), 'Error: ' + filename_xml + ' file missing'
+    from .chemked import ChemKED
 
     # get all information from XML file
     tree = etree.parse(filename_xml)
@@ -419,18 +424,21 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     properties['datapoints'] = get_datapoints(root)
 
     # Ensure inclusion of pressure rise or volume history matches apparatus.
-    if ('pressure-rise' in properties['common-properties'] or
-        any([dp for dp in properties['datapoints'] if dp.get('pressure-rise')])
-        ) and properties['apparatus']['kind'] == 'rapid compression machine':
+    has_pres_rise = ('pressure-rise' in properties['common-properties'] or
+                     any([True for dp in properties['datapoints'] if 'pressure-rise' in dp])
+                     )
+    if has_pres_rise and properties['apparatus']['kind'] == 'rapid compression machine':
         raise KeywordError('Pressure rise cannot be defined for RCM.')
 
-    if ('volume-history' in properties['common-properties'] or
-        any([dp for dp in properties['datapoints'] if dp.get('volume-history')])
-        ) and properties['apparatus']['kind'] == 'shock tube':
+    has_vol_hist = ('volume-history' in properties['common-properties'] or
+                    any([True for dp in properties['datapoints'] if 'volume-history' in dp])
+                    )
+    if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
         raise KeywordError('Volume history cannot be defined for shock tube.')
 
     # apply any overrides
     if file_author:
+        properties['reference']['detail'] += '. Original author: ' + properties['file-author']['name']
         properties['file-author']['name'] = file_author
     if file_author_orcid:
         properties['file-author']['ORCID'] = file_author_orcid
@@ -440,24 +448,22 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         for prop in properties['common-properties']:
             properties['datapoints'][idx][prop] = properties['common-properties'][prop]
 
-    # compression time doesn't belong in common-properties
-    properties['common-properties'].pop('compression-time', None)
-
     # set output filename and path
     if not filename_ck:
         filename_ck = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
 
     with open(filename_ck, 'w') as outfile:
-        outfile.write(yaml.dump(properties, default_flow_style=False))
+        yaml.dump(properties, outfile, default_flow_style=False)
     print('Converted to ' + filename_ck)
 
     # now validate
-    chemked.ChemKED(yaml_file=filename_ck)
+    ChemKED(yaml_file=filename_ck)
 
 
 def main(argv):
     """
     """
+    from .chemked import ChemKED
     parser = ArgumentParser(
         description='Convert between ReSpecTh XML file and ChemKED YAML file '
                     'automatically based on file extension.'
@@ -490,25 +496,17 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    if (os.path.splitext(args.input)[1] == '.xml' and
-        os.path.splitext(args.output)[1] == '.yaml'
-        ):
+    if os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.yaml':
         ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
 
-    elif (os.path.splitext(args.input)[1] == '.yaml' and
-          os.path.splitext(args.output)[1] == '.xml'
-          ):
-        c = chemked.ChemKED(yaml_file=args.input)
+    elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.xml':
+        c = ChemKED(yaml_file=args.input)
         c.convert_to_ReSpecTh(args.output)
 
-    elif (os.path.splitext(args.input)[1] == '.xml' and
-          os.path.splitext(args.output)[1] == '.xml'
-          ):
+    elif os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.xml':
         raise KeywordError('Cannot convert .xml to .xml')
 
-    elif (os.path.splitext(args.input)[1] == '.yaml' and
-          os.path.splitext(args.output)[1] == '.yaml'
-          ):
+    elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.yaml':
         raise KeywordError('Cannot convert .yaml to .yaml')
 
     else:
