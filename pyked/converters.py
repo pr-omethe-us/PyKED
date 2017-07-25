@@ -217,7 +217,11 @@ def get_common_properties(root):
                 if composition_type is None:
                     composition_type = child.find('amount').attrib['units']
                 elif composition_type != child.find('amount').attrib['units']:
-                    raise KeywordError('initial composition units need to be consistent')
+                    raise KeywordError(
+                        'composition units ' + child.find('amount').attrib['units']
+                        ' not consistent with ' + composition_type
+                        )
+
             assert composition_type in ['mole fraction', 'mass fraction', 'mole percent'], \
                 'Composition needs to be one of: mole fraction, mass fraction, mole percent.'
 
