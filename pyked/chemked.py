@@ -337,7 +337,7 @@ class ChemKED(object):
                 component = etree.SubElement(prop, 'component')
                 species_link = etree.SubElement(component, 'speciesLink')
                 species_link.set('preferredKey', species['species-name'])
-                if species.get('InChI'):
+                if species.get('InChI') is not None
                     species_link.set('InChI', species['InChI'])
 
                 amount = etree.SubElement(component, 'amount')
