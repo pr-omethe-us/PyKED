@@ -523,7 +523,9 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
 
     # set output filename and path
     if not filename_ck:
-        filename_ck = os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
+        filename_ck = os.path.join(os.path.dirname(filename_xml),
+                                   os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
+                                   )
 
     with open(filename_ck, 'w') as outfile:
         yaml.dump(properties, outfile, default_flow_style=False)

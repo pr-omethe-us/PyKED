@@ -1330,6 +1330,22 @@ class TestConvertReSpecTh(object):
             filename = os.path.join(temp_dir, 'testfile_st.xml')
             ReSpecTh_to_ChemKED(filename)
 
+            c = ChemKED(yaml_file=os.path.join(temp_dir, 'testfile_st.yaml'))
+
+        # compare with ChemKED file of same experiment
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c_true = ChemKED(yaml_file=filename)
+
+        assert c.file_author['name'] == 'Kyle E. Niemeyer'
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file testfile_st.xml'
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
+
     def test_error_rcm_pressurerise(self):
         """Test for appropriate error if RCM file has pressure rise.
         """
