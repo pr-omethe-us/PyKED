@@ -648,6 +648,34 @@ class TestCommonProperties(object):
         assert common['composition']['species'][0]['InChI'] == '1S/Ar'
         assert_allclose(common['composition']['species'][0]['amount'], [1.0])
 
+    def test_common_composition_units_error(self):
+        """Test error for inappropriate common composition units.
+        """
+        root = etree.Element('experiment')
+        properties = etree.SubElement(root, 'commonProperties')
+        initial_composition = etree.SubElement(properties, 'property')
+        initial_composition.set('name', 'initial composition')
+
+        species_refs = [{'name': 'H2', 'inchi': '1S/H2/h1H',
+                         'amount': 100, 'units': 'grams'
+                         },
+                        ]
+
+        for spec in species_refs:
+            component = etree.SubElement(initial_composition, 'component')
+            species = etree.SubElement(component, 'speciesLink')
+            species.set('preferredKey', spec['name'])
+            species.set('InChI', spec['inchi'])
+            amount = etree.SubElement(component, 'amount')
+            amount.set('units', spec['units'])
+            amount.text = str(spec['amount'])
+
+        with pytest.raises(KeywordError) as excinfo:
+            common = get_common_properties(root)
+
+        assert ('Composition units need to be one of: mole fraction, '
+                'mass fraction, mole percent, percent, ppm, or ppb.') in str(excinfo.value)
+
 
 class TestIgnitionType(object):
     """
