@@ -16,7 +16,7 @@ import pytest
 from ..validation import schema, OurValidator, yaml
 from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
-from ..converters import ReSpecTh_to_ChemKED, get_datapoints
+from ..converters import ReSpecTh_to_ChemKED, get_datapoints, get_common_properties
 
 warnings.simplefilter('always')
 
@@ -293,6 +293,21 @@ class TestConvertToReSpecTh(object):
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
             c.convert_to_ReSpecTh(newfile)
+            tree = etree.parse(newfile)
+        root = tree.getroot()
+
+        with pytest.warns(UserWarning) as w:
+            common = get_common_properties(root)
+        assert w[0].message.args[0] == 'Missing InChI for species H2'
+        assert w[1].message.args[0] == 'Missing InChI for species O2'
+        assert w[2].message.args[0] == 'Missing InChI for species Ar'
+        assert len(common['composition']['species']) == 3
+        for spec in common['composition']['species']:
+            assert spec in [{'amount': [0.1], 'species-name': 'H2'},
+                            {'amount': [0.1], 'species-name': 'O2'},
+                            {'amount': [0.8], 'species-name': 'Ar'}
+                            ]
+
 
     def test_conversion_datapoints_different_composition(self):
         """Test for appropriate handling of datapoints with different composition.
