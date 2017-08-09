@@ -320,17 +320,18 @@ class TestConvertToReSpecTh(object):
         root = tree.getroot()
         datapoints = get_datapoints(root)
 
-        assert datapoints[0]['composition']['species'] == [
-            {'InChI': '1S/H2/h1H',
-            'amount': [0.1],
-            'species-name': 'H2'},
-           {'InChI': '1S/O2/c1-2',
-            'amount': [0.1],
-            'species-name': 'O2'},
-           {'amount': [0.8],
-            'species-name': 'N2',
-            'InChI': None}
-           ]
+        assert len(datapoints[0]['composition']['species']) == 3
+        for spec in datapoints[0]['composition']['species']:
+            assert spec in [{'InChI': '1S/H2/h1H',
+                             'amount': [0.1],
+                             'species-name': 'H2'},
+                            {'InChI': '1S/O2/c1-2',
+                             'amount': [0.1],
+                             'species-name': 'O2'},
+                            {'amount': [0.8],
+                            'species-name': 'N2',
+                            'InChI': None}
+                            ]
 
     def test_conversion_error_datapoints_different_composition_type(self):
         """Test for appropriate erorr of datapoints with different composition type.
