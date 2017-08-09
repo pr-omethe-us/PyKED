@@ -394,7 +394,7 @@ def get_datapoints(root):
                     spec['amount'] = [float(val.text) * 1.e-9]
                     units = 'mole fraction'
                 else:
-                    raise KeywordError('Composition units need to be one of: mole fraction, '
+                    raise KeywordError('composition units need to be one of: mole fraction, '
                                        'mass fraction, mole percent, percent, ppm, or ppb.'
                                        )
 

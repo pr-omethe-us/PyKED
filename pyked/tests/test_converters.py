@@ -1097,9 +1097,191 @@ class TestGetDatapoints(object):
         x4.text = str(50.0)
         with pytest.raises(KeywordError) as excinfo:
             datapoints = get_datapoints(root)
-        assert ('Both time and volume values required in each volume-history dataPoint.'
-                in str(excinfo.value)
-                )
+        assert ('Both time and volume values required in each volume-history '
+                'dataPoint.'
+                ) in str(excinfo.value)
+
+    @pytest.mark.parametrize('type, value', [
+        ('mole fraction', 1.0),
+        ('mass fraction', 1.0),
+        ('mole percent', 100.0),
+        ])
+    def test_datapoints_composition(self, type, value):
+        """Test valid parsing of datapoints with composition.
+        """
+        root = etree.Element('experiment')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'composition')
+        prop.set('units', type)
+        specieslink = etree.SubElement(prop, 'speciesLink')
+        specieslink.set('preferredKey', 'H2')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(value)
+
+        datapoints = get_datapoints(root)
+        assert len(datapoints) == 1
+        datapoint = datapoints[0]
+        assert datapoint['temperature'] == [str(1000.0) + ' K']
+        assert datapoint['ignition-delay'] == [str(100.0) + ' us']
+        assert datapoint['composition']['kind'] == type
+        assert datapoint['composition']['species'][0] == {'amount': [value],
+                                                          'species-name': 'H2',
+                                                          'InChI': None
+                                                          }
+
+    @pytest.mark.parametrize('kind, value', [
+        ('percent', 100.0),
+        ('ppm', 1.0),
+        ('ppb', 1.0),
+        ])
+    def test_datapoints_composition_warning(self, kind, value):
+        """Test valid parsing of datapoints with composition with warnings.
+        """
+        root = etree.Element('experiment')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'composition')
+        prop.set('units', kind)
+        specieslink = etree.SubElement(prop, 'speciesLink')
+        specieslink.set('preferredKey', 'H2')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(value)
+
+        with pytest.warns(UserWarning) as w:
+            datapoints = get_datapoints(root)
+        assert w[0].message.args[0] == 'Missing InChI for species H2'
+        if kind == 'percent':
+            assert w[1].message.args[0] == 'Assuming percent in composition means mole percent'
+            kind = 'mole percent'
+        elif kind == 'ppm':
+            assert w[1].message.args[0] == 'Assuming molar ppm in composition and converting to mole fraction'
+            kind = 'mole fraction'
+            value *= 1e-6
+        elif kind == 'ppb':
+            assert w[1].message.args[0] == 'Assuming molar ppb in composition and converting to mole fraction'
+            kind = 'mole fraction'
+            value *= 1e-9
+        assert len(datapoints) == 1
+        datapoint = datapoints[0]
+        assert datapoint['temperature'] == [str(1000.0) + ' K']
+        assert datapoint['ignition-delay'] == [str(100.0) + ' us']
+        assert datapoint['composition']['kind'] == kind
+        assert datapoint['composition']['species'][0] == {'amount': [value],
+                                                          'species-name': 'H2',
+                                                          'InChI': None
+                                                          }
+
+    def test_datapoints_composition_error(self):
+        """Test valid parsing of datapoints with improper unit error.
+        """
+        root = etree.Element('experiment')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'composition')
+        prop.set('units', 'grams')
+        specieslink = etree.SubElement(prop, 'speciesLink')
+        specieslink.set('preferredKey', 'H2')
+        specieslink.set('InChI', '1S/H2/h1H')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(10.0)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Error: composition units need to be one of: mole fraction, '
+                'mass fraction, mole percent, percent, ppm, or ppb.'
+                ) in str(excinfo.value)
+
+    def test_datapoints_inconsistent_composition_error(self):
+        """Test error raised for datapoint with inconsistent composition type.
+        """
+        root = etree.Element('experiment')
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x2')
+        prop.set('name', 'ignition delay')
+        prop.set('units', 'us')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x3')
+        prop.set('name', 'composition')
+        prop.set('units', 'mass fraction')
+        specieslink = etree.SubElement(prop, 'speciesLink')
+        specieslink.set('preferredKey', 'H2')
+        specieslink.set('InChI', '1S/H2/h1H')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x4')
+        prop.set('name', 'composition')
+        prop.set('units', 'mole fraction')
+        specieslink = etree.SubElement(prop, 'speciesLink')
+        specieslink.set('preferredKey', 'O2')
+        specieslink.set('InChI', '1S/O2/c1-2')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+        x3 = etree.SubElement(datapoint, 'x3')
+        x3.text = str(0.5)
+        x3 = etree.SubElement(datapoint, 'x4')
+        x3.text = str(0.5)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert ('Error: composition units mole fraction not consistent with '
+                'mass fraction'
+                ) in str(excinfo.value)
+
+
 
 class TestConvertReSpecTh(object):
     """
