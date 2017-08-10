@@ -1474,7 +1474,7 @@ class TestConverterMain(object):
             newfile = os.path.join(temp_dir, 'test.xml')
             ck2respth(['-i', filename, '-o', newfile,])
 
-    def test_conversion_main_invalid(self):
+    def test_conversion_invalid(self):
         """Test converter main raises errors when invalid filetypes.
         """
         file_path = os.path.join('testfile_st.xml')
@@ -1487,15 +1487,6 @@ class TestConverterMain(object):
                 main(['-i', filename, '-o', newfile])
             assert 'Cannot convert .xml to .xml' in str(excinfo.value)
 
-            with pytest.raises(KeywordError) as excinfo:
-                respth2ck(['-i', filename, '-o', newfile])
-            assert 'output file needs to be .yaml' in str(excinfo.value)
-
-            with pytest.raises(KeywordError) as excinfo:
-                ck2respth(['-i', filename, '-o', newfile])
-            assert 'input file needs to be .yaml' in str(excinfo.value)
-
-
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
@@ -1505,14 +1496,6 @@ class TestConverterMain(object):
             with pytest.raises(KeywordError) as excinfo:
                 main(['-i', filename, '-o', newfile])
             assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
-
-            with pytest.raises(KeywordError) as excinfo:
-                respth2ck(['-i', filename, '-o', newfile])
-            assert 'input file needs to be .xml' in str(excinfo.value)
-
-            with pytest.raises(KeywordError) as excinfo:
-                ck2respth(['-i', filename, '-o', newfile])
-            assert 'output file needs to be .xml' in str(excinfo.value)
 
         file_path = os.path.join('dataframe_st.csv')
         filename = pkg_resources.resource_filename(__name__, file_path)

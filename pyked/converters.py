@@ -571,10 +571,6 @@ def respth2ck(argv=None):
                         )
 
     args = parser.parse_args(argv)
-    if os.path.splitext(args.input)[1] != '.xml':
-        raise KeywordError('input file needs to be .xml')
-    if os.path.splitext(args.output)[1] != '.yaml':
-        raise KeywordError('output file needs to be .yaml')
 
     ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
 
@@ -598,10 +594,6 @@ def ck2respth(argv=None):
                         )
 
     args = parser.parse_args(argv)
-    if os.path.splitext(args.input)[1] != '.yaml':
-        raise KeywordError('input file needs to be .yaml')
-    if os.path.splitext(args.output)[1] != '.xml':
-        raise KeywordError('output file needs to be .xml')
 
     c = chemked.ChemKED(yaml_file=args.input)
     c.convert_to_ReSpecTh(args.output)
