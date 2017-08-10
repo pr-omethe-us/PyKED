@@ -61,7 +61,7 @@ def get_file_metadata(root):
     """Read and parse ReSpecTh XML file metadata (file author, version, etc.)
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with file metadata
@@ -88,7 +88,7 @@ def get_reference(root):
     """Read reference info from root of ReSpecTh XML file.
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with reference information
@@ -154,7 +154,7 @@ def get_experiment_kind(root):
     """Read common properties from root of ReSpecTh XML file.
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with experiment type and apparatus information.
@@ -182,7 +182,7 @@ def get_common_properties(root):
     """Read common properties from root of ReSpecTh XML file.
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with common properties
@@ -265,7 +265,7 @@ def get_ignition_type(root):
     """Gets ignition type and target.
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with ignition type/target information
@@ -318,7 +318,7 @@ def get_datapoints(root):
     """Parse datapoints with ignition delay from file.
 
     Args:
-        root (`etree.Element`): Root of ReSpecTh XML file
+        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
 
     Returns:
         properties (`dict`): Dictionary with ignition delay data
