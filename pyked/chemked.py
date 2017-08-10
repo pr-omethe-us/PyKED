@@ -480,21 +480,25 @@ class ChemKED(object):
                 value = etree.SubElement(datapoint, volume_idx)
                 value.text = str(volume.magnitude)
 
-        # In ReSpecTh files all datapoints share ignition type
-        ignition = etree.SubElement(root, 'ignitionType')
-        if self.datapoints[0].ignition_type['target'] == 'pressure':
-            ignition.set('target', 'P')
-        elif self.datapoints[0].ignition_type['target'] == 'temperature':
-            ignition.set('target', 'T')
+        ign_types = [getattr(dp, 'ignition_type', False) for dp in self.datapoints]
+        # All datapoints must have the same ignition target and type
+        if all(ign_types) and ign_types.count(ign_types[0]) == len(ign_types):
+            # In ReSpecTh files all datapoints must share ignition type
+            ignition = etree.SubElement(root, 'ignitionType')
+            if ign_types[0]['target'] in ['pressure', 'temperature']:
+                ignition.set('target', ign_types[0]['target'][0].upper())
+            else:
+                # options left are species
+                ignition.set('target', self.datapoints[0].ignition_type['target'])
+            ignition.set('type', self.datapoints[0].ignition_type['type'])
         else:
-            # options left are species
-            ignition.set('target', self.datapoints[0].ignition_type['target'])
-        ignition.set('type', self.datapoints[0].ignition_type['type'])
+            raise NotImplementedError('Different ignition targets or types for multiple datapoints '
+                                      'are not supported in ReSpecTh.')
 
         et = etree.ElementTree(root)
         et.write(filename, encoding='utf-8', xml_declaration=True)
 
-        # now dp a "pretty" rewrite
+        # now do a "pretty" rewrite
         xml = minidom.parse(filename)
         xml_string = xml.toprettyxml(indent='    ')
         with open(filename, 'w') as f:

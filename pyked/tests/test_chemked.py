@@ -404,6 +404,22 @@ class TestConvertToReSpecTh(object):
             else:
                 assert elem['target'] == ignition_target
 
+    def test_conversion_multiple_ignition_targets(self):
+        """Test that multiple ignition targets for datapoints fails
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        c.datapoints[0].ignition_type['target'] = 'temperature'
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            with pytest.raises(NotImplementedError) as e:
+                c.convert_to_ReSpecTh(newfile)
+
+        assert ('Different ignition targets or types for multiple datapoints are not supported in '
+                'ReSpecTh.' in str(e.value))
+
 
 class TestDataPoint(object):
     """
