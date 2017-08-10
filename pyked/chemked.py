@@ -621,7 +621,7 @@ class DataPoint(object):
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
 
-        self.ignition_type = properties.get('ignition-type')
+        self.ignition_type = deepcopy(properties.get('ignition-type'))
 
         if 'volume-history' in properties:
             time_col = properties['volume-history']['time']['column']

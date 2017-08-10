@@ -700,3 +700,11 @@ class TestDataPoint(object):
         for d in datapoints:
             assert d.ignition_type['target'] == 'OH*'
             assert d.ignition_type['type'] == '1/2 max'
+
+    def test_changing_ignition_type(self):
+        properties = self.load_properties('testfile_st.yaml')
+        datapoints = [DataPoint(d) for d in properties]
+        datapoints[0].ignition_type['target'] = 'temperature'
+        assert datapoints[0].ignition_type['target'] == 'temperature'
+        for d in datapoints[1:]:
+            assert d.ignition_type['target'] == 'pressure'
