@@ -4,4 +4,5 @@ include CODE_OF_CONDUCT.md
 include CONTRIBUTING.md
 include pyked/tests/*.yaml
 include pyked/tests/*.csv
+include pyked/tests/*.xml
 include pyked/schemas/*.yaml

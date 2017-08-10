@@ -37,6 +37,9 @@ test:
 
   commands:
     - pytest -vv --pyargs pyked
+    - ck2respth --help
+    - respth2ck --help
+    - convert_ck --help
 
 about:
   home: data['url']

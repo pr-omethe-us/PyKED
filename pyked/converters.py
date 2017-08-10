@@ -538,7 +538,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     chemked.ChemKED(yaml_file=filename_ck)
 
 
-def respth2ck(argv):
+def respth2ck(argv=None):
     """Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.
     """
     parser = ArgumentParser(
@@ -579,7 +579,7 @@ def respth2ck(argv):
     ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
 
 
-def ck2respth(argv):
+def ck2respth(argv=None):
     """Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.
     """
     parser = ArgumentParser(
@@ -607,7 +607,7 @@ def ck2respth(argv):
     c.convert_to_ReSpecTh(args.output)
 
 
-def main(argv):
+def main(argv=None):
     """General function for converting between ReSpecTh and ChemKED files based on extension.
     """
     parser = ArgumentParser(
@@ -660,4 +660,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
