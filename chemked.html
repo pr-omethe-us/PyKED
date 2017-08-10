@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ChemKED &#8212; PyKED 0.1.6 documentation</title>
+    <title>ChemKED &#8212; PyKED 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.6',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Utilities" href="utils.html" />
+    <link rel="next" title="Converters" href="converters.html" />
     <link rel="prev" title="Usage examples" href="pyked-examples.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -84,7 +84,7 @@ the the reference information, versions, and file author.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>yaml_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – The filename of the YAML database in ChemKED format.</li>
-<li><strong>dict_input</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – A dictionary with the parsed ouput of YAML file in ChemKED
+<li><strong>dict_input</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) – A dictionary with the parsed ouput of YAML file in ChemKED
 format.</li>
 <li><strong>skip_validation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) – Whether validation of the ChemKED should be done. Must
 be supplied as a keyword-argument.</li>
@@ -137,6 +137,35 @@ located.</p>
 <dt id="pyked.chemked.ChemKED.file_version">
 <code class="descname">file_version</code><a class="headerlink" href="#pyked.chemked.ChemKED.file_version" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> – Version of the ChemKED database file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.ChemKED._properties">
+<code class="descname">_properties</code><a class="headerlink" href="#pyked.chemked.ChemKED._properties" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a> – Original dictionary read from ChemKED database file, meant for
+internal use.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyked.chemked.ChemKED.convert_to_ReSpecTh">
+<code class="descname">convert_to_ReSpecTh</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.convert_to_ReSpecTh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.ChemKED.convert_to_ReSpecTh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert ChemKED record to ReSpecTh XML file.</p>
+<p>This converter uses common information in a ChemKED file to generate a
+ReSpecTh XML file. Note that some information may be lost, as ChemKED stores
+some additional attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>) – Filename for output ReSpecTh XML file.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -231,6 +260,33 @@ string contains the errors that are present.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyked.chemked.ChemKED.write_file">
+<code class="descname">write_file</code><span class="sig-paren">(</span><em>filename</em>, <em>*</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.write_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.ChemKED.write_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write new ChemKED YAML file based on object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>) – Filename for target YAML file</li>
+<li><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) – Whether to overwrite file with given name if present.
+Must be supplied as a keyword-argument.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">NameError</span></code></a> – If <code class="docutils literal"><span class="pre">filename</span></code> is already present, and <code class="docutils literal"><span class="pre">overwrite</span></code> is not <code class="docutils literal"><span class="pre">True</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">new_yaml_file</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -438,7 +494,7 @@ during an RCM experiment.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="pyked-examples.html" title="previous chapter">Usage examples</a></li>
-      <li>Next: <a href="utils.html" title="next chapter">Utilities</a></li>
+      <li>Next: <a href="converters.html" title="next chapter">Converters</a></li>
   </ul></li>
 </ul>
 </div>

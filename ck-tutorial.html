@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Creating ChemKED files &#8212; PyKED 0.1.6 documentation</title>
+    <title>Creating ChemKED files &#8212; PyKED 0.2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.6',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -514,6 +514,40 @@ shock tube at Stanford.</p>
 </div>
 </div>
 </div>
+<div class="section" id="converting-from-respecth">
+<h2>Converting from ReSpecTh<a class="headerlink" href="#converting-from-respecth" title="Permalink to this headline">¶</a></h2>
+<p>PyKED provides converter functions from (and to) the ReSpecTh XML format
+<a class="reference internal" href="#varga2015a" id="id6">[Varga2015a]</a>, <a class="reference internal" href="#varga2015b" id="id7">[Varga2015b]</a>, though ChemKED files created in this manner may
+require manual edits to fully satisfy our schema.</p>
+<p>Given a ReSpecTh XML file <code class="docutils literal"><span class="pre">file.xml</span></code>, a corresponding ChemKED file can be created
+either from the command line</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>respth2ck -i file.xml -o file.yaml
+</pre></div>
+</div>
+<p>or via Python:</p>
+<div class="highlight-Python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyked.converters</span> <span class="kn">import</span> <span class="n">ReSpecTh_to_ChemKED</span>
+<span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;file.yaml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Information about the person creating this new ChemKED file (e.g., file author name
+and their ORCID) may also be added via the <code class="docutils literal"><span class="pre">file_author</span></code> and <code class="docutils literal"><span class="pre">file_author_orcid</span></code>
+arguments in Python or the corresponding command-line options <code class="xref py py-obj docutils literal"><span class="pre">-fa</span></code> and <code class="xref py py-obj docutils literal"><span class="pre">-fo</span></code>. More
+details can be found via <code class="docutils literal"><span class="pre">respth2ck</span> <span class="pre">--help</span></code> or
+<code class="docutils literal"><span class="pre">help(pyked.converters.ReSpecTh_to_ChemKED)</span></code>, respectively.</p>
+<p>PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
+Given a ChemKED file <code class="docutils literal"><span class="pre">file.yaml</span></code>, a corresponding ReSpecTh file can be created
+from the command line via</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>ck2respth -i file.yaml -o file.xml
+</pre></div>
+</div>
+<p>or from inside Python with</p>
+<div class="highlight-Python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyked</span> <span class="kn">import</span> <span class="n">ChemKED</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="s1">&#39;file.yaml&#39;</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that some information, or granularity of details, may be lost in this conversion.</p>
+</div>
 <div class="section" id="works-cited">
 <h2>Works Cited<a class="headerlink" href="#works-cited" title="Permalink to this headline">¶</a></h2>
 <table class="docutils citation" frame="void" id="yaml12" rules="none">
@@ -542,6 +576,22 @@ Ignition Delay Times for the Butanol Isomers.” <em>Combustion and Flame</em>
 doi:<a class="reference external" href="https://doi.org/10.1016/j.combustflame.2011.08.014">10.1016/j.combustflame.2011.08.014</a>.</td></tr>
 </tbody>
 </table>
+<table class="docutils citation" frame="void" id="varga2015a" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[Varga2015a]</a></td><td>Varga, Tamás, Tamás Turányi, Eszter Czinki, Tibor Furtenbacher, Attila G. Császár,
+“ReSpecTh: a joint reaction kinetics, spectroscopy, and thermochemistry information
+system.” 2015. Proceedings of the 7th European Combustion Meeting,
+Budapest, Hungary.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="varga2015b" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[Varga2015b]</a></td><td>Varga, Tamás. “ReSpecTh Kinetics Data Format Specification v1.0.” 2015.
+<a class="reference external" href="http://respecth.hu/">http://respecth.hu/</a></td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -563,6 +613,7 @@ doi:<a class="reference external" href="https://doi.org/10.1016/j.combustflame.2
 <li><a class="reference internal" href="#multiple-experiments">Multiple Experiments</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#converting-from-respecth">Converting from ReSpecTh</a></li>
 <li><a class="reference internal" href="#works-cited">Works Cited</a></li>
 </ul>
 </li>

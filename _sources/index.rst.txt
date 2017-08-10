@@ -35,6 +35,7 @@ Code API
    :maxdepth: 2
 
    chemked
+   converters
    utils
    validation
 

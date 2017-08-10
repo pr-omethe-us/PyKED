@@ -2,9 +2,11 @@
 ./_modules/index.html
 ./_modules/pint/registry.html
 ./_modules/pyked/chemked.html
+./_modules/pyked/converters.html
 ./_modules/pyked/validation.html
 ./_sources/chemked.rst.txt
 ./_sources/ck-tutorial.rst.txt
+./_sources/converters.rst.txt
 ./_sources/index.rst.txt
 ./_sources/install.rst.txt
 ./_sources/pyked-examples.rst.txt
@@ -37,6 +39,7 @@
 ./_static/websupport.js
 ./chemked.html
 ./ck-tutorial.html
+./converters.html
 ./genindex.html
 ./index.html
 ./install.html
