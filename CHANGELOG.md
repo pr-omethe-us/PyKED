@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Fixed
+
+### Changed
+
+## [0.2.0] - 2017-08-10
+### Added
 - Adds ChemKED method to write new file, with tests
 - Adds converters to and from ReSpecTh files, with tests
 - Adds command-line entry points for converter scripts
@@ -13,8 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - `ignition_type` dictionary in `DataPoint` is now `deepcopy`d
-
-### Changed
 
 ## [0.1.6] - 2017-07-17
 ### Added
@@ -71,7 +76,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.3...v0.1.4
