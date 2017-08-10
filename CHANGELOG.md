@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Adds ChemKED method to write new file, with tests
 - Adds converters to and from ReSpecTh files, with tests
 - Adds command-line entry points for converter scripts
+- Add docs for converters
 
 ### Fixed
+- `ignition_type` dictionary in `DataPoint` is now `deepcopy`d
 
 ### Changed
 
