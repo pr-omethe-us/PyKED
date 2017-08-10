@@ -344,8 +344,8 @@ class TestConvertToReSpecTh(object):
                              'amount': [0.1],
                              'species-name': 'O2'},
                             {'amount': [0.8],
-                            'species-name': 'N2',
-                            'InChI': None}
+                             'species-name': 'N2',
+                             'InChI': None}
                             ]
 
     def test_conversion_error_datapoints_different_composition_type(self):

@@ -903,6 +903,32 @@ class TestGetDatapoints(object):
             datapoints = get_datapoints(root)
         assert 'compression time not valid dataPoint property' in str(excinfo.value)
 
+    def test_datapoint_extra_value(self):
+        """Raise error when value without associated property definition
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'shock tube'
+
+        datagroup = etree.SubElement(root, 'dataGroup')
+        prop = etree.SubElement(datagroup, 'property')
+        prop.set('id', 'x1')
+        prop.set('name', 'temperature')
+        prop.set('units', 'K')
+
+        datapoint = etree.SubElement(datagroup, 'dataPoint')
+        x1 = etree.SubElement(datapoint, 'x1')
+        x1.text = str(1000.0)
+        x2 = etree.SubElement(datapoint, 'x2')
+        x2.text = str(100.0)
+
+        with pytest.raises(KeywordError) as excinfo:
+            datapoints = get_datapoints(root)
+        assert 'value missing from properties: x2' in str(excinfo.value)
+
     def test_morethan_two_datagroups(self):
         """Raise error if more than two datagroups.
         """

@@ -364,17 +364,18 @@ def get_datapoints(root):
             datapoint['composition'] = {'species': [], 'kind': None}
 
         for val in dp:
-            units = unit_id[val.tag]
-            if units == 'Torr':
-                units = 'torr'
             # handle "regular" properties differently than composition
-            if property_id[val.tag] in datagroup_properties:
+            if property_id.get(val.tag) in datagroup_properties:
+                units = unit_id[val.tag]
+                if units == 'Torr':
+                    units = 'torr'
                 datapoint[property_id[val.tag].replace(' ', '-')] = [val.text + ' ' + units]
-            elif property_id[val.tag] == 'composition':
+            elif property_id.get(val.tag) == 'composition':
                 spec = {}
                 spec['species-name'] = species_id[val.tag]['species-name']
                 spec['InChI'] = species_id[val.tag].get('InChI')
 
+                units = unit_id[val.tag]
                 # If mole or mass fraction, just set value
                 if units in ['mole fraction', 'mass fraction', 'mole percent']:
                     spec['amount'] = [float(val.text)]
@@ -408,6 +409,8 @@ def get_datapoints(root):
                         )
 
                 datapoint['composition']['species'].append(spec)
+            else:
+                raise KeywordError('value missing from properties: ' + val.tag)
 
         datapoints.append(datapoint)
 
