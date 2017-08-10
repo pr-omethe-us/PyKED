@@ -535,8 +535,77 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     chemked.ChemKED(yaml_file=filename_ck)
 
 
-def main(argv):
+def respth2ck(argv):
+    """Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.
     """
+    parser = ArgumentParser(
+        description='Convert a ReSpecTh XML file to a ChemKED YAML file.'
+        )
+    parser.add_argument('-i', '--input',
+                        type=str,
+                        required=True,
+                        help='Input filename (e.g., "file1.yaml")'
+                        )
+    parser.add_argument('-o', '--output',
+                        type=str,
+                        required=False,
+                        default='',
+                        help='Output filename (e.g., "file1.xml")'
+                        )
+    parser.add_argument('-fa', '--file-author',
+                        dest='file_author',
+                        type=str,
+                        required=False,
+                        default='',
+                        help='File author name to override original'
+                        )
+    parser.add_argument('-fo', '--file-author-orcid',
+                        dest='file_author_orcid',
+                        type=str,
+                        required=False,
+                        default='',
+                        help='File author ORCID'
+                        )
+
+    args = parser.parse_args(argv)
+    if os.path.splitext(args.input)[1] != '.xml':
+        raise KeywordError('input file needs to be .xml')
+    if os.path.splitext(args.output)[1] != '.yaml':
+        raise KeywordError('output file needs to be .yaml')
+
+    ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
+
+
+def ck2respth(argv):
+    """Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.
+    """
+    parser = ArgumentParser(
+        description='Convert a ChemKED YAML file to a ReSpecTh XML file.'
+        )
+    parser.add_argument('-i', '--input',
+                        type=str,
+                        required=True,
+                        help='Input filename (e.g., "file1.xml")'
+                        )
+    parser.add_argument('-o', '--output',
+                        type=str,
+                        required=False,
+                        default='',
+                        help='Output filename (e.g., "file1.yaml")'
+                        )
+
+    args = parser.parse_args(argv)
+    if os.path.splitext(args.input)[1] != '.yaml':
+        raise KeywordError('input file needs to be .yaml')
+    if os.path.splitext(args.output)[1] != '.xml':
+        raise KeywordError('output file needs to be .xml')
+
+    c = chemked.ChemKED(yaml_file=args.input)
+    c.convert_to_ReSpecTh(args.output)
+
+
+def main(argv):
+    """General function for converting between ReSpecTh and ChemKED files based on extension.
     """
     parser = ArgumentParser(
         description='Convert between ReSpecTh XML file and ChemKED YAML file '

@@ -502,7 +502,7 @@ either from the command line
 
 .. code-block:: bash
 
-    python converter -i file.xml -o file.yaml
+    respth2ck -i file.xml -o file.yaml
 
 or via Python:
 
@@ -514,7 +514,7 @@ or via Python:
 Information about the person creating this new ChemKED file (e.g., file author name
 and their ORCID) may also be added via the ``file_author`` and ``file_author_orcid``
 arguments in Python or the corresponding command-line options `-fa` and `-fo`. More
-details can be found via ``python converter --help`` or
+details can be found via ``respth2ck --help`` or
 ``help(pyked.converters.ReSpecTh_to_ChemKED)``, respectively.
 
 PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
@@ -523,7 +523,7 @@ from the command line via
 
 .. code-block:: bash
 
-    python converter -i file.yaml -o file.xml
+    ck2respth -i file.yaml -o file.xml
 
 or from inside Python with
 
