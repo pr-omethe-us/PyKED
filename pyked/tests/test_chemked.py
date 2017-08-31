@@ -443,7 +443,7 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
-        assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
+        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
 
     def test_cantera_composition_mole_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -454,7 +454,7 @@ class TestDataPoint(object):
     def test_cantera_composition_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
-        assert d.get_cantera_mass_fraction() == 'H2: 2.2525e-04, O2: 4.4775e-03, Ar: 9.9530e-01'
+        assert d.get_cantera_mass_fraction() == 'H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01'
 
     def test_cantera_composition_mass_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -465,7 +465,7 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
-        assert d.get_cantera_mole_fraction() == 'H2: 4.4400e-03, O2: 5.5600e-03, Ar: 9.9000e-01'
+        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
 
     def test_composition(self):
         properties = self.load_properties('testfile_required.yaml')
