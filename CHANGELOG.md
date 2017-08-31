@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Fixed
-- Fixes Cantera convenience output functions
 
 ### Changed
+
+## [0.2.1] - 2017-08-31
+### Fixed
+- Fixes Cantera convenience output functions
 
 ## [0.2.0] - 2017-08-10
 ### Added
@@ -77,7 +80,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.4...v0.1.5
