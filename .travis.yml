@@ -31,12 +31,12 @@ install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
+    - conda update -q --all
     - conda config --append channels conda-forge
     - if [[ -z "$TRAVIS_TAG" ]]; then
         sed -i -e "s/\${PYTHON}/"${PYTHON}"/" test-environment.yaml;
         conda env create -qf test-environment.yaml;
-        source activate test-environment;
+        source activate py${PYTHON};
       else
         conda install -q conda-build anaconda-client;
       fi
