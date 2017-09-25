@@ -1,4 +1,4 @@
-name: test-environment
+name: py${PYTHON}
 channels:
 - defaults
 - conda-forge

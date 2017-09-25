@@ -10,18 +10,19 @@ source:
 build:
   number: 0
   script: python setup.py install --single-version-externally-managed --record=record.txt
+  noarch: python
 
 requirements:
   build:
-    - python >=3.5,{{PY_VER}}*
+    - python >=3.5
     - setuptools
 
   run:
-    - python {{PY_VER}}*
+    - python
     - pyyaml >=3.12,<4.0
-    - cerberus >=1.0.0
-    - pint >=0.7.2
-    - numpy >=1.11.0
+    - cerberus >=1.0.0,<1.2
+    - pint >=0.7.2,<0.9
+    - numpy >=1.11.0,<2.0
     - habanero >=0.2.6
     - orcid >=0.7.0,<1.0
     - uncertainties >=3.0.1

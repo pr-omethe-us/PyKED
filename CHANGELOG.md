@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Changed
+- Conda builds are now noarch - one package for all Pythons!
+- pip installs now require Python compatible with 3.5
+- Appveyor runs a single job and no longer builds conda packages
 
 ## [0.2.1] - 2017-08-31
 ### Fixed
