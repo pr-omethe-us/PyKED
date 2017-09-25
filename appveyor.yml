@@ -19,8 +19,7 @@ install:
 
 build_script:
   - cmd: call %PYTHON_LOC%\Scripts\activate.bat py3.5
-  - cmd: python setup.py test
-  - cmd: rmdir /s /q pyked.egg-info
-  - cmd: rmdir /s /q .eggs
+  - cmd: pytest -vv --cov=./ --cov-append
   - cmd: call %PYTHON_LOC%\Scripts\activate.bat py3.6
-  - cmd: python setup.py test
+  - cmd: pytest -vv --cov=./ --cov-append
+  - cmd: codecov -X gcov
