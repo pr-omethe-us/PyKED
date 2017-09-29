@@ -717,6 +717,16 @@ class TestDataPoint(object):
             assert d.ignition_type['target'] == 'OH*'
             assert d.ignition_type['type'] == '1/2 max'
 
+        # CH, min
+        properties = self.load_properties('testfile_required.yaml')
+        datapoints = [DataPoint(d) for d in properties]
+        assert datapoints[0].ignition_type['target'] == 'CH'
+        assert datapoints[0].ignition_type['type'] == 'min'
+
+        # CH*, d/dt max extrapolted
+        assert datapoints[1].ignition_type['target'] == 'CH*'
+        assert datapoints[1].ignition_type['type'] == 'd/dt max extrapolated'
+
     def test_changing_ignition_type(self):
         properties = self.load_properties('testfile_st.yaml')
         datapoints = [DataPoint(d) for d in properties]
