@@ -375,7 +375,7 @@ class TestValidator(object):
         assert v.errors[field][0] == 'required field'
 
     @pytest.mark.parametrize("field, sub", [
-        ('reference', 'authors'), ('reference', 'journal'), ('reference', 'year'),
+        ('reference', 'authors'), ('reference', 'year'),
         ('apparatus', 'kind'), ('file-author', 'name'),
     ])
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])

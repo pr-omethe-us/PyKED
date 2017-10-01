@@ -6,7 +6,6 @@ chemked-version: 0.0.1
 reference:
   authors:
     - name: A. Author
-  journal: Testing Journal
   year: 1600
 experiment-type: ignition delay
 apparatus:
