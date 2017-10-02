@@ -15,7 +15,10 @@ install:
   - ps: (get-content test-environment.yaml) | %{$_ -replace "\$\{PYTHON\}","3.6"} | set-content test-environment.yaml
   - cmd: conda env create -qf test-environment.yaml
   - cmd: conda info -a
-  - cmd: conda list
+  - PS: Write-Host "Packages in py3.5 Environment:"
+  - cmd: conda list -n py3.5
+  - PS: Write-Host "Packages in py3.6 Environment:"
+  - cmd: conda list -n py3.6
 
 build_script:
   - cmd: call %PYTHON_LOC%\Scripts\activate.bat py3.5
