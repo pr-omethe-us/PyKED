@@ -11,6 +11,10 @@ build:
   number: 0
   script: python setup.py install --single-version-externally-managed --record=record.txt
   noarch: python
+  entry_points:
+    - ck2respth = pyked.converters:ck2respth
+    - convert_ck = pyked.converters:main
+    - respth2ck = pyked.converters:respth2ck
 
 requirements:
   build:
