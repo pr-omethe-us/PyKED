@@ -418,6 +418,24 @@ class TestValidator(object):
         # update=True means to ignore required keys that are left out for testing
         assert v.validate({'experiment-type': valid_type}, update=True)
 
+    @pytest.mark.parametrize("valid_type", [
+        'd/dt max', 'max', '1/2 max', 'min', 'd/dt max extrapolated',
+    ])
+    def test_valid_ignition_types(self, valid_type):
+        """Ensure that all the valid experiment types are validated
+        """
+        # update=True means to ignore required keys that are left out for testing
+        assert v.validate({'datapoints': [{'ignition-type': {'type': valid_type}}]}, update=True)
+
+    @pytest.mark.parametrize("valid_target", [
+        'temperature', 'pressure', 'OH', 'OH*', 'CH', 'CH*',
+    ])
+    def test_valid_ignition_targets(self, valid_target):
+        """Ensure that all the valid experiment types are validated
+        """
+        # update=True means to ignore required keys that are left out for testing
+        assert v.validate({'datapoints': [{'ignition-type': {'target': valid_target}}]}, update=True)
+
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_quantity(self, quantity, unit):
         """Ensure that incompatible quantities are validation errors

@@ -144,7 +144,7 @@ class TestGetReference(object):
 
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
-        assert w[0].message.args[0] == ('Using DOI to obtain reference information, '
+        assert w[1].message.args[0] == ('Using DOI to obtain reference information, '
                                         'rather than preferredKey.'
                                         )
 
@@ -247,8 +247,10 @@ class TestGetReference(object):
 
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
-        assert len(w) == 1
-        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
+
+        # This test also raises a ResourceWarning from habanero, so there are 2 warnings stored
+        assert len(w) == 2
+        assert w[1].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
                                         'Setting "detail" key as a fallback; please update to '
                                         'the appropriate fields.'
                                         )
@@ -271,8 +273,10 @@ class TestGetReference(object):
 
         with pytest.warns(UserWarning) as w:
             ref = get_reference(root)
-        assert len(w) == 1
-        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
+
+        # This test also raises a ResourceWarning from habanero, so there are 2 warnings stored
+        assert len(w) == 2
+        assert w[1].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
                                         'Setting "detail" key as a fallback; please update to '
                                         'the appropriate fields.'
                                         )

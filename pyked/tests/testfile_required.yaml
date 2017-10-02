@@ -34,8 +34,8 @@ datapoints:
           amount:
             - 0.99
     ignition-type:
-      target: pressure
-      type: d/dt max
+      target: CH
+      type: min
   - temperature:
       - 1164.48 kelvin
     ignition-delay:
@@ -58,8 +58,8 @@ datapoints:
           amount:
             - 9.95297294E-1
     ignition-type:
-      target: pressure
-      type: d/dt max
+      target: CH*
+      type: d/dt max extrapolated
   - temperature:
       - 1164.48 kelvin
     ignition-delay:
