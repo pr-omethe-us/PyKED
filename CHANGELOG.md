@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - New extrapolated ignition type, where the maximum slope is extrapolated to the baseline
+- Tests that the composition type is stored properly in the `DataPoint`
 
 ### Fixed
 
