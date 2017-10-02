@@ -723,7 +723,7 @@ class TestDataPoint(object):
         assert datapoints[0].ignition_type['target'] == 'CH'
         assert datapoints[0].ignition_type['type'] == 'min'
 
-        # CH*, d/dt max extrapolted
+        # CH*, d/dt max extrapolated
         assert datapoints[1].ignition_type['target'] == 'CH*'
         assert datapoints[1].ignition_type['type'] == 'd/dt max extrapolated'
 
