@@ -8,6 +8,7 @@ install:
   - cmd: call %PYTHON_LOC%\Scripts\activate.bat
   - cmd: conda config --set always_yes yes --set changeps1 no
   - cmd: conda config --append channels conda-forge
+  - cmd: conda update conda
   - cmd: conda update -q --all
   - ps: (get-content test-environment.yaml) | %{$_ -replace "\$\{PYTHON\}","3.5"} | set-content test-environment.yaml
   - cmd: conda env create -qf test-environment.yaml
@@ -15,9 +16,9 @@ install:
   - ps: (get-content test-environment.yaml) | %{$_ -replace "\$\{PYTHON\}","3.6"} | set-content test-environment.yaml
   - cmd: conda env create -qf test-environment.yaml
   - cmd: conda info -a
-  - PS: Write-Host "Packages in py3.5 Environment:"
+  - ps: Write-Host "Packages in py3.5 Environment:"
   - cmd: conda list -n py3.5
-  - PS: Write-Host "Packages in py3.6 Environment:"
+  - ps: Write-Host "Packages in py3.6 Environment:"
   - cmd: conda list -n py3.6
 
 build_script:
