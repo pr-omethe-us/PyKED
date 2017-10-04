@@ -265,7 +265,7 @@ class TestGetReference(object):
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
-        ref.set('doi', '10.1000/invalid.doi')
+        ref.set('doi', '10.1000/invalid.doi.')
         ref.set('preferredKey', 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                 'Fig. 12., right, open diamond.'
