@@ -261,11 +261,11 @@ class TestGetReference(object):
                 )
 
     def test_incorrect_doi_period_at_end(self, capfd):
-        """Ensure can handle invalid DOI with period at end.
+        """Ensure can handle invalid DOI with period at end of reference.
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
-        ref.set('doi', '10.1000/invalid.doi.')
+        ref.set('doi', '10.1000/invalid.doi')
         ref.set('preferredKey', 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                 'Fig. 12., right, open diamond.'

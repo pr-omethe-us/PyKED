@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Tests that the composition type is stored properly in the `DataPoint`
 
 ### Fixed
-- Fixes `test_incorrect_doi_period_at_end` to actually test DOI with period
+- Fixes `test_incorrect_doi_period_at_end` docstring
 
 ### Changed
 - Conda builds are now noarch - one package for all Pythons!
