@@ -261,7 +261,7 @@ class TestGetReference(object):
                 )
 
     def test_incorrect_doi_period_at_end(self, capfd):
-        """Ensure can handle invalid DOI with period at end.
+        """Ensure can handle invalid DOI with period at end of reference.
         """
         root = etree.Element('experiment')
         ref = etree.SubElement(root, 'bibliographyLink')
