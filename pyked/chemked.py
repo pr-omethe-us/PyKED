@@ -640,12 +640,21 @@ class DataPoint(object):
         else:
             self.volume_history = None
 
-    def get_cantera_composition_string(self):
+    def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
 
         Returns a formatted string no matter the type of composition. As such, this method
         is not recommended for end users; instead, prefer the `get_cantera_mole_fraction`
         or `get_cantera_mass_fraction` methods.
+
+        Arguments:
+            species_conversion (`dict`, optional): Mapping of species identifier to a
+                species name. This argument should be supplied when the name of the
+                species in the ChemKED YAML file does not match the name of the same
+                species in a chemical kinetic mechanism. The species identifier (the key
+                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+                file, while the value associated with a key should be the desired name in
+                the Cantera format output string.
 
         Returns:
             `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
@@ -661,13 +670,42 @@ class DataPoint(object):
         else:
             raise ValueError('Unknown composition type: {}'.format(self.composition_type))
 
-        comps = ['{!s}:{:.4e}'.format(c['species-name'],
-                 c['amount'].magnitude/factor) for c in self.composition]
+        if species_conversion is None:
+            comps = ['{!s}:{:.4e}'.format(c['species-name'],
+                     c['amount'].magnitude/factor) for c in self.composition]
+        else:
+            comps = []
+            for c in self.composition:
+                amount = c['amount'].magnitude/factor
+                idents = [c.get(s) for s in ['species-name', 'InChI', 'SMILES'] if c.get(s, False)]
+                present = [i in species_conversion for i in idents]
+                if not any(present):
+                    comps.append('{!s}:{:.4e}'.format(c['species-name'], amount))
+                else:
+                    if len([i for i in present if i]) > 1:
+                        raise ValueError('More than one conversion present for species {}'.format(
+                                       c['species-name']))
+
+                    ident = idents[present.index(True)]
+                    species_replacement_name = species_conversion.pop(ident)
+                    comps.append('{!s}:{:.4e}'.format(species_replacement_name, amount))
+
+            if len(species_conversion) > 0:
+                raise ValueError('Unknown species in conversion: {}'.format(species_conversion))
 
         return ', '.join(comps)
 
-    def get_cantera_mole_fraction(self):
+    def get_cantera_mole_fraction(self, species_conversion=None):
         """Get the mole fractions in a string format suitable for input to Cantera.
+
+        Arguments:
+            species_conversion (`dict`, optional): Mapping of species identifier to a
+                species name. This argument should be supplied when the name of the
+                species in the ChemKED YAML file does not match the name of the same
+                species in a chemical kinetic mechanism. The species identifier (the key
+                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+                file, while the value associated with a key should be the desired name in
+                the Cantera format output string.
 
         Returns:
             `str`: String of mole fractions in the ``SPEC:AMT, SPEC:AMT`` format
@@ -680,10 +718,19 @@ class DataPoint(object):
             raise ValueError('Cannot get mole fractions from the given composition.\n'
                              '{}'.format(self.composition))
         else:
-            return self.get_cantera_composition_string()
+            return self.get_cantera_composition_string(species_conversion)
 
-    def get_cantera_mass_fraction(self):
+    def get_cantera_mass_fraction(self, species_conversion=None):
         """Get the mass fractions in a string format suitable for input to Cantera.
+
+        Arguments:
+            species_conversion (`dict`, optional): Mapping of species identifier to a
+                species name. This argument should be supplied when the name of the
+                species in the ChemKED YAML file does not match the name of the same
+                species in a chemical kinetic mechanism. The species identifier (the key
+                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+                file, while the value associated with a key should be the desired name in
+                the Cantera format output string.
 
         Returns:
             `str`: String of mass fractions in the ``SPEC: AMT, SPEC: AMT`` format
@@ -698,4 +745,4 @@ class DataPoint(object):
                              '{}'.format(self.composition)
                              )
         else:
-            return self.get_cantera_composition_string()
+            return self.get_cantera_composition_string(species_conversion)
