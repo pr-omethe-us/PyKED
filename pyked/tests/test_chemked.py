@@ -479,6 +479,70 @@ class TestDataPoint(object):
         assert d.composition_type == 'mole percent'
         assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
 
+    def test_cantera_change_species_by_name_mole_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        species_conversion = {'H2': 'h2', 'O2': 'o2'}
+        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+
+    def test_cantera_change_species_by_inchi_mole_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
+        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+
+    def test_cantera_change_species_by_name_mole_percent(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[2])
+        species_conversion = {'H2': 'h2', 'O2': 'o2'}
+        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+
+    def test_cantera_change_species_by_inchi_mole_percent(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[2])
+        species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
+        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+
+    def test_cantera_change_species_by_name_mass_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        species_conversion = {'H2': 'h2', 'O2': 'o2'}
+        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+
+    def test_cantera_change_species_by_inchi_mass_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
+        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+
+    def test_cantera_change_species_missing_mole_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        species_conversion = {'this-does-not-exist': 'h2', 'O2': 'o2'}
+        with pytest.raises(ValueError):
+            d.get_cantera_mole_fraction(species_conversion)
+
+    def test_cantera_change_species_missing_mass_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        species_conversion = {'this-does-not-exist': 'h2', 'O2': 'o2'}
+        with pytest.raises(ValueError):
+            d.get_cantera_mass_fraction(species_conversion)
+
+    def test_cantera_change_species_duplicate_mole_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        species_conversion = {'H2': 'h2', '1S/H2/h1H': 'h2'}
+        with pytest.raises(ValueError):
+            d.get_cantera_mole_fraction(species_conversion)
+
+    def test_cantera_change_species_duplicate_mass_fraction(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[1])
+        species_conversion = {'H2': 'h2', '1S/H2/h1H': 'h2'}
+        with pytest.raises(ValueError):
+            d.get_cantera_mass_fraction(species_conversion)
+
     def test_composition(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
