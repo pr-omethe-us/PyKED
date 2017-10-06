@@ -46,7 +46,7 @@ class ChemKED(object):
     file. It stores each datapoint associated with the database and provides access
     the the reference information, versions, and file author.
 
-    Args:
+    Arguments:
         yaml_file (`str`, optional): The filename of the YAML database in ChemKED format.
         dict_input (`dict`, optional): A dictionary with the parsed ouput of YAML file in ChemKED
             format.
