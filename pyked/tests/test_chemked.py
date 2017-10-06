@@ -440,6 +440,13 @@ class TestDataPoint(object):
         properties = self.load_properties('testfile_required.yaml')
         DataPoint(properties[0])
 
+    def test_cantera_unknown_composition_type(self):
+        properties = self.load_properties('testfile_required.yaml')
+        d = DataPoint(properties[0])
+        d.composition_type = 'unknown type'
+        with pytest.raises(ValueError):
+            d.get_cantera_composition_string()
+
     def test_cantera_composition_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])

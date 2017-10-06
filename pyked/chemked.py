@@ -640,35 +640,62 @@ class DataPoint(object):
         else:
             self.volume_history = None
 
-    def get_cantera_mole_fraction(self):
+    def get_cantera_composition_string(self):
         """Get the composition in a string format suitable for input to Cantera.
+
+        Returns a formatted string no matter the type of composition. As such, this method
+        is not recommended for end users; instead, prefer the `get_cantera_mole_fraction`
+        or `get_cantera_mass_fraction` methods.
 
         Returns:
             `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
+
+        Raises:
+            `ValueError`: If the composition type of the `DataPoint` is not one of
+                ``'mass fraction'``, ``'mole fraction'``, or ``'mole percent'``
         """
-        if self.composition_type == 'mole fraction':
-            return ', '.join(['{!s}:{:.4e}'.format(c['species-name'],
-                             c['amount'].magnitude) for c in self.composition]
-                             )
+        if self.composition_type in ['mole fraction', 'mass fraction']:
+            factor = 1.0
         elif self.composition_type == 'mole percent':
-            return ', '.join(['{!s}:{:.4e}'.format(c['species-name'],
-                             c['amount'].magnitude/100.0) for c in self.composition]
-                             )
+            factor = 100.0
         else:
-            raise ValueError('Cannot get mole fractions from the given composition.\n'
-                             '{}'.format(self.composition))
+            raise ValueError('Unknown composition type: {}'.format(self.composition_type))
 
-    def get_cantera_mass_fraction(self):
-        """Get the composition in a string format suitable for input to Cantera.
+        comps = ['{!s}:{:.4e}'.format(c['species-name'],
+                 c['amount'].magnitude/factor) for c in self.composition]
+
+        return ', '.join(comps)
+
+    def get_cantera_mole_fraction(self):
+        """Get the mole fractions in a string format suitable for input to Cantera.
 
         Returns:
-            `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
+            `str`: String of mole fractions in the ``SPEC:AMT, SPEC:AMT`` format
+
+        Raises:
+            `ValueError`: If the composition type is ``'mass fraction'``, the conversion cannot
+                be done because no molecular weight information is known
         """
         if self.composition_type == 'mass fraction':
-            return ', '.join(['{!s}:{:.4e}'.format(c['species-name'],
-                             c['amount'].magnitude) for c in self.composition]
-                             )
+            raise ValueError('Cannot get mole fractions from the given composition.\n'
+                             '{}'.format(self.composition))
         else:
+            return self.get_cantera_composition_string()
+
+    def get_cantera_mass_fraction(self):
+        """Get the mass fractions in a string format suitable for input to Cantera.
+
+        Returns:
+            `str`: String of mass fractions in the ``SPEC: AMT, SPEC: AMT`` format
+
+        Raises:
+            `ValueError`: If the composition type is ``'mole fraction'`` or
+                ``'mole percent'``, the conversion cannot be done because no molecular
+                weight information is known
+        """
+        if self.composition_type in ['mole fraction', 'mole percent']:
             raise ValueError('Cannot get mass fractions from the given composition.\n'
                              '{}'.format(self.composition)
                              )
+        else:
+            return self.get_cantera_composition_string()
