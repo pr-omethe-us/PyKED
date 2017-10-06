@@ -188,7 +188,7 @@ class ChemKED(object):
         app_index = valid_labels.index('apparatus')
         valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
 
-        species_list = list(set([s['species-name'] for d in self.datapoints for s in d.composition]))
+        species_list = list(set([s['species-name'] for d in self.datapoints for s in d.composition]))  # noqa: E501
 
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
