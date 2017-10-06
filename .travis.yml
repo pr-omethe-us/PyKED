@@ -59,7 +59,7 @@ script:
         cd docs;
         make html SPHINXOPTS="-W";
         cd ..;
-        doctr deploy .;
+        doctr deploy devel;
       fi
     else
       if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
