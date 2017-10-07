@@ -52,7 +52,7 @@ napoleon_google_docstring = True
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.6', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
 }
 
 # Make the module index more useful by sorting on the module name
