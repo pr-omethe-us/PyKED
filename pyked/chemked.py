@@ -657,7 +657,7 @@ class DataPoint(object):
                 the Cantera format output string.
 
         Returns:
-            `str`: String in the ``SPEC: AMT, SPEC: AMT`` format
+            `str`: String in the ``SPEC:AMT, SPEC:AMT`` format
 
         Raises:
             `ValueError`: If the composition type of the `DataPoint` is not one of
@@ -733,7 +733,7 @@ class DataPoint(object):
                 the Cantera format output string.
 
         Returns:
-            `str`: String of mass fractions in the ``SPEC: AMT, SPEC: AMT`` format
+            `str`: String of mass fractions in the ``SPEC:AMT, SPEC:AMT`` format
 
         Raises:
             `ValueError`: If the composition type is ``'mole fraction'`` or
