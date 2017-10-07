@@ -1,0 +1,662 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Schema Documentation &#8212; PyKED 0.2.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage examples" href="pyked-examples.html" />
+    <link rel="prev" title="Creating ChemKED files" href="ck-tutorial.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="schema-documentation">
+<h1>Schema Documentation<a class="headerlink" href="#schema-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This document contains the complete specification for the ChemKED schema. The schema is broken into
+several files for ease of maintenance. These files are combined with the custom <code class="docutils literal"><span class="pre">!include</span></code>
+directive that has been added for this purpose. Note that <code class="docutils literal"><span class="pre">!include</span></code> should only be used in the
+main schema file (<code class="docutils literal"><span class="pre">chemked_schema.yaml</span></code>) and must appear at the top of the file. The <code class="docutils literal"><span class="pre">!include</span></code>
+directive is <strong>not</strong> supported in any actual ChemKED files.</p>
+<p>Examples of constructing a ChemKED format file, as well as examples of files themselves, are located
+in <a class="reference internal" href="ck-tutorial.html"><span class="doc">Creating ChemKED files</span></a>. The sections laid out in this file roughly correspond to the sections
+discussed in the tutorial.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#meta-keys" id="id6">Meta Keys</a></li>
+<li><a class="reference internal" href="#reference-keys" id="id7">Reference Keys</a></li>
+<li><a class="reference internal" href="#common-property-keys" id="id8">Common Property Keys</a></li>
+<li><a class="reference internal" href="#ignition-delay-keys" id="id9">Ignition Delay Keys</a></li>
+<li><a class="reference internal" href="#schema-only-keys" id="id10">Schema-Only Keys</a></li>
+</ul>
+</div>
+<div class="section" id="meta-keys">
+<span id="id1"></span><h2><a class="toc-backref" href="#id6">Meta Keys</a><a class="headerlink" href="#meta-keys" title="Permalink to this headline">¶</a></h2>
+<p>The keys in this section encode the “meta” information about the ChemKED file. All of the keys in
+this section are required in every ChemKED file.</p>
+<ul class="simple" id="meta-chemked-version">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">chemked-version</span></code>: string, required</dt>
+<dd>A string with the version of the ChemKED schema that this file targets.</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="meta-datapoints">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">datapoints</span></code>: sequence, required</dt>
+<dd>A sequence of mappings representing the data encoded in the file. Each element of the sequence
+must conform to the schema described in <a class="reference internal" href="#ignition-delay-keys"><span class="std std-ref">Ignition Delay Keys</span></a> (for now).</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="meta-file-version">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">file-version</span></code>: integer, required</dt>
+<dd>An integer that represents the version of the file. Should be incremented every time a change is
+committed to a file in the database.</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="meta-file-author">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">file-author</span></code>: mapping, required</dt>
+<dd>The author of the ChemKED file, which may be different from the authors of the referenced work.
+Must conform to the <a class="reference internal" href="#schema-author"><span class="std std-ref">author</span></a> schema.</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="reference-keys">
+<span id="id2"></span><h2><a class="toc-backref" href="#id7">Reference Keys</a><a class="headerlink" href="#reference-keys" title="Permalink to this headline">¶</a></h2>
+<p>The keys in this section are related to the reference for the experiment, the article where the data
+is published, and the apparatus used to conduct the experiment. All the top-level keys in this
+section are required, although some of the sub-keys are optional.</p>
+<ul class="simple" id="reference-apparatus">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">apparatus</span></code>: mapping, required</dt>
+<dd>This mapping provides information about the apparatus used to conduct the experiments. Fields:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">kind</span></code>: string, required</dt>
+<dd>Must be one of <code class="docutils literal"><span class="pre">shock</span> <span class="pre">tube</span></code> or <code class="docutils literal"><span class="pre">rapid</span> <span class="pre">compression</span> <span class="pre">machine</span></code>. Values are case-sensitive.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">institution</span></code>: string, optional</dt>
+<dd>The institution where the experimental apparatus is located</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">facility</span></code>: string, optional</dt>
+<dd>A unique name or identifier for the apparatus, if the institution has several that are
+similar</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="reference-experiment-type">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">experiment-type</span></code>: string, required</dt>
+<dd>The type of experiment encoded in this file. Currently, the only allowed value is
+<code class="docutils literal"><span class="pre">ignition</span> <span class="pre">delay</span></code>, which is case sensitive.</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="reference-reference">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">reference</span></code>: mapping, required</dt>
+<dd>The reference contains the information about the article where the data in the file are
+published. Fields:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">journal</span></code>: string, required</dt>
+<dd>The journal where the data are published</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">year</span></code>: integer, required</dt>
+<dd>The year of publication. Must be greater than 1600.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">authors</span></code>: sequence, required</dt>
+<dd>A sequence of all the authors of the article, where the elements of the sequence are
+mappings that must conform to the <a class="reference internal" href="#schema-author"><span class="std std-ref">author</span></a> type.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">volume</span></code>: integer, optional</dt>
+<dd>The volume of the publication. Must be greater than 0.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">doi</span></code>: string, optional</dt>
+<dd>A DOI, if available.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">detail</span></code>: string, optional</dt>
+<dd>A description of where in the article the data in this file are from, for instance, a figure
+or table number.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">pages</span></code>: string, optional</dt>
+<dd>The pages in the journal where the article is published (not the pages where the data are
+located, that would go in the <code class="docutils literal"><span class="pre">detail</span></code> field.)</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="common-property-keys">
+<span id="id3"></span><h2><a class="toc-backref" href="#id8">Common Property Keys</a><a class="headerlink" href="#common-property-keys" title="Permalink to this headline">¶</a></h2>
+<p>The keys in this section can be specified as sub-keys of the the <code class="docutils literal"><span class="pre">common-properties</span></code> top-level
+key, and reused in many different data points within a single ChemKED file. All of the keys in the
+<code class="docutils literal"><span class="pre">common-properties</span></code> section are optional, although some of their values may be required in a
+particular experiment type.</p>
+<ul class="simple" id="common-pressure-rise">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">pressure-rise</span></code>: sequence, optional</dt>
+<dd>Has the same format as <a class="reference internal" href="#ignition-pressure-rise"><span class="std std-ref">pressure-rise</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-pressure">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">pressure</span></code>: sequence, optional</dt>
+<dd>The pressure of the experiment, with dimensions of mass per length per time squared. Must
+conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-ignition-type">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">ignition-type</span></code>: mapping, optional</dt>
+<dd>Has the same schema as <a class="reference internal" href="#ignition-ignition-type"><span class="std std-ref">ignition-type</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-composition">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">composition</span></code>: mapping, optional</dt>
+<dd>This mapping provides the specification of the initial composition of the mixture. Fields:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">kind</span></code>: string, required</dt>
+<dd>The <code class="docutils literal"><span class="pre">kind</span></code> can be <code class="docutils literal"><span class="pre">mole</span> <span class="pre">fraction</span></code>, <code class="docutils literal"><span class="pre">mass</span> <span class="pre">fraction</span></code>, or <code class="docutils literal"><span class="pre">mole</span> <span class="pre">percent</span></code></dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">species</span></code>: sequence, required</dt>
+<dd>The elements of this sequence specify the species and their amounts in the mixture. Each
+element of the sequence is a mapping with the following keys:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">species-name</span></code>: string, required</dt>
+<dd>The name of the species</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">InChI</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dd>The InChI string for the species</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SMILES</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dd>The SMILES string for the species</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">atomic-composition</span></code>: sequence, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dd>A sequence of mappings representing the atoms that make up the species. Useful for
+species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
+element of the sequence is a mapping with the following keys:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">element</span></code>: string, required</dt>
+<dd>The name of the element</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">amount</span></code>: float, required, must be greater than 0.0</dt>
+<dd>The amount of the element</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">elemental-composition</span></code>: sequence, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code></dt>
+<dd>A sequence of mappings representing the elements that make up the species. Useful for
+species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
+element of the sequence is a mapping with the following keys:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">element</span></code>: string, required</dt>
+<dd>The name of the element</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">amount</span></code>: float, required, must be greater than 0.0</dt>
+<dd>The amount of the element</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">amount</span></code>: sequence, required</dt>
+<dd>A sequence representing the amount of the species. Must conform to either
+<a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> or
+<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>.</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="ignition-delay-keys">
+<span id="id4"></span><h2><a class="toc-backref" href="#id9">Ignition Delay Keys</a><a class="headerlink" href="#ignition-delay-keys" title="Permalink to this headline">¶</a></h2>
+<p>This section details the schema for an autoignition delay measurement. This is one of the options
+for the <a class="reference internal" href="#meta-datapoints"><span class="std std-ref">datapoints</span></a> schema.</p>
+<ul class="simple" id="ignition-temperature">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">temperature</span></code>: sequence, required</dt>
+<dd>The temperature of the experiment, with dimensions of temperature. Must conform to
+<a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-composition">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">composition</span></code>: mapping, required</dt>
+<dd>The composition of the experiment. Must conform to <a class="reference internal" href="#common-composition"><span class="std std-ref">composition</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-pressure">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">pressure</span></code>: sequence, required</dt>
+<dd>The pressure of the experiment, with dimensions of mass per length per time squared. Must
+conform to <a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul id="ignition-ignition-type">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">ignition-type</span></code>: mapping, required</dt>
+<dd><p class="first">A mapping describing how the ignition delay is defined in the experiments. Fields:</p>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">target</span></code>: string, required</dt>
+<dd><p class="first">Describes the target measurement to define ignition. Can be one of:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">temperature</span></code></li>
+<li><code class="docutils literal"><span class="pre">pressure</span></code></li>
+<li><code class="docutils literal"><span class="pre">OH</span></code></li>
+<li><code class="docutils literal"><span class="pre">OH*</span></code></li>
+<li><code class="docutils literal"><span class="pre">CH</span></code></li>
+<li><code class="docutils literal"><span class="pre">CH*</span></code></li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">type</span></code>: string, required</dt>
+<dd><p class="first">Describes the type of ignition delay measurement. Can be one of:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">d/dt</span> <span class="pre">max</span></code>: maximum of the time derivative of the <code class="docutils literal"><span class="pre">target</span></code></li>
+<li><code class="docutils literal"><span class="pre">max</span></code>: maximum of the <code class="docutils literal"><span class="pre">target</span></code></li>
+<li><code class="docutils literal"><span class="pre">1/2</span> <span class="pre">max</span></code>: half-maximum of the <code class="docutils literal"><span class="pre">target</span></code></li>
+<li><code class="docutils literal"><span class="pre">min</span></code>: minimum of the <code class="docutils literal"><span class="pre">target</span></code></li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-ignition-delay">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">ignition-delay</span></code>: sequence, required</dt>
+<dd>The ignition delay measurement, with dimensions of time. Must conform to
+<a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-pressure-rise">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">pressure-rise</span></code>: sequence, optional</dt>
+<dd>The pressure rise after the passage of the reflected shock, with dimensions of inverse time.
+Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-compression-time">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">compression-time</span></code>: sequence, optional</dt>
+<dd>The time taken during the compression stroke of a rapid compression machine experiment, with
+dimensions of time. Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-first-stage-ignition-delay">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">first-stage-ignition-delay</span></code>: sequence, optional</dt>
+<dd>If two stages of ignition are present, this is the value of the first stage of ignition, with
+dimensions of time. Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-compressed-pressure">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">compressed-pressure</span></code>: sequence, optional</dt>
+<dd>The pressure at the end of the compression stroke for a rapid compression machine experiment,
+with dimensions of mass per length per time squared. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-compressed-temperature">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">compressed-temperature</span></code>: sequence, optional</dt>
+<dd>The temperature at the end of the compression stroke for a rapid compression machine experiment,
+with dimensions of temperature. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-equivalence-ratio">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">equivalence-ratio</span></code>: float, optional</dt>
+<dd>The equivalence ratio of the experiment, dimensionless. Minimum value is 0.0.</dd>
+</dl>
+</li>
+</ul>
+<ul id="ignition-volume-history">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">volume-history</span></code>: mapping, optional</dt>
+<dd><p class="first">Specify the volume history of the reaction chamber in a rapid compression machine experiment,
+for use in simulating the complete experiment. Fields:</p>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">volume</span></code>: mapping, required</dt>
+<dd><p class="first">A mapping describing the volume in the history. Fields:</p>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">units</span></code>: string, required</dt>
+<dd>The units of the volume, with dimensions of length cubed</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">column</span></code>: integer, required</dt>
+<dd>The 0-based index of the column containing the volume information in the <code class="docutils literal"><span class="pre">values</span></code>
+array. Must be 0 or 1</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">time</span></code>: mapping, required</dt>
+<dd><p class="first">A mapping describing the time in the history. Fields:</p>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">units</span></code>: string, required</dt>
+<dd>The units of the time, with dimensions of time</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">column</span></code>: integer, required</dt>
+<dd>The 0-based index of the column containing the time information in the <code class="docutils literal"><span class="pre">values</span></code>
+array. Must be 0 or 1</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">values</span></code>: sequence, required</dt>
+<dd><p class="first">A sequence of sequences describing the values of the volume at the time points. Can be
+entered in any supported syntax, including:</p>
+<div class="last highlight-yaml"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span> <span class="nv">0.0</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">1.0</span><span class="p p-Indicator">,</span> <span class="nv">1.0</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">2.0</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">3.0</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">3.0</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="schema-only-keys">
+<span id="id5"></span><h2><a class="toc-backref" href="#id10">Schema-Only Keys</a><a class="headerlink" href="#schema-only-keys" title="Permalink to this headline">¶</a></h2>
+<p>The schema files contain several keys that are used purely as references within the schema and
+should not be used in actual ChemKED files. These keys are documented in this section.</p>
+<ul class="simple" id="schema-author">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">author</span></code>: mapping</dt>
+<dd>Information about a single author, used in several contexts. Fields:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">name</span></code>: string, required</dt>
+<dd>The author’s full name</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">ORCID</span></code>: string, optional</dt>
+<dd>The author’s ORCID identifier. Validated to be a valid ORCID and that the <code class="docutils literal"><span class="pre">name</span></code> matches</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="schema-value-with-uncertainty">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">value-with-uncertainty</span></code>: sequence</dt>
+<dd>A combination of a value and unit with uncertainty. Sequence elements:<ul class="last">
+<li><dl class="first docutils">
+<dt>0: string, required</dt>
+<dd>The first element of the sequence should be the value and its associated
+units. The units are validated to have appropriate dimensions for the particular quantity
+under consideration</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>1: mapping, optional</dt>
+<dd>The second element of the sequence should be a mapping representing the uncertainty. Fields:<ul class="last">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">uncertainty-type</span></code>: string, required</dt>
+<dd>The type of uncertainty. Options are <code class="docutils literal"><span class="pre">absolute</span></code> or <code class="docutils literal"><span class="pre">relative</span></code>.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">uncertainty</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal"><span class="pre">lower-uncertainty</span></code></dt>
+<dd>The value of the uncertainty. If <code class="docutils literal"><span class="pre">uncertainty-type</span></code> is <code class="docutils literal"><span class="pre">absolute</span></code>, must include
+units whose dimensions match the units of the value in the first element of the
+sequence.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">upper-uncertainty</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal"><span class="pre">lower-uncertainty</span></code></dt>
+<dd>The upper value of an asymmetrical uncertainty. Due to limitations in the Python
+library, asymmetrical uncertainties aren’t supported in PyKED, so the larger of
+<code class="docutils literal"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal"><span class="pre">lower-uncertainty</span></code> is used.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">lower-uncertainty</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal"><span class="pre">upper-uncertainty</span></code></dt>
+<dd>The lower value of an asymmetrical uncertainty. Due to limitations in the Python
+library, asymmetrical uncertainties aren’t supported in PyKED, so the larger of
+<code class="docutils literal"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal"><span class="pre">lower-uncertainty</span></code> is used.</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="schema-value-without-uncertainty">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">value-without-uncertainty</span></code>: sequence</dt>
+<dd>A combination of a value and unit without uncertainty. Sequence elements:<ul class="last">
+<li><dl class="first docutils">
+<dt>0: string, required</dt>
+<dd>The first element of the sequence should be the value and its associated
+units. The units are validated to have appropriate dimensions for the particular quantity
+under consideration</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="schema-value-unit-required">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">value-unit-required</span></code>: sequence, required</dt>
+<dd>A sequence conforming to either <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> or
+<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>. Must be included in the
+ChemKED file.</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="schema-value-unit-optional">
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">value-unit-optional</span></code>: sequence, optional</dt>
+<dd>A sequence conforming to either <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> or
+<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>. May or may not be included
+in the ChemKED file.</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Schema Documentation</a><ul>
+<li><a class="reference internal" href="#meta-keys">Meta Keys</a></li>
+<li><a class="reference internal" href="#reference-keys">Reference Keys</a></li>
+<li><a class="reference internal" href="#common-property-keys">Common Property Keys</a></li>
+<li><a class="reference internal" href="#ignition-delay-keys">Ignition Delay Keys</a></li>
+<li><a class="reference internal" href="#schema-only-keys">Schema-Only Keys</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ck-tutorial.html" title="previous chapter">Creating ChemKED files</a></li>
+      <li>Next: <a href="pyked-examples.html" title="next chapter">Usage examples</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/schema-docs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/schema-docs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

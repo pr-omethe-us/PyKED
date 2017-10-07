@@ -1,0 +1,859 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyked.chemked &#8212; PyKED 0.2.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyked.chemked</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main ChemKED module</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Standard libraries</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+<span class="kn">import</span> <span class="nn">xml.dom.minidom</span> <span class="k">as</span> <span class="nn">minidom</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">Q_</span>
+<span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span>
+
+<span class="n">VolumeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VolumeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">])</span>
+<span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment&#39;</span>
+<span class="n">VolumeHistory</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the time during the experiment&#39;</span>
+<span class="n">VolumeHistory</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the volume during the experiment&#39;</span>
+
+<span class="n">Reference</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
+                       <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;journal&#39;</span><span class="p">,</span> <span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="s1">&#39;detail&#39;</span><span class="p">,</span> <span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;pages&#39;</span><span class="p">])</span>
+<span class="n">Reference</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the article or report where the data can be found&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The journal volume&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">journal</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The name of the journal&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">doi</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The Digital Object Identifier of the article&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`list`) The list of authors of the article&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">detail</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) Detail about where the data can be found in the article&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The year the article was published&#39;</span>
+<span class="n">Reference</span><span class="o">.</span><span class="n">pages</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The pages in the journal where the article was published&#39;</span>
+
+<span class="n">Apparatus</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Apparatus&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;institution&#39;</span><span class="p">,</span> <span class="s1">&#39;facility&#39;</span><span class="p">])</span>
+<span class="n">Apparatus</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Information about the experimental apparatus used to generate the data&#39;</span>
+<span class="n">Apparatus</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The kind of experimental apparatus&#39;</span>
+<span class="n">Apparatus</span><span class="o">.</span><span class="n">institution</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The institution where the experiment is located&#39;</span>
+<span class="n">Apparatus</span><span class="o">.</span><span class="n">facility</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The particular experimental facility at the location&#39;</span>
+
+
+<div class="viewcode-block" id="ChemKED"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED">[docs]</a><span class="k">class</span> <span class="nc">ChemKED</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Main ChemKED class.</span>
+
+<span class="sd">    The ChemKED class stores information about the contents of a ChemKED database</span>
+<span class="sd">    file. It stores each datapoint associated with the database and provides access</span>
+<span class="sd">    the the reference information, versions, and file author.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        yaml_file (`str`, optional): The filename of the YAML database in ChemKED format.</span>
+<span class="sd">        dict_input (`dict`, optional): A dictionary with the parsed ouput of YAML file in ChemKED</span>
+<span class="sd">            format.</span>
+<span class="sd">        skip_validation (`bool`, optional): Whether validation of the ChemKED should be done. Must</span>
+<span class="sd">            be supplied as a keyword-argument.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        datapoints (`list`): List of `DataPoint` objects storing each datapoint in the database.</span>
+<span class="sd">        reference (`~collections.namedtuple`): Attributes include ``volume``, ``journal``, ``doi``,</span>
+<span class="sd">            ``authors``, ``detail``, ``year``, and ``pages`` describing the reference from which the</span>
+<span class="sd">            datapoints are derived.</span>
+<span class="sd">        apparatus (`~collections.namedtuple`): Attributes include ``kind`` of experimental</span>
+<span class="sd">            apparatus, and the ``institution`` and ``facility`` where the experimental apparatus is</span>
+<span class="sd">            located.</span>
+<span class="sd">        chemked_version (`str`): Version of the ChemKED database schema used in this file.</span>
+<span class="sd">        experiment_type (`str`): Type of exeperimental data contained in this database.</span>
+<span class="sd">        file_author (`dict`): Information about the author of the ChemKED database file.</span>
+<span class="sd">        file_version (`str`): Version of the ChemKED database file.</span>
+<span class="sd">        _properties (`dict`): Original dictionary read from ChemKED database file, meant for</span>
+<span class="sd">            internal use.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yaml_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dict_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">skip_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">yaml_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dict_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">dict_input</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;ChemKED needs either a YAML filename or dictionary as input.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_validation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate_yaml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataPoint</span><span class="p">(</span><span class="n">point</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">=</span> <span class="n">Reference</span><span class="p">(</span>
+            <span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">),</span>
+            <span class="n">journal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">),</span>
+            <span class="n">doi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">),</span>
+            <span class="n">authors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;authors&#39;</span><span class="p">),</span>
+            <span class="n">detail</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;detail&#39;</span><span class="p">),</span>
+            <span class="n">year</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">),</span>
+            <span class="n">pages</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pages&#39;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">apparatus</span> <span class="o">=</span> <span class="n">Apparatus</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">),</span>
+            <span class="n">institution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;institution&#39;</span><span class="p">),</span>
+            <span class="n">facility</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;facility&#39;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">,</span> <span class="s1">&#39;experiment-type&#39;</span><span class="p">,</span> <span class="s1">&#39;file-author&#39;</span><span class="p">,</span> <span class="s1">&#39;file-version&#39;</span><span class="p">]:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ChemKED.validate_yaml"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.validate_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">validate_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate the parsed YAML file for adherance to the ChemKED format.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            properties (`dict`): Dictionary created from the parsed YAML file</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If the YAML file cannot be validated, a `ValueError` is raised whose</span>
+<span class="sd">                string contains the errors that are present.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">validator</span> <span class="o">=</span> <span class="n">OurValidator</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">properties</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="s1">&#39;unallowed value&#39;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]):</span>
+                    <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;</span><span class="si">{key}</span><span class="s1"> has an illegal value. Allowed values are </span><span class="si">{values}</span><span class="s1"> and are case &#39;</span>
+                           <span class="s1">&#39;sensitive.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;allowed&#39;</span><span class="p">]))</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChemKED.get_dataframe"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.get_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">get_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Pandas DataFrame of the datapoints in this instance.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            output_columns (`list`, optional): List of strings specifying the columns to include</span>
+<span class="sd">                in the output DataFrame. The default is `None`, which outputs all of the</span>
+<span class="sd">                columns. Options include (not case sensitive):</span>
+
+<span class="sd">                    * ``Temperature``</span>
+<span class="sd">                    * ``Pressure``</span>
+<span class="sd">                    * ``Ignition Delay``</span>
+<span class="sd">                    * ``Composition``</span>
+<span class="sd">                    * ``Equivalence Ratio``</span>
+<span class="sd">                    * ``Reference``</span>
+<span class="sd">                    * ``Apparatus``</span>
+<span class="sd">                    * ``Experiment Type``</span>
+<span class="sd">                    * ``File Author``</span>
+<span class="sd">                    * ``File Version``</span>
+<span class="sd">                    * ``ChemKED Version``</span>
+
+<span class="sd">                In addition, specific fields from the ``Reference`` and ``Apparatus`` attributes can</span>
+<span class="sd">                be included by specifying the name after a colon. These options are:</span>
+
+<span class="sd">                    * ``Reference:Volume``</span>
+<span class="sd">                    * ``Reference:Journal``</span>
+<span class="sd">                    * ``Reference:DOI``</span>
+<span class="sd">                    * ``Reference:Authors``</span>
+<span class="sd">                    * ``Reference:Detail``</span>
+<span class="sd">                    * ``Reference:Year``</span>
+<span class="sd">                    * ``Reference:Pages``</span>
+<span class="sd">                    * ``Apparatus:Kind``</span>
+<span class="sd">                    * ``Apparatus:Facility``</span>
+<span class="sd">                    * ``Apparatus:Institution``</span>
+
+<span class="sd">                Only the first author is printed when ``Reference`` or ``Reference:Authors`` is</span>
+<span class="sd">                selected because the whole author list may be quite long.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If the Composition is selected as an output type, the composition specified in the</span>
+<span class="sd">            `DataPoint` is used. No attempt is made to convert to a consistent basis; mole fractions</span>
+<span class="sd">            will remain mole fractions, mass fractions will remain mass fractions, and mole percent</span>
+<span class="sd">            will remain mole percent. Therefore, it is possible to end up with more than one type of</span>
+<span class="sd">            composition specification in a given column. Caveat Emptor.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; df = ChemKED(yaml_file).get_dataframe()</span>
+<span class="sd">            &gt;&gt;&gt; df = ChemKED(yaml_file).get_dataframe([&#39;Temperature&#39;, &#39;Ignition Delay&#39;])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `~pandas.DataFrame`: Contains the information regarding each point in the ``datapoints``</span>
+<span class="sd">                attribute</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+        <span class="n">valid_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">a</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">))</span>
+                        <span class="p">]</span>
+        <span class="n">valid_labels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;datapoints&#39;</span><span class="p">)</span>
+        <span class="n">valid_labels</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">,</span> <span class="s1">&#39;ignition delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;equivalence ratio&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">ref_index</span> <span class="o">=</span> <span class="n">valid_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference&#39;</span><span class="p">)</span>
+        <span class="n">valid_labels</span><span class="p">[</span><span class="n">ref_index</span><span class="p">:</span><span class="n">ref_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;reference:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Reference</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
+        <span class="n">app_index</span> <span class="o">=</span> <span class="n">valid_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;apparatus&#39;</span><span class="p">)</span>
+        <span class="n">valid_labels</span><span class="p">[</span><span class="n">app_index</span><span class="p">:</span><span class="n">app_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;apparatus:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Apparatus</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
+
+        <span class="n">species_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">]))</span>  <span class="c1"># noqa: E501</span>
+
+        <span class="k">if</span> <span class="n">output_columns</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_labels</span> <span class="o">=</span> <span class="n">valid_labels</span>
+            <span class="n">comp_index</span> <span class="o">=</span> <span class="n">col_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;composition&#39;</span><span class="p">)</span>
+            <span class="n">col_labels</span><span class="p">[</span><span class="n">comp_index</span><span class="p">:</span><span class="n">comp_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">output_columns</span><span class="p">]</span>
+            <span class="n">col_labels</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_columns</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">valid_labels</span> <span class="ow">or</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">,</span> <span class="s1">&#39;apparatus&#39;</span><span class="p">]:</span>
+                    <span class="n">col_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is not a valid output column choice&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="s1">&#39;composition&#39;</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
+                <span class="n">comp_index</span> <span class="o">=</span> <span class="n">col_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;composition&#39;</span><span class="p">)</span>
+                <span class="n">col_labels</span><span class="p">[</span><span class="n">comp_index</span><span class="p">:</span><span class="n">comp_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_list</span>
+            <span class="k">if</span> <span class="s1">&#39;reference&#39;</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
+                <span class="n">ref_index</span> <span class="o">=</span> <span class="n">col_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference&#39;</span><span class="p">)</span>
+                <span class="n">col_labels</span><span class="p">[</span><span class="n">ref_index</span><span class="p">:</span><span class="n">ref_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;reference:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Reference</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;apparatus&#39;</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
+                <span class="n">app_index</span> <span class="o">=</span> <span class="n">col_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;apparatus&#39;</span><span class="p">)</span>
+                <span class="n">col_labels</span><span class="p">[</span><span class="n">app_index</span><span class="p">:</span><span class="n">app_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;apparatus:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Apparatus</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">d_species</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">species_list</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d_species</span><span class="p">:</span>
+                        <span class="n">s_idx</span> <span class="o">=</span> <span class="n">d_species</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">[</span><span class="n">s_idx</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="s1">&#39;reference&#39;</span> <span class="ow">in</span> <span class="n">col</span> <span class="ow">or</span> <span class="s1">&#39;apparatus&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                    <span class="n">split_col</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;authors&#39;</span><span class="p">:</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">elif</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;ignition delay&#39;</span><span class="p">,</span> <span class="s1">&#39;equivalence ratio&#39;</span><span class="p">]:</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)))</span>
+                <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s1">&#39;file author&#39;</span><span class="p">:</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+        <span class="n">col_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">]</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">col_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChemKED.write_file"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.write_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write new ChemKED YAML file based on object.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename (`str`): Filename for target YAML file</span>
+<span class="sd">            overwrite (`bool`, optional): Whether to overwrite file with given name if present.</span>
+<span class="sd">                Must be supplied as a keyword-argument.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NameError`: If ``filename`` is already present, and ``overwrite`` is not ``True``.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; dataset = ChemKED(yaml_file)</span>
+<span class="sd">            &gt;&gt;&gt; dataset.write_file(new_yaml_file)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure file isn&#39;t already present</span>
+        <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39; already present. Specify &quot;overwrite=True&quot; &#39;</span>
+                          <span class="s1">&#39;to overwrite, or rename.&#39;</span>
+                          <span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChemKED.convert_to_ReSpecTh"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.convert_to_ReSpecTh">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_ReSpecTh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert ChemKED record to ReSpecTh XML file.</span>
+
+<span class="sd">        This converter uses common information in a ChemKED file to generate a</span>
+<span class="sd">        ReSpecTh XML file. Note that some information may be lost, as ChemKED stores</span>
+<span class="sd">        some additional attributes.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename (`str`): Filename for output ReSpecTh XML file.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; dataset = ChemKED(yaml_file)</span>
+<span class="sd">            &gt;&gt;&gt; dataset.convert_to_ReSpecTh(xml_file)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
+
+        <span class="n">file_author</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;fileAuthor&#39;</span><span class="p">)</span>
+        <span class="n">file_author</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_author</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># right now ChemKED just uses an integer file version</span>
+        <span class="n">file_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;fileVersion&#39;</span><span class="p">)</span>
+        <span class="n">major_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">file_version</span><span class="p">,</span> <span class="s1">&#39;major&#39;</span><span class="p">)</span>
+        <span class="n">major_version</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_version</span><span class="p">)</span>
+        <span class="n">minor_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">file_version</span><span class="p">,</span> <span class="s1">&#39;minor&#39;</span><span class="p">)</span>
+        <span class="n">minor_version</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+
+        <span class="n">respecth_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;ReSpecThVersion&#39;</span><span class="p">)</span>
+        <span class="n">major_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">respecth_version</span><span class="p">,</span> <span class="s1">&#39;major&#39;</span><span class="p">)</span>
+        <span class="n">major_version</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+        <span class="n">minor_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">respecth_version</span><span class="p">,</span> <span class="s1">&#39;minor&#39;</span><span class="p">)</span>
+        <span class="n">minor_version</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+
+        <span class="c1"># Only ignition delay currently supported</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experimentType&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_type</span> <span class="o">==</span> <span class="s1">&#39;ignition delay&#39;</span><span class="p">:</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;Ignition delay measurement&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Only ignition delay type supported for conversion.&#39;</span><span class="p">)</span>
+
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;bibliographyLink&#39;</span><span class="p">)</span>
+        <span class="n">citation</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">authors</span><span class="p">:</span>
+            <span class="n">citation</span> <span class="o">+=</span> <span class="n">author</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span>
+        <span class="n">citation</span> <span class="o">+=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">journal</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">year</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;) &#39;</span> <span class="o">+</span>
+                     <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">pages</span> <span class="o">+</span> <span class="s1">&#39;. &#39;</span> <span class="o">+</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">detail</span>
+                     <span class="p">)</span>
+        <span class="n">reference</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">citation</span><span class="p">)</span>
+        <span class="n">reference</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">doi</span><span class="p">)</span>
+
+        <span class="n">apparatus</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;apparatus&#39;</span><span class="p">)</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">apparatus</span><span class="p">,</span> <span class="s1">&#39;kind&#39;</span><span class="p">)</span>
+        <span class="n">kind</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apparatus</span><span class="o">.</span><span class="n">kind</span>
+
+        <span class="n">common_properties</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;commonProperties&#39;</span><span class="p">)</span>
+        <span class="c1"># ChemKED objects have no common properties once loaded. Check for properties</span>
+        <span class="c1"># among datapoints that tend to be common</span>
+        <span class="n">common</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">composition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">composition</span>
+
+        <span class="c1"># Composition type *has* to be the same</span>
+        <span class="n">composition_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">composition_type</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">==</span> <span class="n">composition_type</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Error: ReSpecTh does not support varying composition &#39;</span>
+                                      <span class="s1">&#39;type among datapoints.&#39;</span>
+                                      <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">composition</span> <span class="o">==</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]):</span>
+            <span class="c1"># initial composition is common</span>
+            <span class="n">common</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;composition&#39;</span><span class="p">)</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">common_properties</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;initial composition&#39;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+                <span class="n">component</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="s1">&#39;component&#39;</span><span class="p">)</span>
+                <span class="n">species_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;speciesLink&#39;</span><span class="p">)</span>
+                <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;InChI&#39;</span><span class="p">])</span>
+
+                <span class="n">amount</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">)</span>
+                <span class="n">amount</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">composition_type</span><span class="p">)</span>
+                <span class="n">amount</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+
+        <span class="c1"># If multiple datapoints present, then find any common properties. If only</span>
+        <span class="c1"># one datapoint, then composition should be the only &quot;common&quot; property.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">prop_name</span> <span class="ow">in</span> <span class="n">datagroup_properties</span><span class="p">:</span>
+                <span class="n">attribute</span> <span class="o">=</span> <span class="n">prop_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                <span class="n">quantities</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]</span>
+
+                <span class="c1"># All quantities must have the property in question and all the</span>
+                <span class="c1"># values must be equal</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">quantities</span><span class="p">)</span> <span class="ow">and</span> <span class="n">quantities</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantities</span><span class="p">):</span>
+                    <span class="n">common</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop_name</span><span class="p">)</span>
+                    <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">common_properties</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+                    <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">)</span>
+                    <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+
+        <span class="c1"># Ignition delay can&#39;t be common, unless only a single datapoint.</span>
+
+        <span class="n">datagroup</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;dataGroup&#39;</span><span class="p">)</span>
+        <span class="n">datagroup</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;dg1&#39;</span><span class="p">)</span>
+        <span class="n">datagroup_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataGroupLink&#39;</span><span class="p">)</span>
+        <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataGroupID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataPointID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">property_idx</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;ignition delay&#39;</span><span class="p">:</span> <span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure rise&#39;</span><span class="p">:</span> <span class="s1">&#39;dP/dt&#39;</span><span class="p">,</span>
+                  <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">prop_name</span> <span class="ow">in</span> <span class="n">datagroup_properties</span><span class="p">:</span>
+            <span class="n">attribute</span> <span class="o">=</span> <span class="n">prop_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+            <span class="c1"># This can&#39;t be hasattr because properties are set to the value None</span>
+            <span class="c1"># if no value is specified in the file, so the attribute always exists</span>
+            <span class="n">prop_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">prop_name</span> <span class="ow">in</span> <span class="n">common</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">prop_indices</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">)</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="n">prop_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">attribute</span><span class="p">)</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">property_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">prop_name</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">units</span><span class="p">}</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="p">[</span><span class="n">prop_name</span><span class="p">])</span>
+
+        <span class="c1"># Need to handle datapoints with possibly different species in the initial composition</span>
+        <span class="k">if</span> <span class="s1">&#39;composition&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
+                    <span class="c1"># Only add new property for species not already considered</span>
+                    <span class="n">has_spec</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                                    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">property_idx</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                                    <span class="p">])</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_spec</span><span class="p">:</span>
+                        <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+                        <span class="n">idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="n">property_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]}</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;composition&#39;</span><span class="p">)</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">composition_type</span><span class="p">)</span>
+
+                        <span class="n">species_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="s1">&#39;speciesLink&#39;</span><span class="p">)</span>
+                        <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">):</span>
+                            <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;InChI&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
+            <span class="n">datapoint</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">property_idx</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># handle regular properties a bit differently than composition</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">datagroup_properties</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                    <span class="n">quantity</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># composition</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                            <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+
+        <span class="c1"># if RCM and has volume history, need a second dataGroup</span>
+        <span class="n">has_volume_history</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">has_volume_history</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Error: ReSpecTh files do not support multiple datapoints &#39;</span>
+                                      <span class="s1">&#39;with a volume history.&#39;</span>
+                                      <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">volume_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">datagroup</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;dataGroup&#39;</span><span class="p">)</span>
+            <span class="n">datagroup</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;dg2&#39;</span><span class="p">)</span>
+            <span class="n">datagroup_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataGroupLink&#39;</span><span class="p">)</span>
+            <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataGroupID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataPointID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Volume history has two properties: time and volume.</span>
+            <span class="n">volume_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">volume_history</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+            <span class="n">time_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+            <span class="n">volume_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">volume_idx</span><span class="p">)</span>
+            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">volume</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="p">):</span>
+                <span class="n">datapoint</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
+                <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">volume_idx</span><span class="p">)</span>
+                <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+
+        <span class="n">ign_types</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="s1">&#39;ignition_type&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]</span>
+        <span class="c1"># All datapoints must have the same ignition target and type</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">ign_types</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ign_types</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">ign_types</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">ign_types</span><span class="p">):</span>
+            <span class="c1"># In ReSpecTh files all datapoints must share ignition type</span>
+            <span class="n">ignition</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;ignitionType&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ign_types</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">]:</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="n">ign_types</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># options left are species</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">])</span>
+            <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Different ignition targets or types for multiple datapoints &#39;</span>
+                                      <span class="s1">&#39;are not supported in ReSpecTh.&#39;</span><span class="p">)</span>
+
+        <span class="n">et</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="n">et</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># now do a &quot;pretty&quot; rewrite</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DataPoint"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint">[docs]</a><span class="k">class</span> <span class="nc">DataPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for a single datapoint.</span>
+
+<span class="sd">    The `DataPoint` class stores the information associated with a single data point in the dataset</span>
+<span class="sd">    parsed from the `ChemKED` YAML input.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        properties (`dict`): Dictionary adhering to the ChemKED format for ``datapoints``</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        composition (`list`): List of dictionaries representing the species and their quantities</span>
+<span class="sd">        ignition_delay (pint.Quantity): The ignition delay of the experiment</span>
+<span class="sd">        temperature (pint.Quantity): The temperature of the experiment</span>
+<span class="sd">        pressure (pint.Quantity): The pressure of the experiment</span>
+<span class="sd">        pressure_rise (pint.Quantity, optional): The amount of pressure rise during the induction</span>
+<span class="sd">            period of a shock tube experiment.</span>
+<span class="sd">        compression_time (pint.Quantity, optional): The compression time for an RCM experiment.</span>
+<span class="sd">        compressed_pressure (pint.Quantity, optional): The pressure at the end of compression for</span>
+<span class="sd">            an RCM experiment.</span>
+<span class="sd">        compressed_temperature (pint.Quantity, optional): The temperature at the end of compression</span>
+<span class="sd">            for an RCM experiment.</span>
+<span class="sd">        first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the</span>
+<span class="sd">            experiment.</span>
+<span class="sd">        compression_time (pint.Quantity, optional): The compression time for an RCM experiment.</span>
+<span class="sd">        ignition_type (`dict`): Dictionary with the ignition target and type.</span>
+<span class="sd">        volume_history (`~collections.namedtuple`, optional): The volume history of the reactor</span>
+<span class="sd">            during an RCM experiment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="n">value_unit_props</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure-rise&#39;</span><span class="p">,</span> <span class="s1">&#39;compression-time&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;compressed-temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;compressed-pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;first-stage-ignition-delay&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">value_unit_props</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">unc</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                                 <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                                 <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                             <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
+                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                                 <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                                 <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                             <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="n">quant</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span>
+        <span class="n">composition</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;species&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">composition</span><span class="p">):</span>
+            <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">unc</span> <span class="o">=</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                             <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                             <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                         <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                             <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                             <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                         <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+
+            <span class="n">composition</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quant</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;composition&#39;</span><span class="p">,</span> <span class="n">composition</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">equivalence_ratio</span> <span class="o">=</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;equivalence-ratio&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignition_type</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ignition-type&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">time_col</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
+            <span class="n">time_units</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">volume_col</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;volume&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
+            <span class="n">volume_units</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;volume&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume_history</span> <span class="o">=</span> <span class="n">VolumeHistory</span><span class="p">(</span>
+                <span class="n">time</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">time_col</span><span class="p">],</span> <span class="n">time_units</span><span class="p">),</span>
+                <span class="n">volume</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">volume_col</span><span class="p">],</span> <span class="n">volume_units</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume_history</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="DataPoint.get_cantera_composition_string"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_composition_string">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_composition_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the composition in a string format suitable for input to Cantera.</span>
+
+<span class="sd">        Returns a formatted string no matter the type of composition. As such, this method</span>
+<span class="sd">        is not recommended for end users; instead, prefer the `get_cantera_mole_fraction`</span>
+<span class="sd">        or `get_cantera_mass_fraction` methods.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            species_conversion (`dict`, optional): Mapping of species identifier to a</span>
+<span class="sd">                species name. This argument should be supplied when the name of the</span>
+<span class="sd">                species in the ChemKED YAML file does not match the name of the same</span>
+<span class="sd">                species in a chemical kinetic mechanism. The species identifier (the key</span>
+<span class="sd">                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED</span>
+<span class="sd">                file, while the value associated with a key should be the desired name in</span>
+<span class="sd">                the Cantera format output string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `str`: String in the ``SPEC:AMT, SPEC:AMT`` format</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If the composition type of the `DataPoint` is not one of</span>
+<span class="sd">                ``&#39;mass fraction&#39;``, ``&#39;mole fraction&#39;``, or ``&#39;mole percent&#39;``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mole fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mass fraction&#39;</span><span class="p">]:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">==</span> <span class="s1">&#39;mole percent&#39;</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown composition type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">species_conversion</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">],</span>
+                     <span class="n">c</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">comps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
+                <span class="n">amount</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span>
+                <span class="n">idents</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">,</span> <span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="s1">&#39;SMILES&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+                <span class="n">present</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="ow">in</span> <span class="n">species_conversion</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idents</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">present</span><span class="p">):</span>
+                    <span class="n">comps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">],</span> <span class="n">amount</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">present</span> <span class="k">if</span> <span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;More than one conversion present for species </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                         <span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]))</span>
+
+                    <span class="n">ident</span> <span class="o">=</span> <span class="n">idents</span><span class="p">[</span><span class="n">present</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)]</span>
+                    <span class="n">species_replacement_name</span> <span class="o">=</span> <span class="n">species_conversion</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">ident</span><span class="p">)</span>
+                    <span class="n">comps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">species_replacement_name</span><span class="p">,</span> <span class="n">amount</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown species in conversion: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataPoint.get_cantera_mole_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mole_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mole_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the mole fractions in a string format suitable for input to Cantera.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            species_conversion (`dict`, optional): Mapping of species identifier to a</span>
+<span class="sd">                species name. This argument should be supplied when the name of the</span>
+<span class="sd">                species in the ChemKED YAML file does not match the name of the same</span>
+<span class="sd">                species in a chemical kinetic mechanism. The species identifier (the key</span>
+<span class="sd">                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED</span>
+<span class="sd">                file, while the value associated with a key should be the desired name in</span>
+<span class="sd">                the Cantera format output string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `str`: String of mole fractions in the ``SPEC:AMT, SPEC:AMT`` format</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If the composition type is ``&#39;mass fraction&#39;``, the conversion cannot</span>
+<span class="sd">                be done because no molecular weight information is known</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; dp = DataPoint(properties)</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mole_fraction()</span>
+<span class="sd">            &#39;H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="sd">            &gt;&gt;&gt; species_conversion = {&#39;H2&#39;: &#39;h2&#39;, &#39;O2&#39;: &#39;o2&#39;}</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mole_fraction(species_conversion)</span>
+<span class="sd">            &#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="sd">            &gt;&gt;&gt; species_conversion = {&#39;1S/H2/h1H&#39;: &#39;h2&#39;, &#39;1S/O2/c1-2&#39;: &#39;o2&#39;}</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mole_fraction(species_conversion)</span>
+<span class="sd">            &#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">==</span> <span class="s1">&#39;mass fraction&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mole fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                             <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataPoint.get_cantera_mass_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mass_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the mass fractions in a string format suitable for input to Cantera.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            species_conversion (`dict`, optional): Mapping of species identifier to a</span>
+<span class="sd">                species name. This argument should be supplied when the name of the</span>
+<span class="sd">                species in the ChemKED YAML file does not match the name of the same</span>
+<span class="sd">                species in a chemical kinetic mechanism. The species identifier (the key</span>
+<span class="sd">                of the mapping) can be the name, InChI, or SMILES provided in the ChemKED</span>
+<span class="sd">                file, while the value associated with a key should be the desired name in</span>
+<span class="sd">                the Cantera format output string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `str`: String of mass fractions in the ``SPEC:AMT, SPEC:AMT`` format</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If the composition type is ``&#39;mole fraction&#39;`` or</span>
+<span class="sd">                ``&#39;mole percent&#39;``, the conversion cannot be done because no molecular</span>
+<span class="sd">                weight information is known</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; dp = DataPoint(properties)</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mass_fraction()</span>
+<span class="sd">            &#39;H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="sd">            &gt;&gt;&gt; species_conversion = {&#39;H2&#39;: &#39;h2&#39;, &#39;O2&#39;: &#39;o2&#39;}</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mass_fraction(species_conversion)</span>
+<span class="sd">            &#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="sd">            &gt;&gt;&gt; species_conversion = {&#39;1S/H2/h1H&#39;: &#39;h2&#39;, &#39;1S/O2/c1-2&#39;: &#39;o2&#39;}</span>
+<span class="sd">            &gt;&gt;&gt; dp.get_cantera_mass_fraction(species_conversion)</span>
+<span class="sd">            &#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mole fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;mole percent&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mass fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                             <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">)</span>
+                             <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
