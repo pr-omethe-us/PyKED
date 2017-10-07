@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Tests that the composition type is stored properly in the `DataPoint`
 - `species_conversion` dictionary can be passed to the `get_cantera_mole_fraction` and `get_cantera_mass_fraction` functions to change the name of a species in the output string
 
+### Removed
+- Removes `elemental-composition` as a synonym for `atomic-composition`
+
 ### Fixed
 - Fixes `test_incorrect_doi_period_at_end` docstring
 
