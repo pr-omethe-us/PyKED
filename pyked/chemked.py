@@ -684,7 +684,7 @@ class DataPoint(object):
                 else:
                     if len([i for i in present if i]) > 1:
                         raise ValueError('More than one conversion present for species {}'.format(
-                                       c['species-name']))
+                                         c['species-name']))
 
                     ident = idents[present.index(True)]
                     species_replacement_name = species_conversion.pop(ident)
