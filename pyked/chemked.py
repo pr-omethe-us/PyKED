@@ -713,6 +713,17 @@ class DataPoint(object):
         Raises:
             `ValueError`: If the composition type is ``'mass fraction'``, the conversion cannot
                 be done because no molecular weight information is known
+
+        Examples:
+            >>> dp = DataPoint(properties)
+            >>> dp.get_cantera_mole_fraction()
+            'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
+            >>> species_conversion = {'H2': 'h2', 'O2': 'o2'}
+            >>> dp.get_cantera_mole_fraction(species_conversion)
+            'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+            >>> species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
+            >>> dp.get_cantera_mole_fraction(species_conversion)
+            'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
         """
         if self.composition_type == 'mass fraction':
             raise ValueError('Cannot get mole fractions from the given composition.\n'
@@ -739,6 +750,17 @@ class DataPoint(object):
             `ValueError`: If the composition type is ``'mole fraction'`` or
                 ``'mole percent'``, the conversion cannot be done because no molecular
                 weight information is known
+
+        Examples:
+            >>> dp = DataPoint(properties)
+            >>> dp.get_cantera_mass_fraction()
+            'H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01'
+            >>> species_conversion = {'H2': 'h2', 'O2': 'o2'}
+            >>> dp.get_cantera_mass_fraction(species_conversion)
+            'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+            >>> species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
+            >>> dp.get_cantera_mass_fraction(species_conversion)
+            'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
         """
         if self.composition_type in ['mole fraction', 'mole percent']:
             raise ValueError('Cannot get mass fractions from the given composition.\n'
