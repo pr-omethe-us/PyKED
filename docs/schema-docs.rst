@@ -148,25 +148,14 @@ particular experiment type.
         * ``species-name``: string, required
             The name of the species
 
-        * ``InChI``: string, required, excludes ``SMILES``, ``atomic-composition``, ``elemental-composition``
+        * ``InChI``: string, required, excludes ``SMILES``, ``atomic-composition``
             The InChI string for the species
 
-        * ``SMILES``: string, required, excludes ``InChI``, ``atomic-composition``, ``elemental-composition``
+        * ``SMILES``: string, required, excludes ``InChI``, ``atomic-composition``
             The SMILES string for the species
 
-        * ``atomic-composition``: sequence, required, excludes ``InChI``, ``SMILES``, ``elemental-composition``
+        * ``atomic-composition``: sequence, required, excludes ``InChI``, ``SMILES``
             A sequence of mappings representing the atoms that make up the species. Useful for
-            species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
-            element of the sequence is a mapping with the following keys:
-
-            - ``element``: string, required
-                The name of the element
-
-            - ``amount``: float, required, must be greater than 0.0
-                The amount of the element
-
-        * ``elemental-composition``: sequence, required, excludes ``InChI``, ``SMILES``, ``atomic-composition``
-            A sequence of mappings representing the elements that make up the species. Useful for
             species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
             element of the sequence is a mapping with the following keys:
 

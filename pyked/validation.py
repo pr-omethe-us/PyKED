@@ -429,4 +429,4 @@ class OurValidator(Validator):
                         's do not sum to {:.1f}: '.format(total_amount) +
                         '{:f}'.format(sum_amount)
                         )
-        # TODO: validate InChI, SMILES, or elemental-composition/atomic-composition
+        # TODO: validate InChI, SMILES, or atomic-composition
