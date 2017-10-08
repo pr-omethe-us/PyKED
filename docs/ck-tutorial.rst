@@ -513,7 +513,7 @@ or via Python:
 
 Information about the person creating this new ChemKED file (e.g., file author name
 and their ORCID) may also be added via the ``file_author`` and ``file_author_orcid``
-arguments in Python or the corresponding command-line options `-fa` and `-fo`. More
+arguments in Python or the corresponding command-line options ``-fa`` and ``-fo``. More
 details can be found via ``respth2ck --help`` or
 ``help(pyked.converters.ReSpecTh_to_ChemKED)``, respectively.
 
