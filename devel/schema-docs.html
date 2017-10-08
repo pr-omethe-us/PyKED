@@ -230,37 +230,18 @@ element of the sequence is a mapping with the following keys:<ul class="last">
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">InChI</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dt><code class="docutils literal"><span class="pre">InChI</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code></dt>
 <dd>The InChI string for the species</dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">SMILES</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dt><code class="docutils literal"><span class="pre">SMILES</span></code>: string, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code></dt>
 <dd>The SMILES string for the species</dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">atomic-composition</span></code>: sequence, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">elemental-composition</span></code></dt>
+<dt><code class="docutils literal"><span class="pre">atomic-composition</span></code>: sequence, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">SMILES</span></code></dt>
 <dd>A sequence of mappings representing the atoms that make up the species. Useful for
-species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
-element of the sequence is a mapping with the following keys:<ul class="last">
-<li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">element</span></code>: string, required</dt>
-<dd>The name of the element</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">amount</span></code>: float, required, must be greater than 0.0</dt>
-<dd>The amount of the element</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">elemental-composition</span></code>: sequence, required, excludes <code class="docutils literal"><span class="pre">InChI</span></code>, <code class="docutils literal"><span class="pre">SMILES</span></code>, <code class="docutils literal"><span class="pre">atomic-composition</span></code></dt>
-<dd>A sequence of mappings representing the elements that make up the species. Useful for
 species without SMILES or InChI representations, such as real hydrocarbon fuels. Each
 element of the sequence is a mapping with the following keys:<ul class="last">
 <li><dl class="first docutils">
