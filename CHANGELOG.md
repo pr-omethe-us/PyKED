@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+
+### Added
+
+### Changed
+
+
+## [0.3.0] - 2017-10-09
 ### Added
 - New extrapolated ignition type, where the maximum slope is extrapolated to the baseline
 - Tests that the composition type is stored properly in the `DataPoint`
@@ -92,7 +100,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.5...v0.1.6
