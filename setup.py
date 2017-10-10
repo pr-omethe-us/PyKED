@@ -78,7 +78,7 @@ setup(
     extras_require=extras_require,
     setup_requires=setup_requires,
     python_requires='~=3.5',
-    entry_points = {
+    entry_points={
         'console_scripts': ['convert_ck=pyked.converters:main',
                             'respth2ck=pyked.converters:respth2ck',
                             'ck2respth=pyked.converters:ck2respth',
