@@ -16,3 +16,4 @@ dependencies:
   - ipython
   - conda-build
   - anaconda-client
+  - doctr
