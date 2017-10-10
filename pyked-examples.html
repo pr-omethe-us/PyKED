@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Usage examples &#8212; PyKED 0.2.1 documentation</title>
+    <title>Usage examples &#8212; PyKED 0.3.0a8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2.1',
+        VERSION:     '0.3.0a8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ChemKED" href="chemked.html" />
+    <link rel="next" title="Shock tube modeling with constant volume" href="shock-tube-example.html" />
     <link rel="prev" title="Schema Documentation" href="schema-docs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -45,286 +45,11 @@
 <h1>Usage examples<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h1>
 <p>The following usage examples provide a guide to the use of PyKED. They are by no means an exhaustive
 treatment, and are meant to demonstrate the basic capabilities of the software.</p>
-<div class="section" id="rcm-modeling-with-varying-reactor-volume">
-<h2>RCM modeling with varying reactor volume<a class="headerlink" href="#rcm-modeling-with-varying-reactor-volume" title="Permalink to this headline">¶</a></h2>
-<p>The ChemKED file that will be used in this example can be found in the <code class="docutils literal"><span class="pre">tests</span></code> directory of the
-PyKED repository. <a class="footnote-reference" href="#id6" id="id1">[1]</a> Examining that file, we find the first section specifies the information
-about the ChemKED file itself:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
-  <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
-<span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1.6</span>
-</pre></div>
-</div>
-<p>Then, we find the information regarding the article in the literature from which this data was
-taken. In this case, the dataset comes from the work of Mittal et al. <a class="reference internal" href="#mittal2006" id="id2">[Mittal2006]</a>:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
-  <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Chih-Jen Sung</span>
-      <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-2046-8076</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Richard A Yetter</span>
-  <span class="l l-Scalar l-Scalar-Plain">journal</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">International Journal of Chemical Kinetics</span>
-  <span class="l l-Scalar l-Scalar-Plain">year</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2006</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">38</span>
-  <span class="l l-Scalar l-Scalar-Plain">pages</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">516-529</span>
-  <span class="l l-Scalar l-Scalar-Plain">detail</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Fig. 6, open circle</span>
-<span class="l l-Scalar l-Scalar-Plain">experiment-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
-<span class="l l-Scalar l-Scalar-Plain">apparatus</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">rapid compression machine</span>
-  <span class="l l-Scalar l-Scalar-Plain">institution</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Case Western Reserve University</span>
-  <span class="l l-Scalar l-Scalar-Plain">facility</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">CWRU RCM</span>
-</pre></div>
-</div>
-<p>Finally, there is just a single datapoint in this file, which describes the ignition delay for the
-experiment, the mixture composition, the initial temperature, pressure, compression time, ignition
-type, and the volume history that specifies how the volume of the reactor varies with time, for
-simulating the compression stroke and post-compression processes.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">297.4 kelvin</span>
-  <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.0 ms</span>
-  <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">958.0 torr</span>
-  <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
-    <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">H2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/H2/h1H</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.12500</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.06250</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">N2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/N2/c1-2</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.18125</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.63125</span>
-  <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">pressure</span>
-    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">d/dt max</span>
-  <span class="l l-Scalar l-Scalar-Plain">compression-time</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">38.0 ms</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume-history</span><span class="p p-Indicator">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">time</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">s</span>
-      <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-    <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cm3</span>
-      <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-    <span class="l l-Scalar l-Scalar-Plain">values</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">0.00E+000</span><span class="p p-Indicator">,</span> <span class="nv">5.47669375000E+002</span><span class="p p-Indicator">]</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">1.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.46608789894E+002</span><span class="p p-Indicator">]</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">2.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.43427034574E+002</span><span class="p p-Indicator">]</span>
-</pre></div>
-</div>
-<p>The values for the <code class="docutils literal"><span class="pre">volume-history</span></code> are truncated here to save space. A user might want to load
-the information from this file to perform a simulation using Cantera to calculate the ignition
-delay. All of the information required to perform this simulation is present in the ChemKED file,
-with the exception of a chemical kinetic model for H2/CO combustion.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cantera</span> <span class="kn">as</span> <span class="nn">ct</span>
-<span class="kn">from</span> <span class="nn">pyked</span> <span class="kn">import</span> <span class="n">ChemKED</span>
-
-<span class="c1"># Load the ChemKED file and retrieve the first element of the</span>
-<span class="c1"># datapoints list, which is an instance of the DataPoint class</span>
-<span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="s1">&#39;testfile_rcm.yaml&#39;</span><span class="p">)</span>
-<span class="n">dp</span> <span class="o">=</span> <span class="n">ck</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The initial temperature, pressure, and mixture composition can be read from the instance of the
-<code class="docutils literal"><span class="pre">DataPoint</span></code> class. PyKED uses Pint <code class="docutils literal"><span class="pre">Quantities</span></code> to store values with units, while Cantera
-expects a floating point value in SI units as input. Therefore, we use the built-in capabilities of
-Pint to convert the units from those specified in the ChemKED file to SI units:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-<span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;Pa&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-<span class="n">X_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
-
-<span class="c1"># Load the mechanism and set the initial state of the mixture</span>
-<span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s1">&#39;h2-co-mechanism.cti&#39;</span><span class="p">)</span>
-<span class="n">gas</span><span class="o">.</span><span class="n">TPX</span> <span class="o">=</span> <span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">X_initial</span>
-
-<span class="c1"># Create the reactor and the outside environment</span>
-<span class="n">reac</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">IdealGasReactor</span><span class="p">(</span><span class="n">gas</span><span class="p">)</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Reservoir</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s1">&#39;air.xml&#39;</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>To apply the effect of the volume trace to the <code class="docutils literal"><span class="pre">IdealGasReactor</span></code>, a <code class="docutils literal"><span class="pre">Wall</span></code> is installed between
-the reactor and the environment and assigned a velocity. Although we do not show the details here, a
-reference implementation of a class that computes a wall velocity given the volume history of the
-reactor is available in CanSen&nbsp;<a class="reference internal" href="#cansen2015" id="id3">[CanSen2015]</a>, in the <code class="docutils literal"><span class="pre">cansen.profile.VolumeProfile</span></code>
-class. Then, a Cantera <code class="docutils literal"><span class="pre">ReactorNet</span></code> can be used to advance the state through autoignition, in this
-case to an end time of 50 ms:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">time</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span>
-<span class="n">volume</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span>
-<span class="n">ct</span><span class="o">.</span><span class="n">Wall</span><span class="p">(</span><span class="n">reac</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="n">VolumeProfile</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">))</span>
-
-<span class="n">netw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">ReactorNet</span><span class="p">([</span><span class="n">reac</span><span class="p">])</span>
-
-<span class="c1"># Integrate for 50 ms</span>
-<span class="k">while</span> <span class="n">netw</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
-    <span class="n">netw</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Although not shown in this example, the user would typically store
-information about the <code class="docutils literal"><span class="pre">IdealGasReactor</span></code> (e.g., temperature, pressure,
-mass fractions) at each time step of the integration for
-post-processing.</p>
-</div>
-<div class="section" id="shock-tube-modeling-with-constant-volume">
-<h2>Shock tube modeling with constant volume<a class="headerlink" href="#shock-tube-modeling-with-constant-volume" title="Permalink to this headline">¶</a></h2>
-<p>The ChemKED file used in this example can be found in the <code class="docutils literal"><span class="pre">tests</span></code> directory of the PyKED
-repository. <a class="footnote-reference" href="#id7" id="id4">[2]</a> The data in this file comes from Stranic et al.&nbsp;<a class="reference internal" href="#stranic2012" id="id5">[Stranic2012]</a>, describing
-shock-tube ignition delays for <em>tert</em>-butanol. We have omitted the file meta information below for
-space. This ChemKED file specifies multiple data points with some common conditions, including a
-common mixture composition and common definition of ignition delay. Therefore, a
-<code class="docutils literal"><span class="pre">common-properties</span></code> section is specified.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">common-properties</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nl">&amp;comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
-    <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">t-butanol</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/C4H10O/c1-4(2,3)5/h5H,1-3H3</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.003333333</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.04</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
-          <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.956666667</span>
-  <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span>  <span class="nl">&amp;ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">OH*</span>
-    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1/2 max</span>
-</pre></div>
-</div>
-<p>This block uses the ability of YAML files to define an anchor with the
-<code class="docutils literal"><span class="pre">&amp;</span></code> symbol and refer to that section later with the <code class="docutils literal"><span class="pre">\*</span></code> symbol, as
-can be seen in the definition of the <code class="docutils literal"><span class="pre">datapoints</span></code> section:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1459 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">347 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.60 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1389 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">756 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.67 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1497 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">212 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.55 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1562 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">105 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.50 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal"><span class="pre">common-properties</span></code> section is not required, but can save space
-and help avoid errors when all data points share some common values.</p>
-<p>In this example, we would like to run constant-volume simulations at
-each of the pressure and temperature conditions in the <code class="docutils literal"><span class="pre">datapoints</span></code>
-list. Once again, the ChemKED file specifies all the information
-required for the simulations except for the chemical kinetic model, and
-Cantera can be used to simulate autoignition:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cantera</span> <span class="kn">as</span> <span class="nn">ct</span>
-<span class="kn">from</span> <span class="nn">pyked</span> <span class="kn">import</span> <span class="n">ChemKED</span>
-
-<span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="s1">&#39;Stranic2012-tbuoh.yaml&#39;</span><span class="p">)</span>
-
-<span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s1">&#39;tbuoh-mechanism.cti&#39;</span><span class="p">)</span>
-
-<span class="c1"># Since the composition is specified by the common-properties,</span>
-<span class="c1"># just take the composition of the first DataPoint</span>
-<span class="n">X_initial</span> <span class="o">=</span> <span class="n">ck</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
-
-<span class="c1"># Loop through each of the DataPoints</span>
-<span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ck</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
-    <span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-    <span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;Pa&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-    <span class="n">gas</span><span class="o">.</span><span class="n">TPX</span> <span class="o">=</span> <span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">X_initial</span>
-    <span class="n">reac</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">IdealGasReactor</span><span class="p">(</span><span class="n">gas</span><span class="p">)</span>
-    <span class="n">netw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">ReactorNet</span><span class="p">([</span><span class="n">reac</span><span class="p">])</span>
-    <span class="c1"># Define ignition delay as T_initial + 400 K</span>
-    <span class="k">while</span> <span class="n">reac</span><span class="o">.</span><span class="n">T</span> <span class="o">&lt;</span> <span class="n">T_initial</span> <span class="o">+</span> <span class="mi">400</span><span class="p">:</span>
-        <span class="n">netw</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;The ignition delay for T_initial={}, P_initial={} is: &#39;</span>
-          <span class="s1">&#39;{} seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">netw</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-          <span class="p">)</span>
-</pre></div>
-</div>
-<p>The ignition delay in this example is defined as equal to the above the
-initial temperature, a simplified definition used for this example. In
-general, the user could post-process the concentration information from
-the simulation to determine one-half the maximum concentration to match
-the experimental definition of ignition delay.</p>
-<table class="docutils citation" frame="void" id="mittal2006" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Mittal2006]</a></td><td>Mittal, Gaurav, Chih-Jen Sung, and Richard A. Yetter. 2006.
-“Autoignition of H2/CO at Elevated Pressures in a Rapid Compression
-Machine.” <em>International Journal of Chemical Kinetics</em> 38 (8): 516–29.
-doi:<a class="reference external" href="https://doi.org/10.1002/kin.20180">10.1002/kin.20180</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="stranic2012" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[Stranic2012]</a></td><td>Stranic, Ivo, Deanna P. Chase, Joseph T. Harmon, Sheng Yang, David F.
-Davidson, and Ronald K. Hanson. 2012. “Shock Tube Measurements of
-Ignition Delay Times for the Butanol Isomers.” <em>Combustion and Flame</em>
-159 (2): 516–27.
-doi:<a class="reference external" href="https://doi.org/10.1016/j.combustflame.2011.08.014">10.1016/j.combustflame.2011.08.014</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="cansen2015" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[CanSen2015]</a></td><td>Weber, Bryan William. 2015. “CanSen.” <a class="reference external" href="https://github.com/bryanwweber/CanSen">https://github.com/bryanwweber/CanSen</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils footnote" frame="void" id="id6" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml">https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml</a></td></tr>
-</tbody>
-</table>
-<table class="docutils footnote" frame="void" id="id7" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[2]</a></td><td><a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_st_p5.yaml">https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_st_p5.yaml</a></td></tr>
-</tbody>
-</table>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="shock-tube-example.html">Shock tube modeling with constant volume</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rcm-example.html">RCM modeling with varying reactor volume</a></li>
+</ul>
 </div>
 </div>
 
@@ -333,21 +58,12 @@ doi:<a class="reference external" href="https://doi.org/10.1016/j.combustflame.2
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Usage examples</a><ul>
-<li><a class="reference internal" href="#rcm-modeling-with-varying-reactor-volume">RCM modeling with varying reactor volume</a></li>
-<li><a class="reference internal" href="#shock-tube-modeling-with-constant-volume">Shock tube modeling with constant volume</a></li>
-</ul>
-</li>
-</ul>
-<div class="relations">
+        <div class="sphinxsidebarwrapper"><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="schema-docs.html" title="previous chapter">Schema Documentation</a></li>
-      <li>Next: <a href="chemked.html" title="next chapter">ChemKED</a></li>
+      <li>Next: <a href="shock-tube-example.html" title="next chapter">Shock tube modeling with constant volume</a></li>
   </ul></li>
 </ul>
 </div>

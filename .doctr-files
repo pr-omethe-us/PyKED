@@ -10,7 +10,9 @@
 ./_sources/index.rst.txt
 ./_sources/install.rst.txt
 ./_sources/pyked-examples.rst.txt
+./_sources/rcm-example.ipynb.txt
 ./_sources/schema-docs.rst.txt
+./_sources/shock-tube-example.ipynb.txt
 ./_sources/utils.rst.txt
 ./_sources/validation.rst.txt
 ./_static/README
@@ -46,8 +48,10 @@
 ./objects.inv
 ./py-modindex.html
 ./pyked-examples.html
+./rcm-example.html
 ./schema-docs.html
 ./search.html
 ./searchindex.js
+./shock-tube-example.html
 ./utils.html
 ./validation.html

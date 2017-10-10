@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>ChemKED &#8212; PyKED 0.2.1 documentation</title>
+    <title>ChemKED &#8212; PyKED 0.3.0a8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2.1',
+        VERSION:     '0.3.0a8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Converters" href="converters.html" />
-    <link rel="prev" title="Usage examples" href="pyked-examples.html" />
+    <link rel="prev" title="RCM modeling with varying reactor volume" href="rcm-example.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -380,35 +380,112 @@ during an RCM experiment.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyked.chemked.DataPoint.get_cantera_mass_fraction">
-<code class="descname">get_cantera_mass_fraction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mass_fraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mass_fraction" title="Permalink to this definition">¶</a></dt>
+<dt id="pyked.chemked.DataPoint.get_cantera_composition_string">
+<code class="descname">get_cantera_composition_string</code><span class="sig-paren">(</span><em>species_conversion=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_composition_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_composition_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the composition in a string format suitable for input to Cantera.</p>
+<p>Returns a formatted string no matter the type of composition. As such, this method
+is not recommended for end users; instead, prefer the <a class="reference internal" href="#pyked.chemked.DataPoint.get_cantera_mole_fraction" title="pyked.chemked.DataPoint.get_cantera_mole_fraction"><code class="xref py py-obj docutils literal"><span class="pre">get_cantera_mole_fraction</span></code></a>
+or <a class="reference internal" href="#pyked.chemked.DataPoint.get_cantera_mass_fraction" title="pyked.chemked.DataPoint.get_cantera_mass_fraction"><code class="xref py py-obj docutils literal"><span class="pre">get_cantera_mass_fraction</span></code></a> methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String in the <code class="docutils literal"><span class="pre">SPEC:</span> <span class="pre">AMT,</span> <span class="pre">SPEC:</span> <span class="pre">AMT</span></code> format</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String in the <code class="docutils literal"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> – If the composition type of the <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal"><span class="pre">DataPoint</span></code></a> is not one of
+<code class="docutils literal"><span class="pre">'mass</span> <span class="pre">fraction'</span></code>, <code class="docutils literal"><span class="pre">'mole</span> <span class="pre">fraction'</span></code>, or <code class="docutils literal"><span class="pre">'mole</span> <span class="pre">percent'</span></code></td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyked.chemked.DataPoint.get_cantera_mole_fraction">
-<code class="descname">get_cantera_mole_fraction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mole_fraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mole_fraction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the composition in a string format suitable for input to Cantera.</p>
+<dt id="pyked.chemked.DataPoint.get_cantera_mass_fraction">
+<code class="descname">get_cantera_mass_fraction</code><span class="sig-paren">(</span><em>species_conversion=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mass_fraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mass_fraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mass fractions in a string format suitable for input to Cantera.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String in the <code class="docutils literal"><span class="pre">SPEC:</span> <span class="pre">AMT,</span> <span class="pre">SPEC:</span> <span class="pre">AMT</span></code> format</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String of mass fractions in the <code class="docutils literal"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> – If the composition type is <code class="docutils literal"><span class="pre">'mole</span> <span class="pre">fraction'</span></code> or
+<code class="docutils literal"><span class="pre">'mole</span> <span class="pre">percent'</span></code>, the conversion cannot be done because no molecular
+weight information is known</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">DataPoint</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">()</span>
+<span class="go">&#39;H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;H2&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;1S/H2/h1H&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;1S/O2/c1-2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyked.chemked.DataPoint.get_cantera_mole_fraction">
+<code class="descname">get_cantera_mole_fraction</code><span class="sig-paren">(</span><em>species_conversion=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mole_fraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mole_fraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mole fractions in a string format suitable for input to Cantera.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String of mole fractions in the <code class="docutils literal"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code></a> – If the composition type is <code class="docutils literal"><span class="pre">'mass</span> <span class="pre">fraction'</span></code>, the conversion cannot
+be done because no molecular weight information is known</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">DataPoint</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
+<span class="go">&#39;H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;H2&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;1S/H2/h1H&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;1S/O2/c1-2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -490,7 +567,7 @@ during an RCM experiment.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="pyked-examples.html" title="previous chapter">Usage examples</a></li>
+      <li>Previous: <a href="rcm-example.html" title="previous chapter">RCM modeling with varying reactor volume</a></li>
       <li>Next: <a href="converters.html" title="next chapter">Converters</a></li>
   </ul></li>
 </ul>

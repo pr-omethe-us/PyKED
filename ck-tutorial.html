@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Creating ChemKED files &#8212; PyKED 0.2.1 documentation</title>
+    <title>Creating ChemKED files &#8212; PyKED 0.3.0a8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2.1',
+        VERSION:     '0.3.0a8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -113,7 +113,7 @@ is published is collected. This information typically includes:</p>
 presented in the same work</li>
 </ul>
 </div></blockquote>
-<p>As an example, the following is the reference section from the work of Mittal et al. <a class="reference internal" href="pyked-examples.html#mittal2006" id="id2">[Mittal2006]</a>:</p>
+<p>As an example, the following is the reference section from the work of Mittal et al. <a class="reference internal" href="#mittal2006" id="id2">[Mittal2006]</a>:</p>
 <div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
   <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
@@ -152,7 +152,7 @@ fields, depending on what type of data is being encoded. The typical information
 <li>measured quantity (ignition delay, product composition, etc.)</li>
 </ul>
 </div></blockquote>
-<p>As an example, the following data is taken from the work of Stranic et al. <a class="reference internal" href="pyked-examples.html#stranic2012" id="id3">[Stranic2012]</a>. This
+<p>As an example, the following data is taken from the work of Stranic et al. <a class="reference internal" href="#stranic2012" id="id3">[Stranic2012]</a>. This
 example shows the inclusion of multiple experiments in the <code class="docutils literal"><span class="pre">datapoints</span></code> key.</p>
 <div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
@@ -257,7 +257,7 @@ quantity.</p>
 <p>The following are complete examples of ChemKED files for autoignition experiments.</p>
 <div class="section" id="single-data-point-with-volume-history">
 <h3>Single Data Point with Volume History<a class="headerlink" href="#single-data-point-with-volume-history" title="Permalink to this headline">¶</a></h3>
-<p>The following example encodes an experiment from the work of Mittal et al. <a class="reference internal" href="pyked-examples.html#mittal2006" id="id4">[Mittal2006]</a> in a rapid
+<p>The following example encodes an experiment from the work of Mittal et al. <a class="reference internal" href="#mittal2006" id="id4">[Mittal2006]</a> in a rapid
 compression machine.</p>
 <div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nn">---</span>
 <span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
@@ -424,7 +424,7 @@ compression machine.</p>
 </div>
 <div class="section" id="multiple-experiments">
 <h3>Multiple Experiments<a class="headerlink" href="#multiple-experiments" title="Permalink to this headline">¶</a></h3>
-<p>The following example encodes some of the data from the work of Stranic et al. <a class="reference internal" href="pyked-examples.html#stranic2012" id="id5">[Stranic2012]</a> in the
+<p>The following example encodes some of the data from the work of Stranic et al. <a class="reference internal" href="#stranic2012" id="id5">[Stranic2012]</a> in the
 shock tube at Stanford.</p>
 <div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nn">---</span>
 <span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
@@ -528,7 +528,7 @@ either from the command line</p>
 </div>
 <p>Information about the person creating this new ChemKED file (e.g., file author name
 and their ORCID) may also be added via the <code class="docutils literal"><span class="pre">file_author</span></code> and <code class="docutils literal"><span class="pre">file_author_orcid</span></code>
-arguments in Python or the corresponding command-line options <code class="xref py py-obj docutils literal"><span class="pre">-fa</span></code> and <code class="xref py py-obj docutils literal"><span class="pre">-fo</span></code>. More
+arguments in Python or the corresponding command-line options <code class="docutils literal"><span class="pre">-fa</span></code> and <code class="docutils literal"><span class="pre">-fo</span></code>. More
 details can be found via <code class="docutils literal"><span class="pre">respth2ck</span> <span class="pre">--help</span></code> or
 <code class="docutils literal"><span class="pre">help(pyked.converters.ReSpecTh_to_ChemKED)</span></code>, respectively.</p>
 <p>PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
