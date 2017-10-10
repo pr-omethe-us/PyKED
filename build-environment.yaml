@@ -17,3 +17,5 @@ dependencies:
   - sphinx
   - nbsphinx
   - ipython
+  - conda-build
+  - anaconda-client
