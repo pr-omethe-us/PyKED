@@ -40,7 +40,6 @@ install:
       else
         if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
           conda env update -qn root -f build-environment.yaml;
-          source activate build-env;
         fi
       fi
       # Useful for debugging any issues with conda
