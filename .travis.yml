@@ -69,7 +69,7 @@ script:
         cd docs;
         make html SPHINXOPTS="-W";
         cd ..;
-        docker deploy . --no-require-master;
+        doctr deploy --no-require-master .;
       fi
     fi
   - set +e
