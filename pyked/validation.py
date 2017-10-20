@@ -237,9 +237,6 @@ class OurValidator(Validator):
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
 
-        Todo:
-            * remove UnboundLocalError from exception handling
-
         Args:
             isvalid_reference (`bool`): flag from schema indicating reference to be checked.
             field (`str`): 'reference'
@@ -256,8 +253,7 @@ class OurValidator(Validator):
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return
-            # TODO: remove UnboundLocalError after habanero fixed
-            except (ConnectionError, UnboundLocalError):
+            except ConnectionError:
                 warn('network not available, DOI not validated.')
                 return
 
