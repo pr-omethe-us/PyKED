@@ -19,6 +19,7 @@ from orcid import SearchAPI
 from .utils import units, Q_
 
 orcid_api = SearchAPI(sandbox=False)
+crossref_api = habanero.Crossref()
 
 # Load the ChemKED schema definition file
 schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
@@ -249,7 +250,8 @@ class OurValidator(Validator):
         """
         if 'doi' in value:
             try:
-                ref = habanero.Crossref().works(ids=value['doi'])['message']
+                ids = value['doi'] + '?mailto=prometheus@pr.omethe.us'
+                ref = crossref_api.works(ids=ids)['message']
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return
