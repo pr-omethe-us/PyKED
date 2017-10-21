@@ -19,6 +19,7 @@ from orcid import SearchAPI
 from .utils import units, Q_
 
 orcid_api = SearchAPI(sandbox=False)
+crossref_api = habanero.Crossref()
 
 # Load the ChemKED schema definition file
 schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
@@ -237,9 +238,6 @@ class OurValidator(Validator):
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
 
-        Todo:
-            * remove UnboundLocalError from exception handling
-
         Args:
             isvalid_reference (`bool`): flag from schema indicating reference to be checked.
             field (`str`): 'reference'
@@ -252,12 +250,12 @@ class OurValidator(Validator):
         """
         if 'doi' in value:
             try:
-                ref = habanero.Crossref().works(ids=value['doi'])['message']
+                ids = value['doi'] + '?mailto=prometheus@pr.omethe.us'
+                ref = crossref_api.works(ids=ids)['message']
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return
-            # TODO: remove UnboundLocalError after habanero fixed
-            except (ConnectionError, UnboundLocalError):
+            except ConnectionError:
                 warn('network not available, DOI not validated.')
                 return
 
