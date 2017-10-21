@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
-
+- Crossref lookups via Habanero now comply with the "be-nice" policy
 
 ## [0.3.0] - 2017-10-09
 ### Added
