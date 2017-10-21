@@ -61,6 +61,7 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">units</span><span class="p">,</span> <span class="n">Q_</span>
 
 <span class="n">orcid_api</span> <span class="o">=</span> <span class="n">SearchAPI</span><span class="p">(</span><span class="n">sandbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span>
 
 <span class="c1"># Load the ChemKED schema definition file</span>
 <span class="n">schema_file</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s1">&#39;schemas/chemked_schema.yaml&#39;</span><span class="p">)</span>
@@ -279,9 +280,6 @@
     <span class="k">def</span> <span class="nf">_validate_isvalid_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_reference</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks valid reference metadata using DOI (if present).</span>
 
-<span class="sd">        Todo:</span>
-<span class="sd">            * remove UnboundLocalError from exception handling</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            isvalid_reference (`bool`): flag from schema indicating reference to be checked.</span>
 <span class="sd">            field (`str`): &#39;reference&#39;</span>
@@ -294,12 +292,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s1">&#39;doi&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">ref</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;doi&#39;</span><span class="p">])[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;doi&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;?mailto=prometheus@pr.omethe.us&#39;</span>
+                <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
             <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;DOI not found&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
-            <span class="c1"># TODO: remove UnboundLocalError after habanero fixed</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">UnboundLocalError</span><span class="p">):</span>
+            <span class="k">except</span> <span class="ne">ConnectionError</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;network not available, DOI not validated.&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
 
