@@ -1,1 +1,1 @@
-from .chemked import ChemKED
+from .chemked import ChemKED  # noqa: F401

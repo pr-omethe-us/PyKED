@@ -2,7 +2,6 @@
 """
 
 # Standard libraries
-import sys
 import os
 from argparse import ArgumentParser
 from warnings import warn
@@ -514,7 +513,7 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
 
     # apply any overrides
     if file_author:
-        properties['reference']['detail'] += '. Original author: ' + properties['file-author']['name']
+        properties['reference']['detail'] += '. Original author: ' + properties['file-author']['name']  # noqa: E501
         properties['file-author']['name'] = file_author
     if file_author_orcid:
         properties['file-author']['ORCID'] = file_author_orcid
