@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Crossref lookups via Habanero now comply with the "be-nice" policy
 - Removed `UnboundLocalError` from error processing for reference validation
+- Switch to flake8 for style checking in CI services
 
 ## [0.3.0] - 2017-10-09
 ### Added

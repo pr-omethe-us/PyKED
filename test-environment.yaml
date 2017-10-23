@@ -15,3 +15,4 @@ dependencies:
   - habanero
   - orcid
   - codecov
+  - flake8
