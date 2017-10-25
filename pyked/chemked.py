@@ -100,7 +100,7 @@ class ChemKED(object):
             facility=self._properties['apparatus'].get('facility'),
         )
 
-        for prop in ['chemked-version', 'experiment-type', 'file-author', 'file-version']:
+        for prop in ['chemked-version', 'experiment-type', 'file-authors', 'file-version']:
             setattr(self, prop.replace('-', '_'), self._properties[prop])
 
     def validate_yaml(self, properties):
@@ -232,8 +232,8 @@ class ChemKED(object):
                         row.append(getattr(getattr(self, split_col[0]), split_col[1]))
                 elif col in ['temperature', 'pressure', 'ignition delay', 'equivalence ratio']:
                     row.append(getattr(d, col.replace(' ', '_')))
-                elif col == 'file author':
-                    row.append(getattr(self, col.replace(' ', '_'))['name'])
+                elif col == 'file authors':
+                    row.append(getattr(self, col.replace(' ', '_'))[0]['name'])
                 else:
                     row.append(getattr(self, col.replace(' ', '_')))
             data.append(row)
@@ -283,7 +283,7 @@ class ChemKED(object):
         root = etree.Element('experiment')
 
         file_author = etree.SubElement(root, 'fileAuthor')
-        file_author.text = self.file_author['name']
+        file_author.text = self.file_authors[0]['name']
 
         # right now ChemKED just uses an integer file version
         file_version = etree.SubElement(root, 'fileVersion')

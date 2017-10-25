@@ -72,7 +72,7 @@ def get_file_metadata(root):
     if not file_author:
         raise MissingElementError('fileAuthor')
     else:
-        properties['file-author'] = {'name': file_author}
+        properties['file-authors'] = [{'name': file_author}]
 
     # Default version is 0 for the ChemKED file
     properties['file-version'] = 0
@@ -512,11 +512,13 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         raise KeywordError('Volume history cannot be defined for shock tube.')
 
     # apply any overrides
-    if file_author:
-        properties['reference']['detail'] += '. Original author: ' + properties['file-author']['name']  # noqa: E501
-        properties['file-author']['name'] = file_author
-    if file_author_orcid:
-        properties['file-author']['ORCID'] = file_author_orcid
+    if file_author or file_author_orcid:
+        temp_author = {}
+        if file_author:
+            temp_author['name'] = file_author
+        if file_author_orcid:
+            temp_author['ORCID'] = file_author_orcid
+        properties['file-authors'].append(temp_author)
 
     # Now go through datapoints and apply common properties
     for idx in range(len(properties['datapoints'])):
