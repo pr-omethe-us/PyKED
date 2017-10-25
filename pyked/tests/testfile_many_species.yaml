@@ -1,6 +1,6 @@
 ---
-file-author:
-  name: B. Author
+file-authors:
+  - name: B. Author
 file-version: 0
 chemked-version: 0.0.1
 reference:
