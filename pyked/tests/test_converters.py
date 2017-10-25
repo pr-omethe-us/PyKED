@@ -1426,6 +1426,32 @@ class TestConvertReSpecTh(object):
                 ReSpecTh_to_ChemKED(filename)
             assert 'Volume history cannot be defined for shock tube.' in str(excinfo.value)
 
+    def test_author_orcid_no_name(self):
+        """Test that passing an ORCID to the conversion without a name raises an error
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author_orcid = '0000-0003-4425-7097'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        with pytest.raises(KeywordError) as e:
+            ReSpecTh_to_ChemKED(filename, file_author_orcid=file_author_orcid)
+        assert 'If file_author_orcid is specified, file_author must be as well' in str(e.value)
+
+    def test_file_author_only(self):
+        """Test that passing the file author only works properly
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author = 'Kyle Niemeyer'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        properties = ReSpecTh_to_ChemKED(filename, file_author, validate=False)
+        c = ChemKED(dict_input=properties, skip_validation=True)
+
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1].get('ORCID', None) is None
+
 
 class TestConverterMain(object):
     """
