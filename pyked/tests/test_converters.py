@@ -9,10 +9,8 @@ from requests.exceptions import ConnectionError
 import socket
 from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as etree
-from shutil import copy
 
 import pytest
-import yaml
 import numpy.random
 from numpy.testing import assert_allclose
 
@@ -51,14 +49,14 @@ class TestErrors(object):
         """
         with pytest.raises(MissingElementError) as excinfo:
             raise MissingElementError('fileAuthor')
-        assert 'Error: required element fileAuthor is missing.'
+        assert 'Error: required element fileAuthor is missing.' in str(excinfo.value)
 
     def test_missing_attribute_error(self):
         """Basic test of MissingAttributeError.
         """
         with pytest.raises(MissingAttributeError) as excinfo:
             raise MissingAttributeError('preferredKey', 'bibliographyLink')
-        assert 'Error: required attribute preferredKey of bibliographyLink is missing.'
+        assert 'Error: required attribute preferredKey of bibliographyLink is missing.' in str(excinfo.value)
 
 
 class TestFileMetadata(object):
@@ -93,7 +91,7 @@ class TestFileMetadata(object):
         minor_version.text = '0'
 
         with pytest.raises(MissingElementError) as excinfo:
-            meta = get_file_metadata(root)
+            get_file_metadata(root)
         assert 'Error: required element fileAuthor is missing.' in str(excinfo.value)
 
     def test_blank_fileauthor(self):
@@ -109,7 +107,7 @@ class TestFileMetadata(object):
         minor_version.text = '0'
 
         with pytest.raises(MissingElementError) as excinfo:
-            meta = get_file_metadata(root)
+            get_file_metadata(root)
         assert 'Error: required element fileAuthor is missing' in str(excinfo.value)
 
 
@@ -120,7 +118,6 @@ class TestGetReference(object):
     def disable_socket(self):
         """Disables socket to prevent network access.
         """
-        import socket
         old_socket = socket.socket
 
         def guard(*args, **kwargs):
@@ -164,7 +161,7 @@ class TestGetReference(object):
         """
         root = etree.Element('experiment')
         with pytest.raises(MissingElementError) as excinfo:
-            ref = get_reference(root)
+            get_reference(root)
         assert 'Error: required element bibliographyLink is missing' in str(excinfo.value)
 
     def test_missing_doi(self):
@@ -286,7 +283,6 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond.'
                 )
 
-
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
@@ -325,10 +321,10 @@ class TestGetReference(object):
         """Ensure error if missing ``preferredKey`` and not found DOI.
         """
         root = etree.Element('experiment')
-        ref = etree.SubElement(root, 'bibliographyLink')
+        etree.SubElement(root, 'bibliographyLink')
 
         with pytest.raises(MissingAttributeError) as excinfo:
-            ref = get_reference(root)
+            get_reference(root)
         assert ('Error: required attribute preferredKey of bibliographyLink '
                 'is missing.' in str(excinfo.value)
                 )
@@ -392,7 +388,7 @@ class TestGetExperiment(object):
         exp.text = experiment_type
 
         with pytest.raises(NotImplementedError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert experiment_type + ' not (yet) supported' in str(excinfo.value)
 
     @pytest.mark.parametrize('apparatus', [
@@ -409,29 +405,30 @@ class TestGetExperiment(object):
         kind.text = apparatus
 
         with pytest.raises(NotImplementedError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert apparatus + ' experiment not (yet) supported' in str(excinfo.value)
 
-    def test_missing_apparatus(self):
-        """Ensure proper error raised if missing apparatus.
+    def test_missing_apparatus_kind(self):
+        """Ensure proper error raised if missing apparatus kind.
         """
-        # apparatus, but no kind
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
         exp.text = 'Ignition delay measurement'
         app = etree.SubElement(root, 'apparatus')
 
         with pytest.raises(MissingElementError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
-        # missing apparatus altogether
+    def test_missing_apparatus(self):
+        """Ensure proper error raised if missing apparatus.
+        """
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
         exp.text = 'Ignition delay measurement'
 
         with pytest.raises(MissingElementError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
 
@@ -483,7 +480,7 @@ class TestCommonProperties(object):
         prop_value.text = value
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert 'Error: units incompatible for property ' + physical_property in str(excinfo.value)
 
     @pytest.mark.parametrize('composition_type', ['mole fraction', 'mass fraction'])
@@ -525,10 +522,8 @@ class TestCommonProperties(object):
         prop.set('name', 'compression time')
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
-        assert ('Error: Property compression time not supported as '
-                'common property.' in str(excinfo.value)
-                )
+            get_common_properties(root)
+        assert 'Error: Property compression time not supported as common property.' in str(excinfo.value)
 
     def test_species_missing_inchi(self, capfd):
         """Check for warning when species missing InChI.
@@ -546,7 +541,7 @@ class TestCommonProperties(object):
         amount.text = '1.0'
 
         with pytest.warns(UserWarning) as w:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert w[0].message.args[0] == ('Missing InChI for species H2')
 
     def test_inconsistent_composition_type(self):
@@ -574,7 +569,7 @@ class TestCommonProperties(object):
         amount.text = '0.5'
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert ('Error: composition units mass fraction not consistent '
                 'with mole fraction'
                 ) in str(excinfo.value)
@@ -608,11 +603,9 @@ class TestCommonProperties(object):
         with pytest.warns(UserWarning) as w:
             common = get_common_properties(root)
         assert w[0].message.args[0] == ('Assuming molar ppb in composition and '
-            'converting to mole fraction'
-            )
+                                        'converting to mole fraction')
         assert w[1].message.args[0] == ('Assuming molar ppm in composition and '
-            'converting to mole fraction'
-            )
+                                        'converting to mole fraction')
         assert common['composition']['kind'] == 'mole fraction'
         assert len(common['composition']['species']) == 3
         assert common['composition']['species'][0]['species-name'] == 'H2'
@@ -633,7 +626,7 @@ class TestCommonProperties(object):
         initial_composition = etree.SubElement(properties, 'property')
         initial_composition.set('name', 'initial composition')
 
-        species_refs = [{'name': 'Ar', 'inchi': '1S/Ar', 'amount': 1.0, 'units': 'percent'},]
+        species_refs = [{'name': 'Ar', 'inchi': '1S/Ar', 'amount': 1.0, 'units': 'percent'}]
         for spec in species_refs:
             component = etree.SubElement(initial_composition, 'component')
             species = etree.SubElement(component, 'speciesLink')
@@ -675,7 +668,7 @@ class TestCommonProperties(object):
             amount.text = str(spec['amount'])
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
 
         assert ('Composition units need to be one of: mole fraction, '
                 'mass fraction, mole percent, percent, ppm, or ppb.') in str(excinfo.value)
@@ -866,12 +859,12 @@ class TestGetDatapoints(object):
         """
         root = etree.Element('experiment')
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element dataGroup is missing.' in str(excinfo.value)
 
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element property is missing.' in str(excinfo.value)
 
         prop = etree.SubElement(datagroup, 'property')
@@ -880,7 +873,7 @@ class TestGetDatapoints(object):
         prop.set('units', 'K')
 
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element dataPoint is missing.' in str(excinfo.value)
 
     def test_datapoint_invalid_property(self):
@@ -904,7 +897,7 @@ class TestGetDatapoints(object):
 
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(KeyError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'compression time not valid dataPoint property' in str(excinfo.value)
 
     def test_datapoint_extra_value(self):
@@ -930,7 +923,7 @@ class TestGetDatapoints(object):
         x2.text = str(100.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'value missing from properties: x2' in str(excinfo.value)
 
     def test_morethan_two_datagroups(self):
@@ -958,7 +951,7 @@ class TestGetDatapoints(object):
         datagroup = etree.SubElement(root, 'dataGroup')
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(NotImplementedError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'More than two DataGroups not supported.' in str(excinfo.value)
 
     def test_volume_history_extra_property(self):
@@ -1009,13 +1002,13 @@ class TestGetDatapoints(object):
         x5.text = str(101325.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Only volume and time allowed in volume history dataGroup.' in str(excinfo.value)
 
         # remove bad property description, but retain bad extra dataPoint value
         datagroup.remove(prop)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Only volume and time values allowed in volume-history dataPoint.'
                 in str(excinfo.value)
                 )
@@ -1055,7 +1048,7 @@ class TestGetDatapoints(object):
         x3.text = str(0.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume properties required for volume history.'
                 in str(excinfo.value)
                 )
@@ -1072,7 +1065,7 @@ class TestGetDatapoints(object):
         x3.text = str(50.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume properties required for volume history.'
                 in str(excinfo.value)
                 )
@@ -1116,7 +1109,7 @@ class TestGetDatapoints(object):
         x3 = etree.SubElement(datapoint, 'x3')
         x3.text = str(0.0)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume values required in each volume-history dataPoint.'
                 in str(excinfo.value)
                 )
@@ -1126,7 +1119,7 @@ class TestGetDatapoints(object):
         x4 = etree.SubElement(datapoint, 'x4')
         x4.text = str(50.0)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume values required in each volume-history '
                 'dataPoint.'
                 ) in str(excinfo.value)
@@ -1262,7 +1255,7 @@ class TestGetDatapoints(object):
         x3.text = str(10.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Error: composition units need to be one of: mole fraction, '
                 'mass fraction, mole percent, percent, ppm, or ppb.'
                 ) in str(excinfo.value)
@@ -1306,11 +1299,10 @@ class TestGetDatapoints(object):
         x3.text = str(0.5)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Error: composition units mole fraction not consistent with '
                 'mass fraction'
                 ) in str(excinfo.value)
-
 
 
 class TestConvertReSpecTh(object):
