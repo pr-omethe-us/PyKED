@@ -511,11 +511,12 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
         raise KeywordError('Volume history cannot be defined for shock tube.')
 
-    # apply any overrides
-    if file_author or file_author_orcid:
-        temp_author = {}
-        if file_author:
-            temp_author['name'] = file_author
+    # add any additional file authors
+    if file_author_orcid and not file_author:
+        raise KeywordError('If file_author_orcid is specified, file_author must be as well')
+
+    if file_author:
+        temp_author = {'name': file_author}
         if file_author_orcid:
             temp_author['ORCID'] = file_author_orcid
         properties['file-authors'].append(temp_author)
