@@ -1456,18 +1456,38 @@ class TestConvertReSpecTh(object):
 class TestConverterMain(object):
     """
     """
-    def test_conversion_main(self):
-        """Test converter when used via command-line arguments.
+    def test_conversion_main_xml_to_yaml(self):
+        """Test detection in converter for xml->yaml
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author = 'Kyle E Niemeyer'
+        file_author_orcid = '0000-0003-4425-7097'
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.yaml')
             main(['-i', filename, '-o', newfile,
-                  '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
+                  '-fa', file_author, '-fo', file_author_orcid
                   ])
+            c = ChemKED(yaml_file=newfile)
 
+        true_yaml = pkg_resources.resource_filename(__name__, os.path.join('testfile_st.yaml'))
+        c_true = ChemKED(yaml_file=true_yaml)
+
+        assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1]['ORCID'] == file_author_orcid
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(file_path)
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
+
+    def test_conversion_main_yaml_to_xml(self):
+        """Test detection in converter for yaml->xml
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
@@ -1479,6 +1499,7 @@ class TestConverterMain(object):
 
     def test_conversion_ck2respth_respth2ck(self):
         """Test ck2respth and respth2ck converters when used via command-line arguments.
+            assert os.path.exists(newfile)
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
@@ -1494,35 +1515,34 @@ class TestConverterMain(object):
             newfile = os.path.join(temp_dir, 'test.xml')
             ck2respth(['-i', filename, '-o', newfile,])
 
-    def test_conversion_invalid(self):
-        """Test converter main raises errors when invalid filetypes.
+            assert os.path.exists(newfile)
+
+    def test_conversion_invalid_xml_xml(self):
+        """Test converter main raises errors when two xml files are passed.
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.xml')
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.xml'])
+        assert 'Cannot convert .xml to .xml' in str(excinfo.value)
 
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Cannot convert .xml to .xml' in str(excinfo.value)
-
+    def test_conversion_invalid_yaml_yaml(self):
+        """Test converter main raises errors when two yaml files are passed.
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.yaml')
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.yaml'])
+        assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
 
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
-
+    def test_conversion_invalid_file_type(self):
+        """Test converter main raises errors when an invalid file extension is passed.
+        """
         file_path = os.path.join('dataframe_st.csv')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.py')
-
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Input/output args need to be .xml/.yaml' in str(excinfo.value)
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.py'])
+        assert 'Input/output args need to be .xml/.yaml' in str(excinfo.value)
