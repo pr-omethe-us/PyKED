@@ -114,7 +114,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">file_author</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s1">&#39;fileAuthor&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-authors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}]</span>
 
     <span class="c1"># Default version is 0 for the ChemKED file</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -554,11 +554,13 @@
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Volume history cannot be defined for shock tube.&#39;</span><span class="p">)</span>
 
     <span class="c1"># apply any overrides</span>
-    <span class="k">if</span> <span class="n">file_author</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="s1">&#39;detail&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;. Original author: &#39;</span> <span class="o">+</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>  <span class="c1"># noqa: E501</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author</span>
-    <span class="k">if</span> <span class="n">file_author_orcid</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author_orcid</span>
+    <span class="k">if</span> <span class="n">file_author</span> <span class="ow">or</span> <span class="n">file_author_orcid</span><span class="p">:</span>
+        <span class="n">temp_author</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">file_author</span><span class="p">:</span>
+            <span class="n">temp_author</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author</span>
+        <span class="k">if</span> <span class="n">file_author_orcid</span><span class="p">:</span>
+            <span class="n">temp_author</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author_orcid</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-authors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_author</span><span class="p">)</span>
 
     <span class="c1"># Now go through datapoints and apply common properties</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">])):</span>
