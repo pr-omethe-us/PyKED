@@ -14,7 +14,7 @@ import numpy as np
 # Local imports
 from .validation import schema, OurValidator, yaml
 from .utils import Q_
-from .converters import datagroup_properties
+from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
 VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
@@ -102,6 +102,12 @@ class ChemKED(object):
 
         for prop in ['chemked-version', 'experiment-type', 'file-authors', 'file-version']:
             setattr(self, prop.replace('-', '_'), self._properties[prop])
+
+    @classmethod
+    def from_respecth(cls, filename_xml, file_author='', file_author_orcid=''):
+        properties = ReSpecTh_to_ChemKED(filename_xml, file_author, file_author_orcid,
+                                         validate=False)
+        return cls(dict_input=properties)
 
     def validate_yaml(self, properties):
         """Validate the parsed YAML file for adherance to the ChemKED format.
