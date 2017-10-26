@@ -8,12 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Added
+- New method to instantiate a `ChemKED` class directly from a ReSpecTh XML file
 
 ### Changed
 - Crossref lookups via Habanero now comply with the "be-nice" policy
 - Removed `UnboundLocalError` from error processing for reference validation
 - Switch to flake8 for style checking in CI services
 - `file-author` field is now a list called `file-authors`
+- ReSpecTh->ChemKED converter function now returns a dictionary, while the command-line entry points write out files
 
 ## [0.3.0] - 2017-10-09
 ### Added
