@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError
 import socket
 from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as etree
+from shutil import copy
 
 import pytest
 import numpy.random
@@ -1314,52 +1315,22 @@ class TestConvertReSpecTh(object):
         """
         file_path = os.path.join(filename_xml)
         filename = pkg_resources.resource_filename(__name__, file_path)
-
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.yaml')
-            ReSpecTh_to_ChemKED(filename, filename_ck=newfile,
-                                  file_author='Kyle Niemeyer',
-                                  file_author_orcid='0000-0003-4425-7097'
-                                  )
-
-            c = ChemKED(yaml_file=newfile)
+        file_author = 'Kyle Niemeyer'
+        file_author_orcid = '0000-0003-4425-7097'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        properties = ReSpecTh_to_ChemKED(filename, file_author, file_author_orcid, validate=False)
+        c = ChemKED(dict_input=properties, skip_validation=True)
 
         # compare with ChemKED file of same experiment
         file_path = os.path.join(os.path.splitext(filename_xml)[0] + '.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
-        c_true = ChemKED(yaml_file=filename)
+        c_true = ChemKED(yaml_file=filename, skip_validation=True)
 
-        assert c.file_authors[1]['name'] == 'Kyle Niemeyer'
-        assert c.file_authors[1]['ORCID'] == '0000-0003-4425-7097'
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1]['ORCID'] == file_author_orcid
 
         assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(filename_xml)
-
-        assert c.apparatus.kind == c_true.apparatus.kind
-        assert c.experiment_type == c_true.experiment_type
-        assert c.reference.doi == c_true.reference.doi
-        assert len(c.datapoints) == len(c_true.datapoints)
-
-    def test_valid_conversion_from_respecth_no_output_name(self):
-        """Test proper conversion when no output name given.
-        """
-        file_path = os.path.join('testfile_st.xml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
-
-        with TemporaryDirectory() as temp_dir:
-            copy(filename, temp_dir)
-            filename = os.path.join(temp_dir, 'testfile_st.xml')
-            ReSpecTh_to_ChemKED(filename)
-
-            c = ChemKED(yaml_file=os.path.join(temp_dir, 'testfile_st.yaml'))
-
-        # compare with ChemKED file of same experiment
-        file_path = os.path.join('testfile_st.yaml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
-        c_true = ChemKED(yaml_file=filename)
-
-        assert c.file_authors[0]['name'] == 'Kyle E. Niemeyer'
-
-        assert c.reference.detail == 'Converted from ReSpecTh XML file testfile_st.xml'
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -1497,9 +1468,23 @@ class TestConverterMain(object):
                   '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
                   ])
 
-    def test_conversion_ck2respth_respth2ck(self):
-        """Test ck2respth and respth2ck converters when used via command-line arguments.
             assert os.path.exists(newfile)
+
+    def test_conversion_respth2ck_default_output(self):
+        """Test respth2ck converter when used via command-line arguments.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            xml_file = copy(filename, temp_dir)
+            respth2ck(['-i', xml_file])
+
+            newfile = os.path.join(os.path.splitext(xml_file)[0] + '.yaml')
+            assert os.path.exists(newfile)
+
+    def test_conversion_respth2ck_with_output(self):
+        """Test respth2ck converter when used via command-line arguments.
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
@@ -1508,12 +1493,17 @@ class TestConverterMain(object):
             newfile = os.path.join(temp_dir, 'test.yaml')
             respth2ck(['-i', filename, '-o', newfile])
 
+            assert os.path.exists(newfile)
+
+    def test_conversion_ck2respth(self):
+        """Test ck2respth converter when used via command-line arguments.
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
-            ck2respth(['-i', filename, '-o', newfile,])
+            ck2respth(['-i', filename, '-o', newfile])
 
             assert os.path.exists(newfile)
 

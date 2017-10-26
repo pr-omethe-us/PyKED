@@ -244,17 +244,22 @@ class TestConvertToReSpecTh(object):
         """
         file_path = os.path.join(filename_ck)
         filename = pkg_resources.resource_filename(__name__, file_path)
-        c = ChemKED(filename)
+        c_true = ChemKED(filename)
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
-            c.convert_to_ReSpecTh(newfile)
+            c_true.convert_to_ReSpecTh(newfile)
 
-            # convert back to ChemKED, then parse
-            testfile = os.path.join(temp_dir, 'test.yaml')
-            ReSpecTh_to_ChemKED(newfile, testfile)
+            c = ChemKED.from_respecth(newfile)
 
-            c = ChemKED(testfile)
+        assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(os.path.split(newfile)[1])
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
 
     @pytest.mark.parametrize('experiment_type', [
         'Laminar flame speed measurement', 'Species profile measurement',
@@ -307,7 +312,6 @@ class TestConvertToReSpecTh(object):
                             {'amount': [0.1], 'species-name': 'O2'},
                             {'amount': [0.8], 'species-name': 'Ar'}
                             ]
-
 
     def test_conversion_datapoints_different_composition(self):
         """Test for appropriate handling of datapoints with different composition.
