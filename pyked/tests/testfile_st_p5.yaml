@@ -1,7 +1,7 @@
 ---
-file-author:
-  name: Morgan Mayer
-  ORCID: 0000-0001-7137-5721
+file-authors:
+  - name: Morgan Mayer
+    ORCID: 0000-0001-7137-5721
 file-version: 0
 chemked-version: 0.0.1
 reference:

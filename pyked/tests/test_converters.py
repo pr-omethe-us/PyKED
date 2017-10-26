@@ -78,7 +78,7 @@ class TestFileMetadata(object):
 
         meta = get_file_metadata(root)
         assert meta['chemked-version'] == __version__
-        assert meta['file-author']['name'] == 'Kyle Niemeyer'
+        assert meta['file-authors'][0]['name'] == 'Kyle Niemeyer'
         # ChemKED version will always start at 0
         assert meta['file-version'] == 0
 
@@ -1337,12 +1337,10 @@ class TestConvertReSpecTh(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         c_true = ChemKED(yaml_file=filename)
 
-        assert c.file_author['name'] == 'Kyle Niemeyer'
-        assert c.file_author['ORCID'] == '0000-0003-4425-7097'
+        assert c.file_authors[1]['name'] == 'Kyle Niemeyer'
+        assert c.file_authors[1]['ORCID'] == '0000-0003-4425-7097'
 
-        assert c.reference.detail == ('Converted from ReSpecTh XML file ' + filename_xml +
-                                      '. Original author: Kyle E. Niemeyer'
-                                      )
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(filename_xml)
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -1367,7 +1365,7 @@ class TestConvertReSpecTh(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         c_true = ChemKED(yaml_file=filename)
 
-        assert c.file_author['name'] == 'Kyle E. Niemeyer'
+        assert c.file_authors[0]['name'] == 'Kyle E. Niemeyer'
 
         assert c.reference.detail == 'Converted from ReSpecTh XML file testfile_st.xml'
 

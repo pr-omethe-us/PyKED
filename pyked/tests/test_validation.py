@@ -107,7 +107,7 @@ class TestValidator(object):
         """Ensure that ORCID validation fails gracefully with no Internet.
         """
         with pytest.warns(UserWarning) as w:
-            v.validate({'file-author': {'ORCID': '0000-0003-4425-7097'}}, update=True)
+            v.validate({'file-authors': [{'ORCID': '0000-0003-4425-7097'}]}, update=True)
 
         assert w[0].message.args[0] == 'network not available, ORCID not validated.'
 
@@ -122,19 +122,19 @@ class TestValidator(object):
     def test_invalid_ORCID(self):
         """Test for proper response to incorrect/invalid ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0000-0000-0000', 'name': 'Kyle Niemeyer'}},
+        v.validate({'file-authors': [{'ORCID': '0000-0000-0000-0000', 'name': 'Kyle Niemeyer'}]},
                    update=True
                    )
-        assert v.errors['file-author'][0] == 'ORCID incorrect or invalid for Kyle Niemeyer'
+        assert v.errors['file-authors'][0][0][0] == 'ORCID incorrect or invalid for Kyle Niemeyer'
 
     @internet_missing
     def test_invalid_ORCID_name(self):
         """Test for proper response to incorrect name with ORCID.
         """
-        v.validate({'file-author': {'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}},
+        v.validate({'file-authors': [{'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}]},
                    update=True
                    )
-        assert v.errors['file-author'][0] == ('Name and ORCID do not match. Name supplied: ' +
+        assert v.errors['file-authors'][0][0][0] == ('Name and ORCID do not match. Name supplied: ' +
                                               'Bryan Weber. Name associated with ORCID: ' +
                                               'Kyle Niemeyer'
                                               )
@@ -363,7 +363,7 @@ class TestValidator(object):
         assert v.validate(properties)
 
     @pytest.mark.parametrize("field", [
-        'file-author', 'chemked-version', 'file-version', 'reference', 'experiment-type',
+        'file-authors', 'chemked-version', 'file-version', 'reference', 'experiment-type',
         'apparatus', 'datapoints',
     ])
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
@@ -376,15 +376,20 @@ class TestValidator(object):
 
     @pytest.mark.parametrize("field, sub", [
         ('reference', 'authors'), ('reference', 'year'),
-        ('apparatus', 'kind'), ('file-author', 'name'),
+        ('apparatus', 'kind'), ('file-authors', 'name'),
     ])
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
     def test_missing_required_subfield(self, field, sub, properties):
         """Ensure missing subfields causes an errors
         """
-        properties[field].pop(sub)
-        v.validate(properties)
-        assert v.errors[field][0][sub][0] == 'required field'
+        if field == 'file-authors':
+            properties[field][0].pop(sub)
+            v.validate(properties)
+            assert v.errors[field][0][0][0][sub][0] == 'required field'
+        else:
+            properties[field].pop(sub)
+            v.validate(properties)
+            assert v.errors[field][0][sub][0] == 'required field'
 
     @pytest.mark.parametrize("properties", ['testfile_required.yaml'], indirect=["properties"])
     def test_missing_authors(self, properties):

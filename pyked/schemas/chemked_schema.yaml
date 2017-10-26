@@ -93,7 +93,11 @@ experiment-type:
     - ignition delay
   required: true
   type: string
-file-author: *author
+file-authors:
+    type: list
+    required: true
+    minlength: 1
+    schema: *author
 file-version:
   required: true
   type: integer
