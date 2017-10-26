@@ -16,7 +16,7 @@ import pytest
 from ..validation import schema, OurValidator, yaml
 from ..chemked import ChemKED, DataPoint
 from ..utils import Q_
-from ..converters import ReSpecTh_to_ChemKED, get_datapoints, get_common_properties
+from ..converters import get_datapoints, get_common_properties
 
 warnings.simplefilter('always')
 

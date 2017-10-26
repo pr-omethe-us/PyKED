@@ -415,7 +415,7 @@ class TestGetExperiment(object):
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
         exp.text = 'Ignition delay measurement'
-        app = etree.SubElement(root, 'apparatus')
+        etree.SubElement(root, 'apparatus')
 
         with pytest.raises(MissingElementError) as excinfo:
             get_experiment_kind(root)
