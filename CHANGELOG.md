@@ -5,8 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Fixed
-
 ### Added
 - New method to instantiate a `ChemKED` class directly from a ReSpecTh XML file
 
@@ -16,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Switch to flake8 for style checking in CI services
 - `file-author` field is now a list called `file-authors`
 - ReSpecTh->ChemKED converter function now returns a dictionary, while the command-line entry points write out files
+- Require Habanero>=0.6.0 to support the `mailto` argument
+
+### Fixed
 
 ## [0.3.0] - 2017-10-09
 ### Added
