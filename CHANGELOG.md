@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Crossref lookups in the converters use the common API instance from validation
+- `d/dt max extrapolated` ignition type can be converted to/from ReSpecTh
 
 ## [0.3.0] - 2017-10-09
 ### Added
