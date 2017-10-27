@@ -104,7 +104,7 @@ def get_reference(root):
     if ref_doi is not None:
         try:
             ref = habanero.Crossref().works(ids=ref_doi)['message']
-        except (HTTPError, habanero.RequestError, ConnectionError, UnboundLocalError):
+        except (HTTPError, habanero.RequestError, ConnectionError):
             if ref_key is None:
                 raise KeywordError('DOI not found and preferredKey attribute not set')
             else:
@@ -462,14 +462,16 @@ def get_datapoints(root):
     return datapoints
 
 
-def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_author_orcid=''):
-    """Convert ReSpecTh XML file to ChemKED YAML file.
+def ReSpecTh_to_ChemKED(filename_xml, file_author='', file_author_orcid='', *, validate=False):
+    """Convert ReSpecTh XML file to ChemKED-compliant dictionary.
 
     Args:
         filename_xml (`str`): Name of ReSpecTh XML file to be converted.
-        filename_ck (`str`, optional): Name of output ChemKED file to be produced.
         file_author (`str`, optional): Name to override original file author
         file_author_orcid (`str`, optional): ORCID of file author
+        validate (`bool`, optional, keyword-only): Set to `True` to validate the resulting
+            property dictionary with `ChemKED`. Set to `False` if the file is being loaded and will
+            be validated at some other point before use.
     """
     # get all information from XML file
     tree = etree.parse(filename_xml)
@@ -511,11 +513,12 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
     if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
         raise KeywordError('Volume history cannot be defined for shock tube.')
 
-    # apply any overrides
-    if file_author or file_author_orcid:
-        temp_author = {}
-        if file_author:
-            temp_author['name'] = file_author
+    # add any additional file authors
+    if file_author_orcid and not file_author:
+        raise KeywordError('If file_author_orcid is specified, file_author must be as well')
+
+    if file_author:
+        temp_author = {'name': file_author}
         if file_author_orcid:
             temp_author['ORCID'] = file_author_orcid
         properties['file-authors'].append(temp_author)
@@ -525,22 +528,14 @@ def ReSpecTh_to_ChemKED(filename_xml, filename_ck='', file_author='', file_autho
         for prop in properties['common-properties']:
             properties['datapoints'][idx][prop] = properties['common-properties'][prop]
 
-    # set output filename and path
-    if not filename_ck:
-        filename_ck = os.path.join(os.path.dirname(filename_xml),
-                                   os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
-                                   )
+    if validate:
+        chemked.ChemKED(dict_input=properties)
 
-    with open(filename_ck, 'w') as outfile:
-        yaml.dump(properties, outfile, default_flow_style=False)
-    print('Converted to ' + filename_ck)
-
-    # now validate
-    chemked.ChemKED(yaml_file=filename_ck)
+    return properties
 
 
 def respth2ck(argv=None):
-    """Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.
+    """Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.
     """
     parser = ArgumentParser(
         description='Convert a ReSpecTh XML file to a ChemKED YAML file.'
@@ -573,11 +568,25 @@ def respth2ck(argv=None):
 
     args = parser.parse_args(argv)
 
-    ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
+    filename_ck = args.output
+    filename_xml = args.input
+
+    properties = ReSpecTh_to_ChemKED(filename_xml, args.file_author, args.file_author_orcid,
+                                     validate=True)
+
+    # set output filename and path
+    if not filename_ck:
+        filename_ck = os.path.join(os.path.dirname(filename_xml),
+                                   os.path.splitext(os.path.basename(filename_xml))[0] + '.yaml'
+                                   )
+
+    with open(filename_ck, 'w') as outfile:
+        yaml.dump(properties, outfile, default_flow_style=False)
+    print('Converted to ' + filename_ck)
 
 
 def ck2respth(argv=None):
-    """Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.
+    """Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.
     """
     parser = ArgumentParser(
         description='Convert a ChemKED YAML file to a ReSpecTh XML file.'
@@ -636,7 +645,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if os.path.splitext(args.input)[1] == '.xml' and os.path.splitext(args.output)[1] == '.yaml':
-        ReSpecTh_to_ChemKED(args.input, args.output, args.file_author, args.file_author_orcid)
+        respth2ck(['-i', args.input, '-o', args.output, '-fa', args.file_author,
+                   '-fo', args.file_author_orcid])
 
     elif os.path.splitext(args.input)[1] == '.yaml' and os.path.splitext(args.output)[1] == '.xml':
         c = chemked.ChemKED(yaml_file=args.input)

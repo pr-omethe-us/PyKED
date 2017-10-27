@@ -14,7 +14,7 @@ import numpy as np
 # Local imports
 from .validation import schema, OurValidator, yaml
 from .utils import Q_
-from .converters import datagroup_properties
+from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
 VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
@@ -102,6 +102,30 @@ class ChemKED(object):
 
         for prop in ['chemked-version', 'experiment-type', 'file-authors', 'file-version']:
             setattr(self, prop.replace('-', '_'), self._properties[prop])
+
+    @classmethod
+    def from_respecth(cls, filename_xml, file_author='', file_author_orcid=''):
+        """Construct a ChemKED instance directly from a ReSpecTh file.
+
+        Arguments:
+            filename_xml (`str`): Filename of the ReSpecTh-formatted XML file to be imported
+            file_author (`str`, optional): File author to be added to the list generated from the
+                XML file
+            file_author_orcid (`str`, optional): ORCID for the file author being added to the list
+                of file authors
+
+        Returns:
+            `ChemKED`: Instance of the `ChemKED` class containing the data in ``filename_xml``.
+
+        Examples:
+            >>> ck = ChemKED.from_respecth('respecth_file.xml')
+            >>> ck = ChemKED.from_respecth('respecth_file.xml', file_author='Bryan W. Weber')
+            >>> ck = ChemKED.from_respecth('respecth_file.xml', file_author='Bryan W. Weber',
+                                           file_author_orcid='0000-0000-0000-0000')
+        """
+        properties = ReSpecTh_to_ChemKED(filename_xml, file_author, file_author_orcid,
+                                         validate=False)
+        return cls(dict_input=properties)
 
     def validate_yaml(self, properties):
         """Validate the parsed YAML file for adherance to the ChemKED format.

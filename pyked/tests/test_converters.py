@@ -12,7 +12,6 @@ import xml.etree.ElementTree as etree
 from shutil import copy
 
 import pytest
-import yaml
 import numpy.random
 from numpy.testing import assert_allclose
 
@@ -51,14 +50,14 @@ class TestErrors(object):
         """
         with pytest.raises(MissingElementError) as excinfo:
             raise MissingElementError('fileAuthor')
-        assert 'Error: required element fileAuthor is missing.'
+        assert 'Error: required element fileAuthor is missing.' in str(excinfo.value)
 
     def test_missing_attribute_error(self):
         """Basic test of MissingAttributeError.
         """
         with pytest.raises(MissingAttributeError) as excinfo:
             raise MissingAttributeError('preferredKey', 'bibliographyLink')
-        assert 'Error: required attribute preferredKey of bibliographyLink is missing.'
+        assert 'Error: required attribute preferredKey of bibliographyLink is missing.' in str(excinfo.value)
 
 
 class TestFileMetadata(object):
@@ -93,7 +92,7 @@ class TestFileMetadata(object):
         minor_version.text = '0'
 
         with pytest.raises(MissingElementError) as excinfo:
-            meta = get_file_metadata(root)
+            get_file_metadata(root)
         assert 'Error: required element fileAuthor is missing.' in str(excinfo.value)
 
     def test_blank_fileauthor(self):
@@ -109,7 +108,7 @@ class TestFileMetadata(object):
         minor_version.text = '0'
 
         with pytest.raises(MissingElementError) as excinfo:
-            meta = get_file_metadata(root)
+            get_file_metadata(root)
         assert 'Error: required element fileAuthor is missing' in str(excinfo.value)
 
 
@@ -120,7 +119,6 @@ class TestGetReference(object):
     def disable_socket(self):
         """Disables socket to prevent network access.
         """
-        import socket
         old_socket = socket.socket
 
         def guard(*args, **kwargs):
@@ -164,7 +162,7 @@ class TestGetReference(object):
         """
         root = etree.Element('experiment')
         with pytest.raises(MissingElementError) as excinfo:
-            ref = get_reference(root)
+            get_reference(root)
         assert 'Error: required element bibliographyLink is missing' in str(excinfo.value)
 
     def test_missing_doi(self):
@@ -286,7 +284,6 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond.'
                 )
 
-
     def test_doi_missing_internet(self, disable_socket):
         """Ensure that DOI validation fails gracefully with no Internet.
         """
@@ -325,10 +322,10 @@ class TestGetReference(object):
         """Ensure error if missing ``preferredKey`` and not found DOI.
         """
         root = etree.Element('experiment')
-        ref = etree.SubElement(root, 'bibliographyLink')
+        etree.SubElement(root, 'bibliographyLink')
 
         with pytest.raises(MissingAttributeError) as excinfo:
-            ref = get_reference(root)
+            get_reference(root)
         assert ('Error: required attribute preferredKey of bibliographyLink '
                 'is missing.' in str(excinfo.value)
                 )
@@ -392,7 +389,7 @@ class TestGetExperiment(object):
         exp.text = experiment_type
 
         with pytest.raises(NotImplementedError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert experiment_type + ' not (yet) supported' in str(excinfo.value)
 
     @pytest.mark.parametrize('apparatus', [
@@ -409,29 +406,30 @@ class TestGetExperiment(object):
         kind.text = apparatus
 
         with pytest.raises(NotImplementedError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert apparatus + ' experiment not (yet) supported' in str(excinfo.value)
+
+    def test_missing_apparatus_kind(self):
+        """Ensure proper error raised if missing apparatus kind.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = 'Ignition delay measurement'
+        etree.SubElement(root, 'apparatus')
+
+        with pytest.raises(MissingElementError) as excinfo:
+            get_experiment_kind(root)
+        assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
     def test_missing_apparatus(self):
         """Ensure proper error raised if missing apparatus.
         """
-        # apparatus, but no kind
-        root = etree.Element('experiment')
-        exp = etree.SubElement(root, 'experimentType')
-        exp.text = 'Ignition delay measurement'
-        app = etree.SubElement(root, 'apparatus')
-
-        with pytest.raises(MissingElementError) as excinfo:
-            ref = get_experiment_kind(root)
-        assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
-
-        # missing apparatus altogether
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
         exp.text = 'Ignition delay measurement'
 
         with pytest.raises(MissingElementError) as excinfo:
-            ref = get_experiment_kind(root)
+            get_experiment_kind(root)
         assert 'Error: required element apparatus/kind is missing.' in str(excinfo.value)
 
 
@@ -483,7 +481,7 @@ class TestCommonProperties(object):
         prop_value.text = value
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert 'Error: units incompatible for property ' + physical_property in str(excinfo.value)
 
     @pytest.mark.parametrize('composition_type', ['mole fraction', 'mass fraction'])
@@ -525,10 +523,8 @@ class TestCommonProperties(object):
         prop.set('name', 'compression time')
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
-        assert ('Error: Property compression time not supported as '
-                'common property.' in str(excinfo.value)
-                )
+            get_common_properties(root)
+        assert 'Error: Property compression time not supported as common property.' in str(excinfo.value)
 
     def test_species_missing_inchi(self, capfd):
         """Check for warning when species missing InChI.
@@ -546,7 +542,7 @@ class TestCommonProperties(object):
         amount.text = '1.0'
 
         with pytest.warns(UserWarning) as w:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert w[0].message.args[0] == ('Missing InChI for species H2')
 
     def test_inconsistent_composition_type(self):
@@ -574,7 +570,7 @@ class TestCommonProperties(object):
         amount.text = '0.5'
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
         assert ('Error: composition units mass fraction not consistent '
                 'with mole fraction'
                 ) in str(excinfo.value)
@@ -608,11 +604,9 @@ class TestCommonProperties(object):
         with pytest.warns(UserWarning) as w:
             common = get_common_properties(root)
         assert w[0].message.args[0] == ('Assuming molar ppb in composition and '
-            'converting to mole fraction'
-            )
+                                        'converting to mole fraction')
         assert w[1].message.args[0] == ('Assuming molar ppm in composition and '
-            'converting to mole fraction'
-            )
+                                        'converting to mole fraction')
         assert common['composition']['kind'] == 'mole fraction'
         assert len(common['composition']['species']) == 3
         assert common['composition']['species'][0]['species-name'] == 'H2'
@@ -633,7 +627,7 @@ class TestCommonProperties(object):
         initial_composition = etree.SubElement(properties, 'property')
         initial_composition.set('name', 'initial composition')
 
-        species_refs = [{'name': 'Ar', 'inchi': '1S/Ar', 'amount': 1.0, 'units': 'percent'},]
+        species_refs = [{'name': 'Ar', 'inchi': '1S/Ar', 'amount': 1.0, 'units': 'percent'}]
         for spec in species_refs:
             component = etree.SubElement(initial_composition, 'component')
             species = etree.SubElement(component, 'speciesLink')
@@ -675,7 +669,7 @@ class TestCommonProperties(object):
             amount.text = str(spec['amount'])
 
         with pytest.raises(KeywordError) as excinfo:
-            common = get_common_properties(root)
+            get_common_properties(root)
 
         assert ('Composition units need to be one of: mole fraction, '
                 'mass fraction, mole percent, percent, ppm, or ppb.') in str(excinfo.value)
@@ -866,12 +860,12 @@ class TestGetDatapoints(object):
         """
         root = etree.Element('experiment')
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element dataGroup is missing.' in str(excinfo.value)
 
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element property is missing.' in str(excinfo.value)
 
         prop = etree.SubElement(datagroup, 'property')
@@ -880,7 +874,7 @@ class TestGetDatapoints(object):
         prop.set('units', 'K')
 
         with pytest.raises(MissingElementError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Error: required element dataPoint is missing.' in str(excinfo.value)
 
     def test_datapoint_invalid_property(self):
@@ -904,7 +898,7 @@ class TestGetDatapoints(object):
 
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(KeyError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'compression time not valid dataPoint property' in str(excinfo.value)
 
     def test_datapoint_extra_value(self):
@@ -930,7 +924,7 @@ class TestGetDatapoints(object):
         x2.text = str(100.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'value missing from properties: x2' in str(excinfo.value)
 
     def test_morethan_two_datagroups(self):
@@ -958,7 +952,7 @@ class TestGetDatapoints(object):
         datagroup = etree.SubElement(root, 'dataGroup')
         datagroup = etree.SubElement(root, 'dataGroup')
         with pytest.raises(NotImplementedError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'More than two DataGroups not supported.' in str(excinfo.value)
 
     def test_volume_history_extra_property(self):
@@ -1009,13 +1003,13 @@ class TestGetDatapoints(object):
         x5.text = str(101325.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert 'Only volume and time allowed in volume history dataGroup.' in str(excinfo.value)
 
         # remove bad property description, but retain bad extra dataPoint value
         datagroup.remove(prop)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Only volume and time values allowed in volume-history dataPoint.'
                 in str(excinfo.value)
                 )
@@ -1055,7 +1049,7 @@ class TestGetDatapoints(object):
         x3.text = str(0.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume properties required for volume history.'
                 in str(excinfo.value)
                 )
@@ -1072,7 +1066,7 @@ class TestGetDatapoints(object):
         x3.text = str(50.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume properties required for volume history.'
                 in str(excinfo.value)
                 )
@@ -1116,7 +1110,7 @@ class TestGetDatapoints(object):
         x3 = etree.SubElement(datapoint, 'x3')
         x3.text = str(0.0)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume values required in each volume-history dataPoint.'
                 in str(excinfo.value)
                 )
@@ -1126,7 +1120,7 @@ class TestGetDatapoints(object):
         x4 = etree.SubElement(datapoint, 'x4')
         x4.text = str(50.0)
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Both time and volume values required in each volume-history '
                 'dataPoint.'
                 ) in str(excinfo.value)
@@ -1262,7 +1256,7 @@ class TestGetDatapoints(object):
         x3.text = str(10.0)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Error: composition units need to be one of: mole fraction, '
                 'mass fraction, mole percent, percent, ppm, or ppb.'
                 ) in str(excinfo.value)
@@ -1306,11 +1300,10 @@ class TestGetDatapoints(object):
         x3.text = str(0.5)
 
         with pytest.raises(KeywordError) as excinfo:
-            datapoints = get_datapoints(root)
+            get_datapoints(root)
         assert ('Error: composition units mole fraction not consistent with '
                 'mass fraction'
                 ) in str(excinfo.value)
-
 
 
 class TestConvertReSpecTh(object):
@@ -1322,52 +1315,22 @@ class TestConvertReSpecTh(object):
         """
         file_path = os.path.join(filename_xml)
         filename = pkg_resources.resource_filename(__name__, file_path)
-
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.yaml')
-            ReSpecTh_to_ChemKED(filename, filename_ck=newfile,
-                                  file_author='Kyle Niemeyer',
-                                  file_author_orcid='0000-0003-4425-7097'
-                                  )
-
-            c = ChemKED(yaml_file=newfile)
+        file_author = 'Kyle Niemeyer'
+        file_author_orcid = '0000-0003-4425-7097'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        properties = ReSpecTh_to_ChemKED(filename, file_author, file_author_orcid, validate=False)
+        c = ChemKED(dict_input=properties, skip_validation=True)
 
         # compare with ChemKED file of same experiment
         file_path = os.path.join(os.path.splitext(filename_xml)[0] + '.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
-        c_true = ChemKED(yaml_file=filename)
+        c_true = ChemKED(yaml_file=filename, skip_validation=True)
 
-        assert c.file_authors[1]['name'] == 'Kyle Niemeyer'
-        assert c.file_authors[1]['ORCID'] == '0000-0003-4425-7097'
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1]['ORCID'] == file_author_orcid
 
         assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(filename_xml)
-
-        assert c.apparatus.kind == c_true.apparatus.kind
-        assert c.experiment_type == c_true.experiment_type
-        assert c.reference.doi == c_true.reference.doi
-        assert len(c.datapoints) == len(c_true.datapoints)
-
-    def test_valid_conversion_from_respecth_no_output_name(self):
-        """Test proper conversion when no output name given.
-        """
-        file_path = os.path.join('testfile_st.xml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
-
-        with TemporaryDirectory() as temp_dir:
-            copy(filename, temp_dir)
-            filename = os.path.join(temp_dir, 'testfile_st.xml')
-            ReSpecTh_to_ChemKED(filename)
-
-            c = ChemKED(yaml_file=os.path.join(temp_dir, 'testfile_st.yaml'))
-
-        # compare with ChemKED file of same experiment
-        file_path = os.path.join('testfile_st.yaml')
-        filename = pkg_resources.resource_filename(__name__, file_path)
-        c_true = ChemKED(yaml_file=filename)
-
-        assert c.file_authors[0]['name'] == 'Kyle E. Niemeyer'
-
-        assert c.reference.detail == 'Converted from ReSpecTh XML file testfile_st.xml'
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -1434,22 +1397,68 @@ class TestConvertReSpecTh(object):
                 ReSpecTh_to_ChemKED(filename)
             assert 'Volume history cannot be defined for shock tube.' in str(excinfo.value)
 
+    def test_author_orcid_no_name(self):
+        """Test that passing an ORCID to the conversion without a name raises an error
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author_orcid = '0000-0003-4425-7097'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        with pytest.raises(KeywordError) as e:
+            ReSpecTh_to_ChemKED(filename, file_author_orcid=file_author_orcid)
+        assert 'If file_author_orcid is specified, file_author must be as well' in str(e.value)
+
+    def test_file_author_only(self):
+        """Test that passing the file author only works properly
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author = 'Kyle Niemeyer'
+        # Skip all the validation because we know the test files are correct and we're not
+        # testing the validation methods here
+        properties = ReSpecTh_to_ChemKED(filename, file_author, validate=False)
+        c = ChemKED(dict_input=properties, skip_validation=True)
+
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1].get('ORCID', None) is None
+
 
 class TestConverterMain(object):
     """
     """
-    def test_conversion_main(self):
-        """Test converter when used via command-line arguments.
+    def test_conversion_main_xml_to_yaml(self):
+        """Test detection in converter for xml->yaml
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
+        file_author = 'Kyle E Niemeyer'
+        file_author_orcid = '0000-0003-4425-7097'
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.yaml')
             main(['-i', filename, '-o', newfile,
-                  '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
+                  '-fa', file_author, '-fo', file_author_orcid
                   ])
+            c = ChemKED(yaml_file=newfile)
 
+        true_yaml = pkg_resources.resource_filename(__name__, os.path.join('testfile_st.yaml'))
+        c_true = ChemKED(yaml_file=true_yaml)
+
+        assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
+        assert c.file_authors[1]['name'] == file_author
+        assert c.file_authors[1]['ORCID'] == file_author_orcid
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(file_path)
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
+
+    def test_conversion_main_yaml_to_xml(self):
+        """Test detection in converter for yaml->xml
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
@@ -1459,8 +1468,23 @@ class TestConverterMain(object):
                   '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
                   ])
 
-    def test_conversion_ck2respth_respth2ck(self):
-        """Test ck2respth and respth2ck converters when used via command-line arguments.
+            assert os.path.exists(newfile)
+
+    def test_conversion_respth2ck_default_output(self):
+        """Test respth2ck converter when used via command-line arguments.
+        """
+        file_path = os.path.join('testfile_st.xml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+
+        with TemporaryDirectory() as temp_dir:
+            xml_file = copy(filename, temp_dir)
+            respth2ck(['-i', xml_file])
+
+            newfile = os.path.join(os.path.splitext(xml_file)[0] + '.yaml')
+            assert os.path.exists(newfile)
+
+    def test_conversion_respth2ck_with_output(self):
+        """Test respth2ck converter when used via command-line arguments.
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
@@ -1469,42 +1493,46 @@ class TestConverterMain(object):
             newfile = os.path.join(temp_dir, 'test.yaml')
             respth2ck(['-i', filename, '-o', newfile])
 
+            assert os.path.exists(newfile)
+
+    def test_conversion_ck2respth(self):
+        """Test ck2respth converter when used via command-line arguments.
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
-            ck2respth(['-i', filename, '-o', newfile,])
+            ck2respth(['-i', filename, '-o', newfile])
 
-    def test_conversion_invalid(self):
-        """Test converter main raises errors when invalid filetypes.
+            assert os.path.exists(newfile)
+
+    def test_conversion_invalid_xml_xml(self):
+        """Test converter main raises errors when two xml files are passed.
         """
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.xml')
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.xml'])
+        assert 'Cannot convert .xml to .xml' in str(excinfo.value)
 
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Cannot convert .xml to .xml' in str(excinfo.value)
-
+    def test_conversion_invalid_yaml_yaml(self):
+        """Test converter main raises errors when two yaml files are passed.
+        """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.yaml')
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.yaml'])
+        assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
 
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Cannot convert .yaml to .yaml' in str(excinfo.value)
-
+    def test_conversion_invalid_file_type(self):
+        """Test converter main raises errors when an invalid file extension is passed.
+        """
         file_path = os.path.join('dataframe_st.csv')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, 'test.py')
-
-            with pytest.raises(KeywordError) as excinfo:
-                main(['-i', filename, '-o', newfile])
-            assert 'Input/output args need to be .xml/.yaml' in str(excinfo.value)
+        with pytest.raises(KeywordError) as excinfo:
+            main(['-i', filename, '-o', 'test.py'])
+        assert 'Input/output args need to be .xml/.yaml' in str(excinfo.value)
