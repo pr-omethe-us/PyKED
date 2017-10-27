@@ -56,7 +56,7 @@
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">Q_</span>
-<span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span>
+<span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span><span class="p">,</span> <span class="n">ReSpecTh_to_ChemKED</span>
 
 <span class="n">VolumeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VolumeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">])</span>
 <span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment&#39;</span>
@@ -144,6 +144,30 @@
 
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">,</span> <span class="s1">&#39;experiment-type&#39;</span><span class="p">,</span> <span class="s1">&#39;file-authors&#39;</span><span class="p">,</span> <span class="s1">&#39;file-version&#39;</span><span class="p">]:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ChemKED.from_respecth"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.from_respecth">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_respecth</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a ChemKED instance directly from a ReSpecTh file.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename_xml (`str`): Filename of the ReSpecTh-formatted XML file to be imported</span>
+<span class="sd">            file_author (`str`, optional): File author to be added to the list generated from the</span>
+<span class="sd">                XML file</span>
+<span class="sd">            file_author_orcid (`str`, optional): ORCID for the file author being added to the list</span>
+<span class="sd">                of file authors</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `ChemKED`: Instance of the `ChemKED` class containing the data in ``filename_xml``.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;, file_author=&#39;Bryan W. Weber&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;, file_author=&#39;Bryan W. Weber&#39;,</span>
+<span class="sd">                                           file_author_orcid=&#39;0000-0000-0000-0000&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="p">,</span>
+                                         <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChemKED.validate_yaml"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.validate_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">validate_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Validate the parsed YAML file for adherance to the ChemKED format.</span>

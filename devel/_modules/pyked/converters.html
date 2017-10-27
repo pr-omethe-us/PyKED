@@ -146,7 +146,7 @@
     <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ref</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ref_doi</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">,</span> <span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">UnboundLocalError</span><span class="p">):</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">,</span> <span class="ne">ConnectionError</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">ref_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;DOI not found and preferredKey attribute not set&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -504,14 +504,16 @@
     <span class="k">return</span> <span class="n">datapoints</span></div>
 
 
-<div class="viewcode-block" id="ReSpecTh_to_ChemKED"><a class="viewcode-back" href="../../converters.html#pyked.converters.ReSpecTh_to_ChemKED">[docs]</a><span class="k">def</span> <span class="nf">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">filename_ck</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert ReSpecTh XML file to ChemKED YAML file.</span>
+<div class="viewcode-block" id="ReSpecTh_to_ChemKED"><a class="viewcode-back" href="../../converters.html#pyked.converters.ReSpecTh_to_ChemKED">[docs]</a><span class="k">def</span> <span class="nf">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert ReSpecTh XML file to ChemKED-compliant dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        filename_xml (`str`): Name of ReSpecTh XML file to be converted.</span>
-<span class="sd">        filename_ck (`str`, optional): Name of output ChemKED file to be produced.</span>
 <span class="sd">        file_author (`str`, optional): Name to override original file author</span>
 <span class="sd">        file_author_orcid (`str`, optional): ORCID of file author</span>
+<span class="sd">        validate (`bool`, optional, keyword-only): Set to `True` to validate the resulting</span>
+<span class="sd">            property dictionary with `ChemKED`. Set to `False` if the file is being loaded and will</span>
+<span class="sd">            be validated at some other point before use.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get all information from XML file</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">)</span>
@@ -553,11 +555,12 @@
     <span class="k">if</span> <span class="n">has_vol_hist</span> <span class="ow">and</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;shock tube&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Volume history cannot be defined for shock tube.&#39;</span><span class="p">)</span>
 
-    <span class="c1"># apply any overrides</span>
-    <span class="k">if</span> <span class="n">file_author</span> <span class="ow">or</span> <span class="n">file_author_orcid</span><span class="p">:</span>
-        <span class="n">temp_author</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">file_author</span><span class="p">:</span>
-            <span class="n">temp_author</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author</span>
+    <span class="c1"># add any additional file authors</span>
+    <span class="k">if</span> <span class="n">file_author_orcid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">file_author</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;If file_author_orcid is specified, file_author must be as well&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">file_author</span><span class="p">:</span>
+        <span class="n">temp_author</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">file_author_orcid</span><span class="p">:</span>
             <span class="n">temp_author</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author_orcid</span>
         <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-authors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_author</span><span class="p">)</span>
@@ -567,22 +570,14 @@
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">]:</span>
             <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span>
 
-    <span class="c1"># set output filename and path</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_ck</span><span class="p">:</span>
-        <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">),</span>
-                                   <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
-                                   <span class="p">)</span>
+    <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_ck</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
-        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span>
-
-    <span class="c1"># now validate</span>
-    <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">filename_ck</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="respth2ck"><a class="viewcode-back" href="../../converters.html#pyked.converters.respth2ck">[docs]</a><span class="k">def</span> <span class="nf">respth2ck</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.</span>
+    <span class="sd">&quot;&quot;&quot;Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Convert a ReSpecTh XML file to a ChemKED YAML file.&#39;</span>
@@ -615,11 +610,25 @@
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
-    <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">)</span></div>
+    <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span>
+    <span class="n">filename_xml</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">input</span>
+
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">,</span>
+                                     <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># set output filename and path</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_ck</span><span class="p">:</span>
+        <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">),</span>
+                                   <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
+                                   <span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_ck</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ck2respth"><a class="viewcode-back" href="../../converters.html#pyked.converters.ck2respth">[docs]</a><span class="k">def</span> <span class="nf">ck2respth</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.</span>
+    <span class="sd">&quot;&quot;&quot;Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Convert a ChemKED YAML file to a ReSpecTh XML file.&#39;</span>
@@ -678,7 +687,8 @@
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span>
-        <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">)</span>
+        <span class="n">respth2ck</span><span class="p">([</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s1">&#39;-fa&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span>
+                   <span class="s1">&#39;-fo&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">])</span>
 
     <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span><span class="p">:</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>

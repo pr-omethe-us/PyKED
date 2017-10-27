@@ -165,6 +165,40 @@ some additional attributes.</p>
 </div>
 </dd></dl>
 
+<dl class="classmethod">
+<dt id="pyked.chemked.ChemKED.from_respecth">
+<em class="property">classmethod </em><code class="descname">from_respecth</code><span class="sig-paren">(</span><em>filename_xml</em>, <em>file_author=''</em>, <em>file_author_orcid=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.from_respecth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.ChemKED.from_respecth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a ChemKED instance directly from a ReSpecTh file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename_xml</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>) – Filename of the ReSpecTh-formatted XML file to be imported</li>
+<li><strong>file_author</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – File author to be added to the list generated from the
+XML file</li>
+<li><strong>file_author_orcid</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – ORCID for the file author being added to the list
+of file authors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Instance of the <a class="reference internal" href="#pyked.chemked.ChemKED" title="pyked.chemked.ChemKED"><code class="xref py py-obj docutils literal"><span class="pre">ChemKED</span></code></a> class containing the data in <code class="docutils literal"><span class="pre">filename_xml</span></code>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyked.chemked.ChemKED" title="pyked.chemked.ChemKED"><code class="xref py py-obj docutils literal"><span class="pre">ChemKED</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;Bryan W. Weber&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;Bryan W. Weber&#39;</span><span class="p">,</span>
+<span class="go">                               file_author_orcid=&#39;0000-0000-0000-0000&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="method">
 <dt id="pyked.chemked.ChemKED.get_dataframe">
 <code class="descname">get_dataframe</code><span class="sig-paren">(</span><em>output_columns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.get_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.ChemKED.get_dataframe" title="Permalink to this definition">¶</a></dt>

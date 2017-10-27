@@ -70,17 +70,19 @@
 
 <dl class="function">
 <dt id="pyked.converters.ReSpecTh_to_ChemKED">
-<code class="descclassname">pyked.converters.</code><code class="descname">ReSpecTh_to_ChemKED</code><span class="sig-paren">(</span><em>filename_xml</em>, <em>filename_ck=''</em>, <em>file_author=''</em>, <em>file_author_orcid=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ReSpecTh_to_ChemKED"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.converters.ReSpecTh_to_ChemKED" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert ReSpecTh XML file to ChemKED YAML file.</p>
+<code class="descclassname">pyked.converters.</code><code class="descname">ReSpecTh_to_ChemKED</code><span class="sig-paren">(</span><em>filename_xml</em>, <em>file_author=''</em>, <em>file_author_orcid=''</em>, <em>*</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ReSpecTh_to_ChemKED"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.converters.ReSpecTh_to_ChemKED" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert ReSpecTh XML file to ChemKED-compliant dictionary.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>filename_xml</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>) – Name of ReSpecTh XML file to be converted.</li>
-<li><strong>filename_ck</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – Name of output ChemKED file to be produced.</li>
 <li><strong>file_author</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – Name to override original file author</li>
 <li><strong>file_author_orcid</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – ORCID of file author</li>
+<li><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional, keyword-only) – Set to <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#True" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">True</span></code></a> to validate the resulting
+property dictionary with <code class="xref py py-obj docutils literal"><span class="pre">ChemKED</span></code>. Set to <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#False" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">False</span></code></a> if the file is being loaded and will
+be validated at some other point before use.</li>
 </ul>
 </td>
 </tr>
@@ -91,7 +93,7 @@
 <dl class="function">
 <dt id="pyked.converters.ck2respth">
 <code class="descclassname">pyked.converters.</code><code class="descname">ck2respth</code><span class="sig-paren">(</span><em>argv=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ck2respth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.converters.ck2respth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.</p>
+<dd><p>Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.</p>
 </dd></dl>
 
 <dl class="data">
@@ -217,7 +219,7 @@
 <dl class="function">
 <dt id="pyked.converters.respth2ck">
 <code class="descclassname">pyked.converters.</code><code class="descname">respth2ck</code><span class="sig-paren">(</span><em>argv=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#respth2ck"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.converters.respth2ck" title="Permalink to this definition">¶</a></dt>
-<dd><p>Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.</p>
+<dd><p>Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</p>
 </dd></dl>
 
 </div>
