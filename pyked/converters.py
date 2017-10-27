@@ -12,7 +12,7 @@ import habanero
 import pint
 
 # Local imports
-from .validation import yaml, property_units
+from .validation import yaml, property_units, crossref_api
 from .utils import units as unit_registry
 from ._version import __version__
 from . import chemked
@@ -103,7 +103,7 @@ def get_reference(root):
 
     if ref_doi is not None:
         try:
-            ref = habanero.Crossref().works(ids=ref_doi)['message']
+            ref = crossref_api.works(ids=ref_doi)['message']
         except (HTTPError, habanero.RequestError, ConnectionError):
             if ref_key is None:
                 raise KeywordError('DOI not found and preferredKey attribute not set')
