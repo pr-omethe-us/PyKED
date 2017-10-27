@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Require Habanero>=0.6.0 to support the `mailto` argument
 
 ### Fixed
+- Crossref lookups in the converters use the common API instance from validation
 
 ## [0.3.0] - 2017-10-09
 ### Added
