@@ -283,6 +283,8 @@ def get_ignition_type(root):
 
     if 'type' in elem:
         ign_type = elem['type']
+        if ign_type == 'baseline max intercept from d/dt':
+            ign_type = 'd/dt max extrapolated'
     else:
         raise MissingAttributeError('type', 'ignitionType')
 
@@ -304,7 +306,7 @@ def get_ignition_type(root):
     if ign_target not in ['pressure', 'temperature', 'OH', 'OH*', 'CH*', 'CH']:
         raise KeywordError(ign_target + ' not valid ignition target')
 
-    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
+    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated']:
         raise KeywordError(ign_type + ' not valid ignition type')
 
     properties['type'] = ign_type
