@@ -15,8 +15,11 @@ from cerberus import Validator, SchemaError
 import habanero
 from orcid import SearchAPI
 
-# Local imports
-from .utils import units, Q_
+units = pint.UnitRegistry()
+"""Unit registry to contain the units used in PyKED"""
+
+units.define('cm3 = centimeter**3')
+Q_ = units.Quantity
 
 orcid_api = SearchAPI(sandbox=False)
 crossref_api = habanero.Crossref(mailto='prometheus@pr.omethe.us')

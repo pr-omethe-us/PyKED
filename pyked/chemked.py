@@ -12,8 +12,7 @@ import xml.dom.minidom as minidom
 import numpy as np
 
 # Local imports
-from .validation import schema, OurValidator, yaml
-from .utils import Q_
+from .validation import schema, OurValidator, yaml, Q_
 from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])

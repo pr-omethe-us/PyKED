@@ -13,9 +13,8 @@ import numpy as np
 import pytest
 
 # Local imports
-from ..validation import schema, OurValidator, yaml
+from ..validation import schema, OurValidator, yaml, Q_
 from ..chemked import ChemKED, DataPoint
-from ..utils import Q_
 from ..converters import get_datapoints, get_common_properties
 
 warnings.simplefilter('always')
