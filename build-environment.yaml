@@ -9,7 +9,7 @@ dependencies:
   - pint>=0.7.2
   - pandas
   - uncertainties
-  - habanero
+  - habanero>=0.6.0
   - orcid
   - sphinx
   - nbsphinx
