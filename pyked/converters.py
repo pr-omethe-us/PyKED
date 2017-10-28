@@ -12,8 +12,8 @@ import habanero
 import pint
 
 # Local imports
-from .validation import yaml, property_units
-from .utils import units as unit_registry
+from .validation import yaml, property_units, crossref_api
+from .validation import units as unit_registry
 from ._version import __version__
 from . import chemked
 
@@ -103,7 +103,7 @@ def get_reference(root):
 
     if ref_doi is not None:
         try:
-            ref = habanero.Crossref().works(ids=ref_doi)['message']
+            ref = crossref_api.works(ids=ref_doi)['message']
         except (HTTPError, habanero.RequestError, ConnectionError):
             if ref_key is None:
                 raise KeywordError('DOI not found and preferredKey attribute not set')
@@ -283,6 +283,8 @@ def get_ignition_type(root):
 
     if 'type' in elem:
         ign_type = elem['type']
+        if ign_type == 'baseline max intercept from d/dt':
+            ign_type = 'd/dt max extrapolated'
     else:
         raise MissingAttributeError('type', 'ignitionType')
 
@@ -304,7 +306,7 @@ def get_ignition_type(root):
     if ign_target not in ['pressure', 'temperature', 'OH', 'OH*', 'CH*', 'CH']:
         raise KeywordError(ign_target + ' not valid ignition target')
 
-    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min']:
+    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated']:
         raise KeywordError(ign_type + ' not valid ignition type')
 
     properties['type'] = ign_type

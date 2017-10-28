@@ -13,9 +13,8 @@ import numpy as np
 import pytest
 
 # Local imports
-from ..validation import schema, OurValidator, yaml
+from ..validation import schema, OurValidator, yaml, Q_
 from ..chemked import ChemKED, DataPoint
-from ..utils import Q_
 from ..converters import get_datapoints, get_common_properties
 
 warnings.simplefilter('always')
@@ -381,32 +380,57 @@ class TestConvertToReSpecTh(object):
                 'volume history.' in str(excinfo.value)
                 )
 
-    @pytest.mark.parametrize('ignition_target', ['pressure', 'temperature', 'OH', 'CH'])
+    @pytest.mark.parametrize('ignition_target', ['pressure', 'temperature', 'OH', 'CH', 'OH*', 'CH*'])
     def test_conversion_to_respecth_ignition_targets(self, ignition_target):
-        """Test proper conversion for different ignition types.
+        """Test proper conversion for different ignition targets.
         """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
         c = ChemKED(filename)
 
-        for idx, dp in enumerate(c.datapoints):
-            c.datapoints[idx].ignition_type['target'] = ignition_target
+        for dp in c.datapoints:
+            dp.ignition_type['target'] = ignition_target
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
             c.convert_to_ReSpecTh(newfile)
 
             tree = etree.parse(newfile)
-            root = tree.getroot()
-            elem = root.find('ignitionType')
-            elem = elem.attrib
+        root = tree.getroot()
+        elem = root.find('ignitionType')
+        elem = elem.attrib
 
-            if ignition_target == 'pressure':
-                assert elem['target'] == 'P'
-            elif ignition_target == 'temperature':
-                assert elem['target'] == 'T'
-            else:
-                assert elem['target'] == ignition_target
+        if ignition_target == 'pressure':
+            assert elem['target'] == 'P'
+        elif ignition_target == 'temperature':
+            assert elem['target'] == 'T'
+        else:
+            assert elem['target'] == ignition_target
+
+    @pytest.mark.parametrize('ignition_type', ['d/dt max', 'max', '1/2 max', 'min', 'd/dt max extrapolated'])
+    def test_conversion_to_respecth_ignition_types(self, ignition_type):
+        """Test proper conversion for different ignition types.
+        """
+        file_path = os.path.join('testfile_st.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        c = ChemKED(filename)
+
+        for dp in c.datapoints:
+            dp.ignition_type['type'] = ignition_type
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            c.convert_to_ReSpecTh(newfile)
+
+            tree = etree.parse(newfile)
+        root = tree.getroot()
+        elem = root.find('ignitionType')
+        elem = elem.attrib
+
+        if ignition_type == 'd/dt max extrapolated':
+            assert elem['type'] == 'baseline max intercept from d/dt'
+        else:
+            assert elem['type'] == ignition_type
 
     def test_conversion_multiple_ignition_targets(self):
         """Test that multiple ignition targets for datapoints fails

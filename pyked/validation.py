@@ -15,11 +15,14 @@ from cerberus import Validator, SchemaError
 import habanero
 from orcid import SearchAPI
 
-# Local imports
-from .utils import units, Q_
+units = pint.UnitRegistry()
+"""Unit registry to contain the units used in PyKED"""
+
+units.define('cm3 = centimeter**3')
+Q_ = units.Quantity
 
 orcid_api = SearchAPI(sandbox=False)
-crossref_api = habanero.Crossref()
+crossref_api = habanero.Crossref(mailto='prometheus@pr.omethe.us')
 
 # Load the ChemKED schema definition file
 schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
@@ -250,8 +253,7 @@ class OurValidator(Validator):
         """
         if 'doi' in value:
             try:
-                ids = value['doi'] + '?mailto=prometheus@pr.omethe.us'
-                ref = crossref_api.works(ids=ids)['message']
+                ref = crossref_api.works(ids=value['doi'])['message']
             except (HTTPError, habanero.RequestError):
                 self._error(field, 'DOI not found')
                 return

@@ -681,7 +681,7 @@ class TestIgnitionType(object):
     @pytest.mark.parametrize('ignition_target',
                              ['P', 'T', 'OH', 'OH*', 'CH*', 'CH', 'OHEX', 'CHEX']
                              )
-    @pytest.mark.parametrize('ignition_type', ['max', 'd/dt max', '1/2 max', 'min'])
+    @pytest.mark.parametrize('ignition_type', ['max', 'd/dt max', '1/2 max', 'min', 'baseline max intercept from d/dt'])
     def test_valid_ignition_types(self, ignition_target, ignition_type):
         """Check for proper parsing of valid ignition types.
         """
@@ -715,8 +715,7 @@ class TestIgnitionType(object):
         assert 'Error: required attribute target of ignitionType is missing.' in str(excinfo.value)
 
     @pytest.mark.parametrize('ignition_type',
-                             ['baseline max intercept from d/dt',
-                              'baseline min intercept from d/dt',
+                             ['baseline min intercept from d/dt',
                               'concentration', 'relative concentration'
                               ])
     def test_unsupported_ignition_types(self, ignition_type):

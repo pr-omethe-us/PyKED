@@ -12,8 +12,7 @@ import xml.dom.minidom as minidom
 import numpy as np
 
 # Local imports
-from .validation import schema, OurValidator, yaml
-from .utils import Q_
+from .validation import schema, OurValidator, yaml, Q_
 from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
@@ -514,7 +513,10 @@ class ChemKED(object):
             else:
                 # options left are species
                 ignition.set('target', self.datapoints[0].ignition_type['target'])
-            ignition.set('type', self.datapoints[0].ignition_type['type'])
+            if ign_types[0]['type'] == 'd/dt max extrapolated':
+                ignition.set('type', 'baseline max intercept from d/dt')
+            else:
+                ignition.set('type', self.datapoints[0].ignition_type['type'])
         else:
             raise NotImplementedError('Different ignition targets or types for multiple datapoints '
                                       'are not supported in ReSpecTh.')
