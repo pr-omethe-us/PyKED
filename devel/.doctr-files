@@ -13,7 +13,6 @@ devel/_sources/pyked-examples.rst.txt
 devel/_sources/rcm-example.ipynb.txt
 devel/_sources/schema-docs.rst.txt
 devel/_sources/shock-tube-example.ipynb.txt
-devel/_sources/utils.rst.txt
 devel/_sources/validation.rst.txt
 devel/_static/README
 devel/_static/ajax-loader.gif
@@ -53,5 +52,4 @@ devel/schema-docs.html
 devel/search.html
 devel/searchindex.js
 devel/shock-tube-example.html
-devel/utils.html
 devel/validation.html

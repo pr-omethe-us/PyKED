@@ -36,7 +36,6 @@ Code API
 
    chemked
    converters
-   utils
    validation
 
 

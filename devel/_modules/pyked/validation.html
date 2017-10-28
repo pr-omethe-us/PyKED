@@ -57,11 +57,14 @@
 <span class="kn">import</span> <span class="nn">habanero</span>
 <span class="kn">from</span> <span class="nn">orcid</span> <span class="k">import</span> <span class="n">SearchAPI</span>
 
-<span class="c1"># Local imports</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">units</span><span class="p">,</span> <span class="n">Q_</span>
+<span class="n">units</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;Unit registry to contain the units used in PyKED&quot;&quot;&quot;</span>
+
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;cm3 = centimeter**3&#39;</span><span class="p">)</span>
+<span class="n">Q_</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">Quantity</span>
 
 <span class="n">orcid_api</span> <span class="o">=</span> <span class="n">SearchAPI</span><span class="p">(</span><span class="n">sandbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span>
+<span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">(</span><span class="n">mailto</span><span class="o">=</span><span class="s1">&#39;prometheus@pr.omethe.us&#39;</span><span class="p">)</span>
 
 <span class="c1"># Load the ChemKED schema definition file</span>
 <span class="n">schema_file</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s1">&#39;schemas/chemked_schema.yaml&#39;</span><span class="p">)</span>
@@ -292,8 +295,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s1">&#39;doi&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">ids</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;doi&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;?mailto=prometheus@pr.omethe.us&#39;</span>
-                <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+                <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;doi&#39;</span><span class="p">])[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
             <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;DOI not found&#39;</span><span class="p">)</span>
                 <span class="k">return</span>

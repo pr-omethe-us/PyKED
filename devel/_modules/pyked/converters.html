@@ -54,8 +54,8 @@
 <span class="kn">import</span> <span class="nn">pint</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">property_units</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">unit_registry</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">property_units</span><span class="p">,</span> <span class="n">crossref_api</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">unit_registry</span>
 <span class="kn">from</span> <span class="nn">._version</span> <span class="k">import</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">chemked</span>
 
@@ -145,7 +145,7 @@
 
     <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">ref</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ref_doi</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+            <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ref_doi</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">,</span> <span class="ne">ConnectionError</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">ref_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;DOI not found and preferredKey attribute not set&#39;</span><span class="p">)</span>
@@ -325,6 +325,8 @@
 
     <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
         <span class="n">ign_type</span> <span class="o">=</span> <span class="n">elem</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ign_type</span> <span class="o">==</span> <span class="s1">&#39;baseline max intercept from d/dt&#39;</span><span class="p">:</span>
+            <span class="n">ign_type</span> <span class="o">=</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingAttributeError</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;ignitionType&#39;</span><span class="p">)</span>
 
@@ -346,7 +348,7 @@
     <span class="k">if</span> <span class="n">ign_target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;OH&#39;</span><span class="p">,</span> <span class="s1">&#39;OH*&#39;</span><span class="p">,</span> <span class="s1">&#39;CH*&#39;</span><span class="p">,</span> <span class="s1">&#39;CH&#39;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="n">ign_target</span> <span class="o">+</span> <span class="s1">&#39; not valid ignition target&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">ign_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max&#39;</span><span class="p">,</span> <span class="s1">&#39;1/2 max&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">ign_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max&#39;</span><span class="p">,</span> <span class="s1">&#39;1/2 max&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="n">ign_type</span> <span class="o">+</span> <span class="s1">&#39; not valid ignition type&#39;</span><span class="p">)</span>
 
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ign_type</span>

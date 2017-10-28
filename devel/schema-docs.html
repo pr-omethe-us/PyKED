@@ -87,11 +87,12 @@ committed to a file in the database.</dd>
 </dl>
 </li>
 </ul>
-<ul class="simple" id="meta-file-author">
+<ul class="simple" id="meta-file-authors">
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">file-author</span></code>: mapping, required</dt>
-<dd>The author of the ChemKED file, which may be different from the authors of the referenced work.
-Must conform to the <a class="reference internal" href="#schema-author"><span class="std std-ref">author</span></a> schema.</dd>
+<dt><code class="docutils literal"><span class="pre">file-authors</span></code>: sequence, required</dt>
+<dd>The author(s) of the ChemKED file, which may be different from the authors of the referenced
+work. Elements of the sequence must be mappings that conform to the
+<a class="reference internal" href="#schema-author"><span class="std std-ref">author</span></a> schema.</dd>
 </dl>
 </li>
 </ul>
@@ -140,7 +141,7 @@ similar</dd>
 <dd>The reference contains the information about the article where the data in the file are
 published. Fields:<ul class="last">
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">journal</span></code>: string, required</dt>
+<dt><code class="docutils literal"><span class="pre">journal</span></code>: string, optional</dt>
 <dd>The journal where the data are published</dd>
 </dl>
 </li>

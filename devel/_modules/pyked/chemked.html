@@ -54,8 +54,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">Q_</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">Q_</span>
 <span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span><span class="p">,</span> <span class="n">ReSpecTh_to_ChemKED</span>
 
 <span class="n">VolumeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VolumeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">])</span>
@@ -556,7 +555,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># options left are species</span>
                 <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">])</span>
-            <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ign_types</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span><span class="p">:</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;baseline max intercept from d/dt&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Different ignition targets or types for multiple datapoints &#39;</span>
                                       <span class="s1">&#39;are not supported in ReSpecTh.&#39;</span><span class="p">)</span>
