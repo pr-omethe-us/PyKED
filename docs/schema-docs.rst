@@ -41,11 +41,12 @@ this section are required in every ChemKED file.
     An integer that represents the version of the file. Should be incremented every time a change is
     committed to a file in the database.
 
-.. _meta-file-author:
+.. _meta-file-authors:
 
-* ``file-author``: mapping, required
-    The author of the ChemKED file, which may be different from the authors of the referenced work.
-    Must conform to the :ref:`author <schema-author>` schema.
+* ``file-authors``: sequence, required
+    The author(s) of the ChemKED file, which may be different from the authors of the referenced
+    work. Elements of the sequence must be mappings that conform to the
+    :ref:`author <schema-author>` schema.
 
 .. _reference-keys:
 
