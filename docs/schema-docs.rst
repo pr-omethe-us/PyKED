@@ -83,7 +83,7 @@ section are required, although some of the sub-keys are optional.
     The reference contains the information about the article where the data in the file are
     published. Fields:
 
-    - ``journal``: string, required
+    - ``journal``: string, optional
         The journal where the data are published
 
     - ``year``: integer, required
