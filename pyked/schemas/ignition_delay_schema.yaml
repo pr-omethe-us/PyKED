@@ -23,6 +23,69 @@ ignition-type: &ignition-type
       required: true
       type: string
 
+time-history: &time-history
+  type: dict
+  schema:
+    type:
+      required: true
+      type: string
+      allowed:
+        - volume
+        - temperature
+        - pressure
+    quantity:
+      required: true
+      type: dict
+      isvalid_unit: true
+      schema:
+        units:
+          required: true
+          type: string
+        column:
+          required: true
+          type: integer
+    uncertainty:
+      type: dict
+      oneof_schema:
+        - type:
+            required: true
+            type: string
+            allowed:
+              - relative
+              - absolute
+          value:
+            required: true
+            type: string
+        - type:
+            required: true
+            type: string
+            allowed:
+              - relative
+              - absolute
+          column:
+            required: true
+            type: integer
+    time:
+      required: true
+      type: dict
+      isvalid_unit: true
+      schema:
+        units:
+          required: true
+          type: string
+        column:
+          required: true
+          type: integer
+    values:
+      required: true
+      type: list
+      minlength: 2
+      schema:
+        type: list
+        items:
+          - type: float
+          - type: float
+
 ignition-delay-schema: &ignition-delay-schema
   type: list
   minlength: 1
@@ -42,38 +105,7 @@ ignition-delay-schema: &ignition-delay-schema
       equivalence-ratio:
         type: float
         min: 0.0
-      volume-history:
-        type: dict
-        schema:
-          volume:
-            required: true
-            type: dict
-            isvalid_unit: true
-            schema:
-              units:
-                required: true
-                type: string
-              column:
-                required: true
-                type: integer
-                allowed: [0, 1]
-          time:
-            required: true
-            type: dict
-            isvalid_unit: true
-            schema:
-              units:
-                required: true
-                type: string
-              column:
-                required: true
-                type: integer
-                allowed: [0, 1]
-          values:
-            required: true
-            type: list
-            schema:
-              type: list
-              items:
-                - type: float
-                - type: float
+      time-histories:
+        type: list
+        minlength: 1
+        schema: *time-history
