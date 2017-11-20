@@ -16,10 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `file-author` field is now a list called `file-authors`
 - ReSpecTh->ChemKED converter function now returns a dictionary, while the command-line entry points write out files
 - Require Habanero>=0.6.0 to support the `mailto` argument
+- Require pytest>=3.2.0 to support the `pytest.mark.filterwarnings` decorator
 
 ### Fixed
 - Crossref lookups in the converters use the common API instance from validation
 - `d/dt max extrapolated` ignition type can be converted to/from ReSpecTh
+- Tests now check for appropriate warnings and ignore unrelated warnings
 
 ## [0.3.0] - 2017-10-09
 ### Added
