@@ -34,6 +34,10 @@ time-history: &time-history
         - volume
         - temperature
         - pressure
+        - piston position
+        - light emission
+        - OH emission
+        - absorption
     quantity:
       required: true
       type: dict
