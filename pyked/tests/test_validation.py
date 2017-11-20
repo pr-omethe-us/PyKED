@@ -366,7 +366,11 @@ class TestValidator(object):
     def test_valid_yaml(self, properties):
         """Ensure ChemKED YAML is validated
         """
-        assert v.validate(properties)
+        try:
+            assert v.validate(properties)
+        except AssertionError:
+            print(v.errors)
+            assert False
 
     @pytest.mark.parametrize("field", [
         'file-authors', 'chemked-version', 'file-version', 'reference', 'experiment-type',
