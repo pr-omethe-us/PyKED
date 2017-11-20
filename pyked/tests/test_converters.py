@@ -140,11 +140,11 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
-        assert w[1].message.args[0] == ('Using DOI to obtain reference information, '
-                                        'rather than preferredKey.'
-                                        )
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
 
         assert ref['doi'] == '10.1016/j.ijhydene.2007.04.008'
         assert ref['journal'] == 'International Journal of Hydrogen Energy'
@@ -176,13 +176,13 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
-        assert len(w) == 1
-        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink. '
-                                        'Setting "detail" key as a fallback; '
-                                        'please update to the appropriate fields.'
-                                        )
+
+        m = str(record.pop(UserWarning).message)
+        assert m == ('Missing doi attribute in bibliographyLink. Setting "detail" key as a '
+                     'fallback; please update to the appropriate fields.')
+
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                                  'Fig. 12., right, open diamond.'
@@ -199,13 +199,12 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond.'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
-        assert len(w) == 1
-        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink. '
-                                        'Setting "detail" key as a fallback; '
-                                        'please update to the appropriate fields.'
-                                        )
+        m = str(record.pop(UserWarning).message)
+        assert m == ('Missing doi attribute in bibliographyLink. Setting "detail" key as a '
+                     'fallback; please update to the appropriate fields.')
+
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                                  'Fig. 12., right, open diamond.'
@@ -243,15 +242,13 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
 
-        # This test also raises a ResourceWarning from habanero, so there are 2 warnings stored
-        assert len(w) == 2
-        assert w[1].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
-                                        'Setting "detail" key as a fallback; please update to '
-                                        'the appropriate fields.'
-                                        )
+        m = str(record.pop(UserWarning).message)
+        assert m == ('Missing doi attribute in bibliographyLink or lookup failed. Setting "detail" '
+                     'key as a fallback; please update to the appropriate fields.')
+
         assert ref['detail'] == (
                 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
@@ -269,15 +266,13 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond.'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
 
-        # This test also raises a ResourceWarning from habanero, so there are 2 warnings stored
-        assert len(w) == 2
-        assert w[1].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
-                                        'Setting "detail" key as a fallback; please update to '
-                                        'the appropriate fields.'
-                                        )
+        m = str(record.pop(UserWarning).message)
+        assert m == ('Missing doi attribute in bibliographyLink or lookup failed. Setting "detail" '
+                     'key as a fallback; please update to the appropriate fields.')
+
         assert ref['detail'] == (
                 'Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                 'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
@@ -295,13 +290,12 @@ class TestGetReference(object):
                 'Fig. 12., right, open diamond'
                 )
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             ref = get_reference(root)
-        assert len(w) == 1
-        assert w[0].message.args[0] == ('Missing doi attribute in bibliographyLink or lookup failed. '
-                                        'Setting "detail" key as a fallback; please update to '
-                                        'the appropriate fields.'
-                                        )
+        m = str(record.pop(UserWarning).message)
+        assert m == ('Missing doi attribute in bibliographyLink or lookup failed. Setting "detail" '
+                     'key as a fallback; please update to the appropriate fields.')
+
         assert ref['detail'] == ('Chaumeix, N., Pichon, S., Lafosse, F., Paillard, C.-E., '
                                  'International Journal of Hydrogen Energy, 2007, (32) 2216-2226, '
                                  'Fig. 12., right, open diamond.'
@@ -541,9 +535,10 @@ class TestCommonProperties(object):
         amount.set('units', 'mole fraction')
         amount.text = '1.0'
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             get_common_properties(root)
-        assert w[0].message.args[0] == ('Missing InChI for species H2')
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Missing InChI for species H2'
 
     def test_inconsistent_composition_type(self):
         """Check for error when inconsistent composition types.
@@ -601,12 +596,14 @@ class TestCommonProperties(object):
             amount.set('units', spec['units'])
             amount.text = str(spec['amount'])
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             common = get_common_properties(root)
-        assert w[0].message.args[0] == ('Assuming molar ppb in composition and '
-                                        'converting to mole fraction')
-        assert w[1].message.args[0] == ('Assuming molar ppm in composition and '
-                                        'converting to mole fraction')
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Assuming molar ppb in composition and converting to mole fraction'
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Assuming molar ppm in composition and converting to mole fraction'
+
         assert common['composition']['kind'] == 'mole fraction'
         assert len(common['composition']['species']) == 3
         assert common['composition']['species'][0]['species-name'] == 'H2'
@@ -637,9 +634,11 @@ class TestCommonProperties(object):
             amount.set('units', spec['units'])
             amount.text = str(spec['amount'])
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             common = get_common_properties(root)
-        assert w[0].message.args[0] == 'Assuming percent in composition means mole percent'
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Assuming percent in composition means mole percent'
+
         assert common['composition']['kind'] == 'mole percent'
         assert len(common['composition']['species']) == 1
         assert common['composition']['species'][0]['species-name'] == 'Ar'
@@ -1201,20 +1200,23 @@ class TestGetDatapoints(object):
         x3 = etree.SubElement(datapoint, 'x3')
         x3.text = str(value)
 
-        with pytest.warns(UserWarning) as w:
+        with pytest.warns(UserWarning) as record:
             datapoints = get_datapoints(root)
-        assert w[0].message.args[0] == 'Missing InChI for species H2'
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Missing InChI for species H2'
+        m = str(record.pop(UserWarning).message)
         if kind == 'percent':
-            assert w[1].message.args[0] == 'Assuming percent in composition means mole percent'
+            assert m == 'Assuming percent in composition means mole percent'
             kind = 'mole percent'
         elif kind == 'ppm':
-            assert w[1].message.args[0] == 'Assuming molar ppm in composition and converting to mole fraction'
+            assert m == 'Assuming molar ppm in composition and converting to mole fraction'
             kind = 'mole fraction'
             value *= 1e-6
         elif kind == 'ppb':
-            assert w[1].message.args[0] == 'Assuming molar ppb in composition and converting to mole fraction'
+            assert m == 'Assuming molar ppb in composition and converting to mole fraction'
             kind = 'mole fraction'
             value *= 1e-9
+
         assert len(datapoints) == 1
         datapoint = datapoints[0]
         assert datapoint['temperature'] == [str(1000.0) + ' K']
