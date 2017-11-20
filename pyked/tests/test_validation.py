@@ -465,15 +465,6 @@ class TestValidator(object):
         v.validate({quantity: ['1.0 {}'.format('candela*ampere')]})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
 
-    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
-    def test_dimensionality_error_unit(self, quantity, unit):
-        """Ensure that dimensionality errors in units are validation errors
-        """
-        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
-        v = OurValidator(unit_schema)
-        v.validate({quantity: {'units': 'candela*ampere'}})
-        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
-
     @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
     def test_mole_fraction_bad_sum(self, properties):
         """Ensure mole fractions that do not sum to 1.0 raise error

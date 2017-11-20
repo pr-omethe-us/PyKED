@@ -165,25 +165,42 @@ def compare_name(given_name, family_name, question_name):
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references.
     """
-    def _validate_isvalid_unit(self, isvalid_unit, field, value):
-        """Checks for appropriate units using Pint unit registry.
+    def _validate_isvalid_history(self, isvalid_history, field, value):
+        """Checks that the given time history is properly formatted.
 
         Args:
-            isvalid_unit (`bool`): flag from schema indicating units to be checked.
-            field (`str`): property associated with units in question.
+            isvalid_history (`bool`): flag from schema indicating units to be checked.
+            field (`str`): property associated with history in question.
             value (`dict`): dictionary of values from file associated with this property.
 
         The rule's arguments are validated against this schema:
             {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'dict'}}
         """
-        quantity = 1.0 * units(value['units'])
+        # Check the type has appropriate units
+        history_type = value['type']
+        quantity = 1.0*(units(value['quantity']['units']))
         try:
-            quantity.to(property_units[field])
+            quantity.to(property_units[history_type])
         except pint.DimensionalityError:
             self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units[field]
-                        )
+                        'with ' + property_units[history_type])
+
+        # Check that time has appropriate units
+        time = 1.0*(units(value['time']['units']))
+        try:
+            time.to(property_units['time'])
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units['time'])
+
+        # Check that the values have the right number of columns
+        n_cols = len(value['values'][0])
+        max_cols = max(value['time']['column'], value['quantity']['column'], value.get('uncertainty', {}).get('column'))
+        if n_cols > max_cols:
+            self._error(field, 'too many columns in the values')
+        elif n_cols < max_cols:
+            self._error(field, 'not enough columns in the values')
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.

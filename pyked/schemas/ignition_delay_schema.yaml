@@ -25,6 +25,7 @@ ignition-type: &ignition-type
 
 time-history: &time-history
   type: dict
+  isvalid_history: true
   schema:
     type:
       required: true
@@ -36,7 +37,6 @@ time-history: &time-history
     quantity:
       required: true
       type: dict
-      isvalid_unit: true
       schema:
         units:
           required: true
@@ -68,7 +68,6 @@ time-history: &time-history
     time:
       required: true
       type: dict
-      isvalid_unit: true
       schema:
         units:
           required: true
