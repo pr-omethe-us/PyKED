@@ -196,7 +196,7 @@ class OurValidator(Validator):
 
         # Check that the values have the right number of columns
         n_cols = len(value['values'][0])
-        max_cols = max(value['time']['column'], value['quantity']['column'], value.get('uncertainty', {}).get('column'))
+        max_cols = max(value['time']['column'], value['quantity']['column'], value.get('uncertainty', {}).get('column', 0)) + 1
         if n_cols > max_cols:
             self._error(field, 'too many columns in the values')
         elif n_cols < max_cols:
