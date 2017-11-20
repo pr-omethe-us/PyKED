@@ -217,6 +217,7 @@ class TestWriteFile(object):
         'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml',
         'testfile_required.yaml', 'testfile_uncertainty.yaml'
         ])
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_write_files(self, filename):
         """Test proper writing of ChemKED files.
         """
@@ -248,8 +249,11 @@ class TestConvertToReSpecTh(object):
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
             c_true.convert_to_ReSpecTh(newfile)
+            with pytest.warns(UserWarning) as record:
+                c = ChemKED.from_respecth(newfile)
 
-            c = ChemKED.from_respecth(newfile)
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
 
         assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
 
@@ -339,7 +343,10 @@ class TestConvertToReSpecTh(object):
 
             tree = etree.parse(newfile)
         root = tree.getroot()
-        datapoints = get_datapoints(root)
+        with pytest.warns(UserWarning) as record:
+            datapoints = get_datapoints(root)
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Missing InChI for species N2'
 
         assert len(datapoints[0]['composition']['species']) == 3
         for spec in datapoints[0]['composition']['species']:
@@ -623,18 +630,21 @@ class TestDataPoint(object):
         d = DataPoint(properties[0])
         assert np.isclose(d.pressure_rise, Q_(0.1, '1/ms'))
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_absolute_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
         assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
         assert np.isclose(d.temperature.error, Q_(10, 'K'))
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_absolute_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
         assert np.isclose(d.composition[1]['amount'].value, Q_(0.556))
         assert np.isclose(d.composition[1]['amount'].error, Q_(0.002))
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_relative_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[1])
@@ -642,6 +652,7 @@ class TestDataPoint(object):
         assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
         assert np.isclose(d.ignition_delay.rel, 0.1)
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_relative_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
@@ -708,6 +719,7 @@ class TestDataPoint(object):
         assert np.isclose(d.composition[1]['amount'].error, Q_(0.0556))
         assert np.isclose(d.composition[1]['amount'].rel, 0.1)
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_missing_uncertainty_parts(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         for prop in ['uncertainty', 'uncertainty-type']:
@@ -732,6 +744,7 @@ class TestDataPoint(object):
                 DataPoint(properties[3])
             properties[1]['ignition-delay'][1][prop] = save
 
+    @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_missing_comp_uncertainty_parts(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         for prop in ['uncertainty', 'uncertainty-type']:

@@ -1128,6 +1128,7 @@ class TestGetDatapoints(object):
         ('mass fraction', 1.0),
         ('mole percent', 100.0),
         ])
+    @pytest.mark.filterwarnings('ignore:Missing InChI for species H2')
     def test_datapoints_composition(self, type, value):
         """Test valid parsing of datapoints with composition.
         """
@@ -1311,6 +1312,7 @@ class TestConvertReSpecTh(object):
     """
     """
     @pytest.mark.parametrize('filename_xml', ['testfile_st.xml', 'testfile_rcm.xml'])
+    @pytest.mark.filterwarnings('ignore:Using DOI')
     def test_valid_conversion(self, filename_xml):
         """Test proper conversion of ReSpecTh files.
         """
@@ -1338,6 +1340,7 @@ class TestConvertReSpecTh(object):
         assert c.reference.doi == c_true.reference.doi
         assert len(c.datapoints) == len(c_true.datapoints)
 
+    @pytest.mark.filterwarnings('ignore:Using DOI')
     def test_error_rcm_pressurerise(self):
         """Test for appropriate error if RCM file has pressure rise.
         """
@@ -1364,6 +1367,7 @@ class TestConvertReSpecTh(object):
                 ReSpecTh_to_ChemKED(filename)
             assert 'Pressure rise cannot be defined for RCM.' in str(excinfo.value)
 
+    @pytest.mark.filterwarnings('ignore:Using DOI')
     def test_error_st_volumehistory(self):
         """Test for appropriate error if shock tube file has volume history.
         """
@@ -1398,6 +1402,7 @@ class TestConvertReSpecTh(object):
                 ReSpecTh_to_ChemKED(filename)
             assert 'Volume history cannot be defined for shock tube.' in str(excinfo.value)
 
+    @pytest.mark.filterwarnings('ignore:Using DOI')
     def test_author_orcid_no_name(self):
         """Test that passing an ORCID to the conversion without a name raises an error
         """
@@ -1410,6 +1415,7 @@ class TestConvertReSpecTh(object):
             ReSpecTh_to_ChemKED(filename, file_author_orcid=file_author_orcid)
         assert 'If file_author_orcid is specified, file_author must be as well' in str(e.value)
 
+    @pytest.mark.filterwarnings('ignore:Using DOI')
     def test_file_author_only(self):
         """Test that passing the file author only works properly
         """
@@ -1438,11 +1444,12 @@ class TestConverterMain(object):
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.yaml')
-            main(['-i', filename, '-o', newfile,
-                  '-fa', file_author, '-fo', file_author_orcid
-                  ])
+            with pytest.warns(UserWarning) as record:
+                main(['-i', filename, '-o', newfile, '-fa', file_author, '-fo', file_author_orcid])
             c = ChemKED(yaml_file=newfile)
 
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
         true_yaml = pkg_resources.resource_filename(__name__, os.path.join('testfile_st.yaml'))
         c_true = ChemKED(yaml_file=true_yaml)
 
@@ -1462,12 +1469,12 @@ class TestConverterMain(object):
         """
         file_path = os.path.join('testfile_st.yaml')
         filename = pkg_resources.resource_filename(__name__, file_path)
+        fa_name = 'Kyle Niemeyer'
+        fa_orcid = '0000-0003-4425-7097'
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
-            main(['-i', filename, '-o', newfile,
-                  '-fa', 'Kyle Niemeyer', '-fo', '0000-0003-4425-7097'
-                  ])
+            main(['-i', filename, '-o', newfile, '-fa', fa_name, '-fo', fa_orcid])
 
             assert os.path.exists(newfile)
 
@@ -1479,10 +1486,14 @@ class TestConverterMain(object):
 
         with TemporaryDirectory() as temp_dir:
             xml_file = copy(filename, temp_dir)
-            respth2ck(['-i', xml_file])
+            with pytest.warns(UserWarning) as record:
+                respth2ck(['-i', xml_file])
 
             newfile = os.path.join(os.path.splitext(xml_file)[0] + '.yaml')
             assert os.path.exists(newfile)
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
 
     def test_conversion_respth2ck_with_output(self):
         """Test respth2ck converter when used via command-line arguments.
@@ -1492,9 +1503,13 @@ class TestConverterMain(object):
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.yaml')
-            respth2ck(['-i', filename, '-o', newfile])
+            with pytest.warns(UserWarning) as record:
+                respth2ck(['-i', filename, '-o', newfile])
 
             assert os.path.exists(newfile)
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
 
     def test_conversion_ck2respth(self):
         """Test ck2respth converter when used via command-line arguments.

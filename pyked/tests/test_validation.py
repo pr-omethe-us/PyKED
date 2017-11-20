@@ -149,17 +149,20 @@ class TestValidator(object):
                    {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'}
                    ]
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning) as record:
             v.validate(
                 {'reference': {'authors': authors, 'doi': '10.1016/j.combustflame.2015.06.017'}},
                 update=True,
             )
+        m = str(record.pop(UserWarning).message)
+        assert m == 'ORCID 0000-0003-4425-7097 missing for Kyle E Niemeyer'
 
     @internet_missing
     def test_missing_author(self):
         """Test for proper error for missing author.
         """
-        authors = [{'name': 'Kyle E Niemeyer'}, {'name': 'Kyle Brady'},
+        authors = [{'name': 'Kyle E Niemeyer', 'ORCID': '0000-0003-4425-7097'},
+                   {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
                    {'name': 'Chih-Jen Sung'}
                    ]
         v.validate(
@@ -201,7 +204,8 @@ class TestValidator(object):
         """Ensure appropriate error for extra authors given.
         """
         # update=True means to ignore required keys that are left out for testing
-        authors = [{'name': 'Kyle E Niemeyer'}, {'name': 'Kyle Brady'},
+        authors = [{'name': 'Kyle E Niemeyer', 'ORCID': '0000-0003-4425-7097'},
+                   {'name': 'Kyle Brady', 'ORCID': '0000-0002-4664-3680'},
                    {'name': 'Chih-Jen Sung'}, {'name': 'Xin Hui'},
                    {'name': 'Bryan W Weber'}
                    ]
