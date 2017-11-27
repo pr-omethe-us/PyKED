@@ -417,6 +417,61 @@ class TestValidator(object):
         v.validate(properties)
         assert v.errors['datapoints'][0]['oneof'][1]['oneof definition 0'][0] == 'min length is 1'
 
+    @pytest.fixture(scope='function')
+    def time_history(self, request):
+        history_type = request.param[0]
+        history_units = request.param[1]
+        history = {'type': history_type, 'quantity': {'units': history_units, 'column': 1}}
+        history['time'] = {'units': 'second', 'column': 0}
+        history['values'] = [[0, 1], [1, 2]]
+        return history
+
+    @pytest.mark.parametrize('time_history',
+                             [('pressure', 'bar'), ('volume', 'cm3'), ('temperature', 'kelvin'),
+                              ('piston position', 'cm'), ('light emission', 'dimensionless'),
+                              ('OH emission', 'dimensionless'), ('absorption', 'dimensionless')],
+                             indirect=['time_history'])
+    def test_time_history(self, time_history):
+        """Test that the time history validation is working
+        """
+        assert v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    @pytest.mark.parametrize('time_history',
+                             [('pressure', 'candela*ampere'), ('volume', 'candela*ampere'),
+                              ('temperature', 'candela*ampere'),
+                              ('piston position', 'candela*ampere'),
+                              ('light emission', 'candela*ampere'),
+                              ('OH emission', 'candela*ampere'), ('absorption', 'candela*ampere')],
+                             indirect=['time_history'])
+    def test_time_history_bad_units(self, time_history):
+        """Test that giving bad units to a time history results in a validation error
+        """
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_bad_time_units(self):
+        """Test that giving bad units to the time in a time history results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'candela*ampere', 'column': 0}
+        time_history['values'] = [[0, 1], [1, 2]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_not_enough_columns(self):
+        """Test that not having enough columns in the value array results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'second', 'column': 0}
+        time_history['values'] = [[0], [1]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_too_many_columns(self):
+        """Test that having too many columns in the value array results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'second', 'column': 0}
+        time_history['values'] = [[0, 1, 2], [1, 2, 3]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error
         """
