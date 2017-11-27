@@ -69,6 +69,9 @@ time-history: &time-history
           column:
             required: true
             type: integer
+          units:
+            required: true
+            type: string
     time:
       required: true
       type: dict
@@ -81,13 +84,21 @@ time-history: &time-history
           type: integer
     values:
       required: true
-      type: list
-      minlength: 2
-      schema:
-        type: list
-        items:
-          - type: float
-          - type: float
+      oneof:
+        - type: list
+          minlength: 2
+          schema:
+            type: list
+            oneof_items:
+              - - type: float
+                - type: float
+              - - type: float
+                - type: float
+                - type: float
+        - type: dict
+          schema:
+            filename:
+              type: string
 
 ignition-delay-schema: &ignition-delay-schema
   type: list
