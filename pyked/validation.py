@@ -81,6 +81,10 @@ property_units = {
     'compression-time': 'second',
     'volume': 'meter**3',
     'time': 'second',
+    'piston position': 'meter',
+    'emission': 'dimensionless',
+    'absorption': 'dimensionless',
+    'concentration': 'mole/meter**3',
 }
 
 
@@ -174,11 +178,15 @@ class OurValidator(Validator):
             value (`dict`): dictionary of values from file associated with this property.
 
         The rule's arguments are validated against this schema:
-            {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
+            {'isvalid_history': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'dict'}}
         """
         # Check the type has appropriate units
         history_type = value['type']
+        if history_type.endswith('emission'):
+            history_type = 'emission'
+        elif history_type.endswith('absorption'):
+            history_type = 'absorption'
         quantity = 1.0*(units(value['quantity']['units']))
         try:
             quantity.to(property_units[history_type])
