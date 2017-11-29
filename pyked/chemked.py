@@ -37,6 +37,8 @@ Apparatus.kind.__doc__ = '(`str`) The kind of experimental apparatus'
 Apparatus.institution.__doc__ = '(`str`) The institution where the experiment is located'
 Apparatus.facility.__doc__ = '(`str`) The particular experimental facility at the location'
 
+Composition = namedtuple('Composition', 'species_name InChI SMILES atomic_composition amount')
+
 
 class ChemKED(object):
     """Main ChemKED class.
@@ -608,12 +610,20 @@ class DataPoint(object):
                 setattr(self, prop.replace('-', '_'), None)
 
         self.composition_type = properties['composition']['kind']
-        composition = deepcopy(properties['composition']['species'])
-
+        # composition = deepcopy(properties['composition']['species'])
+        composition = []
+        for spec in properties['composition']['species']:
+            species_name = spec['species-name']
+            amount = spec['amount']
+            InChI = spec.get('InChI')
+            SMILES = spec.get('SMILES')
+            atomic_composition = spec.get('atomic-composition')
+            composition.append(Composition(species_name=species_name, InChI=InChI, SMILES=SMILES, atomic_composition=atomic_composition, amount=amount))
+        print(composition)
         for idx, species in enumerate(composition):
-            quant = Q_(species['amount'][0])
-            if len(species['amount']) > 1:
-                unc = species['amount'][1]
+            quant = Q_(species.amount[0])
+            if len(species.amount) > 1:
+                unc = species.amount[1]
                 uncertainty = unc.get('uncertainty', False)
                 upper_uncertainty = unc.get('upper-uncertainty', False)
                 lower_uncertainty = unc.get('lower-uncertainty', False)
@@ -646,11 +656,11 @@ class DataPoint(object):
                 else:
                     raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
 
-            composition[idx]['amount'] = quant
-        setattr(self, 'composition', composition)
+            #composition[idx]['amount'] = quant
+
+            setattr(self, 'composition', composition)
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
-
         self.ignition_type = deepcopy(properties.get('ignition-type'))
 
         if 'volume-history' in properties:
