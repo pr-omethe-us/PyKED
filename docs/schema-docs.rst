@@ -218,6 +218,7 @@ for the :ref:`datapoints <meta-datapoints>` schema.
             * ``max``: maximum of the ``target``
             * ``1/2 max``: half-maximum of the ``target``
             * ``min``: minimum of the ``target``
+            * ``d/dt max extrapolated``: maximum slope of the target extrapolated to the baseline
 
 .. _ignition-ignition-delay:
 
