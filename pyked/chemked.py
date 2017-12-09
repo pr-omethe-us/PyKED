@@ -586,6 +586,18 @@ class DataPoint(object):
         ignition_type (`dict`): Dictionary with the ignition target and type.
         volume_history (`~collections.namedtuple`, optional): The volume history of the reactor
             during an RCM experiment.
+        pressure_history (`~collections.namedtuple`, optional): The pressure history of the reactor
+            during an experiment.
+        temperature_history (`~collections.namedtuple`, optional): The temperature history of the
+            reactor during an experiment.
+        piston_position_history (`~collections.namedtuple`, optional): The piston position history
+            of the reactor during an RCM experiment.
+        light_emission_history (`~collections.namedtuple`, optional): The light emission history
+            of the reactor during an experiment.
+        OH_emission_history (`~collections.namedtuple`, optional): The OH emission history of the
+            reactor during an experiment.
+        absorption_history (`~collections.namedtuple`, optional): The absorption history of the
+            reactor during an experiment.
     """
     def __init__(self, properties):
         value_unit_props = [

@@ -262,44 +262,11 @@ for the :ref:`datapoints <meta-datapoints>` schema.
 * ``equivalence-ratio``: float, optional
     The equivalence ratio of the experiment, dimensionless. Minimum value is 0.0.
 
-.. _ignition-volume-history:
+.. _ignition-time-histories:
 
-* ``volume-history``: mapping, optional
-    Specify the volume history of the reaction chamber in a rapid compression machine experiment,
-    for use in simulating the complete experiment. Fields:
-
-    - ``volume``: mapping, required
-        A mapping describing the volume in the history. Fields:
-
-        * ``units``: string, required
-            The units of the volume, with dimensions of length cubed
-
-        * ``column``: integer, required
-            The 0-based index of the column containing the volume information in the ``values``
-            array. Must be 0 or 1
-
-    - ``time``: mapping, required
-        A mapping describing the time in the history. Fields:
-
-        * ``units``: string, required
-            The units of the time, with dimensions of time
-
-        * ``column``: integer, required
-            The 0-based index of the column containing the time information in the ``values``
-            array. Must be 0 or 1
-
-    - ``values``: sequence, required
-        A sequence of sequences describing the values of the volume at the time points. Can be
-        entered in any supported syntax, including:
-
-        .. code-block:: yaml
-
-            - [0.0, 0.0]
-            - [1.0, 1.0]
-            - - 2.0
-              - 2.0
-            - - 3.0
-              - 3.0
+* ``time-histories``: sequence, optional
+    A sequence of mappings conforming to the :ref:`time-history <ignition-time-history>`
+    schema. Used to specify a time-varying history of values during an experiment.
 
 .. _schema-only-keys:
 
@@ -374,3 +341,65 @@ should not be used in actual ChemKED files. These keys are documented in this se
     A sequence conforming to either :ref:`value-with-uncertainty <schema-value-with-uncertainty>` or
     :ref:`value-without-uncertainty <schema-value-without-uncertainty>`. May or may not be included
     in the ChemKED file.
+
+.. _ignition-time-history:
+
+* ``time-history``: mapping, optional
+    Specify the time history of a quantity during an experiment. Fields:
+
+    - ``quantity``: mapping, required
+        A mapping describing the volume in the history. Fields:
+
+        * ``units``: string, required
+            The units of the volume, with dimensions of length cubed
+
+        * ``column``: integer, required
+            The 0-based index of the column containing the volume information in the ``values``
+            array. Must be 0 or 1
+
+    - ``time``: mapping, required
+        A mapping describing the time in the history. Fields:
+
+        * ``units``: string, required
+            The units of the time, with dimensions of time
+
+        * ``column``: integer, required
+            The 0-based index of the column containing the time information in the ``values``
+            array. Must be 0 or 1
+
+    - ``uncertainty``: mapping, optional
+        The uncertainty of the values in the ``quantity`` column. Can be specified either globally
+        by a single value in the sequence or by specifying a column that must be present in the
+        values array. Mapping keys:
+
+        * ``type``: string, required
+            Either ``absolute`` or ``relative`` to indicate the type of uncertainty
+
+        * ``value``: string, optional
+            A global value for the uncertainty applied to all points in the ``values`` array,
+            specified as a string with units. Either this key must be present, or the ``column`` and
+            ``units`` keys must be present
+
+        * ``column``: integer, optional
+            The column in the ``values`` array containing the uncertainty of each point. Either this
+            key and the ``units`` key must be specified, or the ``value`` key must be specified.
+
+        * ``units``: string, optional
+            The units of the uncertainty in the ``column`` array. IF the ``type`` is relative, this
+            should be ``dimensionless``. Either this key and the ``column`` key must be specified,
+            or the ``value`` key must be specified.
+
+    - ``values``: sequence or mapping, required
+        Must be a sequence or mapping. If a mapping, the only key should be ``filename`` whose value
+        should be the filename of a comma-separated value file containing the values for the
+        history. If a sequence, should be a sequence of sequences describing the values of the
+        volume at the time points. Can be entered in any supported syntax, including:
+
+        .. code-block:: yaml
+
+            - [0.0, 0.0]
+            - [1.0, 1.0]
+            - - 2.0
+              - 2.0
+            - - 3.0
+              - 3.0
