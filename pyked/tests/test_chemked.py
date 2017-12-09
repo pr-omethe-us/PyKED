@@ -7,6 +7,7 @@ import pkg_resources
 import warnings
 from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as etree
+from copy import deepcopy
 
 # Third-party libraries
 import numpy as np
@@ -830,6 +831,181 @@ class TestDataPoint(object):
             DataPoint(properties[0])
 
         assert 'time-histories and volume-history are mutually exclusive' in str(record.value)
+
+    time_history_types = ['volume', 'temperature', 'pressure', 'piston_position',
+                          'light_emission', 'OH_emission', 'absorption']
+
+    @pytest.mark.parametrize('history_type', time_history_types)
+    def test_time_histories_array(self, history_type):
+        """Check that all of the history types are set properly"""
+        properties = self.load_properties('testfile_rcm.yaml')
+        properties[0]['time-histories'][0]['type'] = history_type
+        d = DataPoint(properties[0])
+
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).time,
+                                   Q_(np.arange(0, 9.7e-2, 1.e-3), 's')
+                                   )
+
+        quants = Q_(np.array([
+            5.47669375000E+002, 5.46608789894E+002, 5.43427034574E+002,
+            5.38124109043E+002, 5.30700013298E+002, 5.21154747340E+002,
+            5.09488311170E+002, 4.95700704787E+002, 4.79791928191E+002,
+            4.61761981383E+002, 4.41610864362E+002, 4.20399162234E+002,
+            3.99187460106E+002, 3.77975757979E+002, 3.56764055851E+002,
+            3.35552353723E+002, 3.14340651596E+002, 2.93128949468E+002,
+            2.71917247340E+002, 2.50705545213E+002, 2.29493843085E+002,
+            2.08282140957E+002, 1.87070438830E+002, 1.65858736702E+002,
+            1.44647034574E+002, 1.23435332447E+002, 1.02223630319E+002,
+            8.10119281915E+001, 6.33355097518E+001, 5.27296586879E+001,
+            4.91943750000E+001, 4.97137623933E+001, 5.02063762048E+001,
+            5.06454851923E+001, 5.10218564529E+001, 5.13374097598E+001,
+            5.16004693977E+001, 5.18223244382E+001, 5.20148449242E+001,
+            5.21889350372E+001, 5.23536351113E+001, 5.25157124459E+001,
+            5.26796063730E+001, 5.28476160610E+001, 5.30202402028E+001,
+            5.31965961563E+001, 5.33748623839E+001, 5.35527022996E+001,
+            5.37276399831E+001, 5.38973687732E+001, 5.40599826225E+001,
+            5.42141273988E+001, 5.43590751578E+001, 5.44947289126E+001,
+            5.46215686913E+001, 5.47405518236E+001, 5.48529815402E+001,
+            5.49603582190E+001, 5.50642270863E+001, 5.51660349836E+001,
+            5.52670070646E+001, 5.53680520985E+001, 5.54697025392E+001,
+            5.55720927915E+001, 5.56749762728E+001, 5.57777790517E+001,
+            5.58796851466E+001, 5.59797461155E+001, 5.60770054561E+001,
+            5.61706266985E+001, 5.62600130036E+001, 5.63449057053E+001,
+            5.64254496625E+001, 5.65022146282E+001, 5.65761642150E+001,
+            5.66485675508E+001, 5.67208534842E+001, 5.67944133373E+001,
+            5.68703658198E+001, 5.69493069272E+001, 5.70310785669E+001,
+            5.71146023893E+001, 5.71978399741E+001, 5.72779572372E+001,
+            5.73517897984E+001, 5.74167271960E+001, 5.74721573687E+001,
+            5.75216388520E+001, 5.75759967785E+001, 5.76575701358E+001,
+            5.78058719368E+001, 5.80849611077E+001, 5.85928651155E+001,
+            5.94734357453E+001, 6.09310671165E+001, 6.32487551103E+001,
+            6.68100309742E+001
+            ]), 'cm**3')
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).quantity, quants)
+        assert all([getattr(d, '{}_history'.format(h)) is None for h in self.time_history_types if h != history_type])
+
+    @pytest.mark.parametrize('history_type', time_history_types)
+    def test_time_histories_file(self, history_type):
+        """Check that all of the history types are set properly"""
+        properties = self.load_properties('testfile_rcm.yaml')
+        properties[0]['time-histories'][0]['type'] = history_type
+        file_path = os.path.join('rcm_history.csv')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        properties[0]['time-histories'][0]['values'] = {'filename': filename}
+        d = DataPoint(properties[0])
+
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).time,
+                                   Q_(np.arange(0, 9.7e-2, 1.e-3), 's')
+                                   )
+
+        quants = Q_(np.array([
+            5.47669375000E+002, 5.46608789894E+002, 5.43427034574E+002,
+            5.38124109043E+002, 5.30700013298E+002, 5.21154747340E+002,
+            5.09488311170E+002, 4.95700704787E+002, 4.79791928191E+002,
+            4.61761981383E+002, 4.41610864362E+002, 4.20399162234E+002,
+            3.99187460106E+002, 3.77975757979E+002, 3.56764055851E+002,
+            3.35552353723E+002, 3.14340651596E+002, 2.93128949468E+002,
+            2.71917247340E+002, 2.50705545213E+002, 2.29493843085E+002,
+            2.08282140957E+002, 1.87070438830E+002, 1.65858736702E+002,
+            1.44647034574E+002, 1.23435332447E+002, 1.02223630319E+002,
+            8.10119281915E+001, 6.33355097518E+001, 5.27296586879E+001,
+            4.91943750000E+001, 4.97137623933E+001, 5.02063762048E+001,
+            5.06454851923E+001, 5.10218564529E+001, 5.13374097598E+001,
+            5.16004693977E+001, 5.18223244382E+001, 5.20148449242E+001,
+            5.21889350372E+001, 5.23536351113E+001, 5.25157124459E+001,
+            5.26796063730E+001, 5.28476160610E+001, 5.30202402028E+001,
+            5.31965961563E+001, 5.33748623839E+001, 5.35527022996E+001,
+            5.37276399831E+001, 5.38973687732E+001, 5.40599826225E+001,
+            5.42141273988E+001, 5.43590751578E+001, 5.44947289126E+001,
+            5.46215686913E+001, 5.47405518236E+001, 5.48529815402E+001,
+            5.49603582190E+001, 5.50642270863E+001, 5.51660349836E+001,
+            5.52670070646E+001, 5.53680520985E+001, 5.54697025392E+001,
+            5.55720927915E+001, 5.56749762728E+001, 5.57777790517E+001,
+            5.58796851466E+001, 5.59797461155E+001, 5.60770054561E+001,
+            5.61706266985E+001, 5.62600130036E+001, 5.63449057053E+001,
+            5.64254496625E+001, 5.65022146282E+001, 5.65761642150E+001,
+            5.66485675508E+001, 5.67208534842E+001, 5.67944133373E+001,
+            5.68703658198E+001, 5.69493069272E+001, 5.70310785669E+001,
+            5.71146023893E+001, 5.71978399741E+001, 5.72779572372E+001,
+            5.73517897984E+001, 5.74167271960E+001, 5.74721573687E+001,
+            5.75216388520E+001, 5.75759967785E+001, 5.76575701358E+001,
+            5.78058719368E+001, 5.80849611077E+001, 5.85928651155E+001,
+            5.94734357453E+001, 6.09310671165E+001, 6.32487551103E+001,
+            6.68100309742E+001
+            ]), 'cm**3')
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).quantity, quants)
+        assert all([getattr(d, '{}_history'.format(h)) is None for h in self.time_history_types if h != history_type])
+
+    @pytest.mark.parametrize('history_type', zip(time_history_types[:-1], time_history_types[1:]))
+    def test_multiple_time_histories(self, history_type):
+        """Check that multiple of the history types are set properly.
+
+        Note the units aren't correct for the history types, but that doesn't get checked here, it
+        gets checked in the validation of the YAML file by Cerberus.
+        """
+        properties = self.load_properties('testfile_rcm.yaml')
+        properties[0]['time-histories'][0]['type'] = history_type[0]
+        properties[0]['time-histories'].append(deepcopy(properties[0]['time-histories'][0]))
+        properties[0]['time-histories'][1]['type'] = history_type[1]
+        d = DataPoint(properties[0])
+
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type[0])).time,
+                                   Q_(np.arange(0, 9.7e-2, 1.e-3), 's'))
+
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type[1])).time,
+                                   Q_(np.arange(0, 9.7e-2, 1.e-3), 's'))
+
+        quants = Q_(np.array([
+            5.47669375000E+002, 5.46608789894E+002, 5.43427034574E+002,
+            5.38124109043E+002, 5.30700013298E+002, 5.21154747340E+002,
+            5.09488311170E+002, 4.95700704787E+002, 4.79791928191E+002,
+            4.61761981383E+002, 4.41610864362E+002, 4.20399162234E+002,
+            3.99187460106E+002, 3.77975757979E+002, 3.56764055851E+002,
+            3.35552353723E+002, 3.14340651596E+002, 2.93128949468E+002,
+            2.71917247340E+002, 2.50705545213E+002, 2.29493843085E+002,
+            2.08282140957E+002, 1.87070438830E+002, 1.65858736702E+002,
+            1.44647034574E+002, 1.23435332447E+002, 1.02223630319E+002,
+            8.10119281915E+001, 6.33355097518E+001, 5.27296586879E+001,
+            4.91943750000E+001, 4.97137623933E+001, 5.02063762048E+001,
+            5.06454851923E+001, 5.10218564529E+001, 5.13374097598E+001,
+            5.16004693977E+001, 5.18223244382E+001, 5.20148449242E+001,
+            5.21889350372E+001, 5.23536351113E+001, 5.25157124459E+001,
+            5.26796063730E+001, 5.28476160610E+001, 5.30202402028E+001,
+            5.31965961563E+001, 5.33748623839E+001, 5.35527022996E+001,
+            5.37276399831E+001, 5.38973687732E+001, 5.40599826225E+001,
+            5.42141273988E+001, 5.43590751578E+001, 5.44947289126E+001,
+            5.46215686913E+001, 5.47405518236E+001, 5.48529815402E+001,
+            5.49603582190E+001, 5.50642270863E+001, 5.51660349836E+001,
+            5.52670070646E+001, 5.53680520985E+001, 5.54697025392E+001,
+            5.55720927915E+001, 5.56749762728E+001, 5.57777790517E+001,
+            5.58796851466E+001, 5.59797461155E+001, 5.60770054561E+001,
+            5.61706266985E+001, 5.62600130036E+001, 5.63449057053E+001,
+            5.64254496625E+001, 5.65022146282E+001, 5.65761642150E+001,
+            5.66485675508E+001, 5.67208534842E+001, 5.67944133373E+001,
+            5.68703658198E+001, 5.69493069272E+001, 5.70310785669E+001,
+            5.71146023893E+001, 5.71978399741E+001, 5.72779572372E+001,
+            5.73517897984E+001, 5.74167271960E+001, 5.74721573687E+001,
+            5.75216388520E+001, 5.75759967785E+001, 5.76575701358E+001,
+            5.78058719368E+001, 5.80849611077E+001, 5.85928651155E+001,
+            5.94734357453E+001, 6.09310671165E+001, 6.32487551103E+001,
+            6.68100309742E+001
+            ]), 'cm**3')
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type[0])).quantity, quants)
+        np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type[1])).quantity, quants)
+        assert all([getattr(d, '{}_history'.format(h)) is None for h in self.time_history_types if h not in history_type])
+
+    @pytest.mark.parametrize('history_type', zip(time_history_types, time_history_types))
+    def test_duplicate_time_histories(self, history_type):
+        """Check that duplicates of the history types raise an error"""
+        properties = self.load_properties('testfile_rcm.yaml')
+        properties[0]['time-histories'][0]['type'] = history_type[0]
+        properties[0]['time-histories'].append(deepcopy(properties[0]['time-histories'][0]))
+        properties[0]['time-histories'][1]['type'] = history_type[1]
+        with pytest.raises(ValueError) as record:
+            DataPoint(properties[0])
+        assert ('Each history type may only be specified once. {} was '
+                'specified multiple times'.format(history_type[0])) in str(record.value)
+
     def test_supported_ignition_types(self):
         # pressure d/dt max
         properties = self.load_properties('testfile_st.yaml')

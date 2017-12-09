@@ -20,6 +20,22 @@ VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment. Deprec
 VolumeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
 VolumeHistory.volume.__doc__ = '(`~numpy.ndarray`): the volume during the experiment'
 
+TimeHistory = namedtuple('TimeHistory', ['time', 'quantity', 'type'])
+TimeHistory.__doc__ = 'Time history of the quantity in an RCM experiment'
+TimeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
+TimeHistory.quantity.__doc__ = '(`~numpy.ndarray`): the quantity of interest during the experiment'
+TimeHistory.type.__doc__ = """\
+(`str`): the type of time history represented. Possible options are:
+
+* volume
+* temperature
+* pressure
+* piston position
+* light emission
+* OH emission
+* absorption
+"""
+
 Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
 Reference.__doc__ = 'Information about the article or report where the data can be found'
@@ -655,6 +671,30 @@ class DataPoint(object):
 
         if 'time-histories' in properties and 'volume-history' in properties:
             raise TypeError('time-histories and volume-history are mutually exclusive')
+
+        if 'time-histories' in properties:
+            for hist in properties['time-histories']:
+                if hasattr(self, '{}_history'.format(hist['type'].replace(' ', '_'))):
+                    raise ValueError('Each history type may only be specified once. {} was '
+                                     'specified multiple times'.format(hist['type']))
+                time_col = hist['time']['column']
+                time_units = hist['time']['units']
+                quant_col = hist['quantity']['column']
+                quant_units = hist['quantity']['units']
+                if isinstance(hist['values'], list):
+                    values = np.array(hist['values'])
+                else:
+                    # Load the values from a file
+                    values = np.genfromtxt(hist['values']['filename'], delimiter=',')
+
+                time_history = TimeHistory(
+                    time=Q_(values[:, time_col], time_units),
+                    quantity=Q_(values[:, quant_col], quant_units),
+                    type=hist['type'],
+                )
+
+                setattr(self, '{}_history'.format(hist['type'].replace(' ', '_')), time_history)
+
         if 'volume-history' in properties:
             warn('The volume-history field should be replaced by time-histories. '
                  'volume-history will be removed after PyKED 0.4',
@@ -668,8 +708,12 @@ class DataPoint(object):
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
-        else:
-            self.volume_history = None
+
+        history_types = ['volume', 'temperature', 'pressure', 'piston_position', 'light_emission',
+                         'OH_emission', 'absorption']
+        for h in history_types:
+            if not hasattr(self, '{}_history'.format(h)):
+                setattr(self, '{}_history'.format(h), None)
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
