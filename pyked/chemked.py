@@ -653,6 +653,8 @@ class DataPoint(object):
 
         self.ignition_type = deepcopy(properties.get('ignition-type'))
 
+        if 'time-histories' in properties and 'volume-history' in properties:
+            raise TypeError('time-histories and volume-history are mutually exclusive')
         if 'volume-history' in properties:
             warn('The volume-history field should be replaced by time-histories. '
                  'volume-history will be removed after PyKED 0.4',

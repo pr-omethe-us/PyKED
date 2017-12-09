@@ -822,6 +822,14 @@ class TestDataPoint(object):
             ]), 'cm**3')
         np.testing.assert_allclose(d.volume_history.volume, volumes)
 
+    def test_time_and_volume_histories_error(self):
+        """Test that time-histories and volume-history together raise an error"""
+        properties = self.load_properties('testfile_rcm.yaml')
+        properties[0]['volume-history'] = {}
+        with pytest.raises(TypeError) as record:
+            DataPoint(properties[0])
+
+        assert 'time-histories and volume-history are mutually exclusive' in str(record.value)
     def test_supported_ignition_types(self):
         # pressure d/dt max
         properties = self.load_properties('testfile_st.yaml')
