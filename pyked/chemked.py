@@ -480,44 +480,54 @@ class ChemKED(object):
                             value = etree.SubElement(datapoint, idx)
                             value.text = str(item['amount'].magnitude)
 
-        # if RCM and has volume history, need a second dataGroup
-        has_volume_history = any([dp.volume_history is not None for dp in self.datapoints])
-        if len(self.datapoints) > 1 and has_volume_history:
+        # See https://stackoverflow.com/a/16097112 for the None.__ne__
+        history_types = ['volume_history', 'temperature_history', 'pressure_history',
+                         'piston_position_history', 'light_emission_history',
+                         'OH_emission_history', 'absorption_history']
+        time_histories = [getattr(dp, p) for dp in self.datapoints for p in history_types]
+        time_histories = list(filter(None.__ne__, time_histories))
+
+        if len(self.datapoints) > 1 and len(time_histories) > 1:
             raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
-                                      'with a volume history.'
-                                      )
+                                      'with a time history.')
+        elif len(time_histories) > 0:
+            for dg_idx, hist in enumerate(time_histories):
+                if hist.type not in ['volume', 'temperature', 'pressure']:
+                    warn('The time-history type {} is not supported by ReSpecTh for '
+                         'ignition delay experiments'.format(hist.type))
+                    continue
 
-        elif self.datapoints[0].volume_history is not None:
-            datagroup = etree.SubElement(root, 'dataGroup')
-            datagroup.set('id', 'dg2')
-            datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
-            datagroup_link.set('dataGroupID', '')
-            datagroup_link.set('dataPointID', '')
+                datagroup = etree.SubElement(root, 'dataGroup')
+                datagroup.set('id', 'dg{}'.format(dg_idx))
+                datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
+                datagroup_link.set('dataGroupID', '')
+                datagroup_link.set('dataPointID', '')
 
-            # Volume history has two properties: time and volume.
-            volume_history = self.datapoints[0].volume_history
-            prop = etree.SubElement(datagroup, 'property')
-            prop.set('description', '')
-            prop.set('name', 'time')
-            prop.set('units', str(volume_history.time.units))
-            time_idx = 'x{}'.format(len(property_idx) + 1)
-            prop.set('id', time_idx)
-            prop.set('label', 't')
+                # Time history has two properties: time and quantity.
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+                prop.set('name', 'time')
+                prop.set('units', str(hist.time.units))
+                time_idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[time_idx] = {'name': 'time'}
+                prop.set('id', time_idx)
+                prop.set('label', 't')
 
-            prop = etree.SubElement(datagroup, 'property')
-            prop.set('description', '')
-            prop.set('name', 'volume')
-            prop.set('units', str(volume_history.volume.units))
-            volume_idx = 'x{}'.format(len(property_idx) + 2)
-            prop.set('id', volume_idx)
-            prop.set('label', 'V')
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+                prop.set('name', hist.type)
+                prop.set('units', str(hist.quantity.units))
+                quant_idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[quant_idx] = {'name': hist.type}
+                prop.set('id', quant_idx)
+                prop.set('label', 'V')
 
-            for time, volume in zip(volume_history.time, volume_history.volume):
-                datapoint = etree.SubElement(datagroup, 'dataPoint')
-                value = etree.SubElement(datapoint, time_idx)
-                value.text = str(time.magnitude)
-                value = etree.SubElement(datapoint, volume_idx)
-                value.text = str(volume.magnitude)
+                for time, quantity in zip(hist.time, hist.quantity):
+                    datapoint = etree.SubElement(datagroup, 'dataPoint')
+                    value = etree.SubElement(datapoint, time_idx)
+                    value.text = str(time.magnitude)
+                    value = etree.SubElement(datapoint, quant_idx)
+                    value.text = str(quantity.magnitude)
 
         ign_types = [getattr(dp, 'ignition_type', False) for dp in self.datapoints]
         # All datapoints must have the same ignition target and type

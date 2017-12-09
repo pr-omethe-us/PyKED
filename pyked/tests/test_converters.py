@@ -844,12 +844,12 @@ class TestGetDatapoints(object):
         assert datapoint['temperature'] == [str(temp) + ' K']
         assert datapoint['ignition-delay'] == [str(ignition_delay) + ' us']
 
-        volume_history = datapoint['volume-history']
+        volume_history = datapoint['time-histories'][0]
         assert len(volume_history['values']) == num_points
         assert volume_history['time']['units'] == 's'
         assert volume_history['time']['column'] == 0
-        assert volume_history['volume']['units'] == 'cm3'
-        assert volume_history['volume']['column'] == 1
+        assert volume_history['quantity']['units'] == 'cm3'
+        assert volume_history['quantity']['column'] == 1
         for datapoint, time, volume in zip(volume_history['values'], times, volumes):
             assert datapoint == [float(str(time)), float(str(volume))]
 
@@ -925,35 +925,7 @@ class TestGetDatapoints(object):
             get_datapoints(root)
         assert 'value missing from properties: x2' in str(excinfo.value)
 
-    def test_morethan_two_datagroups(self):
-        """Raise error if more than two datagroups.
-        """
-        root = etree.Element('experiment')
-        exp = etree.SubElement(root, 'experimentType')
-        exp.text = 'Ignition delay measurement'
-        app = etree.SubElement(root, 'apparatus')
-        kind = etree.SubElement(app, 'kind')
-        kind.text = 'rapid compression machine'
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        prop = etree.SubElement(datagroup, 'property')
-        prop.set('id', 'x1')
-        prop.set('name', 'temperature')
-        prop.set('units', 'K')
-        datapoint = etree.SubElement(datagroup, 'dataPoint')
-        x1 = etree.SubElement(datapoint, 'x1')
-        x1.text = str(1000.0)
-        datapoint = etree.SubElement(datagroup, 'dataPoint')
-        x1 = etree.SubElement(datapoint, 'x1')
-        x1.text = str(1000.0)
-
-        datagroup = etree.SubElement(root, 'dataGroup')
-        datagroup = etree.SubElement(root, 'dataGroup')
-        with pytest.raises(NotImplementedError) as excinfo:
-            get_datapoints(root)
-        assert 'More than two DataGroups not supported.' in str(excinfo.value)
-
-    def test_volume_history_extra_property(self):
+    def test_time_history_extra_property(self):
         """Ensure error when extra property in volume history dataGroup.
         """
         root = etree.Element('experiment')
@@ -989,7 +961,7 @@ class TestGetDatapoints(object):
 
         prop = etree.SubElement(datagroup, 'property')
         prop.set('id', 'x5')
-        prop.set('name', 'pressure')
+        prop.set('name', 'not allowed property')
         prop.set('units', 'Pa')
 
         datapoint = etree.SubElement(datagroup, 'dataPoint')
@@ -1002,15 +974,15 @@ class TestGetDatapoints(object):
 
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert 'Only volume and time allowed in volume history dataGroup.' in str(excinfo.value)
+        assert ('Only volume, temperature, pressure, and time are allowed in a time-history '
+                'dataGroup.') in str(excinfo.value)
 
         # remove bad property description, but retain bad extra dataPoint value
         datagroup.remove(prop)
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert ('Only volume and time values allowed in volume-history dataPoint.'
-                in str(excinfo.value)
-                )
+        assert ('Value tag {} not found in dataGroup tags: {}'.format('x5', ['x4'])
+                in str(excinfo.value))
 
     def test_volume_history_missing_property(self):
         """Ensure error when missing property in volume history dataGroup.
@@ -1048,9 +1020,7 @@ class TestGetDatapoints(object):
 
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert ('Both time and volume properties required for volume history.'
-                in str(excinfo.value)
-                )
+        assert ('Both time and quantity properties required for time-history.' in str(excinfo.value))
 
         # try the same with volume, and time missing
         datagroup.remove(prop)
@@ -1065,9 +1035,7 @@ class TestGetDatapoints(object):
 
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert ('Both time and volume properties required for volume history.'
-                in str(excinfo.value)
-                )
+        assert ('Both time and quantity properties required for time-history.' in str(excinfo.value))
 
     def test_volume_history_missing_value(self):
         """Ensure error when missing value in volume history dataGroup.
@@ -1109,9 +1077,8 @@ class TestGetDatapoints(object):
         x3.text = str(0.0)
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert ('Both time and volume values required in each volume-history dataPoint.'
-                in str(excinfo.value)
-                )
+        assert ('Both time and quantity values required in each time-history dataPoint.'
+                in str(excinfo.value))
 
         # try again with volume, but missing time
         datapoint.remove(x3)
@@ -1119,9 +1086,8 @@ class TestGetDatapoints(object):
         x4.text = str(50.0)
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert ('Both time and volume values required in each volume-history '
-                'dataPoint.'
-                ) in str(excinfo.value)
+        assert ('Both time and quantity values required in each time-history dataPoint.'
+                in str(excinfo.value))
 
     @pytest.mark.parametrize('type, value', [
         ('mole fraction', 1.0),
@@ -1374,7 +1340,6 @@ class TestConvertReSpecTh(object):
         file_path = os.path.join('testfile_st.xml')
         filename = pkg_resources.resource_filename(__name__, file_path)
 
-        # add pressure rise to common properties
         tree = etree.parse(filename)
         root = tree.getroot()
         datagroup = etree.SubElement(root, 'dataGroup')

@@ -265,6 +265,74 @@ class TestConvertToReSpecTh(object):
         assert c.reference.doi == c_true.reference.doi
         assert len(c.datapoints) == len(c_true.datapoints)
 
+    @pytest.mark.parametrize('history_type, unit',
+                             [('volume', 'cm3'), ('temperature', 'K'), ('pressure', 'bar')])
+    def test_time_history_conversion_to_respecth(self, history_type, unit):
+        """Test proper conversion to ReSpecTh XML with time histories.
+        """
+        file_path = os.path.join('testfile_rcm.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as yaml_file:
+            properties = yaml.safe_load(yaml_file)
+        properties['datapoints'][0]['time-histories'][0]['type'] = history_type
+        properties['datapoints'][0]['time-histories'][0]['quantity']['units'] = unit
+        c_true = ChemKED(dict_input=properties)
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            c_true.convert_to_ReSpecTh(newfile)
+            with pytest.warns(UserWarning) as record:
+                c = ChemKED.from_respecth(newfile)
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
+
+        assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(os.path.split(newfile)[1])
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
+        assert getattr(c.datapoints[0], '{}_history'.format(history_type)) is not None
+
+    @pytest.mark.parametrize('history_type, unit',
+                             zip(['piston position', 'light emission', 'OH emission', 'absorption'],
+                                 ['cm', 'dimensionless', 'dimensionless', 'dimensionless']))
+    def test_time_history_conversion_to_respecth_unsupported(self, history_type, unit):
+        """Test proper conversion to ReSpecTh XML with unsupported time histories.
+        """
+        file_path = os.path.join('testfile_rcm.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        with open(filename, 'r') as yaml_file:
+            properties = yaml.safe_load(yaml_file)
+        properties['datapoints'][0]['time-histories'][0]['type'] = history_type
+        properties['datapoints'][0]['time-histories'][0]['quantity']['units'] = unit
+        c_true = ChemKED(dict_input=properties)
+        with TemporaryDirectory() as temp_dir:
+            newfile = os.path.join(temp_dir, 'test.xml')
+            with pytest.warns(UserWarning) as record:
+                c_true.convert_to_ReSpecTh(newfile)
+            m = str(record.pop(UserWarning).message)
+            assert m == ('The time-history type {} is not supported by ReSpecTh for '
+                         'ignition delay experiments'.format(history_type))
+            with pytest.warns(UserWarning) as record:
+                c = ChemKED.from_respecth(newfile)
+
+        m = str(record.pop(UserWarning).message)
+        assert m == 'Using DOI to obtain reference information, rather than preferredKey.'
+
+        assert c.file_authors[0]['name'] == c_true.file_authors[0]['name']
+
+        assert c.reference.detail == 'Converted from ReSpecTh XML file {}'.format(os.path.split(newfile)[1])
+
+        assert c.apparatus.kind == c_true.apparatus.kind
+        assert c.experiment_type == c_true.experiment_type
+        assert c.reference.doi == c_true.reference.doi
+        assert len(c.datapoints) == len(c_true.datapoints)
+        assert getattr(c.datapoints[0], '{}_history'.format(history_type.replace(' ', '_'))) is None
+
     @pytest.mark.parametrize('experiment_type', [
         'Laminar flame speed measurement', 'Species profile measurement',
         'Outlet concentration measurement', 'Burner stabilized flame speciation measurement',
@@ -388,7 +456,7 @@ class TestConvertToReSpecTh(object):
         with pytest.raises(NotImplementedError) as excinfo:
             c.convert_to_ReSpecTh('test.xml')
         assert ('Error: ReSpecTh files do not support multiple datapoints with a '
-                'volume history.' in str(excinfo.value)
+                'time history.' in str(excinfo.value)
                 )
 
     @pytest.mark.parametrize('ignition_target', ['pressure', 'temperature', 'OH', 'CH', 'OH*', 'CH*'])
