@@ -123,3 +123,38 @@ ignition-delay-schema: &ignition-delay-schema
         type: list
         minlength: 1
         schema: *time-history
+      volume-history:
+        type: dict
+        schema:
+          volume:
+            required: true
+            type: dict
+            isvalid_unit: true
+            schema:
+              units:
+                required: true
+                type: string
+              column:
+                required: true
+                type: integer
+                allowed: [0, 1]
+          time:
+            required: true
+            type: dict
+            isvalid_unit: true
+            schema:
+              units:
+                required: true
+                type: string
+              column:
+                required: true
+                type: integer
+                allowed: [0, 1]
+          values:
+            required: true
+            type: list
+            schema:
+              type: list
+              items:
+                - type: float
+                - type: float

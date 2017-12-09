@@ -169,6 +169,24 @@ def compare_name(given_name, family_name, question_name):
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references.
     """
+    def _validate_isvalid_unit(self, isvalid_unit, field, value):
+        """Checks for appropriate units using Pint unit registry.
+        Args:
+            isvalid_unit (`bool`): flag from schema indicating units to be checked.
+            field (`str`): property associated with units in question.
+            value (`dict`): dictionary of values from file associated with this property.
+        The rule's arguments are validated against this schema:
+            {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+        """
+        quantity = 1.0 * units(value['units'])
+        try:
+            quantity.to(property_units[field])
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units[field]
+                        )
+
     def _validate_isvalid_history(self, isvalid_history, field, value):
         """Checks that the given time history is properly formatted.
 

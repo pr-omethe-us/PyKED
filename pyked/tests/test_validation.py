@@ -426,6 +426,15 @@ class TestValidator(object):
         history['values'] = [[0, 1], [1, 2]]
         return history
 
+    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
+    def test_dimensionality_error_unit(self, quantity, unit):
+        """Ensure that dimensionality errors in units are validation errors
+        """
+        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
+        v = OurValidator(unit_schema)
+        v.validate({quantity: {'units': 'candela*ampere'}})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
     @pytest.mark.parametrize('time_history',
                              [('pressure', 'bar'), ('volume', 'cm3'), ('temperature', 'kelvin'),
                               ('piston position', 'cm'), ('light emission', 'dimensionless'),
