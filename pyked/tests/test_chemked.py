@@ -770,9 +770,16 @@ class TestDataPoint(object):
             properties[1]['composition']['species'][2]['amount'][1][prop] = save
 
     def test_volume_history(self):
-        properties = self.load_properties('testfile_rcm.yaml')
-        d = DataPoint(properties[0])
+        """Test that volume history works properly.
 
+        Tests for deprecated code, to be removed after PyKED 0.4
+        """
+        properties = self.load_properties('testfile_rcm_old.yaml')
+        with pytest.warns(DeprecationWarning) as record:
+            d = DataPoint(properties[0])
+        m = str(record.pop(DeprecationWarning).message)
+        assert m == ('The volume-history field should be replaced by time-histories. '
+                     'volume-history will be removed after PyKED 0.4')
         # Check other data group with volume history
         np.testing.assert_allclose(d.volume_history.time,
                                    Q_(np.arange(0, 9.7e-2, 1.e-3), 's')

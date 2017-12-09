@@ -16,7 +16,7 @@ from .validation import schema, OurValidator, yaml, Q_
 from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
-VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
+VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4'  # noqa: E501
 VolumeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
 VolumeHistory.volume.__doc__ = '(`~numpy.ndarray`): the volume during the experiment'
 
@@ -654,6 +654,9 @@ class DataPoint(object):
         self.ignition_type = deepcopy(properties.get('ignition-type'))
 
         if 'volume-history' in properties:
+            warn('The volume-history field should be replaced by time-histories. '
+                 'volume-history will be removed after PyKED 0.4',
+                 DeprecationWarning)
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
             volume_col = properties['volume-history']['volume']['column']
