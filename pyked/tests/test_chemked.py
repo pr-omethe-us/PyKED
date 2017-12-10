@@ -669,7 +669,6 @@ class TestDataPoint(object):
     def test_first_stage_ignition_delay(self):
         properties = self.load_properties('testfile_rcm2.yaml')
         d = DataPoint(properties[0])
-        print(d.first_stage_ignition_delay)
         assert np.isclose(d.first_stage_ignition_delay.value, Q_(0.5, 'ms'))
         assert np.isclose(d.first_stage_ignition_delay.error, Q_(0.005, 'ms'))
 
