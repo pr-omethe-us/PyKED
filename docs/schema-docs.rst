@@ -225,48 +225,81 @@ for the :ref:`datapoints <meta-datapoints>` schema.
     The ignition delay measurement, with dimensions of time. Must conform to
     :ref:`value-unit-required <schema-value-unit-required>`
 
-.. _ignition-pressure-rise:
-
-* ``pressure-rise``: sequence, optional
-    The pressure rise after the passage of the reflected shock, with dimensions of inverse time.
-    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
-
-.. _ignition-compression-time:
-
-* ``compression-time``: sequence, optional
-    The time taken during the compression stroke of a rapid compression machine experiment, with
-    dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
-
 .. _ignition-first-stage-ignition-delay:
 
 * ``first-stage-ignition-delay``: sequence, optional
     If two stages of ignition are present, this is the value of the first stage of ignition, with
     dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
-.. _ignition-compressed-pressure:
+.. _ignition-pressure-rise:
 
-* ``compressed-pressure``: sequence, optional
-    The pressure at the end of the compression stroke for a rapid compression machine experiment,
-    with dimensions of mass per length per time squared. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`
-
-.. _ignition-compressed-temperature:
-
-* ``compressed-temperature``: sequence, optional
-    The temperature at the end of the compression stroke for a rapid compression machine experiment,
-    with dimensions of temperature. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`
+* ``pressure-rise``: sequence, optional
+    The pressure rise after the passage of the reflected shock, with dimensions of inverse time.
+    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
 .. _ignition-equivalence-ratio:
 
 * ``equivalence-ratio``: float, optional
     The equivalence ratio of the experiment, dimensionless. Minimum value is 0.0.
 
+.. _ignition-rcm-data:
+
+* ``rcm-data``: mapping, optional
+    Data related to rapid compression machine (RCM) experiments. The keys of the mapping are
+    detailed in the :ref:`Rapid Compression Machine Data Keys <rcm-data-keys>` section.
+
 .. _ignition-time-histories:
 
 * ``time-histories``: sequence, optional
     A sequence of mappings conforming to the :ref:`time-history <ignition-time-history>`
     schema. Used to specify a time-varying history of values during an experiment.
+
+.. _rcm-data-keys:
+
+Rapid Compression Machine Data Keys
+-----------------------------------
+
+This section details the keys specific to rapid compression machine (RCM) experiments, which are
+subkeys of the :ref:`rcm-data <ignition-rcm-data>` key.
+
+.. _rcm-data-compression-time:
+
+* ``compression-time``: sequence, optional
+    The time taken during the compression stroke of a rapid compression machine experiment, with
+    dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-compressed-pressure:
+
+* ``compressed-pressure``: sequence, optional
+    The pressure at the end of the compression stroke for a rapid compression machine experiment,
+    with dimensions of mass per length per time squared. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-compressed-temperature:
+
+* ``compressed-temperature``: sequence, optional
+    The temperature at the end of the compression stroke for a rapid compression machine experiment,
+    with dimensions of temperature. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-compression-ratio:
+
+* ``compression-ratio``: sequence, optional
+    The dimensionless volumetric compression ratio for a rapid compression machine experiment. Must
+    conform to :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-stroke:
+
+* ``stroke``: sequence, optional
+    The length of the stroke in a rapid compression machine experiment, with dimensions of length.
+    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-clearance:
+
+* ``clearance``: sequence, optional
+    The clearance from the piston face to the end wall of the reaction chamber at the end of
+    compression, with dimensions of length. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
 
 .. _schema-only-keys:
 
