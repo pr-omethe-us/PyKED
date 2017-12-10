@@ -236,11 +236,11 @@ class OurValidator(Validator):
         Args:
             isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.
             field (`str`): property associated with quantity in question.
-            value (`str`): string of the value of the quantity
+            value (`list`): list with the first element a string of value with units
 
         The rule's arguments are validated against this schema:
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+             'value': {'type': 'list'}}
         """
         quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
@@ -266,7 +266,7 @@ class OurValidator(Validator):
 
         The rule's arguments are validated against this schema:
             {'isvalid_uncertainty': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+             'value': {'type': 'list'}}
         """
         self._validate_isvalid_quantity(True, field, value)
 
