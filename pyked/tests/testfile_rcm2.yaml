@@ -32,12 +32,21 @@ datapoints:
         uncertainty: 0.01
     pressure:
       - 958.0 torr
-    compressed-pressure:
-      - 7.1 bar
-    compressed-temperature:
-      - 765 K
-      - uncertainty: 0.01
-        uncertainty-type: relative
+    rcm-data:
+      compressed-pressure:
+        - 7.1 bar
+      compressed-temperature:
+        - 765 K
+        - uncertainty: 0.01
+          uncertainty-type: relative
+      compression-time:
+        - 38.0 ms
+      stroke:
+        - 10.0 inch
+      clearance:
+        - 2.5 cm
+      compression-ratio:
+        - '12.0'
     composition:
       kind: mole fraction
       species:
@@ -60,8 +69,6 @@ datapoints:
     ignition-type:
       target: pressure
       type: d/dt max
-    compression-time:
-      - 38.0 ms
     time-histories:
       - type: volume
         time:

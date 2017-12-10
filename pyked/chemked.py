@@ -36,6 +36,21 @@ TimeHistory.type.__doc__ = """\
 * absorption
 """
 
+RCMData = namedtuple(
+    'RCMData',
+    ['compressed_pressure', 'compressed_temperature', 'compression_time', 'stroke',
+     'clearance', 'compression_ratio']
+)
+RCMData.__doc__ = 'Data fields specific to rapid compression machine experiments'
+RCMData.compressed_pressure.__doc__ = '(`~pint.Quantity`) The pressure at the end of compression'
+RCMData.compressed_temperature.__doc__ = """\
+(`~pint.Quantity`) The temperature at the end of compression"""
+RCMData.compression_time.__doc__ = '(`~pint.Quantity`) The duration of the compression stroke'
+RCMData.stroke.__doc__ = '(`~pint.Quantity`) The length of the stroke'
+RCMData.clearance.__doc__ = """\
+(`~pint.Quantity`) The clearance between piston face and end wall at the end of compression"""
+RCMData.compression_ratio.__doc__ = '(`~pint.Quantity`) The volumetric compression ratio'
+
 Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
 Reference.__doc__ = 'Information about the article or report where the data can be found'
@@ -604,6 +619,11 @@ class DataPoint(object):
         'pressure-rise',
     ]
 
+    rcm_data_props = [
+        'compressed-pressure', 'compressed-temperature', 'compression-time', 'stroke', 'clearance',
+        'compression-ratio'
+    ]
+
     def __init__(self, properties):
         for prop in self.value_unit_props:
             if prop in properties:
@@ -611,6 +631,19 @@ class DataPoint(object):
                 setattr(self, prop.replace('-', '_'), quant)
             else:
                 setattr(self, prop.replace('-', '_'), None)
+
+        if 'rcm-data' in properties:
+            orig_rcm_data = properties['rcm-data']
+            rcm_props = {}
+            for prop in self.rcm_data_props:
+                if prop in orig_rcm_data:
+                    quant = self.process_quantity(orig_rcm_data[prop])
+                    rcm_props[prop.replace('-', '_')] = quant
+                else:
+                    rcm_props[prop.replace('-', '_')] = None
+            self.rcm_data = RCMData(**rcm_props)
+        else:
+            self.rcm_data = None
 
         self.composition_type = properties['composition']['kind']
         composition = deepcopy(properties['composition']['species'])

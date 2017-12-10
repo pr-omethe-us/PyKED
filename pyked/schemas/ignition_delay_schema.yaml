@@ -107,13 +107,19 @@ ignition-delay-schema: &ignition-delay-schema
     type: dict
     schema:
       pressure-rise: *value-unit-optional
-      compression-time: *value-unit-optional
       pressure: *value-unit-required
       ignition-type: *ignition-type
       ignition-delay: *value-unit-required
       first-stage-ignition-delay: *value-unit-optional
-      compressed-pressure: *value-unit-optional
-      compressed-temperature: *value-unit-optional
+      rcm-data:
+        type: dict
+        schema:
+          compressed-pressure: *value-unit-optional
+          compressed-temperature: *value-unit-optional
+          compression-time: *value-unit-optional
+          stroke: *value-unit-optional
+          clearance: *value-unit-optional
+          compression-ratio: *value-unit-optional
       temperature: *value-unit-required
       composition: *composition
       equivalence-ratio:

@@ -49,7 +49,7 @@ class TestChemKED(object):
             assert np.isclose(d.temperature, temperatures[i])
             assert d.pressure_rise is None
             assert d.volume_history is None
-            assert d.compression_time is None
+            assert d.rcm_data is None
             assert d.ignition_type['type'] == 'd/dt max'
             assert d.ignition_type['target'] == 'pressure'
 
@@ -677,21 +677,21 @@ class TestDataPoint(object):
         d = DataPoint(properties[0])
         assert np.isclose(d.temperature, Q_(1164.48, 'K'))
 
-    def test_compressed_temperature(self):
+    def test_rcm_data(self):
         properties = self.load_properties('testfile_rcm2.yaml')
         d = DataPoint(properties[0])
-        assert np.isclose(d.compressed_temperature.value, Q_(765, 'K'))
-        assert np.isclose(d.compressed_temperature.error, Q_(7.65, 'K'))
+        assert np.isclose(d.rcm_data.compression_time, Q_(38.0, 'ms'))
+        assert np.isclose(d.rcm_data.compressed_temperature.value, Q_(765, 'K'))
+        assert np.isclose(d.rcm_data.compressed_temperature.error, Q_(7.65, 'K'))
+        assert np.isclose(d.rcm_data.compressed_pressure, Q_(7.1, 'bar'))
+        assert np.isclose(d.rcm_data.stroke, Q_(10.0, 'inch'))
+        assert np.isclose(d.rcm_data.clearance, Q_(2.5, 'cm'))
+        assert np.isclose(d.rcm_data.compression_ratio, Q_(12.0, 'dimensionless'))
 
     def test_pressure(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
         assert np.isclose(d.pressure, Q_(220.0, 'kPa'))
-
-    def test_compressed_pressure(self):
-        properties = self.load_properties('testfile_rcm2.yaml')
-        d = DataPoint(properties[0])
-        assert np.isclose(d.compressed_pressure, Q_(7.1, 'bar'))
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')

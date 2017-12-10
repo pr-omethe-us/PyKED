@@ -85,6 +85,9 @@ property_units = {
     'emission': 'dimensionless',
     'absorption': 'dimensionless',
     'concentration': 'mole/meter**3',
+    'stroke': 'meter',
+    'clearance': 'meter',
+    'compression-ratio': 'dimensionless',
 }
 
 

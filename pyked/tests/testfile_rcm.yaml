@@ -50,8 +50,9 @@ datapoints:
     ignition-type:
       target: pressure
       type: d/dt max
-    compression-time:
-      - 38.0 ms
+    rcm-data:
+      compression-time:
+        - 38.0 ms
     time-histories:
       - type: volume
         time:
