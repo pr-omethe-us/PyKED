@@ -136,10 +136,9 @@ class TestValidator(object):
         v.validate({'file-authors': [{'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}]},
                    update=True
                    )
-        assert v.errors['file-authors'][0][0][0] == ('Name and ORCID do not match. Name supplied: ' +
-                                              'Bryan Weber. Name associated with ORCID: ' +
-                                              'Kyle Niemeyer'
-                                              )
+        m = v.errors['file-authors'][0][0][0]
+        assert m == ('Name and ORCID do not match. Name supplied: Bryan Weber. Name associated '
+                     'with ORCID: Kyle Niemeyer')
 
     @internet_missing
     def test_suggest_ORCID(self):
