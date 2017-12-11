@@ -818,3 +818,30 @@ class TestValidator(object):
         v.validate(dp, update=True)
         error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
         assert v.errors['datapoints'][0][0][0]['composition'][0] == error_str
+
+    @pytest.mark.parametrize("properties", ['testfile_st_thermo.yaml'], indirect=['properties'])
+    def test_composition_thermo(self, properties):
+        """Test to make sure that correct thermo fields validate correctly
+        """
+        try:
+            assert v.validate(properties)
+        except AssertionError:
+            print(v._errors)
+            raise
+
+    @pytest.mark.parametrize("properties", ['testfile_st_thermo.yaml'], indirect=['properties'])
+    def test_composition_thermo_bad(self, properties):
+        """Test to make sure that bad thermo fields raise an error
+        """
+        thermo = properties['datapoints'][0]['composition']['species'][0]['thermo']
+        thermo['T_ranges'] = [1000.0, 200.0, 5000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)
+
+        thermo['T_ranges'] = [200.0, 5000.0, 1000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)
+
+        thermo['T_ranges'] = [200.0, '1000 K', 5000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)
