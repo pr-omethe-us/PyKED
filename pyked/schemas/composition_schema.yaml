@@ -17,6 +17,43 @@ composition: &composition
           species-name:
             type: string
             required: true
+          thermo:
+            type: dict
+            schema:
+              T_ranges:
+                type: list
+                required: true
+                isvalid_t_range: true
+                items:
+                  - oneof_type:
+                    - number
+                    - string
+                  - oneof_type:
+                    - number
+                    - string
+                  - oneof_type:
+                    - number
+                    - string
+              data:
+                type: list
+                required: true
+                items:
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+                  - type: number
+              note:
+                type: string
           InChI:
             type: string
             required: true

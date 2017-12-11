@@ -172,12 +172,43 @@ def compare_name(given_name, family_name, question_name):
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references.
     """
+    def _validate_isvalid_t_range(self, isvalid_t_range, field, values):
+        """Checks that the temperature ranges given for thermo data are valid
+        Args:
+            isvalid_t_range (`bool`): flag from schema indicating T range is to be checked
+            field (`str`): T_range
+            values (`list`): List of temperature values indicating low, middle, and high ranges
+
+        The rule's arguemnts are validated against this schema:
+            {'isvalid_t_range': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'list'}}
+        """
+        if all([isinstance(v, (float, int)) for v in values]):
+            # If no units given, assume Kelvin
+            T_low = Q_(values[0], 'K')
+            T_mid = Q_(values[1], 'K')
+            T_hi = Q_(values[2], 'K')
+        elif all([isinstance(v, str) for v in values]):
+            T_low = Q_(values[0])
+            T_mid = Q_(values[1])
+            T_hi = Q_(values[2])
+        else:
+            self._error(field, 'The temperatures in the range must all be either with units or '
+                               'without units, they cannot be mixed')
+            return False
+
+        if min([T_low, T_mid, T_hi]) != T_low:
+            self._error(field, 'The first element of the T_range must be the lower limit')
+        if max([T_low, T_mid, T_hi]) != T_hi:
+            self._error(field, 'The last element of the T_range must be the upper limit')
+
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
         """Checks for appropriate units using Pint unit registry.
         Args:
             isvalid_unit (`bool`): flag from schema indicating units to be checked.
             field (`str`): property associated with units in question.
             value (`dict`): dictionary of values from file associated with this property.
+
         The rule's arguments are validated against this schema:
             {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'dict'}}
