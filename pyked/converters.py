@@ -441,7 +441,10 @@ def get_datapoints(root):
             if time_tag is None or len(quant_tags) == 0:
                 raise KeywordError('Both time and quantity properties required for time-history.')
 
-            time_histories = [{'time': time_dict, 'quantity': q, 'type': t, 'values': []} for (q, t) in zip(quant_dicts, quant_types)]
+            time_histories = [
+                {'time': time_dict, 'quantity': q, 'type': t, 'values': []}
+                for (q, t) in zip(quant_dicts, quant_types)
+            ]
             # collect volume-time history
             for dp in dataGroup.findall('dataPoint'):
                 time = None
