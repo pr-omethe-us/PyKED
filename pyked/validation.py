@@ -270,7 +270,7 @@ class OurValidator(Validator):
         Args:
             isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.
             field (`str`): property associated with quantity in question.
-            value (`list`): list with the first element a string of value with units
+            value (`list`): list whose first element is a string representing a value with units
 
         The rule's arguments are validated against this schema:
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},

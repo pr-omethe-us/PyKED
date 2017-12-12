@@ -46,7 +46,7 @@ datapoints:
       clearance:
         - 2.5 cm
       compression-ratio:
-        - '12.0'
+        - 12.0
     composition:
       kind: mole fraction
       species:
