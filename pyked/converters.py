@@ -418,48 +418,55 @@ def get_datapoints(root):
     if len(datapoints) == 0:
         raise MissingElementError('dataPoint')
 
-    # RCM files may have a second dataGroup with volume-time history
-    if len(dataGroups) == 2:
-        dataGroup = dataGroups[1]
-        time_tag = None
-        volume_tag = None
-        for prop in dataGroup.findall('property'):
-            if prop.attrib['name'] == 'time':
-                time_dict = {'units': prop.attrib['units'], 'column': 0}
-                time_tag = prop.attrib['id']
-            elif prop.attrib['name'] == 'volume':
-                volume_dict = {'units': prop.attrib['units'], 'column': 1}
-                volume_tag = prop.attrib['id']
-            else:
-                raise KeywordError('Only volume and time allowed in volume history dataGroup.')
-
-        if time_tag is None or volume_tag is None:
-            raise KeywordError('Both time and volume properties required for volume history.')
-        volume_history = {'time': time_dict, 'volume': volume_dict, 'values': []}
-
-        # collect volume-time history
-        for dp in dataGroup.findall('dataPoint'):
-            time = None
-            volume = None
-            for val in dp:
-                if val.tag == time_tag:
-                    time = float(val.text)
-                elif val.tag == volume_tag:
-                    volume = float(val.text)
+    # ReSpecTh files can have other dataGroups with pressure, volume, or temperature histories
+    if len(dataGroups) > 1:
+        datapoints[0]['time-histories'] = []
+        for dataGroup in dataGroups[1:]:
+            time_tag = None
+            quant_tags = []
+            quant_dicts = []
+            quant_types = []
+            for prop in dataGroup.findall('property'):
+                if prop.attrib['name'] == 'time':
+                    time_dict = {'units': prop.attrib['units'], 'column': 0}
+                    time_tag = prop.attrib['id']
+                elif prop.attrib['name'] in ['volume', 'temperature', 'pressure']:
+                    quant_types.append(prop.attrib['name'])
+                    quant_dicts.append({'units': prop.attrib['units'], 'column': 1})
+                    quant_tags.append(prop.attrib['id'])
                 else:
-                    raise KeywordError('Only volume and time values allowed in '
-                                       'volume-history dataPoint.'
-                                       )
-            if time is None or volume is None:
-                raise KeywordError('Both time and volume values required in each '
-                                   'volume-history dataPoint.'
-                                   )
-            volume_history['values'].append([time, volume])
+                    raise KeywordError('Only volume, temperature, pressure, and time are allowed '
+                                       'in a time-history dataGroup.')
 
-        datapoints[0]['volume-history'] = volume_history
+            if time_tag is None or len(quant_tags) == 0:
+                raise KeywordError('Both time and quantity properties required for time-history.')
 
-    elif len(dataGroups) > 2:
-        raise NotImplementedError('More than two DataGroups not supported.')
+            time_histories = [
+                {'time': time_dict, 'quantity': q, 'type': t, 'values': []}
+                for (q, t) in zip(quant_dicts, quant_types)
+            ]
+            # collect volume-time history
+            for dp in dataGroup.findall('dataPoint'):
+                time = None
+                quants = {}
+                for val in dp:
+                    if val.tag == time_tag:
+                        time = float(val.text)
+                    elif val.tag in quant_tags:
+                        quant = float(val.text)
+                        tag_idx = quant_tags.index(val.tag)
+                        quant_type = quant_types[tag_idx]
+                        quants[quant_type] = quant
+                    else:
+                        raise KeywordError('Value tag {} not found in dataGroup tags: '
+                                           '{}'.format(val.tag, quant_tags))
+                if time is None or len(quants) == 0:
+                    raise KeywordError('Both time and quantity values required in each '
+                                       'time-history dataPoint.')
+                for t in time_histories:
+                    t['values'].append([time, quants[t['type']]])
+
+            datapoints[0]['time-histories'].extend(time_histories)
 
     return datapoints
 
@@ -509,9 +516,10 @@ def ReSpecTh_to_ChemKED(filename_xml, file_author='', file_author_orcid='', *, v
     if has_pres_rise and properties['apparatus']['kind'] == 'rapid compression machine':
         raise KeywordError('Pressure rise cannot be defined for RCM.')
 
-    has_vol_hist = ('volume-history' in properties['common-properties'] or
-                    any([True for dp in properties['datapoints'] if 'volume-history' in dp])
-                    )
+    has_vol_hist = any(
+        [t.get('type') == 'volume' for dp in properties['datapoints']
+         for t in dp.get('time-histories', [{}])]
+    )
     if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
         raise KeywordError('Volume history cannot be defined for shock tube.')
 

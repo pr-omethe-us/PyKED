@@ -136,10 +136,9 @@ class TestValidator(object):
         v.validate({'file-authors': [{'ORCID': '0000-0003-4425-7097', 'name': 'Bryan Weber'}]},
                    update=True
                    )
-        assert v.errors['file-authors'][0][0][0] == ('Name and ORCID do not match. Name supplied: ' +
-                                              'Bryan Weber. Name associated with ORCID: ' +
-                                              'Kyle Niemeyer'
-                                              )
+        m = v.errors['file-authors'][0][0][0]
+        assert m == ('Name and ORCID do not match. Name supplied: Bryan Weber. Name associated '
+                     'with ORCID: Kyle Niemeyer')
 
     @internet_missing
     def test_suggest_ORCID(self):
@@ -366,7 +365,11 @@ class TestValidator(object):
     def test_valid_yaml(self, properties):
         """Ensure ChemKED YAML is validated
         """
-        assert v.validate(properties)
+        try:
+            assert v.validate(properties)
+        except AssertionError:
+            print(v.errors)
+            assert False
 
     @pytest.mark.parametrize("field", [
         'file-authors', 'chemked-version', 'file-version', 'reference', 'experiment-type',
@@ -412,6 +415,70 @@ class TestValidator(object):
         properties['datapoints'] = []
         v.validate(properties)
         assert v.errors['datapoints'][0]['oneof'][1]['oneof definition 0'][0] == 'min length is 1'
+
+    @pytest.fixture(scope='function')
+    def time_history(self, request):
+        history_type = request.param[0]
+        history_units = request.param[1]
+        history = {'type': history_type, 'quantity': {'units': history_units, 'column': 1}}
+        history['time'] = {'units': 'second', 'column': 0}
+        history['values'] = [[0, 1], [1, 2]]
+        return history
+
+    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
+    def test_dimensionality_error_unit(self, quantity, unit):
+        """Ensure that dimensionality errors in units are validation errors
+        """
+        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
+        v = OurValidator(unit_schema)
+        v.validate({quantity: {'units': 'candela*ampere'}})
+        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
+
+    @pytest.mark.parametrize('time_history',
+                             [('pressure', 'bar'), ('volume', 'cm3'), ('temperature', 'kelvin'),
+                              ('piston position', 'cm'), ('light emission', 'dimensionless'),
+                              ('OH emission', 'dimensionless'), ('absorption', 'dimensionless')],
+                             indirect=['time_history'])
+    def test_time_history(self, time_history):
+        """Test that the time history validation is working
+        """
+        assert v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    @pytest.mark.parametrize('time_history',
+                             [('pressure', 'candela*ampere'), ('volume', 'candela*ampere'),
+                              ('temperature', 'candela*ampere'),
+                              ('piston position', 'candela*ampere'),
+                              ('light emission', 'candela*ampere'),
+                              ('OH emission', 'candela*ampere'), ('absorption', 'candela*ampere')],
+                             indirect=['time_history'])
+    def test_time_history_bad_units(self, time_history):
+        """Test that giving bad units to a time history results in a validation error
+        """
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_bad_time_units(self):
+        """Test that giving bad units to the time in a time history results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'candela*ampere', 'column': 0}
+        time_history['values'] = [[0, 1], [1, 2]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_not_enough_columns(self):
+        """Test that not having enough columns in the value array results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'second', 'column': 0}
+        time_history['values'] = [[0], [1]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+
+    def test_time_history_too_many_columns(self):
+        """Test that having too many columns in the value array results in a validation error
+        """
+        time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
+        time_history['time'] = {'units': 'second', 'column': 0}
+        time_history['values'] = [[0, 1, 2], [1, 2, 3]]
+        assert not v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
 
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error
@@ -463,15 +530,6 @@ class TestValidator(object):
         quant_schema = {quantity: {'type': 'list', 'isvalid_quantity': True}}
         v = OurValidator(quant_schema)
         v.validate({quantity: ['1.0 {}'.format('candela*ampere')]})
-        assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
-
-    @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
-    def test_dimensionality_error_unit(self, quantity, unit):
-        """Ensure that dimensionality errors in units are validation errors
-        """
-        unit_schema = {quantity: {'type': 'dict', 'isvalid_unit': True}}
-        v = OurValidator(unit_schema)
-        v.validate({quantity: {'units': 'candela*ampere'}})
         assert v.errors[quantity][0] == 'incompatible units; should be consistent with {}'.format(unit)
 
     @pytest.mark.parametrize("properties", ['testfile_bad.yaml'], indirect=["properties"])
@@ -760,3 +818,30 @@ class TestValidator(object):
         v.validate(dp, update=True)
         error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
         assert v.errors['datapoints'][0][0][0]['composition'][0] == error_str
+
+    @pytest.mark.parametrize("properties", ['testfile_st_thermo.yaml'], indirect=['properties'])
+    def test_composition_thermo(self, properties):
+        """Test to make sure that correct thermo fields validate correctly
+        """
+        try:
+            assert v.validate(properties)
+        except AssertionError:
+            print(v._errors)
+            raise
+
+    @pytest.mark.parametrize("properties", ['testfile_st_thermo.yaml'], indirect=['properties'])
+    def test_composition_thermo_bad(self, properties):
+        """Test to make sure that bad thermo fields raise an error
+        """
+        thermo = properties['datapoints'][0]['composition']['species'][0]['thermo']
+        thermo['T_ranges'] = [1000.0, 200.0, 5000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)
+
+        thermo['T_ranges'] = [200.0, 5000.0, 1000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)
+
+        thermo['T_ranges'] = [200.0, '1000 K', 5000.0]
+        properties['datapoints'][0]['composition']['species'][0]['thermo'] = thermo
+        assert not v.validate(properties)

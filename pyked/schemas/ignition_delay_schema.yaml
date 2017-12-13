@@ -23,6 +23,83 @@ ignition-type: &ignition-type
       required: true
       type: string
 
+time-history: &time-history
+  type: dict
+  isvalid_history: true
+  schema:
+    type:
+      required: true
+      type: string
+      allowed:
+        - volume
+        - temperature
+        - pressure
+        - piston position
+        - light emission
+        - OH emission
+        - absorption
+    quantity:
+      required: true
+      type: dict
+      schema:
+        units:
+          required: true
+          type: string
+        column:
+          required: true
+          type: integer
+    uncertainty:
+      type: dict
+      oneof_schema:
+        - type:
+            required: true
+            type: string
+            allowed:
+              - relative
+              - absolute
+          value:
+            required: true
+            type: string
+        - type:
+            required: true
+            type: string
+            allowed:
+              - relative
+              - absolute
+          column:
+            required: true
+            type: integer
+          units:
+            required: true
+            type: string
+    time:
+      required: true
+      type: dict
+      schema:
+        units:
+          required: true
+          type: string
+        column:
+          required: true
+          type: integer
+    values:
+      required: true
+      oneof:
+        - type: list
+          minlength: 2
+          schema:
+            type: list
+            oneof_items:
+              - - type: float
+                - type: float
+              - - type: float
+                - type: float
+                - type: float
+        - type: dict
+          schema:
+            filename:
+              type: string
+
 ignition-delay-schema: &ignition-delay-schema
   type: list
   minlength: 1
@@ -30,18 +107,28 @@ ignition-delay-schema: &ignition-delay-schema
     type: dict
     schema:
       pressure-rise: *value-unit-optional
-      compression-time: *value-unit-optional
       pressure: *value-unit-required
       ignition-type: *ignition-type
       ignition-delay: *value-unit-required
       first-stage-ignition-delay: *value-unit-optional
-      compressed-pressure: *value-unit-optional
-      compressed-temperature: *value-unit-optional
+      rcm-data:
+        type: dict
+        schema:
+          compressed-pressure: *value-unit-optional
+          compressed-temperature: *value-unit-optional
+          compression-time: *value-unit-optional
+          stroke: *value-unit-optional
+          clearance: *value-unit-optional
+          compression-ratio: *value-unit-optional
       temperature: *value-unit-required
       composition: *composition
       equivalence-ratio:
         type: float
         min: 0.0
+      time-histories:
+        type: list
+        minlength: 1
+        schema: *time-history
       volume-history:
         type: dict
         schema:

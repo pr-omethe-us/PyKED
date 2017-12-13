@@ -16,9 +16,40 @@ from .validation import schema, OurValidator, yaml, Q_
 from .converters import datagroup_properties, ReSpecTh_to_ChemKED
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
-VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment'
+VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4'  # noqa: E501
 VolumeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
 VolumeHistory.volume.__doc__ = '(`~numpy.ndarray`): the volume during the experiment'
+
+TimeHistory = namedtuple('TimeHistory', ['time', 'quantity', 'type'])
+TimeHistory.__doc__ = 'Time history of the quantity in an RCM experiment'
+TimeHistory.time.__doc__ = '(`~numpy.ndarray`): the time during the experiment'
+TimeHistory.quantity.__doc__ = '(`~numpy.ndarray`): the quantity of interest during the experiment'
+TimeHistory.type.__doc__ = """\
+(`str`): the type of time history represented. Possible options are:
+
+* volume
+* temperature
+* pressure
+* piston position
+* light emission
+* OH emission
+* absorption
+"""
+
+RCMData = namedtuple(
+    'RCMData',
+    ['compressed_pressure', 'compressed_temperature', 'compression_time', 'stroke',
+     'clearance', 'compression_ratio']
+)
+RCMData.__doc__ = 'Data fields specific to rapid compression machine experiments'
+RCMData.compressed_pressure.__doc__ = '(`~pint.Quantity`) The pressure at the end of compression'
+RCMData.compressed_temperature.__doc__ = """\
+(`~pint.Quantity`) The temperature at the end of compression"""
+RCMData.compression_time.__doc__ = '(`~pint.Quantity`) The duration of the compression stroke'
+RCMData.stroke.__doc__ = '(`~pint.Quantity`) The length of the stroke'
+RCMData.clearance.__doc__ = """\
+(`~pint.Quantity`) The clearance between piston face and end wall at the end of compression"""
+RCMData.compression_ratio.__doc__ = '(`~pint.Quantity`) The volumetric compression ratio'
 
 Reference = namedtuple('Reference',
                        ['volume', 'journal', 'doi', 'authors', 'detail', 'year', 'pages'])
@@ -464,44 +495,54 @@ class ChemKED(object):
                             value = etree.SubElement(datapoint, idx)
                             value.text = str(item['amount'].magnitude)
 
-        # if RCM and has volume history, need a second dataGroup
-        has_volume_history = any([dp.volume_history is not None for dp in self.datapoints])
-        if len(self.datapoints) > 1 and has_volume_history:
+        # See https://stackoverflow.com/a/16097112 for the None.__ne__
+        history_types = ['volume_history', 'temperature_history', 'pressure_history',
+                         'piston_position_history', 'light_emission_history',
+                         'OH_emission_history', 'absorption_history']
+        time_histories = [getattr(dp, p) for dp in self.datapoints for p in history_types]
+        time_histories = list(filter(None.__ne__, time_histories))
+
+        if len(self.datapoints) > 1 and len(time_histories) > 1:
             raise NotImplementedError('Error: ReSpecTh files do not support multiple datapoints '
-                                      'with a volume history.'
-                                      )
+                                      'with a time history.')
+        elif len(time_histories) > 0:
+            for dg_idx, hist in enumerate(time_histories):
+                if hist.type not in ['volume', 'temperature', 'pressure']:
+                    warn('The time-history type {} is not supported by ReSpecTh for '
+                         'ignition delay experiments'.format(hist.type))
+                    continue
 
-        elif self.datapoints[0].volume_history is not None:
-            datagroup = etree.SubElement(root, 'dataGroup')
-            datagroup.set('id', 'dg2')
-            datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
-            datagroup_link.set('dataGroupID', '')
-            datagroup_link.set('dataPointID', '')
+                datagroup = etree.SubElement(root, 'dataGroup')
+                datagroup.set('id', 'dg{}'.format(dg_idx))
+                datagroup_link = etree.SubElement(datagroup, 'dataGroupLink')
+                datagroup_link.set('dataGroupID', '')
+                datagroup_link.set('dataPointID', '')
 
-            # Volume history has two properties: time and volume.
-            volume_history = self.datapoints[0].volume_history
-            prop = etree.SubElement(datagroup, 'property')
-            prop.set('description', '')
-            prop.set('name', 'time')
-            prop.set('units', str(volume_history.time.units))
-            time_idx = 'x{}'.format(len(property_idx) + 1)
-            prop.set('id', time_idx)
-            prop.set('label', 't')
+                # Time history has two properties: time and quantity.
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+                prop.set('name', 'time')
+                prop.set('units', str(hist.time.units))
+                time_idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[time_idx] = {'name': 'time'}
+                prop.set('id', time_idx)
+                prop.set('label', 't')
 
-            prop = etree.SubElement(datagroup, 'property')
-            prop.set('description', '')
-            prop.set('name', 'volume')
-            prop.set('units', str(volume_history.volume.units))
-            volume_idx = 'x{}'.format(len(property_idx) + 2)
-            prop.set('id', volume_idx)
-            prop.set('label', 'V')
+                prop = etree.SubElement(datagroup, 'property')
+                prop.set('description', '')
+                prop.set('name', hist.type)
+                prop.set('units', str(hist.quantity.units))
+                quant_idx = 'x{}'.format(len(property_idx) + 1)
+                property_idx[quant_idx] = {'name': hist.type}
+                prop.set('id', quant_idx)
+                prop.set('label', 'V')
 
-            for time, volume in zip(volume_history.time, volume_history.volume):
-                datapoint = etree.SubElement(datagroup, 'dataPoint')
-                value = etree.SubElement(datapoint, time_idx)
-                value.text = str(time.magnitude)
-                value = etree.SubElement(datapoint, volume_idx)
-                value.text = str(volume.magnitude)
+                for time, quantity in zip(hist.time, hist.quantity):
+                    datapoint = etree.SubElement(datagroup, 'dataPoint')
+                    value = etree.SubElement(datapoint, time_idx)
+                    value.text = str(time.magnitude)
+                    value = etree.SubElement(datapoint, quant_idx)
+                    value.text = str(quantity.magnitude)
 
         ign_types = [getattr(dp, 'ignition_type', False) for dp in self.datapoints]
         # All datapoints must have the same ignition target and type
@@ -560,92 +601,55 @@ class DataPoint(object):
         ignition_type (`dict`): Dictionary with the ignition target and type.
         volume_history (`~collections.namedtuple`, optional): The volume history of the reactor
             during an RCM experiment.
+        pressure_history (`~collections.namedtuple`, optional): The pressure history of the reactor
+            during an experiment.
+        temperature_history (`~collections.namedtuple`, optional): The temperature history of the
+            reactor during an experiment.
+        piston_position_history (`~collections.namedtuple`, optional): The piston position history
+            of the reactor during an RCM experiment.
+        light_emission_history (`~collections.namedtuple`, optional): The light emission history
+            of the reactor during an experiment.
+        OH_emission_history (`~collections.namedtuple`, optional): The OH emission history of the
+            reactor during an experiment.
+        absorption_history (`~collections.namedtuple`, optional): The absorption history of the
+            reactor during an experiment.
     """
-    def __init__(self, properties):
-        value_unit_props = [
-            'ignition-delay', 'temperature', 'pressure', 'pressure-rise', 'compression-time',
-            'compressed-temperature', 'compressed-pressure', 'first-stage-ignition-delay',
-        ]
-        for prop in value_unit_props:
-            if prop in properties:
-                quant = Q_(properties[prop][0])
-                if len(properties[prop]) > 1:
-                    unc = properties[prop][1]
-                    uncertainty = unc.get('uncertainty', False)
-                    upper_uncertainty = unc.get('upper-uncertainty', False)
-                    lower_uncertainty = unc.get('lower-uncertainty', False)
-                    uncertainty_type = unc.get('uncertainty-type')
-                    if uncertainty_type == 'relative':
-                        if uncertainty:
-                            quant = quant.plus_minus(float(uncertainty), relative=True)
-                        elif upper_uncertainty and lower_uncertainty:
-                            warn('Asymmetric uncertainties are not supported. The '
-                                 'maximum of lower-uncertainty and upper-uncertainty '
-                                 'has been used as the symmetric uncertainty.')
-                            uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
-                            quant = quant.plus_minus(uncertainty, relative=True)
-                        else:
-                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                             '"lower-uncertainty" need to be specified.')
-                    elif uncertainty_type == 'absolute':
-                        if uncertainty:
-                            uncertainty = Q_(uncertainty)
-                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                        elif upper_uncertainty and lower_uncertainty:
-                            warn('Asymmetric uncertainties are not supported. The '
-                                 'maximum of lower-uncertainty and upper-uncertainty '
-                                 'has been used as the symmetric uncertainty.')
-                            uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
-                            quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                        else:
-                            raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                             '"lower-uncertainty" need to be specified.')
-                    else:
-                        raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+    value_unit_props = [
+        'ignition-delay', 'first-stage-ignition-delay', 'temperature', 'pressure',
+        'pressure-rise',
+    ]
 
+    rcm_data_props = [
+        'compressed-pressure', 'compressed-temperature', 'compression-time', 'stroke', 'clearance',
+        'compression-ratio'
+    ]
+
+    def __init__(self, properties):
+        for prop in self.value_unit_props:
+            if prop in properties:
+                quant = self.process_quantity(properties[prop])
                 setattr(self, prop.replace('-', '_'), quant)
             else:
                 setattr(self, prop.replace('-', '_'), None)
+
+        if 'rcm-data' in properties:
+            orig_rcm_data = properties['rcm-data']
+            rcm_props = {}
+            for prop in self.rcm_data_props:
+                if prop in orig_rcm_data:
+                    quant = self.process_quantity(orig_rcm_data[prop])
+                    rcm_props[prop.replace('-', '_')] = quant
+                else:
+                    rcm_props[prop.replace('-', '_')] = None
+            self.rcm_data = RCMData(**rcm_props)
+        else:
+            self.rcm_data = None
 
         self.composition_type = properties['composition']['kind']
         composition = deepcopy(properties['composition']['species'])
 
         for idx, species in enumerate(composition):
-            quant = Q_(species['amount'][0])
-            if len(species['amount']) > 1:
-                unc = species['amount'][1]
-                uncertainty = unc.get('uncertainty', False)
-                upper_uncertainty = unc.get('upper-uncertainty', False)
-                lower_uncertainty = unc.get('lower-uncertainty', False)
-                uncertainty_type = unc.get('uncertainty-type')
-                if uncertainty_type == 'relative':
-                    if uncertainty:
-                        quant = quant.plus_minus(float(uncertainty), relative=True)
-                    elif upper_uncertainty and lower_uncertainty:
-                        warn('Asymmetric uncertainties are not supported. The '
-                             'maximum of lower-uncertainty and upper-uncertainty '
-                             'has been used as the symmetric uncertainty.')
-                        uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
-                        quant = quant.plus_minus(uncertainty, relative=True)
-                    else:
-                        raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                         '"lower-uncertainty" need to be specified.')
-                elif uncertainty_type == 'absolute':
-                    if uncertainty:
-                        uncertainty = Q_(uncertainty)
-                        quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                    elif upper_uncertainty and lower_uncertainty:
-                        warn('Asymmetric uncertainties are not supported. The '
-                             'maximum of lower-uncertainty and upper-uncertainty '
-                             'has been used as the symmetric uncertainty.')
-                        uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
-                        quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                    else:
-                        raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                         '"lower-uncertainty" need to be specified.')
-                else:
-                    raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
-
+            quant = self.process_quantity(species['amount'])
             composition[idx]['amount'] = quant
         setattr(self, 'composition', composition)
 
@@ -653,7 +657,36 @@ class DataPoint(object):
 
         self.ignition_type = deepcopy(properties.get('ignition-type'))
 
+        if 'time-histories' in properties and 'volume-history' in properties:
+            raise TypeError('time-histories and volume-history are mutually exclusive')
+
+        if 'time-histories' in properties:
+            for hist in properties['time-histories']:
+                if hasattr(self, '{}_history'.format(hist['type'].replace(' ', '_'))):
+                    raise ValueError('Each history type may only be specified once. {} was '
+                                     'specified multiple times'.format(hist['type']))
+                time_col = hist['time']['column']
+                time_units = hist['time']['units']
+                quant_col = hist['quantity']['column']
+                quant_units = hist['quantity']['units']
+                if isinstance(hist['values'], list):
+                    values = np.array(hist['values'])
+                else:
+                    # Load the values from a file
+                    values = np.genfromtxt(hist['values']['filename'], delimiter=',')
+
+                time_history = TimeHistory(
+                    time=Q_(values[:, time_col], time_units),
+                    quantity=Q_(values[:, quant_col], quant_units),
+                    type=hist['type'],
+                )
+
+                setattr(self, '{}_history'.format(hist['type'].replace(' ', '_')), time_history)
+
         if 'volume-history' in properties:
+            warn('The volume-history field should be replaced by time-histories. '
+                 'volume-history will be removed after PyKED 0.4',
+                 DeprecationWarning)
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
             volume_col = properties['volume-history']['volume']['column']
@@ -663,8 +696,52 @@ class DataPoint(object):
                 time=Q_(values[:, time_col], time_units),
                 volume=Q_(values[:, volume_col], volume_units),
             )
-        else:
-            self.volume_history = None
+
+        history_types = ['volume', 'temperature', 'pressure', 'piston_position', 'light_emission',
+                         'OH_emission', 'absorption']
+        for h in history_types:
+            if not hasattr(self, '{}_history'.format(h)):
+                setattr(self, '{}_history'.format(h), None)
+
+    def process_quantity(self, properties):
+        """Process the uncertainty information from a given quantity and return it
+        """
+        quant = Q_(properties[0])
+        if len(properties) > 1:
+            unc = properties[1]
+            uncertainty = unc.get('uncertainty', False)
+            upper_uncertainty = unc.get('upper-uncertainty', False)
+            lower_uncertainty = unc.get('lower-uncertainty', False)
+            uncertainty_type = unc.get('uncertainty-type')
+            if uncertainty_type == 'relative':
+                if uncertainty:
+                    quant = quant.plus_minus(float(uncertainty), relative=True)
+                elif upper_uncertainty and lower_uncertainty:
+                    warn('Asymmetric uncertainties are not supported. The '
+                         'maximum of lower-uncertainty and upper-uncertainty '
+                         'has been used as the symmetric uncertainty.')
+                    uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
+                    quant = quant.plus_minus(uncertainty, relative=True)
+                else:
+                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                     '"lower-uncertainty" need to be specified.')
+            elif uncertainty_type == 'absolute':
+                if uncertainty:
+                    uncertainty = Q_(uncertainty)
+                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                elif upper_uncertainty and lower_uncertainty:
+                    warn('Asymmetric uncertainties are not supported. The '
+                         'maximum of lower-uncertainty and upper-uncertainty '
+                         'has been used as the symmetric uncertainty.')
+                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                else:
+                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                     '"lower-uncertainty" need to be specified.')
+            else:
+                raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+
+        return quant
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.

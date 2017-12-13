@@ -2,7 +2,9 @@
 value-with-uncertainty: &value-with-uncertainty
   isvalid_uncertainty: true
   items:
-    - type: string
+    - anyof_type:
+      - string
+      - float
     - type: dict
       schema:
         uncertainty-type:
@@ -40,7 +42,9 @@ value-with-uncertainty: &value-with-uncertainty
 value-without-uncertainty: &value-without-uncertainty
   isvalid_quantity: true
   items:
-    - type: string
+    - anyof_type:
+      - string
+      - float
 value-unit-required: &value-unit-required
   type: list
   required: true

@@ -1,0 +1,66 @@
+---
+file-authors:
+  - name: Kyle E Niemeyer
+    ORCID: 0000-0003-4425-7097
+file-version: 0
+chemked-version: 0.0.1
+reference:
+  doi: 10.1016/j.ijhydene.2007.04.008
+  authors:
+    - name: N. Chaumeix
+    - name: S. Pichon
+    - name: F. Lafosse
+    - name: C.-E. Paillard
+  journal: International Journal of Hydrogen Energy
+  year: 2007
+  volume: 32
+  pages: 2216-2226
+  detail: Fig. 12., right, open diamond
+experiment-type: ignition delay
+apparatus:
+  kind: shock tube
+  institution: CNRS-ICARE
+  facility: stainless steel shock tube
+common-properties:
+  pressure: &pres
+    - 220 kilopascal
+  composition: &comp
+    kind: mole fraction
+    species:
+      - species-name: H2
+        thermo:
+          T_ranges: [200.0, 1000.0, 5000.0]
+          data: [1.0, 2.0, 3.0, 4.0, 5.0, 6, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0]
+          note: This data is made up
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.00444
+      - species-name: O2
+        thermo:
+          T_ranges: [200 K, 1000 K, 5000 K]
+          data: [1.0, 2.0, 3.0, 4.0, 5.0, 6, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0]
+          note: This data is made up
+        InChI: 1S/O2/c1-2
+        amount:
+          - 0.00556
+      - species-name: Ar
+        thermo:
+          T_ranges: [200, 1000, 5000]
+          data: [1.0, 2.0, 3.0, 4.0, 5.0, 6, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0]
+          note: This data is made up
+        InChI: 1S/Ar
+        amount:
+          - 0.99
+  ignition-type: &ign
+    target: pressure
+    type: d/dt max
+datapoints:
+  - temperature:
+      - 1164.48 kelvin
+    ignition-delay:
+      - 471.54 us
+    pressure: *pres
+    composition: *comp
+    ignition-type: *ign
+    equivalence-ratio: 0.4
+...

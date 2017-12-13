@@ -226,81 +226,81 @@ for the :ref:`datapoints <meta-datapoints>` schema.
     The ignition delay measurement, with dimensions of time. Must conform to
     :ref:`value-unit-required <schema-value-unit-required>`
 
-.. _ignition-pressure-rise:
-
-* ``pressure-rise``: sequence, optional
-    The pressure rise after the passage of the reflected shock, with dimensions of inverse time.
-    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
-
-.. _ignition-compression-time:
-
-* ``compression-time``: sequence, optional
-    The time taken during the compression stroke of a rapid compression machine experiment, with
-    dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
-
 .. _ignition-first-stage-ignition-delay:
 
 * ``first-stage-ignition-delay``: sequence, optional
     If two stages of ignition are present, this is the value of the first stage of ignition, with
     dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
-.. _ignition-compressed-pressure:
+.. _ignition-pressure-rise:
 
-* ``compressed-pressure``: sequence, optional
-    The pressure at the end of the compression stroke for a rapid compression machine experiment,
-    with dimensions of mass per length per time squared. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`
-
-.. _ignition-compressed-temperature:
-
-* ``compressed-temperature``: sequence, optional
-    The temperature at the end of the compression stroke for a rapid compression machine experiment,
-    with dimensions of temperature. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`
+* ``pressure-rise``: sequence, optional
+    The pressure rise after the passage of the reflected shock, with dimensions of inverse time.
+    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
 .. _ignition-equivalence-ratio:
 
 * ``equivalence-ratio``: float, optional
     The equivalence ratio of the experiment, dimensionless. Minimum value is 0.0.
 
-.. _ignition-volume-history:
+.. _ignition-rcm-data:
 
-* ``volume-history``: mapping, optional
-    Specify the volume history of the reaction chamber in a rapid compression machine experiment,
-    for use in simulating the complete experiment. Fields:
+* ``rcm-data``: mapping, optional
+    Data related to rapid compression machine (RCM) experiments. The keys of the mapping are
+    detailed in the :ref:`Rapid Compression Machine Data Keys <rcm-data-keys>` section.
 
-    - ``volume``: mapping, required
-        A mapping describing the volume in the history. Fields:
+.. _ignition-time-histories:
 
-        * ``units``: string, required
-            The units of the volume, with dimensions of length cubed
+* ``time-histories``: sequence, optional
+    A sequence of mappings conforming to the :ref:`time-history <ignition-time-history>`
+    schema. Used to specify a time-varying history of values during an experiment.
 
-        * ``column``: integer, required
-            The 0-based index of the column containing the volume information in the ``values``
-            array. Must be 0 or 1
+.. _rcm-data-keys:
 
-    - ``time``: mapping, required
-        A mapping describing the time in the history. Fields:
+Rapid Compression Machine Data Keys
+-----------------------------------
 
-        * ``units``: string, required
-            The units of the time, with dimensions of time
+This section details the keys specific to rapid compression machine (RCM) experiments, which are
+subkeys of the :ref:`rcm-data <ignition-rcm-data>` key.
 
-        * ``column``: integer, required
-            The 0-based index of the column containing the time information in the ``values``
-            array. Must be 0 or 1
+.. _rcm-data-compression-time:
 
-    - ``values``: sequence, required
-        A sequence of sequences describing the values of the volume at the time points. Can be
-        entered in any supported syntax, including:
+* ``compression-time``: sequence, optional
+    The time taken during the compression stroke of a rapid compression machine experiment, with
+    dimensions of time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
-        .. code-block:: yaml
+.. _rcm-data-compressed-pressure:
 
-            - [0.0, 0.0]
-            - [1.0, 1.0]
-            - - 2.0
-              - 2.0
-            - - 3.0
-              - 3.0
+* ``compressed-pressure``: sequence, optional
+    The pressure at the end of the compression stroke for a rapid compression machine experiment,
+    with dimensions of mass per length per time squared. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-compressed-temperature:
+
+* ``compressed-temperature``: sequence, optional
+    The temperature at the end of the compression stroke for a rapid compression machine experiment,
+    with dimensions of temperature. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-compression-ratio:
+
+* ``compression-ratio``: sequence, optional
+    The dimensionless volumetric compression ratio for a rapid compression machine experiment. Must
+    conform to :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-stroke:
+
+* ``stroke``: sequence, optional
+    The length of the stroke in a rapid compression machine experiment, with dimensions of length.
+    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`
+
+.. _rcm-data-clearance:
+
+* ``clearance``: sequence, optional
+    The clearance from the piston face to the end wall of the reaction chamber at the end of
+    compression, with dimensions of length. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`
 
 .. _schema-only-keys:
 
@@ -375,3 +375,65 @@ should not be used in actual ChemKED files. These keys are documented in this se
     A sequence conforming to either :ref:`value-with-uncertainty <schema-value-with-uncertainty>` or
     :ref:`value-without-uncertainty <schema-value-without-uncertainty>`. May or may not be included
     in the ChemKED file.
+
+.. _ignition-time-history:
+
+* ``time-history``: mapping, optional
+    Specify the time history of a quantity during an experiment. Fields:
+
+    - ``quantity``: mapping, required
+        A mapping describing the volume in the history. Fields:
+
+        * ``units``: string, required
+            The units of the volume, with dimensions of length cubed
+
+        * ``column``: integer, required
+            The 0-based index of the column containing the volume information in the ``values``
+            array. Must be 0 or 1
+
+    - ``time``: mapping, required
+        A mapping describing the time in the history. Fields:
+
+        * ``units``: string, required
+            The units of the time, with dimensions of time
+
+        * ``column``: integer, required
+            The 0-based index of the column containing the time information in the ``values``
+            array. Must be 0 or 1
+
+    - ``uncertainty``: mapping, optional
+        The uncertainty of the values in the ``quantity`` column. Can be specified either globally
+        by a single value in the sequence or by specifying a column that must be present in the
+        values array. Mapping keys:
+
+        * ``type``: string, required
+            Either ``absolute`` or ``relative`` to indicate the type of uncertainty
+
+        * ``value``: string, optional
+            A global value for the uncertainty applied to all points in the ``values`` array,
+            specified as a string with units. Either this key must be present, or the ``column`` and
+            ``units`` keys must be present
+
+        * ``column``: integer, optional
+            The column in the ``values`` array containing the uncertainty of each point. Either this
+            key and the ``units`` key must be specified, or the ``value`` key must be specified.
+
+        * ``units``: string, optional
+            The units of the uncertainty in the ``column`` array. IF the ``type`` is relative, this
+            should be ``dimensionless``. Either this key and the ``column`` key must be specified,
+            or the ``value`` key must be specified.
+
+    - ``values``: sequence or mapping, required
+        Must be a sequence or mapping. If a mapping, the only key should be ``filename`` whose value
+        should be the filename of a comma-separated value file containing the values for the
+        history. If a sequence, should be a sequence of sequences describing the values of the
+        volume at the time points. Can be entered in any supported syntax, including:
+
+        .. code-block:: yaml
+
+            - [0.0, 0.0]
+            - [1.0, 1.0]
+            - - 2.0
+              - 2.0
+            - - 3.0
+              - 3.0

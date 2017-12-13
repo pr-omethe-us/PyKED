@@ -81,6 +81,13 @@ property_units = {
     'compression-time': 'second',
     'volume': 'meter**3',
     'time': 'second',
+    'piston position': 'meter',
+    'emission': 'dimensionless',
+    'absorption': 'dimensionless',
+    'concentration': 'mole/meter**3',
+    'stroke': 'meter',
+    'clearance': 'meter',
+    'compression-ratio': 'dimensionless',
 }
 
 
@@ -165,9 +172,38 @@ def compare_name(given_name, family_name, question_name):
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references.
     """
+    def _validate_isvalid_t_range(self, isvalid_t_range, field, values):
+        """Checks that the temperature ranges given for thermo data are valid
+        Args:
+            isvalid_t_range (`bool`): flag from schema indicating T range is to be checked
+            field (`str`): T_range
+            values (`list`): List of temperature values indicating low, middle, and high ranges
+
+        The rule's arguemnts are validated against this schema:
+            {'isvalid_t_range': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'list'}}
+        """
+        if all([isinstance(v, (float, int)) for v in values]):
+            # If no units given, assume Kelvin
+            T_low = Q_(values[0], 'K')
+            T_mid = Q_(values[1], 'K')
+            T_hi = Q_(values[2], 'K')
+        elif all([isinstance(v, str) for v in values]):
+            T_low = Q_(values[0])
+            T_mid = Q_(values[1])
+            T_hi = Q_(values[2])
+        else:
+            self._error(field, 'The temperatures in the range must all be either with units or '
+                               'without units, they cannot be mixed')
+            return False
+
+        if min([T_low, T_mid, T_hi]) != T_low:
+            self._error(field, 'The first element of the T_range must be the lower limit')
+        if max([T_low, T_mid, T_hi]) != T_hi:
+            self._error(field, 'The last element of the T_range must be the upper limit')
+
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
         """Checks for appropriate units using Pint unit registry.
-
         Args:
             isvalid_unit (`bool`): flag from schema indicating units to be checked.
             field (`str`): property associated with units in question.
@@ -185,17 +221,60 @@ class OurValidator(Validator):
                         'with ' + property_units[field]
                         )
 
+    def _validate_isvalid_history(self, isvalid_history, field, value):
+        """Checks that the given time history is properly formatted.
+
+        Args:
+            isvalid_history (`bool`): flag from schema indicating units to be checked.
+            field (`str`): property associated with history in question.
+            value (`dict`): dictionary of values from file associated with this property.
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_history': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+        """
+        # Check the type has appropriate units
+        history_type = value['type']
+        if history_type.endswith('emission'):
+            history_type = 'emission'
+        elif history_type.endswith('absorption'):
+            history_type = 'absorption'
+        quantity = 1.0*(units(value['quantity']['units']))
+        try:
+            quantity.to(property_units[history_type])
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units[history_type])
+
+        # Check that time has appropriate units
+        time = 1.0*(units(value['time']['units']))
+        try:
+            time.to(property_units['time'])
+        except pint.DimensionalityError:
+            self._error(field, 'incompatible units; should be consistent '
+                        'with ' + property_units['time'])
+
+        # Check that the values have the right number of columns
+        n_cols = len(value['values'][0])
+        max_cols = max(value['time']['column'],
+                       value['quantity']['column'],
+                       value.get('uncertainty', {}).get('column', 0)) + 1
+        if n_cols > max_cols:
+            self._error(field, 'too many columns in the values')
+        elif n_cols < max_cols:
+            self._error(field, 'not enough columns in the values')
+
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
 
         Args:
             isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.
             field (`str`): property associated with quantity in question.
-            value (`str`): string of the value of the quantity
+            value (`list`): list whose first element is a string representing a value with units
 
         The rule's arguments are validated against this schema:
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+             'value': {'type': 'list'}}
         """
         quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
@@ -221,7 +300,7 @@ class OurValidator(Validator):
 
         The rule's arguments are validated against this schema:
             {'isvalid_uncertainty': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+             'value': {'type': 'list'}}
         """
         self._validate_isvalid_quantity(True, field, value)
 

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - New method to instantiate a `ChemKED` class directly from a ReSpecTh XML file
 - The `__version__` attribute can be imported from the top-level module
+- New `time-histories` field to replace the `volume-history`. This field allows specification of several other relevant parameters besides volume.
+- Added `rcm-data` field and moved `compressed-temperature`, `compressed-pressure`, and `compression-time` to this field
+- Added `stroke`, `clearance`, and `compression-ratio` to the `rcm-data` field
 
 ### Changed
 - Crossref lookups via Habanero now comply with the "be-nice" policy
@@ -17,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ReSpecTh->ChemKED converter function now returns a dictionary, while the command-line entry points write out files
 - Require Habanero>=0.6.0 to support the `mailto` argument
 - Require pytest>=3.2.0 to support the `pytest.mark.filterwarnings` decorator
+- Deprecate the `volume-history` field in the ChemKED YAML file and replace with `time-histories`
 
 ### Fixed
 - Crossref lookups in the converters use the common API instance from validation
