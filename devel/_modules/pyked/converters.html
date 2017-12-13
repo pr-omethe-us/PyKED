@@ -460,48 +460,55 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
 
-    <span class="c1"># RCM files may have a second dataGroup with volume-time history</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">dataGroup</span> <span class="o">=</span> <span class="n">dataGroups</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">time_tag</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">volume_tag</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;property&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
-                <span class="n">time_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-                <span class="n">time_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span>
-                <span class="n">volume_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-                <span class="n">volume_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume and time allowed in volume history dataGroup.&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">time_tag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">volume_tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and volume properties required for volume history.&#39;</span><span class="p">)</span>
-        <span class="n">volume_history</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time_dict</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="n">volume_dict</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-
-        <span class="c1"># collect volume-time history</span>
-        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">):</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">time_tag</span><span class="p">:</span>
-                    <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">volume_tag</span><span class="p">:</span>
-                    <span class="n">volume</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="c1"># ReSpecTh files can have other dataGroups with pressure, volume, or temperature histories</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dataGroup</span> <span class="ow">in</span> <span class="n">dataGroups</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">time_tag</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">quant_tags</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">quant_dicts</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">quant_types</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;property&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+                    <span class="n">time_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+                    <span class="n">time_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]:</span>
+                    <span class="n">quant_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                    <span class="n">quant_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+                    <span class="n">quant_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume and time values allowed in &#39;</span>
-                                       <span class="s1">&#39;volume-history dataPoint.&#39;</span>
-                                       <span class="p">)</span>
-            <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and volume values required in each &#39;</span>
-                                   <span class="s1">&#39;volume-history dataPoint.&#39;</span>
-                                   <span class="p">)</span>
-            <span class="n">volume_history</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">volume</span><span class="p">])</span>
+                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume, temperature, pressure, and time are allowed &#39;</span>
+                                       <span class="s1">&#39;in a time-history dataGroup.&#39;</span><span class="p">)</span>
 
-        <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;volume-history&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">volume_history</span>
+            <span class="k">if</span> <span class="n">time_tag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">quant_tags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and quantity properties required for time-history.&#39;</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;More than two DataGroups not supported.&#39;</span><span class="p">)</span>
+            <span class="n">time_histories</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time_dict</span><span class="p">,</span> <span class="s1">&#39;quantity&#39;</span><span class="p">:</span> <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">quant_dicts</span><span class="p">,</span> <span class="n">quant_types</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="c1"># collect volume-time history</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">):</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">quants</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">time_tag</span><span class="p">:</span>
+                        <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="n">quant_tags</span><span class="p">:</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                        <span class="n">tag_idx</span> <span class="o">=</span> <span class="n">quant_tags</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+                        <span class="n">quant_type</span> <span class="o">=</span> <span class="n">quant_types</span><span class="p">[</span><span class="n">tag_idx</span><span class="p">]</span>
+                        <span class="n">quants</span><span class="p">[</span><span class="n">quant_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">quant</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Value tag </span><span class="si">{}</span><span class="s1"> not found in dataGroup tags: &#39;</span>
+                                           <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">quant_tags</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">quants</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and quantity values required in each &#39;</span>
+                                       <span class="s1">&#39;time-history dataPoint.&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_histories</span><span class="p">:</span>
+                    <span class="n">t</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">quants</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]]])</span>
+
+            <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">time_histories</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">datapoints</span></div>
 
@@ -551,9 +558,10 @@
     <span class="k">if</span> <span class="n">has_pres_rise</span> <span class="ow">and</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;rapid compression machine&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Pressure rise cannot be defined for RCM.&#39;</span><span class="p">)</span>
 
-    <span class="n">has_vol_hist</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">]</span> <span class="ow">or</span>
-                    <span class="nb">any</span><span class="p">([</span><span class="kc">True</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">])</span>
-                    <span class="p">)</span>
+    <span class="n">has_vol_hist</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">]</span>
+         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time-histories&#39;</span><span class="p">,</span> <span class="p">[{}])]</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">has_vol_hist</span> <span class="ow">and</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;shock tube&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Volume history cannot be defined for shock tube.&#39;</span><span class="p">)</span>
 

@@ -270,7 +270,7 @@ composition specification in a given column. Caveat Emptor.</p>
 </dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.21.0)"><code class="xref py py-obj docutils literal"><span class="pre">DataFrame</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.21.1)"><code class="xref py py-obj docutils literal"><span class="pre">DataFrame</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -413,6 +413,48 @@ experiment.</p>
 during an RCM experiment.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.pressure_history">
+<code class="descname">pressure_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The pressure history of the reactor
+during an experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.temperature_history">
+<code class="descname">temperature_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.temperature_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The temperature history of the
+reactor during an experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.piston_position_history">
+<code class="descname">piston_position_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.piston_position_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The piston position history
+of the reactor during an RCM experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.light_emission_history">
+<code class="descname">light_emission_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.light_emission_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The light emission history
+of the reactor during an experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.OH_emission_history">
+<code class="descname">OH_emission_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.OH_emission_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The OH emission history of the
+reactor during an experiment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.DataPoint.absorption_history">
+<code class="descname">absorption_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.absorption_history" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">namedtuple</span></code></a>, optional – The absorption history of the
+reactor during an experiment.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="pyked.chemked.DataPoint.get_cantera_composition_string">
 <code class="descname">get_cantera_composition_string</code><span class="sig-paren">(</span><em>species_conversion=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_composition_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_composition_string" title="Permalink to this definition">¶</a></dt>
@@ -522,6 +564,54 @@ be done because no molecular weight information is known</td>
 </div>
 </dd></dl>
 
+<dl class="method">
+<dt id="pyked.chemked.DataPoint.process_quantity">
+<code class="descname">process_quantity</code><span class="sig-paren">(</span><em>properties</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.process_quantity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyked.chemked.DataPoint.process_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the uncertainty information from a given quantity and return it</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyked.chemked.RCMData">
+<em class="property">class </em><code class="descclassname">pyked.chemked.</code><code class="descname">RCMData</code><a class="headerlink" href="#pyked.chemked.RCMData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data fields specific to rapid compression machine experiments</p>
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.clearance">
+<code class="descname">clearance</code><a class="headerlink" href="#pyked.chemked.RCMData.clearance" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The clearance between piston face and end wall at the end of compression</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.compressed_pressure">
+<code class="descname">compressed_pressure</code><a class="headerlink" href="#pyked.chemked.RCMData.compressed_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The pressure at the end of compression</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.compressed_temperature">
+<code class="descname">compressed_temperature</code><a class="headerlink" href="#pyked.chemked.RCMData.compressed_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The temperature at the end of compression</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.compression_ratio">
+<code class="descname">compression_ratio</code><a class="headerlink" href="#pyked.chemked.RCMData.compression_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The volumetric compression ratio</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.compression_time">
+<code class="descname">compression_time</code><a class="headerlink" href="#pyked.chemked.RCMData.compression_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The duration of the compression stroke</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.RCMData.stroke">
+<code class="descname">stroke</code><a class="headerlink" href="#pyked.chemked.RCMData.stroke" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">Quantity</span></code>) The length of the stroke</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -573,9 +663,42 @@ be done because no molecular weight information is known</td>
 </dd></dl>
 
 <dl class="class">
+<dt id="pyked.chemked.TimeHistory">
+<em class="property">class </em><code class="descclassname">pyked.chemked.</code><code class="descname">TimeHistory</code><a class="headerlink" href="#pyked.chemked.TimeHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time history of the quantity in an RCM experiment</p>
+<dl class="attribute">
+<dt id="pyked.chemked.TimeHistory.quantity">
+<code class="descname">quantity</code><a class="headerlink" href="#pyked.chemked.TimeHistory.quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.13)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) – the quantity of interest during the experiment</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.TimeHistory.time">
+<code class="descname">time</code><a class="headerlink" href="#pyked.chemked.TimeHistory.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.13)"><code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code></a>) – the time during the experiment</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyked.chemked.TimeHistory.type">
+<code class="descname">type</code><a class="headerlink" href="#pyked.chemked.TimeHistory.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>) – the type of time history represented. Possible options are:</p>
+<ul class="simple">
+<li>volume</li>
+<li>temperature</li>
+<li>pressure</li>
+<li>piston position</li>
+<li>light emission</li>
+<li>OH emission</li>
+<li>absorption</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pyked.chemked.VolumeHistory">
 <em class="property">class </em><code class="descclassname">pyked.chemked.</code><code class="descname">VolumeHistory</code><a class="headerlink" href="#pyked.chemked.VolumeHistory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time history of the volume in an RCM experiment</p>
+<dd><p>Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4</p>
 <dl class="attribute">
 <dt id="pyked.chemked.VolumeHistory.time">
 <code class="descname">time</code><a class="headerlink" href="#pyked.chemked.VolumeHistory.time" title="Permalink to this definition">¶</a></dt>

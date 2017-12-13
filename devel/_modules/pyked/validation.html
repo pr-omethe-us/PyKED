@@ -123,6 +123,13 @@
     <span class="s1">&#39;compression-time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
     <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="s1">&#39;meter**3&#39;</span><span class="p">,</span>
     <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;piston position&#39;</span><span class="p">:</span> <span class="s1">&#39;meter&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;emission&#39;</span><span class="p">:</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;absorption&#39;</span><span class="p">:</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;concentration&#39;</span><span class="p">:</span> <span class="s1">&#39;mole/meter**3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;stroke&#39;</span><span class="p">:</span> <span class="s1">&#39;meter&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;clearance&#39;</span><span class="p">:</span> <span class="s1">&#39;meter&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compression-ratio&#39;</span><span class="p">:</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -207,9 +214,38 @@
 <div class="viewcode-block" id="OurValidator"><a class="viewcode-back" href="../../validation.html#pyked.validation.OurValidator">[docs]</a><span class="k">class</span> <span class="nc">OurValidator</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Custom validator with rules for Quantities and references.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_validate_isvalid_t_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_t_range</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that the temperature ranges given for thermo data are valid</span>
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_t_range (`bool`): flag from schema indicating T range is to be checked</span>
+<span class="sd">            field (`str`): T_range</span>
+<span class="sd">            values (`list`): List of temperature values indicating low, middle, and high ranges</span>
+
+<span class="sd">        The rule&#39;s arguemnts are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_t_range&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;list&#39;}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]):</span>
+            <span class="c1"># If no units given, assume Kelvin</span>
+            <span class="n">T_low</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">T_mid</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;K&#39;</span><span class="p">)</span>
+            <span class="n">T_hi</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;K&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]):</span>
+            <span class="n">T_low</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">T_mid</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">T_hi</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;The temperatures in the range must all be either with units or &#39;</span>
+                               <span class="s1">&#39;without units, they cannot be mixed&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">min</span><span class="p">([</span><span class="n">T_low</span><span class="p">,</span> <span class="n">T_mid</span><span class="p">,</span> <span class="n">T_hi</span><span class="p">])</span> <span class="o">!=</span> <span class="n">T_low</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;The first element of the T_range must be the lower limit&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">([</span><span class="n">T_low</span><span class="p">,</span> <span class="n">T_mid</span><span class="p">,</span> <span class="n">T_hi</span><span class="p">])</span> <span class="o">!=</span> <span class="n">T_hi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;The last element of the T_range must be the upper limit&#39;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_validate_isvalid_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_unit</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks for appropriate units using Pint unit registry.</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            isvalid_unit (`bool`): flag from schema indicating units to be checked.</span>
 <span class="sd">            field (`str`): property associated with units in question.</span>
@@ -227,17 +263,60 @@
                         <span class="s1">&#39;with &#39;</span> <span class="o">+</span> <span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
                         <span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_validate_isvalid_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_history</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that the given time history is properly formatted.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_history (`bool`): flag from schema indicating units to be checked.</span>
+<span class="sd">            field (`str`): property associated with history in question.</span>
+<span class="sd">            value (`dict`): dictionary of values from file associated with this property.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;isvalid_history&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check the type has appropriate units</span>
+        <span class="n">history_type</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">history_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;emission&#39;</span><span class="p">):</span>
+            <span class="n">history_type</span> <span class="o">=</span> <span class="s1">&#39;emission&#39;</span>
+        <span class="k">elif</span> <span class="n">history_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;absorption&#39;</span><span class="p">):</span>
+            <span class="n">history_type</span> <span class="o">=</span> <span class="s1">&#39;absorption&#39;</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">quantity</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">history_type</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;incompatible units; should be consistent &#39;</span>
+                        <span class="s1">&#39;with &#39;</span> <span class="o">+</span> <span class="n">property_units</span><span class="p">[</span><span class="n">history_type</span><span class="p">])</span>
+
+        <span class="c1"># Check that time has appropriate units</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;incompatible units; should be consistent &#39;</span>
+                        <span class="s1">&#39;with &#39;</span> <span class="o">+</span> <span class="n">property_units</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Check that the values have the right number of columns</span>
+        <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">max_cols</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">],</span>
+                       <span class="n">value</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">],</span>
+                       <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;column&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">n_cols</span> <span class="o">&gt;</span> <span class="n">max_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;too many columns in the values&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">n_cols</span> <span class="o">&lt;</span> <span class="n">max_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;not enough columns in the values&#39;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_validate_isvalid_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_quantity</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.</span>
 <span class="sd">            field (`str`): property associated with quantity in question.</span>
-<span class="sd">            value (`str`): string of the value of the quantity</span>
+<span class="sd">            value (`list`): list whose first element is a string representing a value with units</span>
 
 <span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
 <span class="sd">            {&#39;isvalid_quantity&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
-<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;list&#39;}}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">quantity</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
@@ -263,7 +342,7 @@
 
 <span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
 <span class="sd">            {&#39;isvalid_uncertainty&#39;: {&#39;type&#39;: &#39;bool&#39;}, &#39;field&#39;: {&#39;type&#39;: &#39;str&#39;},</span>
-<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;dict&#39;}}</span>
+<span class="sd">             &#39;value&#39;: {&#39;type&#39;: &#39;list&#39;}}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
