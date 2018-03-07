@@ -359,16 +359,14 @@ class TestConvertToReSpecTh(object):
         c = ChemKED(filename)
 
         for idx, dp in enumerate(c.datapoints):
-            c.datapoints[idx].composition = {'H2': Composition(**{'amount': Q_(0.1, 'dimensionless'),
-                                              'species_name': 'H2', 'InChI': None, 'SMILES': None,
-                                              'atomic_composition': None}),
-                                             'O2': Composition(**{'amount': Q_(0.1, 'dimensionless'),
-                                              'species_name': 'O2', 'InChI': None, 'SMILES': None,
-                                              'atomic_composition': None}),
-                                             'Ar': Composition(**{'amount': Q_(0.8, 'dimensionless'),
-                                              'species_name': 'Ar', 'InChI': None, 'SMILES': None,
-                                              'atomic_composition': None})
-                                             }
+            c.datapoints[idx].composition = dict(
+                H2=Composition(**{'amount': Q_(0.1, 'dimensionless'), 'species_name': 'H2',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None}),
+                O2=Composition(**{'amount': Q_(0.1, 'dimensionless'), 'species_name': 'O2',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None}),
+                Ar=Composition(**{'amount': Q_(0.8, 'dimensionless'), 'species_name': 'Ar',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None})
+            )
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
@@ -378,12 +376,10 @@ class TestConvertToReSpecTh(object):
 
         with pytest.warns(UserWarning) as record:
             common = get_common_properties(root)
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species H2'
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species O2'
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species Ar'
+        messages = [str(record.pop(UserWarning).message) for i in range(3)]
+        assert 'Missing InChI for species H2' in messages
+        assert 'Missing InChI for species O2' in messages
+        assert 'Missing InChI for species Ar' in messages
         assert len(common['composition']['species']) == 3
         for spec in common['composition']['species']:
             assert spec in [{'amount': [0.1], 'species-name': 'H2'},
@@ -560,8 +556,13 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:4.4400e-03', 'O2': 'O2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mole fraction'
-        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction() == compare_str
 
     def test_cantera_composition_mole_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -573,8 +574,13 @@ class TestDataPoint(object):
     def test_cantera_composition_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:2.2525e-04', 'O2': 'O2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mass fraction'
-        assert d.get_cantera_mass_fraction() == 'H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction() == compare_str
 
     def test_cantera_composition_mass_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -586,44 +592,79 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:4.4400e-03', 'O2': 'O2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mole percent'
-        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction() == compare_str
 
     def test_cantera_change_species_by_name_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_name_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_name_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:2.2525e-04', 'O2': 'o2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:2.2525e-04', 'O2': 'o2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_missing_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
