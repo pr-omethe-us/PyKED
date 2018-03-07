@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Require Habanero>=0.6.0 to support the `mailto` argument
 - Require pytest>=3.2.0 to support the `pytest.mark.filterwarnings` decorator
 - Deprecate the `volume-history` field in the ChemKED YAML file and replace with `time-histories`
+- ORCID lookups are now done by a function in the local `orcid.py` module, removing an external dependency
+- Composition in a `DataPoint` is now stored in a dictionary of `namedtuple`s (called `Composition`) rather than a list of dictionaries
 
 ### Fixed
 - Crossref lookups in the converters use the common API instance from validation
