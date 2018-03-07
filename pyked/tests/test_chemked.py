@@ -17,6 +17,9 @@ import pytest
 from ..validation import schema, OurValidator, yaml, Q_
 from ..chemked import ChemKED, DataPoint
 from ..converters import get_datapoints, get_common_properties
+from .._version import __version__
+
+schema['chemked-version']['allowed'].append(__version__)
 
 warnings.simplefilter('always')
 
