@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from ..validation import schema, OurValidator, compare_name, property_units
+from .._version import __version__
 
 
 def no_internet(host='8.8.8.8', port=53, timeout=1):
@@ -28,6 +29,8 @@ def no_internet(host='8.8.8.8', port=53, timeout=1):
 
 
 internet_missing = pytest.mark.skipif(no_internet(), reason='Internet not available')
+
+schema['chemked-version']['allowed'].append(__version__)
 
 v = OurValidator(schema)
 

@@ -56,6 +56,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3.6', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'requests': ('http://docs.python-requests.org/en/master/', None),
 }
 
 # Make the module index more useful by sorting on the module name

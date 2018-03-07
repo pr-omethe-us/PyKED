@@ -32,7 +32,6 @@ install_requires = [
     'pint>=0.7.2',
     'numpy>=1.11.0',
     'habanero>=0.6.0',
-    'orcid>=0.7.0,<1.0',
     'uncertainties>=3.0.1',
 ]
 
