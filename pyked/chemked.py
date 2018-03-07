@@ -69,6 +69,12 @@ Apparatus.institution.__doc__ = '(`str`) The institution where the experiment is
 Apparatus.facility.__doc__ = '(`str`) The particular experimental facility at the location'
 
 Composition = namedtuple('Composition', 'species_name InChI SMILES atomic_composition amount')
+Composition.__doc__ = 'Detail of the initial composition of the mixture for the experiment'
+Composition.species_name.__doc__ = '(`str`) The name of the species'
+Composition.InChI.__doc__ = '(`str`) The InChI identifier for the species'
+Composition.SMILES.__doc__ = '(`str`) The SMILES identifier for the species'
+Composition.atomic_composition.__doc__ = '(`dict`) The atomic composition of the species'
+Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 
 
 class ChemKED(object):
