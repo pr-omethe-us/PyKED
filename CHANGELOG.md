@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New `time-histories` field to replace the `volume-history`. This field allows specification of several other relevant parameters besides volume.
 - Added `rcm-data` field and moved `compressed-temperature`, `compressed-pressure`, and `compression-time` to this field
 - Added `stroke`, `clearance`, and `compression-ratio` to the `rcm-data` field
+- Allow alpha versions to be specified during testing
 
 ### Changed
 - Crossref lookups via Habanero now comply with the "be-nice" policy
