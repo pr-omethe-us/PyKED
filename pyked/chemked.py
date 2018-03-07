@@ -648,22 +648,18 @@ class DataPoint(object):
             self.rcm_data = None
 
         self.composition_type = properties['composition']['kind']
-        # composition = deepcopy(properties['composition']['species'])
-        composition = []
-        for spec in properties['composition']['species']:
-            species_name = spec['species-name']
-            amount = spec['amount']
-            InChI = spec.get('InChI')
-            SMILES = spec.get('SMILES')
-            atomic_composition = spec.get('atomic-composition')
-            composition.append(Composition(species_name=species_name, InChI=InChI, SMILES=SMILES, atomic_composition=atomic_composition, amount=amount))
-        print(composition)
-        for idx, species in enumerate(composition):
-            quant = self.process_quantity(species['amount'])
-            composition[idx]['amount'] = quant
-        setattr(self, 'composition', composition)
+        composition = {}
+        for species in properties['composition']['species']:
+            species_name = species['species-name']
+            amount = self.process_quantity(species['amount'])
+            InChI = species.get('InChI')
+            SMILES = species.get('SMILES')
+            atomic_composition = species.get('atomic-composition')
+            composition[species_name] = Composition(
+                species_name=species_name, InChI=InChI, SMILES=SMILES,
+                atomic_composition=atomic_composition, amount=amount)
 
-            setattr(self, 'composition', composition)
+        setattr(self, 'composition', composition)
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
         self.ignition_type = deepcopy(properties.get('ignition-type'))
