@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.4.0] - 2018-04-07
+### Added
 - New method to instantiate a `ChemKED` class directly from a ReSpecTh XML file
 - The `__version__` attribute can be imported from the top-level module
 - New `time-histories` field to replace the `volume-history`. This field allows specification of several other relevant parameters besides volume.
@@ -119,7 +126,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.1.6...v0.2.0
