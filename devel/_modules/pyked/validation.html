@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>pyked.validation &#8212; PyKED 0.3.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.3.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -30,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -42,8 +33,6 @@
   <h1>Source code for pyked.validation</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Validation class for ChemKED schema.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
@@ -55,7 +44,7 @@
 <span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="k">import</span> <span class="n">HTTPError</span><span class="p">,</span> <span class="ne">ConnectionError</span>
 <span class="kn">from</span> <span class="nn">cerberus</span> <span class="k">import</span> <span class="n">Validator</span><span class="p">,</span> <span class="n">SchemaError</span>
 <span class="kn">import</span> <span class="nn">habanero</span>
-<span class="kn">from</span> <span class="nn">orcid</span> <span class="k">import</span> <span class="n">SearchAPI</span>
+<span class="kn">from</span> <span class="nn">.orcid</span> <span class="k">import</span> <span class="n">search_orcid</span>
 
 <span class="n">units</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">()</span>
 <span class="sd">&quot;&quot;&quot;Unit registry to contain the units used in PyKED&quot;&quot;&quot;</span>
@@ -63,7 +52,6 @@
 <span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;cm3 = centimeter**3&#39;</span><span class="p">)</span>
 <span class="n">Q_</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">Quantity</span>
 
-<span class="n">orcid_api</span> <span class="o">=</span> <span class="n">SearchAPI</span><span class="p">(</span><span class="n">sandbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">(</span><span class="n">mailto</span><span class="o">=</span><span class="s1">&#39;prometheus@pr.omethe.us&#39;</span><span class="p">)</span>
 
 <span class="c1"># Load the ChemKED schema definition file</span>
@@ -207,8 +195,8 @@
         <span class="n">family_name_compare</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_split</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">num_hyphen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):])</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">family_name_compare</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_split</span><span class="p">[</span><span class="o">-</span><span class="n">num_family_names</span><span class="p">:])</span>
-
-    <span class="k">return</span> <span class="n">given_name</span> <span class="o">==</span> <span class="n">first_name</span> <span class="ow">and</span> <span class="n">family_name</span> <span class="o">==</span> <span class="n">family_name_compare</span></div>
+</div>
+    <span class="k">return</span> <span class="n">given_name</span> <span class="o">==</span> <span class="n">first_name</span> <span class="ow">and</span> <span class="n">family_name</span> <span class="o">==</span> <span class="n">family_name_compare</span>
 
 
 <div class="viewcode-block" id="OurValidator"><a class="viewcode-back" href="../../validation.html#pyked.validation.OurValidator">[docs]</a><span class="k">class</span> <span class="nc">OurValidator</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
@@ -477,26 +465,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">isvalid_orcid</span> <span class="ow">and</span> <span class="s1">&#39;ORCID&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">orcid_api</span><span class="o">.</span><span class="n">search_public</span><span class="p">(</span><span class="s1">&#39;orcid:&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">])</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">search_orcid</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">ConnectionError</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;network not available, ORCID not validated.&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
-
-            <span class="c1"># Return error if no results are found for the given ORCID</span>
-            <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;orcid-search-results&#39;</span><span class="p">][</span><span class="s1">&#39;num-found&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">except</span> <span class="n">HTTPError</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;ORCID incorrect or invalid for &#39;</span> <span class="o">+</span>
                             <span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
                             <span class="p">)</span>
                 <span class="k">return</span>
 
-            <span class="n">maplist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;orcid-search-results&#39;</span><span class="p">,</span> <span class="s1">&#39;orcid-search-result&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
-                       <span class="s1">&#39;orcid-profile&#39;</span><span class="p">,</span> <span class="s1">&#39;orcid-bio&#39;</span><span class="p">,</span> <span class="s1">&#39;personal-details&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;family-name&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span>
-                       <span class="p">]</span>
-            <span class="n">family_name</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">maplist</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
-            <span class="n">maplist</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;given-names&#39;</span>
-            <span class="n">given_name</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">maplist</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
-
+            <span class="n">family_name</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][</span><span class="s1">&#39;family-name&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+            <span class="n">given_name</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][</span><span class="s1">&#39;given-names&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_name</span><span class="p">(</span><span class="n">given_name</span><span class="p">,</span> <span class="n">family_name</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Name and ORCID do not match. Name supplied: &#39;</span> <span class="o">+</span>
                             <span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;. Name associated with ORCID: &#39;</span> <span class="o">+</span>
@@ -548,8 +528,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">total_amount</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;Species &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">+</span>
                         <span class="s1">&#39;s do not sum to </span><span class="si">{:.1f}</span><span class="s1">: &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total_amount</span><span class="p">)</span> <span class="o">+</span>
-                        <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span>
-                        <span class="p">)</span></div>
+                        <span class="s1">&#39;</span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sum_amount</span><span class="p">)</span></div>
+                        <span class="p">)</span>
         <span class="c1"># TODO: validate InChI, SMILES, or atomic-composition</span>
 </pre></div>
 
@@ -568,12 +548,14 @@
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -581,10 +563,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

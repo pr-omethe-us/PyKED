@@ -3,12 +3,14 @@ devel/_modules/index.html
 devel/_modules/pint/registry.html
 devel/_modules/pyked/chemked.html
 devel/_modules/pyked/converters.html
+devel/_modules/pyked/orcid.html
 devel/_modules/pyked/validation.html
 devel/_sources/chemked.rst.txt
 devel/_sources/ck-tutorial.rst.txt
 devel/_sources/converters.rst.txt
 devel/_sources/index.rst.txt
 devel/_sources/install.rst.txt
+devel/_sources/orcid.rst.txt
 devel/_sources/pyked-examples.rst.txt
 devel/_sources/rcm-example.ipynb.txt
 devel/_sources/schema-docs.rst.txt
@@ -23,10 +25,11 @@ devel/_static/comment-close.png
 devel/_static/comment.png
 devel/_static/custom.css
 devel/_static/doctools.js
+devel/_static/documentation_options.js
 devel/_static/down-pressed.png
 devel/_static/down.png
 devel/_static/file.png
-devel/_static/jquery-3.1.0.js
+devel/_static/jquery-3.2.1.js
 devel/_static/jquery.js
 devel/_static/minus.png
 devel/_static/plus.png
@@ -45,6 +48,7 @@ devel/genindex.html
 devel/index.html
 devel/install.html
 devel/objects.inv
+devel/orcid.html
 devel/py-modindex.html
 devel/pyked-examples.html
 devel/rcm-example.html
