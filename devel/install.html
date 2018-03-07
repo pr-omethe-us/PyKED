@@ -41,7 +41,13 @@ For <code class="docutils literal notranslate"><span class="pre">conda</span></c
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">pr</span><span class="o">-</span><span class="n">omethe</span><span class="o">-</span><span class="n">us</span> <span class="n">pyked</span>
 </pre></div>
 </div>
-<p>or for <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<p>Note that you might need to include the <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> channel by editing your conda
+configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">append</span> <span class="n">channels</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">pr</span><span class="o">-</span><span class="n">omethe</span><span class="o">-</span><span class="n">us</span> <span class="n">pyked</span>
+</pre></div>
+</div>
+<p>You can also install with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyked</span>
 </pre></div>
 </div>
@@ -61,7 +67,8 @@ For <code class="docutils literal notranslate"><span class="pre">conda</span></c
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">develop</span> <span class="o">.</span> <span class="o">--</span><span class="n">uninstall</span>
 </pre></div>
 </div>
-<p>With <code class="docutils literal notranslate"><span class="pre">pip</span></code>, installing is done by:</p>
+<p>Note that this doesn’t install the standalone converter scripts. With <code class="docutils literal notranslate"><span class="pre">pip</span></code>, installing
+is done by:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
 </pre></div>
 </div>
@@ -69,6 +76,7 @@ For <code class="docutils literal notranslate"><span class="pre">conda</span></c
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">uninstall</span> <span class="n">pyked</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span></code> does install the standalone scripts.</p>
 </div>
 </div>
 
