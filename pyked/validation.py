@@ -1,7 +1,5 @@
 """Validation class for ChemKED schema.
 """
-
-from functools import reduce
 from warnings import warn
 import re
 
@@ -13,7 +11,7 @@ import pint
 from requests.exceptions import HTTPError, ConnectionError
 from cerberus import Validator, SchemaError
 import habanero
-from orcid import SearchAPI
+from .orcid import search_orcid
 
 units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
@@ -21,7 +19,6 @@ units = pint.UnitRegistry()
 units.define('cm3 = centimeter**3')
 Q_ = units.Quantity
 
-orcid_api = SearchAPI(sandbox=False)
 crossref_api = habanero.Crossref(mailto='prometheus@pr.omethe.us')
 
 # Load the ChemKED schema definition file
@@ -435,26 +432,18 @@ class OurValidator(Validator):
         """
         if isvalid_orcid and 'ORCID' in value:
             try:
-                res = orcid_api.search_public('orcid:' + value['ORCID'])
+                res = search_orcid(value['ORCID'])
             except ConnectionError:
                 warn('network not available, ORCID not validated.')
                 return
-
-            # Return error if no results are found for the given ORCID
-            if res['orcid-search-results']['num-found'] == 0:
+            except HTTPError:
                 self._error(field, 'ORCID incorrect or invalid for ' +
                             value['name']
                             )
                 return
 
-            maplist = ['orcid-search-results', 'orcid-search-result', 0,
-                       'orcid-profile', 'orcid-bio', 'personal-details',
-                       'family-name', 'value'
-                       ]
-            family_name = reduce(lambda d, k: d[k], maplist, res)
-            maplist[-2] = 'given-names'
-            given_name = reduce(lambda d, k: d[k], maplist, res)
-
+            family_name = res['name']['family-name']['value']
+            given_name = res['name']['given-names']['value']
             if not compare_name(given_name, family_name, value['name']):
                 self._error(field, 'Name and ORCID do not match. Name supplied: ' +
                             value['name'] + '. Name associated with ORCID: ' +
