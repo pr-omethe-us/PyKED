@@ -8,6 +8,7 @@ from warnings import warn
 from copy import deepcopy
 import xml.etree.ElementTree as etree
 import xml.dom.minidom as minidom
+from itertools import chain
 
 import numpy as np
 
@@ -249,8 +250,7 @@ class ChemKED(object):
         valid_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
         app_index = valid_labels.index('apparatus')
         valid_labels[app_index:app_index + 1] = ['apparatus:' + a for a in Apparatus._fields]
-
-        species_list = list(set([s['species-name'] for d in self.datapoints for s in d.composition]))  # noqa: E501
+        species_list = list(set(chain(*[list(d.composition.keys()) for d in self.datapoints])))
 
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
@@ -278,12 +278,11 @@ class ChemKED(object):
         data = []
         for d in self.datapoints:
             row = []
-            d_species = [s['species-name'] for s in d.composition]
+            d_species = list(d.composition.keys())
             for col in col_labels:
                 if col in species_list:
                     if col in d_species:
-                        s_idx = d_species.index(col)
-                        row.append(d.composition[s_idx]['amount'])
+                        row.append(d.composition[col].amount)
                     else:
                         row.append(Q_(0.0, 'dimensionless'))
                 elif 'reference' in col or 'apparatus' in col:
@@ -401,16 +400,16 @@ class ChemKED(object):
             prop = etree.SubElement(common_properties, 'property')
             prop.set('name', 'initial composition')
 
-            for species in composition:
+            for species_name, species in composition.items():
                 component = etree.SubElement(prop, 'component')
                 species_link = etree.SubElement(component, 'speciesLink')
-                species_link.set('preferredKey', species['species-name'])
-                if species.get('InChI') is not None:
-                    species_link.set('InChI', species['InChI'])
+                species_link.set('preferredKey', species_name)
+                if species.InChI is not None:
+                    species_link.set('InChI', species.InChI)
 
                 amount = etree.SubElement(component, 'amount')
                 amount.set('units', composition_type)
-                amount.text = str(species['amount'].magnitude)
+                amount.text = str(species.amount.magnitude)
 
         # If multiple datapoints present, then find any common properties. If only
         # one datapoint, then composition should be the only "common" property.
@@ -467,9 +466,9 @@ class ChemKED(object):
         # Need to handle datapoints with possibly different species in the initial composition
         if 'composition' not in common:
             for dp in self.datapoints:
-                for species in dp.composition:
+                for species in dp.composition.values():
                     # Only add new property for species not already considered
-                    has_spec = any([species['species-name'] in d.values()
+                    has_spec = any([species.species_name in d.values()
                                     for d in property_idx.values()
                                     ])
                     if not has_spec:
@@ -477,16 +476,16 @@ class ChemKED(object):
                         prop.set('description', '')
 
                         idx = 'x{}'.format(len(property_idx) + 1)
-                        property_idx[idx] = {'name': species['species-name']}
+                        property_idx[idx] = {'name': species.species_name}
                         prop.set('id', idx)
-                        prop.set('label', '[' + species['species-name'] + ']')
+                        prop.set('label', '[' + species.species_name + ']')
                         prop.set('name', 'composition')
                         prop.set('units', self.datapoints[0].composition_type)
 
                         species_link = etree.SubElement(prop, 'speciesLink')
-                        species_link.set('preferredKey', species['species-name'])
-                        if species.get('InChI'):
-                            species_link.set('InChI', species['InChI'])
+                        species_link.set('preferredKey', species.species_name)
+                        if species.InChI is not None:
+                            species_link.set('InChI', species.InChI)
 
         for dp in self.datapoints:
             datapoint = etree.SubElement(datagroup, 'dataPoint')
@@ -498,10 +497,10 @@ class ChemKED(object):
                     value.text = str(quantity.magnitude)
                 else:
                     # composition
-                    for item in dp.composition:
-                        if item['species-name'] == val['name']:
+                    for item in dp.composition.values():
+                        if item.species_name == val['name']:
                             value = etree.SubElement(datapoint, idx)
-                            value.text = str(item['amount'].magnitude)
+                            value.text = str(item.amount.magnitude)
 
         # See https://stackoverflow.com/a/16097112 for the None.__ne__
         history_types = ['volume_history', 'temperature_history', 'pressure_history',
@@ -787,20 +786,20 @@ class DataPoint(object):
             raise ValueError('Unknown composition type: {}'.format(self.composition_type))
 
         if species_conversion is None:
-            comps = ['{!s}:{:.4e}'.format(c['species-name'],
-                     c['amount'].magnitude/factor) for c in self.composition]
+            comps = ['{!s}:{:.4e}'.format(c.species_name,
+                     c.amount.magnitude/factor) for c in self.composition.values()]
         else:
             comps = []
-            for c in self.composition:
-                amount = c['amount'].magnitude/factor
-                idents = [c.get(s) for s in ['species-name', 'InChI', 'SMILES'] if c.get(s, False)]
+            for c in self.composition.values():
+                amount = c.amount.magnitude/factor
+                idents = [getattr(c, s, False) for s in ['species_name', 'InChI', 'SMILES']]
                 present = [i in species_conversion for i in idents]
                 if not any(present):
-                    comps.append('{!s}:{:.4e}'.format(c['species-name'], amount))
+                    comps.append('{!s}:{:.4e}'.format(c.species_name, amount))
                 else:
                     if len([i for i in present if i]) > 1:
                         raise ValueError('More than one conversion present for species {}'.format(
-                                         c['species-name']))
+                                         c.species_name))
 
                     ident = idents[present.index(True)]
                     species_replacement_name = species_conversion.pop(ident)
