@@ -15,7 +15,7 @@ import pytest
 
 # Local imports
 from ..validation import schema, OurValidator, yaml, Q_
-from ..chemked import ChemKED, DataPoint
+from ..chemked import ChemKED, DataPoint, Composition
 from ..converters import get_datapoints, get_common_properties
 from .._version import __version__
 
@@ -362,13 +362,14 @@ class TestConvertToReSpecTh(object):
         c = ChemKED(filename)
 
         for idx, dp in enumerate(c.datapoints):
-            c.datapoints[idx].composition = [{'amount': Q_(0.1, 'dimensionless'),
-                                              'species-name': 'H2'},
-                                             {'amount': Q_(0.1, 'dimensionless'),
-                                              'species-name': 'O2'},
-                                             {'amount': Q_(0.8, 'dimensionless'),
-                                              'species-name': 'Ar'}
-                                             ]
+            c.datapoints[idx].composition = dict(
+                H2=Composition(**{'amount': Q_(0.1, 'dimensionless'), 'species_name': 'H2',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None}),
+                O2=Composition(**{'amount': Q_(0.1, 'dimensionless'), 'species_name': 'O2',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None}),
+                Ar=Composition(**{'amount': Q_(0.8, 'dimensionless'), 'species_name': 'Ar',
+                                  'InChI': None, 'SMILES': None, 'atomic_composition': None})
+            )
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
@@ -378,12 +379,10 @@ class TestConvertToReSpecTh(object):
 
         with pytest.warns(UserWarning) as record:
             common = get_common_properties(root)
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species H2'
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species O2'
-        m = str(record.pop(UserWarning).message)
-        assert m == 'Missing InChI for species Ar'
+        messages = [str(record.pop(UserWarning).message) for i in range(3)]
+        assert 'Missing InChI for species H2' in messages
+        assert 'Missing InChI for species O2' in messages
+        assert 'Missing InChI for species Ar' in messages
         assert len(common['composition']['species']) == 3
         for spec in common['composition']['species']:
             assert spec in [{'amount': [0.1], 'species-name': 'H2'},
@@ -398,16 +397,16 @@ class TestConvertToReSpecTh(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         c = ChemKED(filename)
 
-        c.datapoints[0].composition = [{'InChI': '1S/H2/h1H',
+        c.datapoints[0].composition = {'H2': Composition(**{'InChI': '1S/H2/h1H',
                                         'amount': Q_(0.1, 'dimensionless'),
-                                        'species-name': 'H2'},
-                                       {'InChI': '1S/O2/c1-2',
+                                        'species_name': 'H2', 'SMILES': None, 'atomic_composition': None}),
+                                       'O2': Composition(**{'InChI': '1S/O2/c1-2',
                                         'amount': Q_(0.1, 'dimensionless'),
-                                        'species-name': 'O2'},
-                                       {'amount': Q_(0.8, 'dimensionless'),
-                                        'species-name': 'N2',
-                                        'SMILES': 'N#N'}
-                                       ]
+                                        'species_name': 'O2', 'SMILES': None, 'atomic_composition': None}),
+                                       'N2': Composition(**{'amount': Q_(0.8, 'dimensionless'),
+                                        'species_name': 'N2',
+                                        'SMILES': 'N#N', 'InChI': None, 'atomic_composition': None})
+                                       }
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, 'test.xml')
@@ -560,8 +559,13 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:4.4400e-03', 'O2': 'O2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mole fraction'
-        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction() == compare_str
 
     def test_cantera_composition_mole_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -573,8 +577,13 @@ class TestDataPoint(object):
     def test_cantera_composition_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:2.2525e-04', 'O2': 'O2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mass fraction'
-        assert d.get_cantera_mass_fraction() == 'H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction() == compare_str
 
     def test_cantera_composition_mass_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -586,44 +595,79 @@ class TestDataPoint(object):
     def test_cantera_composition_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'H2:4.4400e-03', 'O2': 'O2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         assert d.composition_type == 'mole percent'
-        assert d.get_cantera_mole_fraction() == 'H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction() == compare_str
 
     def test_cantera_change_species_by_name_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[0])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_name_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:4.4400e-03', 'O2': 'o2:5.5600e-03', 'Ar': 'Ar:9.9000e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mole_fraction(species_conversion) == 'h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01'
+        assert d.get_cantera_mole_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_name_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:2.2525e-04', 'O2': 'o2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'H2': 'h2', 'O2': 'o2'}
-        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_by_inchi_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[1])
+        # The order of the keys should not change between calls provided the contents of the
+        # dictionary don't change. Therefore, spec_order should be the same order as the
+        # Cantera mole fraction string constructed in a loop in the code
+        comps = {'H2': 'h2:2.2525e-04', 'O2': 'o2:4.4775e-03', 'Ar': 'Ar:9.9530e-01'}
+        compare_str = ', '.join([comps[s] for s in d.composition.keys()])
         species_conversion = {'1S/H2/h1H': 'h2', '1S/O2/c1-2': 'o2'}
-        assert d.get_cantera_mass_fraction(species_conversion) == 'h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01'
+        assert d.get_cantera_mass_fraction(species_conversion) == compare_str
 
     def test_cantera_change_species_missing_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -657,12 +701,12 @@ class TestDataPoint(object):
         properties = self.load_properties('testfile_required.yaml')
         d = DataPoint(properties[2])
         assert len(d.composition) == 3
-        assert np.isclose(d.composition[0]['amount'], Q_(0.444))
-        assert d.composition[0]['species-name'] == 'H2'
-        assert np.isclose(d.composition[1]['amount'], Q_(0.556))
-        assert d.composition[1]['species-name'] == 'O2'
-        assert np.isclose(d.composition[2]['amount'], Q_(99.0))
-        assert d.composition[2]['species-name'] == 'Ar'
+        assert np.isclose(d.composition['H2'].amount, Q_(0.444))
+        assert d.composition['H2'].species_name == 'H2'
+        assert np.isclose(d.composition['O2'].amount, Q_(0.556))
+        assert d.composition['O2'].species_name == 'O2'
+        assert np.isclose(d.composition['Ar'].amount, Q_(99.0))
+        assert d.composition['Ar'].species_name == 'Ar'
 
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')
@@ -712,8 +756,8 @@ class TestDataPoint(object):
     def test_absolute_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
-        assert np.isclose(d.composition[1]['amount'].value, Q_(0.556))
-        assert np.isclose(d.composition[1]['amount'].error, Q_(0.002))
+        assert np.isclose(d.composition['O2'].amount.value, Q_(0.556))
+        assert np.isclose(d.composition['O2'].amount.error, Q_(0.002))
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_relative_sym_uncertainty(self):
@@ -727,9 +771,9 @@ class TestDataPoint(object):
     def test_relative_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         d = DataPoint(properties[0])
-        assert np.isclose(d.composition[0]['amount'].value, Q_(0.444))
-        assert np.isclose(d.composition[0]['amount'].error, Q_(0.00444))
-        assert np.isclose(d.composition[0]['amount'].rel, 0.01)
+        assert np.isclose(d.composition['H2'].amount.value, Q_(0.444))
+        assert np.isclose(d.composition['H2'].amount.error, Q_(0.00444))
+        assert np.isclose(d.composition['H2'].amount.rel, 0.01)
 
     def test_absolute_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -764,16 +808,16 @@ class TestDataPoint(object):
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
-        assert np.isclose(d.composition[2]['amount'].value, Q_(99.0))
-        assert np.isclose(d.composition[2]['amount'].error, Q_(1.0))
+        assert np.isclose(d.composition['Ar'].amount.value, Q_(99.0))
+        assert np.isclose(d.composition['Ar'].amount.error, Q_(1.0))
 
         with pytest.warns(UserWarning) as record:
             d = DataPoint(properties[1])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
-        assert np.isclose(d.composition[2]['amount'].value, Q_(99.0))
-        assert np.isclose(d.composition[2]['amount'].error, Q_(1.0))
+        assert np.isclose(d.composition['Ar'].amount.value, Q_(99.0))
+        assert np.isclose(d.composition['Ar'].amount.error, Q_(1.0))
 
     def test_relative_asym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
@@ -782,13 +826,13 @@ class TestDataPoint(object):
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
-        assert np.isclose(d.composition[0]['amount'].value, Q_(0.444))
-        assert np.isclose(d.composition[0]['amount'].error, Q_(0.0444))
-        assert np.isclose(d.composition[0]['amount'].rel, 0.1)
+        assert np.isclose(d.composition['H2'].amount.value, Q_(0.444))
+        assert np.isclose(d.composition['H2'].amount.error, Q_(0.0444))
+        assert np.isclose(d.composition['H2'].amount.rel, 0.1)
 
-        assert np.isclose(d.composition[1]['amount'].value, Q_(0.556))
-        assert np.isclose(d.composition[1]['amount'].error, Q_(0.0556))
-        assert np.isclose(d.composition[1]['amount'].rel, 0.1)
+        assert np.isclose(d.composition['O2'].amount.value, Q_(0.556))
+        assert np.isclose(d.composition['O2'].amount.error, Q_(0.0556))
+        assert np.isclose(d.composition['O2'].amount.rel, 0.1)
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_missing_uncertainty_parts(self):
