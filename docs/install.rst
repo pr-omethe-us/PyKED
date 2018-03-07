@@ -11,7 +11,13 @@ For ``conda`` installation, use the ``pr-omethe-us`` channel::
 
     conda install -c pr-omethe-us pyked
 
-or for ``pip``::
+Note that you might need to include the ``conda-forge`` channel by editing your conda
+configuration::
+
+    conda config --append channels conda-forge
+    conda install -c pr-omethe-us pyked
+
+You can also install with ``pip``::
 
     pip install pyked
 
@@ -31,10 +37,13 @@ if you're using ``conda`` (you may need to install ``conda-build`` first). To un
 
     conda develop . --uninstall
 
-With ``pip``, installing is done by::
+Note that this doesn't install the standalone converter scripts. With ``pip``, installing
+is done by::
 
     pip install -e .
 
 To uninstall with ``pip``::
 
     pip uninstall pyked
+
+``pip`` does install the standalone scripts.
