@@ -4,6 +4,12 @@
 Releases
 ========
 
+v0.4.1 - 2018-03-09
+-------------------
+* `Documentation <https://pr-omethe-us.github.io/PyKED/tags/v0.4.1>`__
+* `Changelog <https://github.com/pr-omethe-us/PyKED/releases/tag/v0.4.1>`__
+* `Zenodo <https://doi.org/10.5281/zenodo.1194920>`__
+
 v0.4.0 - 2018-03-07
 -------------------
 * `Documentation <https://pr-omethe-us.github.io/PyKED/tags/v0.4.0>`__
