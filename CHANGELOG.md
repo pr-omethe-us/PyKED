@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 ### Fixed
+- Doctr deploys on tags now
 
-## [0.4.0] - 2018-04-07
+## [0.4.0] - 2018-03-07
 ### Added
 - New method to instantiate a `ChemKED` class directly from a ReSpecTh XML file
 - The `__version__` attribute can be imported from the top-level module
