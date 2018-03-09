@@ -23,6 +23,7 @@ given in the badge at the top, or alternately <https://doi.org/10.5281/zenodo.59
 take you to the latest version (and generally represents all versions).
 If you would like to cite a specific, older version, the DOIs for each release are:
 
+ * v0.4.1: [10.5281/zenodo.1194920](https://doi.org/10.5281/zenodo.1194920)
  * v0.4.0: [10.5281/zenodo.1193936](https://doi.org/10.5281/zenodo.1193936)
  * v0.3.0: [10.5281/zenodo.1006722](https://doi.org/10.5281/zenodo.1006722)
  * v0.2.1: [10.5281/zenodo.858441](https://doi.org/10.5281/zenodo.858441)
