@@ -13,6 +13,7 @@ devel/_sources/install.rst.txt
 devel/_sources/orcid.rst.txt
 devel/_sources/pyked-examples.rst.txt
 devel/_sources/rcm-example.ipynb.txt
+devel/_sources/releases.rst.txt
 devel/_sources/schema-docs.rst.txt
 devel/_sources/shock-tube-example.ipynb.txt
 devel/_sources/validation.rst.txt
@@ -52,6 +53,7 @@ devel/orcid.html
 devel/py-modindex.html
 devel/pyked-examples.html
 devel/rcm-example.html
+devel/releases.html
 devel/schema-docs.html
 devel/search.html
 devel/searchindex.js

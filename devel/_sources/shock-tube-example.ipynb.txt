@@ -18,9 +18,9 @@
     "The file starts with the meta information about the ChemKED file itself:\n",
     "\n",
     "```yaml\n",
-    "file-author:\n",
-    "  name: Morgan Mayer\n",
-    "  ORCID: 0000-0001-7137-5721\n",
+    "file-authors:\n",
+    "  - name: Morgan Mayer\n",
+    "    ORCID: 0000-0001-7137-5721\n",
     "file-version: 0\n",
     "chemked-version: 0.0.1\n",
     "```\n",
@@ -1077,7 +1077,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.6.2"
+   "version": "3.6.4"
   }
  },
  "nbformat": 4,

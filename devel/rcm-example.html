@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>RCM modeling with varying reactor volume &#8212; PyKED 0.4.0 documentation</title>
+    <title>RCM modeling with varying reactor volume &#8212; PyKED 0.4.2a1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ChemKED" href="chemked.html" />
+    <link rel="next" title="Releases" href="releases.html" />
     <link rel="prev" title="Shock tube modeling with constant volume" href="shock-tube-example.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -208,11 +208,11 @@ main GitHub repository at
 <a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml">https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml</a>.
 Examining that file, we find the first section specifies the information
 about the ChemKED file itself:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
-  <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-authors</span><span class="p p-Indicator">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
+    <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
 <span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1.6</span>
+<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
 </pre></div>
 </div>
 <p>Then, we find the information regarding the article in the literature
@@ -272,29 +272,31 @@ processes:</p>
   <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span>
     <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">pressure</span>
     <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">d/dt max</span>
-  <span class="l l-Scalar l-Scalar-Plain">compression-time</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">38.0 ms</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume-history</span><span class="p p-Indicator">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">time</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">s</span>
-      <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-    <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cm3</span>
-      <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-    <span class="l l-Scalar l-Scalar-Plain">values</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">0.00E+000</span><span class="p p-Indicator">,</span> <span class="nv">5.47669375000E+002</span><span class="p p-Indicator">]</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">1.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.46608789894E+002</span><span class="p p-Indicator">]</span>
-      <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">2.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.43427034574E+002</span><span class="p p-Indicator">]</span>
-      <span class="l l-Scalar l-Scalar-Plain">...</span>
+  <span class="l l-Scalar l-Scalar-Plain">rcm-data</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">compression-time</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">38.0 ms</span>
+  <span class="l l-Scalar l-Scalar-Plain">time-histories</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">volume</span>
+      <span class="l l-Scalar l-Scalar-Plain">time</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">s</span>
+        <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+      <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cm3</span>
+        <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+      <span class="l l-Scalar l-Scalar-Plain">values</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">0.00E+000</span><span class="p p-Indicator">,</span> <span class="nv">5.47669375000E+002</span><span class="p p-Indicator">]</span>
+        <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">1.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.46608789894E+002</span><span class="p p-Indicator">]</span>
+        <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">2.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.43427034574E+002</span><span class="p p-Indicator">]</span>
+  <span class="l l-Scalar l-Scalar-Plain">...</span>
 </pre></div>
 </div>
-<p>The values for the <code class="docutils literal notranslate"><span class="pre">volume-history</span></code> are truncated here to save space.
-One application of the data stored in this file is to perform a
-simulation using <a class="reference external" href="http://cantera.org">Cantera</a> to calculate the
-ignition delay, including the facility-dependent effects represented in
-the volume trace. All information required to perform this simulation is
-present in the ChemKED file, with the exception of a chemical kinetic
-model for H2/CO combustion.</p>
+<p>The values for the volume history in the <code class="docutils literal notranslate"><span class="pre">time-histories</span></code> key are
+truncated here to save space. One application of the data stored in this
+file is to perform a simulation using <a class="reference external" href="http://cantera.org">Cantera</a>
+to calculate the ignition delay, including the facility-dependent
+effects represented in the volume trace. All information required to
+perform this simulation is present in the ChemKED file, with the
+exception of a chemical kinetic model for H2/CO combustion.</p>
 <p>In Python, additional functionality can be imported into a script or
 session by the <code class="docutils literal notranslate"><span class="pre">import</span></code> keyword. Cantera, NumPy, and PyKED must be
 imported into the session so that we can work with the code. In the case
@@ -2106,7 +2108,7 @@ if (IPython.notebook.kernel != null) {
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="pyked-examples.html">Usage examples</a><ul>
       <li>Previous: <a href="shock-tube-example.html" title="previous chapter">Shock tube modeling with constant volume</a></li>
-      <li>Next: <a href="chemked.html" title="next chapter">ChemKED</a></li>
+      <li>Next: <a href="releases.html" title="next chapter">Releases</a></li>
   </ul></li>
   </ul></li>
 </ul>
