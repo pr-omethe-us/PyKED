@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyked.converters &#8212; PyKED 0.3.0 documentation</title>
+    <title>pyked.converters &#8212; PyKED 0.4.1a1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.3.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -30,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -44,7 +35,6 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Standard libraries</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">argparse</span> <span class="k">import</span> <span class="n">ArgumentParser</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
@@ -55,8 +45,8 @@
 <span class="kn">import</span> <span class="nn">pint</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">property_units</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">unit_registry</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">property_units</span><span class="p">,</span> <span class="n">crossref_api</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">unit_registry</span>
 <span class="kn">from</span> <span class="nn">._version</span> <span class="k">import</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">chemked</span>
 
@@ -68,8 +58,8 @@
 
 
 <div class="viewcode-block" id="ParseError"><a class="viewcode-back" href="../../converters.html#pyked.converters.ParseError">[docs]</a><span class="k">class</span> <span class="nc">ParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for errors.&quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
+    <span class="sd">&quot;&quot;&quot;Base class for errors.&quot;&quot;&quot;</span></div>
+    <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="KeywordError"><a class="viewcode-back" href="../../converters.html#pyked.converters.KeywordError">[docs]</a><span class="k">class</span> <span class="nc">KeywordError</span><span class="p">(</span><span class="n">ParseError</span><span class="p">):</span>
@@ -78,16 +68,16 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">keywords</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="n">keywords</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
 
 <div class="viewcode-block" id="MissingElementError"><a class="viewcode-back" href="../../converters.html#pyked.converters.MissingElementError">[docs]</a><span class="k">class</span> <span class="nc">MissingElementError</span><span class="p">(</span><span class="n">KeywordError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Raised for missing required elements.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required element </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required element </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
 
 <div class="viewcode-block" id="MissingAttributeError"><a class="viewcode-back" href="../../converters.html#pyked.converters.MissingAttributeError">[docs]</a><span class="k">class</span> <span class="nc">MissingAttributeError</span><span class="p">(</span><span class="n">KeywordError</span><span class="p">):</span>
@@ -95,8 +85,8 @@
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required attribute </span><span class="si">{}</span><span class="s1"> of </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+            <span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_file_metadata"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_file_metadata">[docs]</a><span class="k">def</span> <span class="nf">get_file_metadata</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -115,15 +105,15 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">file_author</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s1">&#39;fileAuthor&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-authors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}]</span>
 
     <span class="c1"># Default version is 0 for the ChemKED file</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c1"># Default ChemKED version</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__version__</span>
-
-    <span class="k">return</span> <span class="n">properties</span></div>
+</div>
+    <span class="k">return</span> <span class="n">properties</span>
 
 
 <div class="viewcode-block" id="get_reference"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_reference">[docs]</a><span class="k">def</span> <span class="nf">get_reference</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -146,8 +136,8 @@
 
     <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">ref</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">()</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ref_doi</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">,</span> <span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">UnboundLocalError</span><span class="p">):</span>
+            <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ref_doi</span><span class="p">)[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">,</span> <span class="ne">ConnectionError</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">ref_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;DOI not found and preferredKey attribute not set&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -188,8 +178,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Need one of DOI or preferredKey</span>
         <span class="k">raise</span> <span class="n">MissingAttributeError</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="s1">&#39;bibliographyLink&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">reference</span></div>
+</div>
+    <span class="k">return</span> <span class="n">reference</span>
 
 
 <div class="viewcode-block" id="get_experiment_kind"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_experiment_kind">[docs]</a><span class="k">def</span> <span class="nf">get_experiment_kind</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -216,8 +206,8 @@
         <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kind</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">kind</span> <span class="o">+</span> <span class="s1">&#39; experiment not (yet) supported&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">properties</span></div>
+</div>
+    <span class="k">return</span> <span class="n">properties</span>
 
 
 <div class="viewcode-block" id="get_common_properties"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_common_properties">[docs]</a><span class="k">def</span> <span class="nf">get_common_properties</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -299,8 +289,8 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Property &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; not supported as common property&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">properties</span></div>
+</div>
+    <span class="k">return</span> <span class="n">properties</span>
 
 
 <div class="viewcode-block" id="get_ignition_type"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_ignition_type">[docs]</a><span class="k">def</span> <span class="nf">get_ignition_type</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -326,6 +316,8 @@
 
     <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
         <span class="n">ign_type</span> <span class="o">=</span> <span class="n">elem</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ign_type</span> <span class="o">==</span> <span class="s1">&#39;baseline max intercept from d/dt&#39;</span><span class="p">:</span>
+            <span class="n">ign_type</span> <span class="o">=</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingAttributeError</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;ignitionType&#39;</span><span class="p">)</span>
 
@@ -347,13 +339,13 @@
     <span class="k">if</span> <span class="n">ign_target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;OH&#39;</span><span class="p">,</span> <span class="s1">&#39;OH*&#39;</span><span class="p">,</span> <span class="s1">&#39;CH*&#39;</span><span class="p">,</span> <span class="s1">&#39;CH&#39;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="n">ign_target</span> <span class="o">+</span> <span class="s1">&#39; not valid ignition target&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">ign_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max&#39;</span><span class="p">,</span> <span class="s1">&#39;1/2 max&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">ign_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max&#39;</span><span class="p">,</span> <span class="s1">&#39;1/2 max&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="n">ign_type</span> <span class="o">+</span> <span class="s1">&#39; not valid ignition type&#39;</span><span class="p">)</span>
 
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ign_type</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ign_target</span>
-
-    <span class="k">return</span> <span class="n">properties</span></div>
+</div>
+    <span class="k">return</span> <span class="n">properties</span>
 
 
 <div class="viewcode-block" id="get_datapoints"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_datapoints">[docs]</a><span class="k">def</span> <span class="nf">get_datapoints</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -459,60 +451,69 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
 
-    <span class="c1"># RCM files may have a second dataGroup with volume-time history</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">dataGroup</span> <span class="o">=</span> <span class="n">dataGroups</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">time_tag</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">volume_tag</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;property&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
-                <span class="n">time_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-                <span class="n">time_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span>
-                <span class="n">volume_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-                <span class="n">volume_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume and time allowed in volume history dataGroup.&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">time_tag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">volume_tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and volume properties required for volume history.&#39;</span><span class="p">)</span>
-        <span class="n">volume_history</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time_dict</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="n">volume_dict</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-
-        <span class="c1"># collect volume-time history</span>
-        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">):</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">time_tag</span><span class="p">:</span>
-                    <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">volume_tag</span><span class="p">:</span>
-                    <span class="n">volume</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="c1"># ReSpecTh files can have other dataGroups with pressure, volume, or temperature histories</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dataGroup</span> <span class="ow">in</span> <span class="n">dataGroups</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">time_tag</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">quant_tags</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">quant_dicts</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">quant_types</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;property&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+                    <span class="n">time_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+                    <span class="n">time_tag</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]:</span>
+                    <span class="n">quant_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                    <span class="n">quant_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">],</span> <span class="s1">&#39;column&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+                    <span class="n">quant_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume and time values allowed in &#39;</span>
-                                       <span class="s1">&#39;volume-history dataPoint.&#39;</span>
-                                       <span class="p">)</span>
-            <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and volume values required in each &#39;</span>
-                                   <span class="s1">&#39;volume-history dataPoint.&#39;</span>
-                                   <span class="p">)</span>
-            <span class="n">volume_history</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">volume</span><span class="p">])</span>
+                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Only volume, temperature, pressure, and time are allowed &#39;</span>
+                                       <span class="s1">&#39;in a time-history dataGroup.&#39;</span><span class="p">)</span>
 
-        <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;volume-history&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">volume_history</span>
+            <span class="k">if</span> <span class="n">time_tag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">quant_tags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and quantity properties required for time-history.&#39;</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataGroups</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;More than two DataGroups not supported.&#39;</span><span class="p">)</span>
+            <span class="n">time_histories</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time_dict</span><span class="p">,</span> <span class="s1">&#39;quantity&#39;</span><span class="p">:</span> <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">quant_dicts</span><span class="p">,</span> <span class="n">quant_types</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="c1"># collect volume-time history</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">dataGroup</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;dataPoint&#39;</span><span class="p">):</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">quants</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">time_tag</span><span class="p">:</span>
+                        <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="n">quant_tags</span><span class="p">:</span>
+                        <span class="n">quant</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                        <span class="n">tag_idx</span> <span class="o">=</span> <span class="n">quant_tags</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+                        <span class="n">quant_type</span> <span class="o">=</span> <span class="n">quant_types</span><span class="p">[</span><span class="n">tag_idx</span><span class="p">]</span>
+                        <span class="n">quants</span><span class="p">[</span><span class="n">quant_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">quant</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Value tag </span><span class="si">{}</span><span class="s1"> not found in dataGroup tags: &#39;</span>
+                                           <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">quant_tags</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">quants</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Both time and quantity values required in each &#39;</span>
+                                       <span class="s1">&#39;time-history dataPoint.&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_histories</span><span class="p">:</span>
+                    <span class="n">t</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">quants</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]]])</span>
 
-    <span class="k">return</span> <span class="n">datapoints</span></div>
+            <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">time_histories</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">datapoints</span>
 
 
-<div class="viewcode-block" id="ReSpecTh_to_ChemKED"><a class="viewcode-back" href="../../converters.html#pyked.converters.ReSpecTh_to_ChemKED">[docs]</a><span class="k">def</span> <span class="nf">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">filename_ck</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert ReSpecTh XML file to ChemKED YAML file.</span>
+<div class="viewcode-block" id="ReSpecTh_to_ChemKED"><a class="viewcode-back" href="../../converters.html#pyked.converters.ReSpecTh_to_ChemKED">[docs]</a><span class="k">def</span> <span class="nf">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert ReSpecTh XML file to ChemKED-compliant dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        filename_xml (`str`): Name of ReSpecTh XML file to be converted.</span>
-<span class="sd">        filename_ck (`str`, optional): Name of output ChemKED file to be produced.</span>
 <span class="sd">        file_author (`str`, optional): Name to override original file author</span>
 <span class="sd">        file_author_orcid (`str`, optional): ORCID of file author</span>
+<span class="sd">        validate (`bool`, optional, keyword-only): Set to `True` to validate the resulting</span>
+<span class="sd">            property dictionary with `ChemKED`. Set to `False` if the file is being loaded and will</span>
+<span class="sd">            be validated at some other point before use.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get all information from XML file</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">)</span>
@@ -548,40 +549,36 @@
     <span class="k">if</span> <span class="n">has_pres_rise</span> <span class="ow">and</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;rapid compression machine&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Pressure rise cannot be defined for RCM.&#39;</span><span class="p">)</span>
 
-    <span class="n">has_vol_hist</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">]</span> <span class="ow">or</span>
-                    <span class="nb">any</span><span class="p">([</span><span class="kc">True</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">])</span>
-                    <span class="p">)</span>
+    <span class="n">has_vol_hist</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">]</span>
+         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time-histories&#39;</span><span class="p">,</span> <span class="p">[{}])]</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">has_vol_hist</span> <span class="ow">and</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;shock tube&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Volume history cannot be defined for shock tube.&#39;</span><span class="p">)</span>
 
-    <span class="c1"># apply any overrides</span>
+    <span class="c1"># add any additional file authors</span>
+    <span class="k">if</span> <span class="n">file_author_orcid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">file_author</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;If file_author_orcid is specified, file_author must be as well&#39;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">file_author</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="s1">&#39;detail&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;. Original author: &#39;</span> <span class="o">+</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author</span>
-    <span class="k">if</span> <span class="n">file_author_orcid</span><span class="p">:</span>
-        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-author&#39;</span><span class="p">][</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author_orcid</span>
+        <span class="n">temp_author</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">file_author</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">file_author_orcid</span><span class="p">:</span>
+            <span class="n">temp_author</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_author_orcid</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;file-authors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_author</span><span class="p">)</span>
 
     <span class="c1"># Now go through datapoints and apply common properties</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">])):</span>
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">]:</span>
             <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;datapoints&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;common-properties&#39;</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span>
 
-    <span class="c1"># set output filename and path</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_ck</span><span class="p">:</span>
-        <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">),</span>
-                                   <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
-                                   <span class="p">)</span>
-
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_ck</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
-        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span>
-
-    <span class="c1"># now validate</span>
-    <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">filename_ck</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">properties</span>
 
 
 <div class="viewcode-block" id="respth2ck"><a class="viewcode-back" href="../../converters.html#pyked.converters.respth2ck">[docs]</a><span class="k">def</span> <span class="nf">respth2ck</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Command-line script for converting a ReSpecTh XML file to a ChemKED YAML file.</span>
+    <span class="sd">&quot;&quot;&quot;Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Convert a ReSpecTh XML file to a ChemKED YAML file.&#39;</span>
@@ -614,11 +611,25 @@
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
-    <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">)</span></div>
+    <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span>
+    <span class="n">filename_xml</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">input</span>
+
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">,</span>
+                                     <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># set output filename and path</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename_ck</span><span class="p">:</span>
+        <span class="n">filename_ck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">),</span>
+                                   <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
+                                   <span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_ck</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ck2respth"><a class="viewcode-back" href="../../converters.html#pyked.converters.ck2respth">[docs]</a><span class="k">def</span> <span class="nf">ck2respth</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Command-line script for converting a ChemKED YAML file to a ReSpecTh XML file.</span>
+    <span class="sd">&quot;&quot;&quot;Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Convert a ChemKED YAML file to a ReSpecTh XML file.&#39;</span>
@@ -637,8 +648,8 @@
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
-    <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span></div>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span></div>
+    <span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../converters.html#pyked.converters.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -677,7 +688,8 @@
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span>
-        <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">)</span>
+        <span class="n">respth2ck</span><span class="p">([</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s1">&#39;-fa&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author</span><span class="p">,</span>
+                   <span class="s1">&#39;-fo&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file_author_orcid</span><span class="p">])</span>
 
     <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span><span class="p">:</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
@@ -689,8 +701,8 @@
     <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Cannot convert .yaml to .yaml&#39;</span><span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Input/output args need to be .xml/.yaml&#39;</span><span class="p">)</span></div>
+    <span class="k">else</span><span class="p">:</span></div>
+        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Input/output args need to be .xml/.yaml&#39;</span><span class="p">)</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
@@ -712,12 +724,14 @@
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -725,10 +739,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

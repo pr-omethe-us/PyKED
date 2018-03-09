@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Shock tube modeling with constant volume &#8212; PyKED 0.3.0 documentation</title>
+    <title>Shock tube modeling with constant volume &#8212; PyKED 0.4.1a1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.3.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,8 +24,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -201,21 +192,25 @@ div.nboutput div.output_area.stderr {
 .ansi-white-intense-fg { color: #A1A6B2; }
 .ansi-white-intense-bg { background-color: #A1A6B2; }
 
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
 .ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
 </style>
 <div class="section" id="Shock-tube-modeling-with-constant-volume">
 <h1>Shock tube modeling with constant volume<a class="headerlink" href="#Shock-tube-modeling-with-constant-volume" title="Permalink to this headline">¶</a></h1>
 <p>This example is available as an ipynb (Jupyter Notebook) file in the
 main GitHub repository at
 <a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/docs/shock-tube-example.ipynb">https://github.com/pr-omethe-us/PyKED/blob/master/docs/shock-tube-example.ipynb</a></p>
-<p>The ChemKED file used in this example can be found in the <code class="docutils literal"><span class="pre">tests</span></code>
+<p>The ChemKED file used in this example can be found in the <code class="docutils literal notranslate"><span class="pre">tests</span></code>
 directory of the PyKED repository at
 <a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_st_p5.yaml">https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_st_p5.yaml</a>.
 The data in this file comes from <a class="reference external" href="https://doi.org/10.1016/j.combustflame.2011.08.014">Stranic et
 al.</a>, describing
 shock-tube ignition delays for <em>tert</em>-butanol.</p>
 <p>The file starts with the meta information about the ChemKED file itself:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Morgan Mayer</span>
   <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0001-7137-5721</span>
 <span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
@@ -224,7 +219,7 @@ shock-tube ignition delays for <em>tert</em>-butanol.</p>
 </div>
 <p>This is followed by the information about the reference for the data,
 and the information about the experimental apparatus:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1016/j.combustflame.2011.08.014</span>
   <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ivo Stranic</span>
@@ -246,9 +241,9 @@ and the information about the experimental apparatus:</p>
 </div>
 <p>This ChemKED file specifies multiple data points with some common
 conditions, including a common mixture composition and common definition
-of ignition delay. Therefore, a <code class="docutils literal"><span class="pre">common-properties</span></code> section is
-specified, followed by the <code class="docutils literal"><span class="pre">datapoints</span></code> list:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">common-properties</span><span class="p p-Indicator">:</span>
+of ignition delay. Therefore, a <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> section is
+specified, followed by the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> list:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">common-properties</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nl">&amp;comp</span>
     <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
     <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
@@ -307,7 +302,7 @@ specified, followed by the <code class="docutils literal"><span class="pre">data
 </pre></div>
 </div>
 <p>In this example, we will run constant-volume simulations at each
-pressure and temperature condition in the <code class="docutils literal"><span class="pre">datapoints</span></code> list. Once
+pressure and temperature condition in the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> list. Once
 again, the ChemKED file specifies all the information required for the
 simulations except for the chemical kinetic model, and Cantera can be
 used to simulate autoignition. For these simulations, we will be using
@@ -316,21 +311,21 @@ al.</a> and
 available from the <a class="reference external" href="https://combustion.llnl.gov/mechanisms/alcohols/butanol-isomers">LLNL
 website</a>.
 In Python, additional functionality can be imported into a script or
-session by the <code class="docutils literal"><span class="pre">import</span></code> keyword. Cantera, NumPy, and PyKED must be
+session by the <code class="docutils literal notranslate"><span class="pre">import</span></code> keyword. Cantera, NumPy, and PyKED must be
 imported into the session so that we can work with the code. In the case
 of Cantera and NumPy, we will use many functions from these libraries,
-so we assign them abbreviations (<code class="docutils literal"><span class="pre">ct</span></code> and <code class="docutils literal"><span class="pre">np</span></code>, respectively) for
-convenience. From PyKED, we will only be using the <code class="docutils literal"><span class="pre">ChemKED</span></code> class, so
+so we assign them abbreviations (<code class="docutils literal notranslate"><span class="pre">ct</span></code> and <code class="docutils literal notranslate"><span class="pre">np</span></code>, respectively) for
+convenience. From PyKED, we will only be using the <code class="docutils literal notranslate"><span class="pre">ChemKED</span></code> class, so
 this is all that is imported. In this example, we also import Python’s
-built-in <code class="docutils literal"><span class="pre">multiprocessing</span></code> library so that we can run the simulations
-on multiple cores. We import the <code class="docutils literal"><span class="pre">Pool</span></code> class, which offers facilities
+built-in <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> library so that we can run the simulations
+on multiple cores. We import the <code class="docutils literal notranslate"><span class="pre">Pool</span></code> class, which offers facilities
 to manage a jobs on a pool of processors:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">cantera</span> <span class="kn">as</span> <span class="nn">ct</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
@@ -347,11 +342,11 @@ process the mole fraction of OH* (provided that the kinetic model
 includes accurate chemistry for OH*) to match the definition of
 ignition delay in the experiments.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Suppress warnings from loading the mechanism file</span>
 <span class="n">ct</span><span class="o">.</span><span class="n">suppress_thermo_warnings</span><span class="p">()</span>
 
@@ -369,20 +364,20 @@ ignition delay in the experiments.</p>
 </div>
 </div>
 <p>Then, we load the ChemKED file and generate a list of initial conditions
-that will be mapped onto the <code class="docutils literal"><span class="pre">run_simulation()</span></code> function. We first
+that will be mapped onto the <code class="docutils literal notranslate"><span class="pre">run_simulation()</span></code> function. We first
 define a convenience function to collect the input from a single
 datapoint and return a Python tuple with the conditions (tuples are
 lightweight groups of data in Python). In this function, we define a
 conversion between the species names in the ChemKED file and the species
-in the mechanism using a dictionary. Then, we use the built-in <code class="docutils literal"><span class="pre">map</span></code>
-function to apply the <code class="docutils literal"><span class="pre">collect_input</span></code> function to each of the elements
-in the <code class="docutils literal"><span class="pre">ck.datapoints</span></code> list:</p>
+in the mechanism using a dictionary. Then, we use the built-in <code class="docutils literal notranslate"><span class="pre">map</span></code>
+function to apply the <code class="docutils literal notranslate"><span class="pre">collect_input</span></code> function to each of the elements
+in the <code class="docutils literal notranslate"><span class="pre">ck.datapoints</span></code> list:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="n">st_link</span> <span class="o">=</span> <span class="s1">&#39;https://raw.githubusercontent.com/pr-omethe-us/PyKED/master/pyked/tests/testfile_st_p5.yaml&#39;</span>
@@ -401,14 +396,14 @@ in the <code class="docutils literal"><span class="pre">ck.datapoints</span></co
 </pre></div>
 </div>
 </div>
-<p>Finally, we create the processor <code class="docutils literal"><span class="pre">Pool</span></code> (with 4 processes) and send
+<p>Finally, we create the processor <code class="docutils literal notranslate"><span class="pre">Pool</span></code> (with 4 processes) and send
 the jobs out to run:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
     <span class="n">ignition_delays</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">run_simulation</span><span class="p">,</span> <span class="n">initial_conditions</span><span class="p">)</span>
 
@@ -429,15 +424,15 @@ The ignition delay for T_initial=1562 K, P_initial=151987.5 Pa is: 0.00043835671
 </pre></div></div>
 </div>
 <p>The simulated ignition delay results are returned in the
-<code class="docutils literal"><span class="pre">ignition_delays</span></code> list. The results are printed to the screen using a
+<code class="docutils literal notranslate"><span class="pre">ignition_delays</span></code> list. The results are printed to the screen using a
 Python formatted string (f-string). In addition, the results can be
 plotted against the experimental data on an Arrhenius plot</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">%</span><span class="k">matplotlib</span> notebook
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
@@ -459,9 +454,9 @@ plotted against the experimental data on an Arrhenius plot</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div id="2ee6c404-b7b5-43e4-b38b-511310f7d6e6"></div>
+<div></div>
 <script type="text/javascript">
-var element = document.getElementById('2ee6c404-b7b5-43e4-b38b-511310f7d6e6');
+var element = document.currentScript.previousSibling.previousSibling;
 /* Put everything inside the global mpl namespace */
 window.mpl = {};
 
@@ -1264,12 +1259,14 @@ if (IPython.notebook.kernel != null) {
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1277,10 +1274,10 @@ if (IPython.notebook.kernel != null) {
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

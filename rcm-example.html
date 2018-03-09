@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>RCM modeling with varying reactor volume &#8212; PyKED 0.3.0 documentation</title>
+    <title>RCM modeling with varying reactor volume &#8212; PyKED 0.4.1a1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.3.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,8 +24,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -201,7 +192,11 @@ div.nboutput div.output_area.stderr {
 .ansi-white-intense-fg { color: #A1A6B2; }
 .ansi-white-intense-bg { background-color: #A1A6B2; }
 
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
 .ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
 </style>
 <div class="section" id="RCM-modeling-with-varying-reactor-volume">
 <h1>RCM modeling with varying reactor volume<a class="headerlink" href="#RCM-modeling-with-varying-reactor-volume" title="Permalink to this headline">¶</a></h1>
@@ -209,11 +204,11 @@ div.nboutput div.output_area.stderr {
 main GitHub repository at
 <a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/docs/rcm-example.ipynb">https://github.com/pr-omethe-us/PyKED/blob/master/docs/rcm-example.ipynb</a></p>
 <p>The ChemKED file that will be used in this example can be found in the
-<code class="docutils literal"><span class="pre">tests</span></code> directory of the PyKED repository at
+<code class="docutils literal notranslate"><span class="pre">tests</span></code> directory of the PyKED repository at
 <a class="reference external" href="https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml">https://github.com/pr-omethe-us/PyKED/blob/master/pyked/tests/testfile_rcm.yaml</a>.
 Examining that file, we find the first section specifies the information
 about the ChemKED file itself:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-author</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
   <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
 <span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
@@ -223,7 +218,7 @@ about the ChemKED file itself:</p>
 <p>Then, we find the information regarding the article in the literature
 from which this data was taken. In this case, the dataset comes from the
 work of <a class="reference external" href="https://doi.org/10.1002/kin.20180">Mittal et al.</a>:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
   <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
   <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
@@ -248,7 +243,7 @@ temperature, initial pressure, compression time, ignition type, and
 volume history that specifies how the volume of the reactor varies with
 time, for simulating the compression stroke and post-compression
 processes:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">297.4 kelvin</span>
   <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
@@ -293,7 +288,7 @@ processes:</p>
       <span class="l l-Scalar l-Scalar-Plain">...</span>
 </pre></div>
 </div>
-<p>The values for the <code class="docutils literal"><span class="pre">volume-history</span></code> are truncated here to save space.
+<p>The values for the <code class="docutils literal notranslate"><span class="pre">volume-history</span></code> are truncated here to save space.
 One application of the data stored in this file is to perform a
 simulation using <a class="reference external" href="http://cantera.org">Cantera</a> to calculate the
 ignition delay, including the facility-dependent effects represented in
@@ -301,18 +296,18 @@ the volume trace. All information required to perform this simulation is
 present in the ChemKED file, with the exception of a chemical kinetic
 model for H2/CO combustion.</p>
 <p>In Python, additional functionality can be imported into a script or
-session by the <code class="docutils literal"><span class="pre">import</span></code> keyword. Cantera, NumPy, and PyKED must be
+session by the <code class="docutils literal notranslate"><span class="pre">import</span></code> keyword. Cantera, NumPy, and PyKED must be
 imported into the session so that we can work with the code. In the case
 of Cantera and NumPy, we will use many functions from these libraries,
-so we assign them abbreviations (<code class="docutils literal"><span class="pre">ct</span></code> and <code class="docutils literal"><span class="pre">np</span></code>, respectively) for
-convenience. From PyKED, we will only be using the <code class="docutils literal"><span class="pre">ChemKED</span></code> class, so
+so we assign them abbreviations (<code class="docutils literal notranslate"><span class="pre">ct</span></code> and <code class="docutils literal notranslate"><span class="pre">np</span></code>, respectively) for
+convenience. From PyKED, we will only be using the <code class="docutils literal notranslate"><span class="pre">ChemKED</span></code> class, so
 this is all that is imported:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">cantera</span> <span class="kn">as</span> <span class="nn">ct</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyked</span> <span class="kn">import</span> <span class="n">ChemKED</span>
@@ -320,22 +315,22 @@ this is all that is imported:</p>
 </div>
 </div>
 <p>Next, we have to load the ChemKED file and retrieve the first element of
-the <code class="docutils literal"><span class="pre">datapoints</span></code> list. Although this file only encodes a single
-experiment, the <code class="docutils literal"><span class="pre">datapoints</span></code> attribute will always be a list (in this
-case, of length 1). The elements of the <code class="docutils literal"><span class="pre">datapoints</span></code> list are
+the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> list. Although this file only encodes a single
+experiment, the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> attribute will always be a list (in this
+case, of length 1). The elements of the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> list are
 instances of the
-<code class="docutils literal"><span class="pre">`DataPoint</span></code> &lt;<a class="reference external" href="https://pr-omethe-us.github.io/PyKED/chemked.html#pyked.chemked.DataPoint">https://pr-omethe-us.github.io/PyKED/chemked.html#pyked.chemked.DataPoint</a>&gt;`__
-class, which we store in the variable <code class="docutils literal"><span class="pre">dp</span></code>. To load the YAML file from
+<code class="docutils literal notranslate"><span class="pre">`DataPoint</span></code> &lt;<a class="reference external" href="https://pr-omethe-us.github.io/PyKED/chemked.html#pyked.chemked.DataPoint">https://pr-omethe-us.github.io/PyKED/chemked.html#pyked.chemked.DataPoint</a>&gt;`__
+class, which we store in the variable <code class="docutils literal notranslate"><span class="pre">dp</span></code>. To load the YAML file from
 the web, we also import and use the <a class="reference external" href="https://github.com/yaml/pyyaml">PyYAML
-package</a>, and the built-in <code class="docutils literal"><span class="pre">urllib</span></code>
-package, and use the <code class="docutils literal"><span class="pre">dict_input</span></code> argument to <code class="docutils literal"><span class="pre">ChemKED</span></code> to read the
+package</a>, and the built-in <code class="docutils literal notranslate"><span class="pre">urllib</span></code>
+package, and use the <code class="docutils literal notranslate"><span class="pre">dict_input</span></code> argument to <code class="docutils literal notranslate"><span class="pre">ChemKED</span></code> to read the
 information.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="n">rcm_link</span> <span class="o">=</span> <span class="s1">&#39;https://raw.githubusercontent.com/pr-omethe-us/PyKED/master/pyked/tests/testfile_rcm.yaml&#39;</span>
@@ -347,20 +342,20 @@ information.</p>
 </div>
 </div>
 <p>The initial temperature, pressure, and mixture composition can be read
-from the instance of the <code class="docutils literal"><span class="pre">DataPoint</span></code> class. PyKED uses instances of
-the Pint <code class="docutils literal"><span class="pre">Quantity</span></code> class to store values with units, while Cantera
+from the instance of the <code class="docutils literal notranslate"><span class="pre">DataPoint</span></code> class. PyKED uses instances of
+the Pint <code class="docutils literal notranslate"><span class="pre">Quantity</span></code> class to store values with units, while Cantera
 expects a floating-point value in SI units as input. Therefore, we use
 the built-in capabilities of Pint to convert the units from those
-specified in the ChemKED file to SI units, and we use the <code class="docutils literal"><span class="pre">magnitude</span></code>
-attribute of the <code class="docutils literal"><span class="pre">Quantity</span></code> class to take only the numerical part. We
+specified in the ChemKED file to SI units, and we use the <code class="docutils literal notranslate"><span class="pre">magnitude</span></code>
+attribute of the <code class="docutils literal notranslate"><span class="pre">Quantity</span></code> class to take only the numerical part. We
 also retrieve the initial mixture mole fractions in a format Cantera
 will understand:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;Pa&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="n">X_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
@@ -369,64 +364,64 @@ will understand:</p>
 </div>
 <p>With these properties defined, we have to create the objects in Cantera
 that represent the physical state of the system to be studied. In
-Cantera, the <code class="docutils literal"><span class="pre">Solution</span></code> class stores the thermodynamic, kinetic, and
+Cantera, the <code class="docutils literal notranslate"><span class="pre">Solution</span></code> class stores the thermodynamic, kinetic, and
 transport data from an input file in the CTI format. After the
-<code class="docutils literal"><span class="pre">Solution</span></code> object is created, we can set the initial temperature,
-pressure, and mole fractions using the <code class="docutils literal"><span class="pre">TPX</span></code> attribute of the
-<code class="docutils literal"><span class="pre">Solution</span></code> class. In this example, we will use the
+<code class="docutils literal notranslate"><span class="pre">Solution</span></code> object is created, we can set the initial temperature,
+pressure, and mole fractions using the <code class="docutils literal notranslate"><span class="pre">TPX</span></code> attribute of the
+<code class="docutils literal notranslate"><span class="pre">Solution</span></code> class. In this example, we will use the
 <a class="reference external" href="http://combustion.berkeley.edu/gri-mech/version30/text30.html">GRI-3.0</a>
 as the chemical kinetic mechanism for H2/CO combustion. GRI-3.0 is
 built-in to Cantera, so no other input files are needed.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s1">&#39;gri30.xml&#39;</span><span class="p">)</span>
 <span class="n">gas</span><span class="o">.</span><span class="n">TPX</span> <span class="o">=</span> <span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">X_initial</span>
 </pre></div>
 </div>
 </div>
 <p>With the thermodynamic and kinetic data loaded and the initial
-conditions defined, we need to install the <code class="docutils literal"><span class="pre">Solution</span></code> instance into an
-<code class="docutils literal"><span class="pre">IdealGasReactor</span></code> which implements the equations for mass, energy, and
-species conservation. In addition, we create a <code class="docutils literal"><span class="pre">Reservoir</span></code> to
+conditions defined, we need to install the <code class="docutils literal notranslate"><span class="pre">Solution</span></code> instance into an
+<code class="docutils literal notranslate"><span class="pre">IdealGasReactor</span></code> which implements the equations for mass, energy, and
+species conservation. In addition, we create a <code class="docutils literal notranslate"><span class="pre">Reservoir</span></code> to
 represent the environment external to the reaction chamber. The input
-file used for the environment, <code class="docutils literal"><span class="pre">air.xml</span></code>, is also included with
+file used for the environment, <code class="docutils literal notranslate"><span class="pre">air.xml</span></code>, is also included with
 Cantera and represents an average composition of air.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">reac</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">IdealGasReactor</span><span class="p">(</span><span class="n">gas</span><span class="p">)</span>
 <span class="n">env</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Reservoir</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s1">&#39;air.xml&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
-<p>To apply the effect of the volume trace to the <code class="docutils literal"><span class="pre">IdealGasReactor</span></code>, a
-<code class="docutils literal"><span class="pre">Wall</span></code> must be installed between the reactor and environment and
-assigned a velocity. The <code class="docutils literal"><span class="pre">Wall</span></code> allows the environment to do work on
+<p>To apply the effect of the volume trace to the <code class="docutils literal notranslate"><span class="pre">IdealGasReactor</span></code>, a
+<code class="docutils literal notranslate"><span class="pre">Wall</span></code> must be installed between the reactor and environment and
+assigned a velocity. The <code class="docutils literal notranslate"><span class="pre">Wall</span></code> allows the environment to do work on
 the reactor (or vice versa) and change the reactor’s thermodynamic
-state; we use a <code class="docutils literal"><span class="pre">Reservoir</span></code> for the environment because in Cantera,
-<code class="docutils literal"><span class="pre">Reservoir</span></code>s always have a constant thermodynamic state and
-composition. Using a <code class="docutils literal"><span class="pre">Reservoir</span></code> accelerates the solution compared to
-using two <code class="docutils literal"><span class="pre">IdealGasReactor</span></code>s, since the composition and state of the
+state; we use a <code class="docutils literal notranslate"><span class="pre">Reservoir</span></code> for the environment because in Cantera,
+<code class="docutils literal notranslate"><span class="pre">Reservoir</span></code>s always have a constant thermodynamic state and
+composition. Using a <code class="docutils literal notranslate"><span class="pre">Reservoir</span></code> accelerates the solution compared to
+using two <code class="docutils literal notranslate"><span class="pre">IdealGasReactor</span></code>s, since the composition and state of the
 environment are typically not necessary for the solution of autoignition
 problems. Although we do not show the details here, a reference
 implementation of a class that computes the wall velocity given the
 volume history of the reactor is available in
 <a class="reference external" href="http://bryanwweber.github.io/CanSen/">CanSen</a>, in the
-<code class="docutils literal"><span class="pre">`cansen.profiles.VolumeProfile</span></code> &lt;<a class="reference external" href="http://bryanwweber.github.io/CanSen/codedocs.html#cansen.profiles.VolumeProfile">http://bryanwweber.github.io/CanSen/codedocs.html#cansen.profiles.VolumeProfile</a>&gt;`__
+<code class="docutils literal notranslate"><span class="pre">`cansen.profiles.VolumeProfile</span></code> &lt;<a class="reference external" href="http://bryanwweber.github.io/CanSen/codedocs.html#cansen.profiles.VolumeProfile">http://bryanwweber.github.io/CanSen/codedocs.html#cansen.profiles.VolumeProfile</a>&gt;`__
 class, which we import here:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">cansen.profiles</span> <span class="kn">import</span> <span class="n">VolumeProfile</span>
 <span class="n">exp_time</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="n">exp_volume</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span>
@@ -435,19 +430,19 @@ class, which we import here:</p>
 </pre></div>
 </div>
 </div>
-<p>Then, the <code class="docutils literal"><span class="pre">IdealGasReactor</span></code> is installed in a <code class="docutils literal"><span class="pre">ReactorNet</span></code>. The
-<code class="docutils literal"><span class="pre">ReactorNet</span></code> implements the connection to the numerical solver
+<p>Then, the <code class="docutils literal notranslate"><span class="pre">IdealGasReactor</span></code> is installed in a <code class="docutils literal notranslate"><span class="pre">ReactorNet</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">ReactorNet</span></code> implements the connection to the numerical solver
 (<a class="reference external" href="https://computation.llnl.gov/projects/sundials/cvodes">CVODES</a> is
 used in Cantera) to solve the energy and species equations. For this
 example, it is best practice to set the maximum time step allowed in the
 solution to be the minimum time difference in the time array from the
 volume trace:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">netw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">ReactorNet</span><span class="p">([</span><span class="n">reac</span><span class="p">])</span>
 <span class="n">netw</span><span class="o">.</span><span class="n">set_max_time_step</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">exp_time</span><span class="p">)))</span>
 </pre></div>
@@ -460,11 +455,11 @@ ignition delay. To calculate this derivative, we need to store the state
 variables and the composition on each time step, so we initialize
 several Python lists to act as storage:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">time</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">temperature</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">pressure</span> <span class="o">=</span> <span class="p">[]</span>
@@ -473,19 +468,19 @@ several Python lists to act as storage:</p>
 </pre></div>
 </div>
 </div>
-<p>Finally, the problem is integrated using the <code class="docutils literal"><span class="pre">step</span></code> method of the
-<code class="docutils literal"><span class="pre">ReactorNet</span></code>. The <code class="docutils literal"><span class="pre">step</span></code> method takes one timestep forward on each
+<p>Finally, the problem is integrated using the <code class="docutils literal notranslate"><span class="pre">step</span></code> method of the
+<code class="docutils literal notranslate"><span class="pre">ReactorNet</span></code>. The <code class="docutils literal notranslate"><span class="pre">step</span></code> method takes one timestep forward on each
 call, with step size determined by the CVODES solver (CVODES uses an
 adaptive time-stepping algorithm). On each step, we add the relevant
 variables to their respective lists. The problem is integrated until a
 user-specified end time, in this case 50 ms, although in principle, the
 user could end the simulation on any condition they choose:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="k">while</span> <span class="n">netw</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
     <span class="n">time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">netw</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
     <span class="n">temperature</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reac</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -501,11 +496,11 @@ pressure list to calculate the derivative by whatever algorithm they
 choose. We will plot the pressure versus the time of the simulation
 using the Matplotlib library:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">%</span><span class="k">matplotlib</span> notebook
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
@@ -520,9 +515,9 @@ using the Matplotlib library:</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div id="877c2fce-845f-4fcd-8df4-72c2731e75da"></div>
+<div></div>
 <script type="text/javascript">
-var element = document.getElementById('877c2fce-845f-4fcd-8df4-72c2731e75da');
+var element = document.currentScript.previousSibling.previousSibling;
 /* Put everything inside the global mpl namespace */
 window.mpl = {};
 
@@ -1301,11 +1296,11 @@ if (IPython.notebook.kernel != null) {
 <p>We can also plot the volume trace and compare to the values derived from
 the ChemKED file.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none"><div class="highlight"><pre>
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">exp_time</span><span class="p">,</span> <span class="n">exp_volume</span><span class="o">/</span><span class="n">exp_volume</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Experimental volume&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
@@ -1320,9 +1315,9 @@ the ChemKED file.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div id="37d08371-da3e-4086-aea5-1d0815380fa2"></div>
+<div></div>
 <script type="text/javascript">
-var element = document.getElementById('37d08371-da3e-4086-aea5-1d0815380fa2');
+var element = document.currentScript.previousSibling.previousSibling;
 /* Put everything inside the global mpl namespace */
 window.mpl = {};
 
@@ -2125,12 +2120,14 @@ if (IPython.notebook.kernel != null) {
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -2138,10 +2135,10 @@ if (IPython.notebook.kernel != null) {
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

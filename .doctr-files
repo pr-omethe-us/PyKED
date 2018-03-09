@@ -3,17 +3,18 @@
 ./_modules/pint/registry.html
 ./_modules/pyked/chemked.html
 ./_modules/pyked/converters.html
+./_modules/pyked/orcid.html
 ./_modules/pyked/validation.html
 ./_sources/chemked.rst.txt
 ./_sources/ck-tutorial.rst.txt
 ./_sources/converters.rst.txt
 ./_sources/index.rst.txt
 ./_sources/install.rst.txt
+./_sources/orcid.rst.txt
 ./_sources/pyked-examples.rst.txt
 ./_sources/rcm-example.ipynb.txt
 ./_sources/schema-docs.rst.txt
 ./_sources/shock-tube-example.ipynb.txt
-./_sources/utils.rst.txt
 ./_sources/validation.rst.txt
 ./_static/README
 ./_static/ajax-loader.gif
@@ -24,10 +25,11 @@
 ./_static/comment.png
 ./_static/custom.css
 ./_static/doctools.js
+./_static/documentation_options.js
 ./_static/down-pressed.png
 ./_static/down.png
 ./_static/file.png
-./_static/jquery-3.1.0.js
+./_static/jquery-3.2.1.js
 ./_static/jquery.js
 ./_static/minus.png
 ./_static/plus.png
@@ -46,6 +48,7 @@
 ./index.html
 ./install.html
 ./objects.inv
+./orcid.html
 ./py-modindex.html
 ./pyked-examples.html
 ./rcm-example.html
@@ -53,5 +56,4 @@
 ./search.html
 ./searchindex.js
 ./shock-tube-example.html
-./utils.html
 ./validation.html

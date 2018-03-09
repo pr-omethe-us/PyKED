@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyked.chemked &#8212; PyKED 0.3.0 documentation</title>
+    <title>pyked.chemked &#8212; PyKED 0.4.1a1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.3.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -30,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -50,18 +41,49 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
 <span class="kn">import</span> <span class="nn">xml.dom.minidom</span> <span class="k">as</span> <span class="nn">minidom</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">chain</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">Q_</span>
-<span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span>
+<span class="kn">from</span> <span class="nn">.validation</span> <span class="k">import</span> <span class="n">schema</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">yaml</span><span class="p">,</span> <span class="n">Q_</span>
+<span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">datagroup_properties</span><span class="p">,</span> <span class="n">ReSpecTh_to_ChemKED</span>
 
 <span class="n">VolumeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VolumeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">])</span>
-<span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment&#39;</span>
+<span class="n">VolumeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4&#39;</span>  <span class="c1"># noqa: E501</span>
 <span class="n">VolumeHistory</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the time during the experiment&#39;</span>
 <span class="n">VolumeHistory</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the volume during the experiment&#39;</span>
+
+<span class="n">TimeHistory</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;TimeHistory&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">])</span>
+<span class="n">TimeHistory</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Time history of the quantity in an RCM experiment&#39;</span>
+<span class="n">TimeHistory</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the time during the experiment&#39;</span>
+<span class="n">TimeHistory</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~numpy.ndarray`): the quantity of interest during the experiment&#39;</span>
+<span class="n">TimeHistory</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">(`str`): the type of time history represented. Possible options are:</span>
+
+<span class="s2">* volume</span>
+<span class="s2">* temperature</span>
+<span class="s2">* pressure</span>
+<span class="s2">* piston position</span>
+<span class="s2">* light emission</span>
+<span class="s2">* OH emission</span>
+<span class="s2">* absorption</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">RCMData</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;RCMData&#39;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s1">&#39;compressed_pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;compressed_temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;compression_time&#39;</span><span class="p">,</span> <span class="s1">&#39;stroke&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;clearance&#39;</span><span class="p">,</span> <span class="s1">&#39;compression_ratio&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Data fields specific to rapid compression machine experiments&#39;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">compressed_pressure</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~pint.Quantity`) The pressure at the end of compression&#39;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">compressed_temperature</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">(`~pint.Quantity`) The temperature at the end of compression&quot;&quot;&quot;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">compression_time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~pint.Quantity`) The duration of the compression stroke&#39;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">stroke</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~pint.Quantity`) The length of the stroke&#39;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">clearance</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">(`~pint.Quantity`) The clearance between piston face and end wall at the end of compression&quot;&quot;&quot;</span>
+<span class="n">RCMData</span><span class="o">.</span><span class="n">compression_ratio</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~pint.Quantity`) The volumetric compression ratio&#39;</span>
 
 <span class="n">Reference</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
                        <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;journal&#39;</span><span class="p">,</span> <span class="s1">&#39;doi&#39;</span><span class="p">,</span> <span class="s1">&#39;authors&#39;</span><span class="p">,</span> <span class="s1">&#39;detail&#39;</span><span class="p">,</span> <span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;pages&#39;</span><span class="p">])</span>
@@ -79,6 +101,14 @@
 <span class="n">Apparatus</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The kind of experimental apparatus&#39;</span>
 <span class="n">Apparatus</span><span class="o">.</span><span class="n">institution</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The institution where the experiment is located&#39;</span>
 <span class="n">Apparatus</span><span class="o">.</span><span class="n">facility</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The particular experimental facility at the location&#39;</span>
+
+<span class="n">Composition</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Composition&#39;</span><span class="p">,</span> <span class="s1">&#39;species_name InChI SMILES atomic_composition amount&#39;</span><span class="p">)</span>
+<span class="n">Composition</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Detail of the initial composition of the mixture for the experiment&#39;</span>
+<span class="n">Composition</span><span class="o">.</span><span class="n">species_name</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The name of the species&#39;</span>
+<span class="n">Composition</span><span class="o">.</span><span class="n">InChI</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The InChI identifier for the species&#39;</span>
+<span class="n">Composition</span><span class="o">.</span><span class="n">SMILES</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`str`) The SMILES identifier for the species&#39;</span>
+<span class="n">Composition</span><span class="o">.</span><span class="n">atomic_composition</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`dict`) The atomic composition of the species&#39;</span>
+<span class="n">Composition</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;(`~pint.Quantity`) The amount of this species&#39;</span>
 
 
 <div class="viewcode-block" id="ChemKED"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED">[docs]</a><span class="k">class</span> <span class="nc">ChemKED</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -142,8 +172,32 @@
             <span class="n">facility</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;facility&#39;</span><span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">,</span> <span class="s1">&#39;experiment-type&#39;</span><span class="p">,</span> <span class="s1">&#39;file-author&#39;</span><span class="p">,</span> <span class="s1">&#39;file-version&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">,</span> <span class="s1">&#39;experiment-type&#39;</span><span class="p">,</span> <span class="s1">&#39;file-authors&#39;</span><span class="p">,</span> <span class="s1">&#39;file-version&#39;</span><span class="p">]:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ChemKED.from_respecth"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.from_respecth">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_respecth</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a ChemKED instance directly from a ReSpecTh file.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename_xml (`str`): Filename of the ReSpecTh-formatted XML file to be imported</span>
+<span class="sd">            file_author (`str`, optional): File author to be added to the list generated from the</span>
+<span class="sd">                XML file</span>
+<span class="sd">            file_author_orcid (`str`, optional): ORCID for the file author being added to the list</span>
+<span class="sd">                of file authors</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `ChemKED`: Instance of the `ChemKED` class containing the data in ``filename_xml``.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;, file_author=&#39;Bryan W. Weber&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; ck = ChemKED.from_respecth(&#39;respecth_file.xml&#39;, file_author=&#39;Bryan W. Weber&#39;,</span>
+<span class="sd">                                           file_author_orcid=&#39;0000-0000-0000-0000&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="p">,</span>
+                                         <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChemKED.validate_yaml"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.validate_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">validate_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Validate the parsed YAML file for adherance to the ChemKED format.</span>
@@ -161,8 +215,8 @@
                 <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="s1">&#39;unallowed value&#39;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]):</span>
                     <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;</span><span class="si">{key}</span><span class="s1"> has an illegal value. Allowed values are </span><span class="si">{values}</span><span class="s1"> and are case &#39;</span>
                            <span class="s1">&#39;sensitive.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;allowed&#39;</span><span class="p">]))</span>
-
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
+</div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChemKED.get_dataframe"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.get_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">get_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get a Pandas DataFrame of the datapoints in this instance.</span>
@@ -229,8 +283,7 @@
         <span class="n">valid_labels</span><span class="p">[</span><span class="n">ref_index</span><span class="p">:</span><span class="n">ref_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;reference:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Reference</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
         <span class="n">app_index</span> <span class="o">=</span> <span class="n">valid_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;apparatus&#39;</span><span class="p">)</span>
         <span class="n">valid_labels</span><span class="p">[</span><span class="n">app_index</span><span class="p">:</span><span class="n">app_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;apparatus:&#39;</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Apparatus</span><span class="o">.</span><span class="n">_fields</span><span class="p">]</span>
-
-        <span class="n">species_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">]))</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">species_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">])))</span>
 
         <span class="k">if</span> <span class="n">output_columns</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">col_labels</span> <span class="o">=</span> <span class="n">valid_labels</span>
@@ -258,12 +311,11 @@
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
             <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">d_species</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">]</span>
+            <span class="n">d_species</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">species_list</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d_species</span><span class="p">:</span>
-                        <span class="n">s_idx</span> <span class="o">=</span> <span class="n">d_species</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
-                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">[</span><span class="n">s_idx</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+                        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">composition</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;reference&#39;</span> <span class="ow">in</span> <span class="n">col</span> <span class="ow">or</span> <span class="s1">&#39;apparatus&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
@@ -274,15 +326,15 @@
                         <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">split_col</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
                 <span class="k">elif</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;ignition delay&#39;</span><span class="p">,</span> <span class="s1">&#39;equivalence ratio&#39;</span><span class="p">]:</span>
                     <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)))</span>
-                <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s1">&#39;file author&#39;</span><span class="p">:</span>
-                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="s1">&#39;file authors&#39;</span><span class="p">:</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)))</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">col_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">]</span>
-        <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">col_labels</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">col_labels</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChemKED.write_file"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.write_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write new ChemKED YAML file based on object.</span>
@@ -305,8 +357,8 @@
                           <span class="s1">&#39;to overwrite, or rename.&#39;</span>
                           <span class="p">)</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span></div>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChemKED.convert_to_ReSpecTh"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.convert_to_ReSpecTh">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_ReSpecTh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert ChemKED record to ReSpecTh XML file.</span>
@@ -325,7 +377,7 @@
         <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
 
         <span class="n">file_author</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;fileAuthor&#39;</span><span class="p">)</span>
-        <span class="n">file_author</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_author</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">file_author</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_authors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
 
         <span class="c1"># right now ChemKED just uses an integer file version</span>
         <span class="n">file_version</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;fileVersion&#39;</span><span class="p">)</span>
@@ -381,16 +433,16 @@
             <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">common_properties</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
             <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;initial composition&#39;</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">species_name</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">composition</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">component</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="s1">&#39;component&#39;</span><span class="p">)</span>
                 <span class="n">species_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;speciesLink&#39;</span><span class="p">)</span>
-                <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;InChI&#39;</span><span class="p">])</span>
+                <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">InChI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">.</span><span class="n">InChI</span><span class="p">)</span>
 
                 <span class="n">amount</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">)</span>
                 <span class="n">amount</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">composition_type</span><span class="p">)</span>
-                <span class="n">amount</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="n">amount</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
 
         <span class="c1"># If multiple datapoints present, then find any common properties. If only</span>
         <span class="c1"># one datapoint, then composition should be the only &quot;common&quot; property.</span>
@@ -447,9 +499,9 @@
         <span class="c1"># Need to handle datapoints with possibly different species in the initial composition</span>
         <span class="k">if</span> <span class="s1">&#39;composition&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="c1"># Only add new property for species not already considered</span>
-                    <span class="n">has_spec</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                    <span class="n">has_spec</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">species</span><span class="o">.</span><span class="n">species_name</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">property_idx</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                                     <span class="p">])</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">has_spec</span><span class="p">:</span>
@@ -457,16 +509,16 @@
                         <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
                         <span class="n">idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                        <span class="n">property_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]}</span>
+                        <span class="n">property_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">species</span><span class="o">.</span><span class="n">species_name</span><span class="p">}</span>
                         <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
-                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
+                        <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">species</span><span class="o">.</span><span class="n">species_name</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
                         <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;composition&#39;</span><span class="p">)</span>
                         <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">composition_type</span><span class="p">)</span>
 
                         <span class="n">species_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="s1">&#39;speciesLink&#39;</span><span class="p">)</span>
-                        <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">])</span>
-                        <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">):</span>
-                            <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;InChI&#39;</span><span class="p">])</span>
+                        <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">.</span><span class="n">species_name</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">species</span><span class="o">.</span><span class="n">InChI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">species_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">.</span><span class="n">InChI</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">:</span>
             <span class="n">datapoint</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
@@ -478,49 +530,59 @@
                     <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># composition</span>
-                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">species_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
                             <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
-                            <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                            <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
 
-        <span class="c1"># if RCM and has volume history, need a second dataGroup</span>
-        <span class="n">has_volume_history</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">])</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">has_volume_history</span><span class="p">:</span>
+        <span class="c1"># See https://stackoverflow.com/a/16097112 for the None.__ne__</span>
+        <span class="n">history_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume_history&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature_history&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure_history&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;piston_position_history&#39;</span><span class="p">,</span> <span class="s1">&#39;light_emission_history&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;OH_emission_history&#39;</span><span class="p">,</span> <span class="s1">&#39;absorption_history&#39;</span><span class="p">]</span>
+        <span class="n">time_histories</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">history_types</span><span class="p">]</span>
+        <span class="n">time_histories</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="o">.</span><span class="fm">__ne__</span><span class="p">,</span> <span class="n">time_histories</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_histories</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Error: ReSpecTh files do not support multiple datapoints &#39;</span>
-                                      <span class="s1">&#39;with a volume history.&#39;</span>
-                                      <span class="p">)</span>
+                                      <span class="s1">&#39;with a time history.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_histories</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dg_idx</span><span class="p">,</span> <span class="n">hist</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_histories</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">hist</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;The time-history type </span><span class="si">{}</span><span class="s1"> is not supported by ReSpecTh for &#39;</span>
+                         <span class="s1">&#39;ignition delay experiments&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+                    <span class="k">continue</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">volume_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">datagroup</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;dataGroup&#39;</span><span class="p">)</span>
-            <span class="n">datagroup</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;dg2&#39;</span><span class="p">)</span>
-            <span class="n">datagroup_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataGroupLink&#39;</span><span class="p">)</span>
-            <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataGroupID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-            <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataPointID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">datagroup</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;dataGroup&#39;</span><span class="p">)</span>
+                <span class="n">datagroup</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;dg</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dg_idx</span><span class="p">))</span>
+                <span class="n">datagroup_link</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataGroupLink&#39;</span><span class="p">)</span>
+                <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataGroupID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">datagroup_link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataPointID&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-            <span class="c1"># Volume history has two properties: time and volume.</span>
-            <span class="n">volume_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">volume_history</span>
-            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
-            <span class="n">time_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+                <span class="c1"># Time history has two properties: time and quantity.</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+                <span class="n">time_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">property_idx</span><span class="p">[</span><span class="n">time_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;time&#39;</span><span class="p">}</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
 
-            <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
-            <span class="n">volume_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">volume_idx</span><span class="p">)</span>
-            <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">)</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;property&#39;</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">hist</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+                <span class="n">quant_idx</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">property_idx</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">property_idx</span><span class="p">[</span><span class="n">quant_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">hist</span><span class="o">.</span><span class="n">type</span><span class="p">}</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">quant_idx</span><span class="p">)</span>
+                <span class="n">prop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">volume</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="p">):</span>
-                <span class="n">datapoint</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
-                <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">volume_idx</span><span class="p">)</span>
-                <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">hist</span><span class="o">.</span><span class="n">quantity</span><span class="p">):</span>
+                    <span class="n">datapoint</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datagroup</span><span class="p">,</span> <span class="s1">&#39;dataPoint&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">)</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="n">quant_idx</span><span class="p">)</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
 
         <span class="n">ign_types</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="s1">&#39;ignition_type&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]</span>
         <span class="c1"># All datapoints must have the same ignition target and type</span>
@@ -532,7 +594,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># options left are species</span>
                 <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">])</span>
-            <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ign_types</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;d/dt max extrapolated&#39;</span><span class="p">:</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;baseline max intercept from d/dt&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ignition</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ignition_type</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Different ignition targets or types for multiple datapoints &#39;</span>
                                       <span class="s1">&#39;are not supported in ReSpecTh.&#39;</span><span class="p">)</span>
@@ -545,8 +610,8 @@
         <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span></div></div>
+</div></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="DataPoint"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint">[docs]</a><span class="k">class</span> <span class="nc">DataPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -576,100 +641,97 @@
 <span class="sd">        ignition_type (`dict`): Dictionary with the ignition target and type.</span>
 <span class="sd">        volume_history (`~collections.namedtuple`, optional): The volume history of the reactor</span>
 <span class="sd">            during an RCM experiment.</span>
+<span class="sd">        pressure_history (`~collections.namedtuple`, optional): The pressure history of the reactor</span>
+<span class="sd">            during an experiment.</span>
+<span class="sd">        temperature_history (`~collections.namedtuple`, optional): The temperature history of the</span>
+<span class="sd">            reactor during an experiment.</span>
+<span class="sd">        piston_position_history (`~collections.namedtuple`, optional): The piston position history</span>
+<span class="sd">            of the reactor during an RCM experiment.</span>
+<span class="sd">        light_emission_history (`~collections.namedtuple`, optional): The light emission history</span>
+<span class="sd">            of the reactor during an experiment.</span>
+<span class="sd">        OH_emission_history (`~collections.namedtuple`, optional): The OH emission history of the</span>
+<span class="sd">            reactor during an experiment.</span>
+<span class="sd">        absorption_history (`~collections.namedtuple`, optional): The absorption history of the</span>
+<span class="sd">            reactor during an experiment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
-        <span class="n">value_unit_props</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s1">&#39;ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure-rise&#39;</span><span class="p">,</span> <span class="s1">&#39;compression-time&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;compressed-temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;compressed-pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;first-stage-ignition-delay&#39;</span><span class="p">,</span>
-        <span class="p">]</span>
-        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">value_unit_props</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
-                <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">unc</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                    <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                    <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                    <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
-                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
-                            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
-                                 <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
-                                 <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
-                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
-                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
-                                             <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
-                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
-                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
-                            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
-                                 <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
-                                 <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
-                            <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
-                            <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
-                                             <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+    <span class="n">value_unit_props</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;first-stage-ignition-delay&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pressure-rise&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
 
+    <span class="n">rcm_data_props</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;compressed-pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;compressed-temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;compression-time&#39;</span><span class="p">,</span> <span class="s1">&#39;stroke&#39;</span><span class="p">,</span> <span class="s1">&#39;clearance&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;compression-ratio&#39;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_unit_props</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                <span class="n">quant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="n">quant</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span>
-        <span class="n">composition</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;species&#39;</span><span class="p">])</span>
-
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">composition</span><span class="p">):</span>
-            <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">unc</span> <span class="o">=</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
-                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
-                             <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
-                             <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
-                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
-                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
-                                         <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
-                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
-                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
-                        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
-                             <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
-                             <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
-                        <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
-                        <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
-                                         <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;rcm-data&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">orig_rcm_data</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;rcm-data&#39;</span><span class="p">]</span>
+            <span class="n">rcm_props</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcm_data_props</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">orig_rcm_data</span><span class="p">:</span>
+                    <span class="n">quant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">orig_rcm_data</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
+                    <span class="n">rcm_props</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">quant</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+                    <span class="n">rcm_props</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcm_data</span> <span class="o">=</span> <span class="n">RCMData</span><span class="p">(</span><span class="o">**</span><span class="n">rcm_props</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcm_data</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="n">composition</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span>
+        <span class="n">composition</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;composition&#39;</span><span class="p">][</span><span class="s1">&#39;species&#39;</span><span class="p">]:</span>
+            <span class="n">species_name</span> <span class="o">=</span> <span class="n">species</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+            <span class="n">InChI</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;InChI&#39;</span><span class="p">)</span>
+            <span class="n">SMILES</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SMILES&#39;</span><span class="p">)</span>
+            <span class="n">atomic_composition</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atomic-composition&#39;</span><span class="p">)</span>
+            <span class="n">composition</span><span class="p">[</span><span class="n">species_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Composition</span><span class="p">(</span>
+                <span class="n">species_name</span><span class="o">=</span><span class="n">species_name</span><span class="p">,</span> <span class="n">InChI</span><span class="o">=</span><span class="n">InChI</span><span class="p">,</span> <span class="n">SMILES</span><span class="o">=</span><span class="n">SMILES</span><span class="p">,</span>
+                <span class="n">atomic_composition</span><span class="o">=</span><span class="n">atomic_composition</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">amount</span><span class="p">)</span>
+
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;composition&#39;</span><span class="p">,</span> <span class="n">composition</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">equivalence_ratio</span> <span class="o">=</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;equivalence-ratio&#39;</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">ignition_type</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ignition-type&#39;</span><span class="p">))</span>
 
+        <span class="k">if</span> <span class="s1">&#39;time-histories&#39;</span> <span class="ow">in</span> <span class="n">properties</span> <span class="ow">and</span> <span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;time-histories and volume-history are mutually exclusive&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;time-histories&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">hist</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_history&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Each history type may only be specified once. </span><span class="si">{}</span><span class="s1"> was &#39;</span>
+                                     <span class="s1">&#39;specified multiple times&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]))</span>
+                <span class="n">time_col</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
+                <span class="n">time_units</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+                <span class="n">quant_col</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
+                <span class="n">quant_units</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Load the values from a file</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="s1">&#39;filename&#39;</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+                <span class="n">time_history</span> <span class="o">=</span> <span class="n">TimeHistory</span><span class="p">(</span>
+                    <span class="n">time</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">time_col</span><span class="p">],</span> <span class="n">time_units</span><span class="p">),</span>
+                    <span class="n">quantity</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">quant_col</span><span class="p">],</span> <span class="n">quant_units</span><span class="p">),</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+                <span class="p">)</span>
+
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_history&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)),</span> <span class="n">time_history</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="s1">&#39;volume-history&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;The volume-history field should be replaced by time-histories. &#39;</span>
+                 <span class="s1">&#39;volume-history will be removed after PyKED 0.4&#39;</span><span class="p">,</span>
+                 <span class="ne">DeprecationWarning</span><span class="p">)</span>
             <span class="n">time_col</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
             <span class="n">time_units</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
             <span class="n">volume_col</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;volume-history&#39;</span><span class="p">][</span><span class="s1">&#39;volume&#39;</span><span class="p">][</span><span class="s1">&#39;column&#39;</span><span class="p">]</span>
@@ -679,8 +741,52 @@
                 <span class="n">time</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">time_col</span><span class="p">],</span> <span class="n">time_units</span><span class="p">),</span>
                 <span class="n">volume</span><span class="o">=</span><span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[:,</span> <span class="n">volume_col</span><span class="p">],</span> <span class="n">volume_units</span><span class="p">),</span>
             <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">volume_history</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">history_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;piston_position&#39;</span><span class="p">,</span> <span class="s1">&#39;light_emission&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;OH_emission&#39;</span><span class="p">,</span> <span class="s1">&#39;absorption&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_history&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_history&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">h</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataPoint.process_quantity"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.process_quantity">[docs]</a>    <span class="k">def</span> <span class="nf">process_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Process the uncertainty information from a given quantity and return it</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">unc</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upper-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower-uncertainty&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uncertainty-type&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                    <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                         <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                         <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                    <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                     <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
+                    <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Asymmetric uncertainties are not supported. The &#39;</span>
+                         <span class="s1">&#39;maximum of lower-uncertainty and upper-uncertainty &#39;</span>
+                         <span class="s1">&#39;has been used as the symmetric uncertainty.&#39;</span><span class="p">)</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                    <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                                     <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+</div>
+        <span class="k">return</span> <span class="n">quant</span>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_composition_string"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_composition_string">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_composition_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the composition in a string format suitable for input to Cantera.</span>
@@ -713,20 +819,20 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown composition type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">species_conversion</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">],</span>
-                     <span class="n">c</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">]</span>
+            <span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">species_name</span><span class="p">,</span>
+                     <span class="n">c</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">comps</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">:</span>
-                <span class="n">amount</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span>
-                <span class="n">idents</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">,</span> <span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="s1">&#39;SMILES&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">amount</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">magnitude</span><span class="o">/</span><span class="n">factor</span>
+                <span class="n">idents</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;species_name&#39;</span><span class="p">,</span> <span class="s1">&#39;InChI&#39;</span><span class="p">,</span> <span class="s1">&#39;SMILES&#39;</span><span class="p">]]</span>
                 <span class="n">present</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="ow">in</span> <span class="n">species_conversion</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idents</span><span class="p">]</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">present</span><span class="p">):</span>
-                    <span class="n">comps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">],</span> <span class="n">amount</span><span class="p">))</span>
+                    <span class="n">comps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{!s}</span><span class="s1">:</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">species_name</span><span class="p">,</span> <span class="n">amount</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">present</span> <span class="k">if</span> <span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;More than one conversion present for species </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                         <span class="n">c</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]))</span>
+                                         <span class="n">c</span><span class="o">.</span><span class="n">species_name</span><span class="p">))</span>
 
                     <span class="n">ident</span> <span class="o">=</span> <span class="n">idents</span><span class="p">[</span><span class="n">present</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)]</span>
                     <span class="n">species_replacement_name</span> <span class="o">=</span> <span class="n">species_conversion</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">ident</span><span class="p">)</span>
@@ -734,8 +840,8 @@
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown species in conversion: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span></div>
+</div>
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_mole_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mole_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mole_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the mole fractions in a string format suitable for input to Cantera.</span>
@@ -770,8 +876,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">==</span> <span class="s1">&#39;mass fraction&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mole fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
                              <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_mass_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mass_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the mass fractions in a string format suitable for input to Cantera.</span>
@@ -808,8 +914,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mass fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
                              <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">)</span>
                              <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div></div>
+        <span class="k">else</span><span class="p">:</span></div></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -827,12 +933,14 @@
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -840,10 +948,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
