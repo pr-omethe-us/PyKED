@@ -17,6 +17,11 @@ interact with the data contained in the ChemKED file. PyKED is licensed under th
 open-source BSD 3-clause license. The source code is publicly available on GitHub at
 https://github.com/pr-omethe-us/PyKED.
 
+This is the documentation for the |release| version of PyKED. The documentation
+for the unreleased, developers' version of PyKED is available at
+https://pr-omethe-us.github.io/PyKED/devel, and documentation for old releases
+is available on the `Releases page <https://pr-omethe-us.github.io/PyKED/releases.html`__.
+
 User's Guide
 ------------
 
@@ -27,6 +32,7 @@ User's Guide
    ck-tutorial
    schema-docs
    pyked-examples
+   releases
 
 Code API
 --------
