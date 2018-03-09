@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Documentation for old versions is available on the Releases page of the docs
 
 ### Changed
 
 ### Fixed
 - Doctr deploys on tags now
+- Syntax changes for example files in the documentation
 
 ## [0.4.0] - 2018-03-07
 ### Added
