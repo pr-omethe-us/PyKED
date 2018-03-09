@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.4.1] - 2018-03-09
+### Added
 - Documentation for old versions is available on the Releases page of the docs
 
 ### Changed
@@ -130,6 +137,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
 [Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...HEAD
+[0.4.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.0...v0.2.1

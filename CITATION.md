@@ -4,7 +4,7 @@
 
 To cite PyKED in a scholarly article, please use
 
-> K. E. Niemeyer and B. W. Weber. (2018) PyKED v0.4.0 [software]. Zenodo. https://doi.org/10.5281/zenodo.597935
+> K. E. Niemeyer and B. W. Weber. (2018) PyKED v0.4.1 [software]. Zenodo. https://doi.org/10.5281/zenodo.597935
 
 A BibTeX entry for LaTeX users is
 
@@ -12,7 +12,7 @@ A BibTeX entry for LaTeX users is
 @misc{PyKED,
     author = {Kyle E Niemeyer and Bryan W Weber},
     year = 2017,
-    title = {PyKED v0.4.0},
+    title = {PyKED v0.4.1},
     doi = {10.5281/zenodo.597935},
     url = {https://github.com/pr-omethe-us/PyKED},
 }
@@ -23,6 +23,7 @@ given in the badge at the top, or alternately <https://doi.org/10.5281/zenodo.59
 take you to the latest version (and generally represents all versions).
 If you would like to cite a specific, older version, the DOIs for each release are:
 
+ * v0.4.0: [10.5281/zenodo.1193936](https://doi.org/10.5281/zenodo.1193936)
  * v0.3.0: [10.5281/zenodo.1006722](https://doi.org/10.5281/zenodo.1006722)
  * v0.2.1: [10.5281/zenodo.858441](https://doi.org/10.5281/zenodo.858441)
  * v0.2.0: [10.5281/zenodo.841303](https://doi.org/10.5281/zenodo.841303)
