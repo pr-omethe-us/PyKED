@@ -13,6 +13,7 @@
 ./_sources/orcid.rst.txt
 ./_sources/pyked-examples.rst.txt
 ./_sources/rcm-example.ipynb.txt
+./_sources/releases.rst.txt
 ./_sources/schema-docs.rst.txt
 ./_sources/shock-tube-example.ipynb.txt
 ./_sources/validation.rst.txt
@@ -52,6 +53,7 @@
 ./py-modindex.html
 ./pyked-examples.html
 ./rcm-example.html
+./releases.html
 ./schema-docs.html
 ./search.html
 ./searchindex.js
