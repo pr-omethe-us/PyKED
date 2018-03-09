@@ -1,0 +1,5 @@
+=======
+ChemKED
+=======
+
+.. automodule:: pyked.chemked
