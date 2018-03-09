@@ -176,7 +176,7 @@ class OurValidator(Validator):
             field (`str`): T_range
             values (`list`): List of temperature values indicating low, middle, and high ranges
 
-        The rule's arguemnts are validated against this schema:
+        The rule's arguments are validated against this schema:
             {'isvalid_t_range': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'list'}}
         """
