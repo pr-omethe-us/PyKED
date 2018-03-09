@@ -30,7 +30,7 @@ install:
     - rm miniconda.sh
     - source $HOME/miniconda/etc/profile.d/conda.sh && conda activate
     - conda config --set always_yes yes --set changeps1 no
-    - conda update conda
+    - conda update -q conda
     - conda update -q --all
     - conda config --append channels conda-forge
     - if [[ -z "$TRAVIS_TAG" ]]; then
