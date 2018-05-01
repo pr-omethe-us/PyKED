@@ -1,0 +1,25 @@
+{
+    "@context": "http://schema.org",
+    "@type": "Code",
+    "author": [
+        {
+            "@id": "http://orcid.org/0000-0003-4425-7097",
+            "@type": "Person",
+            "email": "kyle.niemeyer@gmail.com",
+            "name": "Kyle Niemeyer"
+        },
+        {
+            "@id": "http://orcid.org//0000-0003-0815-9270",
+            "@type": "Person",
+            "email": "bryan.w.weber@gmail.com",
+            "name": "Bryan Weber"
+        }
+    ],
+    "citation": "https://doi.org/10.5281/zenodo.597935",
+    "codeRepository": "https://github.com/pr-omethe-us/PyKED",
+    "dateCreated": "2018-03-09",
+    "description": "Python interface to the ChemKED database format https://pr-omethe-us.github.io/PyKED/",
+    "keywords": "combustion, experimental data, YAML, data standard",
+    "license": "https://opensource.org/licenses/BSD-3-Clause",
+    "name": "PyKED"
+}
