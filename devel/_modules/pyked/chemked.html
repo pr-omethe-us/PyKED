@@ -196,8 +196,8 @@
 <span class="sd">                                           file_author_orcid=&#39;0000-0000-0000-0000&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">properties</span> <span class="o">=</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="p">,</span>
-                                         <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
+                                         <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChemKED.validate_yaml"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.validate_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">validate_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Validate the parsed YAML file for adherance to the ChemKED format.</span>
@@ -215,8 +215,8 @@
                 <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="s1">&#39;unallowed value&#39;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]):</span>
                     <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;</span><span class="si">{key}</span><span class="s1"> has an illegal value. Allowed values are </span><span class="si">{values}</span><span class="s1"> and are case &#39;</span>
                            <span class="s1">&#39;sensitive.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;allowed&#39;</span><span class="p">]))</span>
-</div>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">validator</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChemKED.get_dataframe"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.get_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">get_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get a Pandas DataFrame of the datapoints in this instance.</span>
@@ -333,8 +333,8 @@
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">col_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">col_labels</span><span class="p">]</span>
-        <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">col_labels</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">col_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChemKED.write_file"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.write_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write new ChemKED YAML file based on object.</span>
@@ -357,8 +357,8 @@
                           <span class="s1">&#39;to overwrite, or rename.&#39;</span>
                           <span class="p">)</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span></div>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChemKED.convert_to_ReSpecTh"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.ChemKED.convert_to_ReSpecTh">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_ReSpecTh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert ChemKED record to ReSpecTh XML file.</span>
@@ -610,8 +610,8 @@
         <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
-</div></div>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="DataPoint"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint">[docs]</a><span class="k">class</span> <span class="nc">DataPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -785,8 +785,8 @@
                                      <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
-</div>
-        <span class="k">return</span> <span class="n">quant</span>
+
+        <span class="k">return</span> <span class="n">quant</span></div>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_composition_string"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_composition_string">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_composition_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the composition in a string format suitable for input to Cantera.</span>
@@ -840,8 +840,8 @@
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown species in conversion: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">))</span>
-</div>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_mole_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mole_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mole_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the mole fractions in a string format suitable for input to Cantera.</span>
@@ -876,8 +876,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_type</span> <span class="o">==</span> <span class="s1">&#39;mass fraction&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mole fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
                              <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span></div>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataPoint.get_cantera_mass_fraction"><a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.get_cantera_mass_fraction">[docs]</a>    <span class="k">def</span> <span class="nf">get_cantera_mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species_conversion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the mass fractions in a string format suitable for input to Cantera.</span>
@@ -914,8 +914,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get mass fractions from the given composition.</span><span class="se">\n</span><span class="s1">&#39;</span>
                              <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="p">)</span>
                              <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span></div></div>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cantera_composition_string</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -951,7 +951,7 @@
       &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

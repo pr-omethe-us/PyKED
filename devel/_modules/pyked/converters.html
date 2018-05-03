@@ -58,8 +58,8 @@
 
 
 <div class="viewcode-block" id="ParseError"><a class="viewcode-back" href="../../converters.html#pyked.converters.ParseError">[docs]</a><span class="k">class</span> <span class="nc">ParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for errors.&quot;&quot;&quot;</span></div>
-    <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;Base class for errors.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="KeywordError"><a class="viewcode-back" href="../../converters.html#pyked.converters.KeywordError">[docs]</a><span class="k">class</span> <span class="nc">KeywordError</span><span class="p">(</span><span class="n">ParseError</span><span class="p">):</span>
@@ -68,16 +68,16 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">keywords</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="n">keywords</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="MissingElementError"><a class="viewcode-back" href="../../converters.html#pyked.converters.MissingElementError">[docs]</a><span class="k">class</span> <span class="nc">MissingElementError</span><span class="p">(</span><span class="n">KeywordError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Raised for missing required elements.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required element </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span></div>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required element </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="MissingAttributeError"><a class="viewcode-back" href="../../converters.html#pyked.converters.MissingAttributeError">[docs]</a><span class="k">class</span> <span class="nc">MissingAttributeError</span><span class="p">(</span><span class="n">KeywordError</span><span class="p">):</span>
@@ -85,8 +85,8 @@
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="s1">&#39;Error: required attribute </span><span class="si">{}</span><span class="s1"> of </span><span class="si">{}</span><span class="s1"> is missing.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_file_metadata"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_file_metadata">[docs]</a><span class="k">def</span> <span class="nf">get_file_metadata</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -112,8 +112,8 @@
 
     <span class="c1"># Default ChemKED version</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;chemked-version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__version__</span>
-</div>
-    <span class="k">return</span> <span class="n">properties</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="get_reference"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_reference">[docs]</a><span class="k">def</span> <span class="nf">get_reference</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -178,8 +178,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Need one of DOI or preferredKey</span>
         <span class="k">raise</span> <span class="n">MissingAttributeError</span><span class="p">(</span><span class="s1">&#39;preferredKey&#39;</span><span class="p">,</span> <span class="s1">&#39;bibliographyLink&#39;</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="n">reference</span>
+
+    <span class="k">return</span> <span class="n">reference</span></div>
 
 
 <div class="viewcode-block" id="get_experiment_kind"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_experiment_kind">[docs]</a><span class="k">def</span> <span class="nf">get_experiment_kind</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -206,8 +206,8 @@
         <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;apparatus&#39;</span><span class="p">][</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kind</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">kind</span> <span class="o">+</span> <span class="s1">&#39; experiment not (yet) supported&#39;</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="n">properties</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="get_common_properties"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_common_properties">[docs]</a><span class="k">def</span> <span class="nf">get_common_properties</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -289,8 +289,8 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Property &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; not supported as common property&#39;</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="n">properties</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="get_ignition_type"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_ignition_type">[docs]</a><span class="k">def</span> <span class="nf">get_ignition_type</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -344,8 +344,8 @@
 
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ign_type</span>
     <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ign_target</span>
-</div>
-    <span class="k">return</span> <span class="n">properties</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="get_datapoints"><a class="viewcode-back" href="../../converters.html#pyked.converters.get_datapoints">[docs]</a><span class="k">def</span> <span class="nf">get_datapoints</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -500,8 +500,8 @@
                     <span class="n">t</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">quants</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]]])</span>
 
             <span class="n">datapoints</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;time-histories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">time_histories</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="n">datapoints</span>
+
+    <span class="k">return</span> <span class="n">datapoints</span></div>
 
 
 <div class="viewcode-block" id="ReSpecTh_to_ChemKED"><a class="viewcode-back" href="../../converters.html#pyked.converters.ReSpecTh_to_ChemKED">[docs]</a><span class="k">def</span> <span class="nf">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="n">filename_xml</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_author_orcid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -573,8 +573,8 @@
 
     <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
         <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
-</div>
-    <span class="k">return</span> <span class="n">properties</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
 
 
 <div class="viewcode-block" id="respth2ck"><a class="viewcode-back" href="../../converters.html#pyked.converters.respth2ck">[docs]</a><span class="k">def</span> <span class="nf">respth2ck</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -624,8 +624,8 @@
                                    <span class="p">)</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_ck</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
-        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converted to &#39;</span> <span class="o">+</span> <span class="n">filename_ck</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ck2respth"><a class="viewcode-back" href="../../converters.html#pyked.converters.ck2respth">[docs]</a><span class="k">def</span> <span class="nf">ck2respth</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -648,8 +648,8 @@
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
-    <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span></div>
-    <span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">chemked</span><span class="o">.</span><span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../converters.html#pyked.converters.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -701,8 +701,8 @@
     <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Cannot convert .yaml to .yaml&#39;</span><span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span></div>
-        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Input/output args need to be .xml/.yaml&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">KeywordError</span><span class="p">(</span><span class="s1">&#39;Input/output args need to be .xml/.yaml&#39;</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
@@ -742,7 +742,7 @@
       &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
