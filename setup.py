@@ -28,11 +28,11 @@ except (ImportError, OSError, IOError):
 
 install_requires = [
     'pyyaml>=3.12,<4.0',
-    'cerberus>=1.0.0',
-    'pint>=0.7.2',
-    'numpy>=1.11.0',
+    'cerberus>=1.0.0,<1.2',
+    'pint>=0.7.2,<0.9',
+    'numpy>=1.11.0,<2.0',
     'habanero>=0.6.0',
-    'uncertainties>=3.0.1',
+    'uncertainties>=3.0.1,<3.1',
 ]
 
 tests_require = [
@@ -41,7 +41,7 @@ tests_require = [
 ]
 
 extras_require = {
-    'dataframes': ['pandas'],
+    'dataframes': ['pandas >=0.22.0,<0.23'],
 }
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
