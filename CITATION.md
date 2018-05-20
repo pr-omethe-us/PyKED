@@ -11,7 +11,7 @@ A BibTeX entry for LaTeX users is
 ```TeX
 @misc{PyKED,
     author = {Kyle E Niemeyer and Bryan W Weber},
-    year = 2017,
+    year = 2018,
     title = {PyKED v0.4.1},
     doi = {10.5281/zenodo.597935},
     url = {https://github.com/pr-omethe-us/PyKED},
