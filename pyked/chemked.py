@@ -718,7 +718,16 @@ class DataPoint(object):
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it
         """
-        quant = Q_(properties[0])
+        if type(properties[0]) is str:
+            values = properties[0].split()
+            if any([temp in values for temp in
+                    ['degC', 'degF', 'celsius', 'fahrenheit']]):
+                value_alt = [float(values[0])] + values[1:]
+                quant = Q_(*value_alt)
+            else:
+                quant = Q_(properties[0])
+        else:
+            quant = Q_(properties[0])
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get('uncertainty', False)
