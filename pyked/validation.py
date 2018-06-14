@@ -255,7 +255,7 @@ class OurValidator(Validator):
         # If reading from a file, the file will not be validated.
         # A file can have an arbitrary number of columns, and the columns
         # to be used are specified.
-        if 'filename' not in value.keys():
+        if 'filename' not in value['values'].keys():
             n_cols = len(value['values'][0])
             max_cols = max(value['time']['column'],
                            value['quantity']['column'],
