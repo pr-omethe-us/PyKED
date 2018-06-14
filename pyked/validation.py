@@ -255,7 +255,7 @@ class OurValidator(Validator):
         # If reading from a file, the file will not be validated.
         # A file can have an arbitrary number of columns, and the columns
         # to be used are specified.
-        if 'filename' not in value['values'].keys():
+        if type(value['values']) is list:
             n_cols = len(value['values'][0])
             max_cols = max(value['time']['column'],
                            value['quantity']['column'],
@@ -264,6 +264,8 @@ class OurValidator(Validator):
                 self._error(field, 'too many columns in the values')
             elif n_cols < max_cols:
                 self._error(field, 'not enough columns in the values')
+        elif 'filename' not in value['values'].keys():
+            self._error(field, 'must include filename or list of values')
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
