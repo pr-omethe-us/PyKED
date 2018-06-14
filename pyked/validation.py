@@ -275,7 +275,8 @@ class OurValidator(Validator):
         """
         if type(value[0]) is str:
             values = value[0].split()
-            if temp in values for temp in ['degC', 'degF', 'celsius', 'fahrenheit']:
+            if any([temp in values for temp in
+                    ['degC', 'degF', 'celsius', 'fahrenheit']]):
                 value_alt = [float(values[0])] + values[1:]
                 quantity = Q_(*value_alt)
             else:
