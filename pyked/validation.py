@@ -275,8 +275,11 @@ class OurValidator(Validator):
         """
         if type(value[0]) is str:
             values = value[0].split()
-            value_alt = [float(values[0])] + values[1:]
-            quantity = Q_(*value_alt)
+            if temp in values for temp in ['degC', 'degF', 'celsius', 'fahrenheit']:
+                value_alt = [float(values[0])] + values[1:]
+                quantity = Q_(*value_alt)
+            else:
+                quantity = Q_(value[0])
         else:
             quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
