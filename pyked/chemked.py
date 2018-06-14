@@ -111,8 +111,10 @@ class ChemKED(object):
         if yaml_file is not None:
             with open(yaml_file, 'r') as f:
                 self._properties = yaml.safe_load(f)
+            directory = dirname(yaml_file)
         elif dict_input is not None:
             self._properties = dict_input
+            directory = None
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
@@ -121,7 +123,7 @@ class ChemKED(object):
 
         self.datapoints = []
         for point in self._properties['datapoints']:
-            self.datapoints.append(DataPoint(point, dirname(yaml_file)))
+            self.datapoints.append(DataPoint(point, directory))
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
