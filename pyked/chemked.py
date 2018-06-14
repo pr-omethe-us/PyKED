@@ -2,7 +2,7 @@
 Main ChemKED module
 """
 # Standard libraries
-from os.path import exists
+from os.path import exists, isabs, dirname, join
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
@@ -121,7 +121,7 @@ class ChemKED(object):
 
         self.datapoints = []
         for point in self._properties['datapoints']:
-            self.datapoints.append(DataPoint(point))
+            self.datapoints.append(DataPoint(point, dirname(yaml_file)))
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -589,6 +589,7 @@ class DataPoint(object):
 
     Arguments:
         properties (`dict`): Dictionary adhering to the ChemKED format for ``datapoints``
+        directory (`str`, optional): Directory to look for auxiliary files
 
     Attributes:
         composition (`list`): List of dictionaries representing the species and their quantities
@@ -631,7 +632,7 @@ class DataPoint(object):
         'compression-ratio'
     ]
 
-    def __init__(self, properties):
+    def __init__(self, properties, directory=None):
         for prop in self.value_unit_props:
             if prop in properties:
                 quant = self.process_quantity(properties[prop])
@@ -685,7 +686,10 @@ class DataPoint(object):
                     values = np.array(hist['values'])
                 else:
                     # Load the values from a file
-                    values = np.genfromtxt(hist['values']['filename'], delimiter=',')
+                    filename = hist['values']['filename']
+                    if not isabs(filename):
+                        filename = join(directory, filename)
+                    values = np.genfromtxt(filename, delimiter=',')
 
                 time_history = TimeHistory(
                     time=Q_(values[:, time_col], time_units),
