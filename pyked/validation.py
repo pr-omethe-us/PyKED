@@ -282,6 +282,8 @@ class OurValidator(Validator):
             values = value[0].split()
             if values[0] == 'nan':
                 quantity = Q_(np.nan, ''.join(values[1:]))
+            else:
+                raise
         low_lim = 0.0 * units(property_units[field])
 
         try:

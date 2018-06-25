@@ -728,6 +728,8 @@ class DataPoint(object):
             values = properties[0].split()
             if values[0] == 'nan':
                 quant = Q_(np.nan, ''.join(values[1:]))
+            else:
+                raise
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get('uncertainty', False)
