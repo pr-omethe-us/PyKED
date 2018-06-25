@@ -273,16 +273,15 @@ class OurValidator(Validator):
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'list'}}
         """
-        if type(value[0]) is str:
-            values = value[0].split()
-            if any([temp in values for temp in
-                    ['degC', 'degF', 'celsius', 'fahrenheit']]):
-                value_alt = [float(values[0])] + values[1:]
-                quantity = Q_(*value_alt)
-            else:
-                quantity = Q_(value[0])
-        else:
+        try:
             quantity = Q_(value[0])
+        except pint.OffsetUnitCalculusError:
+            values = value[0].split()
+            quantity = Q_(float(values[0]), ''.join(values[1:]))
+        except pint.UndefinedUnitError:
+            values = value[0].split()
+            if values[0] == 'nan':
+                quantity = Q_(np.nan, ''.join(values[1:]))
         low_lim = 0.0 * units(property_units[field])
 
         try:

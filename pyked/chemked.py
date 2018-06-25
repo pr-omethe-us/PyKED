@@ -9,6 +9,7 @@ from copy import deepcopy
 import xml.etree.ElementTree as etree
 import xml.dom.minidom as minidom
 from itertools import chain
+import pint
 
 import numpy as np
 
@@ -718,16 +719,15 @@ class DataPoint(object):
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it
         """
-        if type(properties[0]) is str:
-            values = properties[0].split()
-            if any([temp in values for temp in
-                    ['degC', 'degF', 'celsius', 'fahrenheit']]):
-                value_alt = [float(values[0])] + values[1:]
-                quant = Q_(*value_alt)
-            else:
-                quant = Q_(properties[0])
-        else:
+        try:
             quant = Q_(properties[0])
+        except pint.OffsetUnitCalculusError:
+            values = properties[0].split()
+            quant = Q_(float(values[0]), ''.join(values[1:]))
+        except pint.UndefinedUnitError:
+            values = properties[0].split()
+            if values[0] == 'nan':
+                quant = Q_(np.nan, ''.join(values[1:]))
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get('uncertainty', False)
