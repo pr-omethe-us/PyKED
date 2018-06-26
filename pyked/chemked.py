@@ -634,7 +634,7 @@ class DataPoint(object):
         'compression-ratio'
     ]
 
-    def __init__(self, properties, directory=None):
+    def __init__(self, properties, directory=''):
         for prop in self.value_unit_props:
             if prop in properties:
                 quant = self.process_quantity(properties[prop])
