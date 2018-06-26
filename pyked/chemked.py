@@ -724,12 +724,6 @@ class DataPoint(object):
         except pint.OffsetUnitCalculusError:
             values = properties[0].split()
             quant = Q_(float(values[0]), ''.join(values[1:]))
-        except pint.UndefinedUnitError:
-            values = properties[0].split()
-            if values[0] == 'nan':
-                quant = Q_(np.nan, ''.join(values[1:]))
-            else:
-                raise
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get('uncertainty', False)
