@@ -114,7 +114,7 @@ class TestChemKED(object):
         # Test case where 'values' is a dict, but doesn't contain 'filename'
         del properties['datapoints'][0]['time-histories'][0]['values']['filename']
         with pytest.raises(NotImplementedError):
-            ChemKED(properties)
+            ChemKED(dict_input=properties)
 
 
 
