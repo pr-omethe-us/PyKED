@@ -84,7 +84,9 @@ Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 if LooseVersion(sys.version) < '3.6':
     # Allow old version of python to open Path objects.
     oldopen = open
-    def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
+
+    def open(file, mode='r', buffering=-1, encoding=None, errors=None,
+             newline=None, closefd=True, opener=None):
         return oldopen(str(file), mode, buffering, encoding, errors, newline, closefd, opener)
 
 
@@ -707,7 +709,6 @@ class DataPoint(object):
                     values = np.array(hist['values'])
                 else:
                     # Load the values from a file
-                    filename = hist['values']['filename']
                     values = np.genfromtxt(hist['values']['filename'], delimiter=',')
 
                 time_history = TimeHistory(
