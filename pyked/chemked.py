@@ -2,13 +2,16 @@
 Main ChemKED module
 """
 # Standard libraries
-from os.path import exists, isabs, dirname, join
+from os.path import exists
 from collections import namedtuple
 from warnings import warn
 from copy import deepcopy
 import xml.etree.ElementTree as etree
 import xml.dom.minidom as minidom
 from itertools import chain
+from pathlib import Path
+from distutils.version import LooseVersion
+import sys
 
 import numpy as np
 
@@ -78,6 +81,13 @@ Composition.atomic_composition.__doc__ = '(`dict`) The atomic composition of the
 Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 
 
+if LooseVersion(sys.version) < '3.6':
+    # Allow old version of python to open Path objects.
+    oldopen = open
+    def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
+        return oldopen(str(file), mode, buffering, encoding, errors, newline, closefd, opener)
+
+
 class ChemKED(object):
     """Main ChemKED class.
 
@@ -109,12 +119,11 @@ class ChemKED(object):
     """
     def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
+            yaml_file = Path(yaml_file)
             with open(yaml_file, 'r') as f:
                 self._properties = yaml.safe_load(f)
-            directory = dirname(yaml_file)
         elif dict_input is not None:
             self._properties = dict_input
-            directory = ''
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
@@ -123,7 +132,18 @@ class ChemKED(object):
 
         self.datapoints = []
         for point in self._properties['datapoints']:
-            self.datapoints.append(DataPoint(point, directory))
+            if 'time-histories' in point:
+                for th in point['time-histories']:
+                    try:
+                        filename = Path(th['values']['filename'])
+                    except TypeError:
+                        pass
+                    else:
+                        if yaml_file is not None:
+                            th['values']['filename'] = (yaml_file.parent / filename).resolve()
+                        else:
+                            th['values']['filename'] = filename.resolve()
+            self.datapoints.append(DataPoint(point))
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -591,7 +611,6 @@ class DataPoint(object):
 
     Arguments:
         properties (`dict`): Dictionary adhering to the ChemKED format for ``datapoints``
-        directory (`str`, optional): Directory to look for auxiliary files
 
     Attributes:
         composition (`list`): List of dictionaries representing the species and their quantities
@@ -634,7 +653,7 @@ class DataPoint(object):
         'compression-ratio'
     ]
 
-    def __init__(self, properties, directory=''):
+    def __init__(self, properties):
         for prop in self.value_unit_props:
             if prop in properties:
                 quant = self.process_quantity(properties[prop])
@@ -689,9 +708,7 @@ class DataPoint(object):
                 else:
                     # Load the values from a file
                     filename = hist['values']['filename']
-                    if not isabs(filename):
-                        filename = join(directory, filename)
-                    values = np.genfromtxt(filename, delimiter=',')
+                    values = np.genfromtxt(hist['values']['filename'], delimiter=',')
 
                 time_history = TimeHistory(
                     time=Q_(values[:, time_col], time_units),
