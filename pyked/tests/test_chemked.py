@@ -112,8 +112,7 @@ class TestChemKED(object):
             assert(str(exp_fname) == csv_filename)
 
         # Test case where 'values' is a dict, but doesn't contain 'filename'
-        properties['datapoints'][0]['time-histories'][0]['values']['x'] = (
-                properties['datapoints'][0]['time-histories'][0]['values'].pop(['filename']))
+        del properties['datapoints'][0]['time-histories'][0]['values']['filename']
         with pytest.raises(NotImplementedError):
             ChemKED(properties)
 
