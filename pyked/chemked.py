@@ -114,7 +114,7 @@ class ChemKED(object):
             directory = dirname(yaml_file)
         elif dict_input is not None:
             self._properties = dict_input
-            directory = None
+            directory = ''
         else:
             raise NameError("ChemKED needs either a YAML filename or dictionary as input.")
 
