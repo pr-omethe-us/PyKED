@@ -725,7 +725,7 @@ class TestDataPoint(object):
         assert np.isclose(d.temperature, Q_(1164.48, 'K'))
         properties = self.load_properties('testfile_rcm3.yaml')
         d = DataPoint(properties[0])
-        assert np.isclose(d.temperature, Q_(297.4, 'K'))
+        assert np.isclose(d.temperature.to('K'), Q_(297.4, 'K'))
 
     def test_rcm_data(self):
         properties = self.load_properties('testfile_rcm2.yaml')
