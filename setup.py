@@ -17,14 +17,7 @@ with open(path.join(here, 'CHANGELOG.md')) as changelog_file:
 with open(path.join(here, 'CITATION.md')) as citation_file:
     citation = citation_file.read()
 
-desc = readme + '\n\n' + changelog + '\n\n' + citation
-try:
-    import pypandoc
-    long_description = pypandoc.convert_text(desc, 'rst', format='md')
-    with open(path.join(here, 'README.rst'), 'w') as rst_readme:
-        rst_readme.write(long_description)
-except (ImportError, OSError, IOError):
-    long_description = desc
+long_description = readme + '\n\n' + changelog + '\n\n' + citation
 
 install_requires = [
     'pyyaml>=3.12,<4.0',
@@ -52,6 +45,7 @@ setup(
     version=__version__,
     description='Package for manipulating Chemical Kinetics Experimental Data (ChemKED) files.',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Kyle Niemeyer',
     author_email='kyle.niemeyer@gmail.com',
     url='https://github.com/pr-omethe-us/PyKED',
