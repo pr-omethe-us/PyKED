@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Add codemeta file
 
 ### Changed
+- Directly use the Markdown formatting of the README on pypi, rather than converting to reST
+- Remove unnecessary `orcid` package from the test environment
+- Specify versions of all package dependencies
+- Use pip to install package in conda build
 
 ### Fixed
 
