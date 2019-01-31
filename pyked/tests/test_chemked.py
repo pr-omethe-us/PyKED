@@ -143,7 +143,7 @@ class TestDataFrameOutput(object):
         use_cols = ['Apparatus:Kind', 'Apparatus:Institution', 'Apparatus:Facility',
                     'Reference:Volume', 'Reference:Journal', 'Reference:Doi', 'Reference:Authors',
                     'Reference:Detail', 'Reference:Year', 'Reference:Pages', 'Temperature',
-                    'Ignition Delay', 'H2', 'Ar', 'O2',
+                    'Ignition Delay', 'H2', 'Ar', 'O2', 'Composition:Kind'
                     ]
         df = pd.read_csv(csv_filename, converters=converters, usecols=use_cols)
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)

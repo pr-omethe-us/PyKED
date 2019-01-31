@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Remove unnecessary `orcid` package from the test environment
 - Specify versions of all package dependencies
 - Use pip to install package in conda build
+- Composition type is included in the pandas data-frame resulting from `to_dataframe()`
 
 ### Fixed
 
