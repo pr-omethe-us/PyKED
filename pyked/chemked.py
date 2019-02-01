@@ -227,7 +227,9 @@ class ChemKED(object):
             `DataPoint` is used. No attempt is made to convert to a consistent basis; mole fractions
             will remain mole fractions, mass fractions will remain mass fractions, and mole percent
             will remain mole percent. Therefore, it is possible to end up with more than one type of
-            composition specification in a given column. Caveat Emptor.
+            composition specification in a given column. However, if the composition is included
+            in the resulting dataframe, the type of each composition will be specified by the "Kind"
+            field in each row.
 
         Examples:
             >>> df = ChemKED(yaml_file).get_dataframe()
@@ -255,7 +257,7 @@ class ChemKED(object):
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
             comp_index = col_labels.index('composition')
-            col_labels[comp_index:comp_index + 1] = species_list
+            col_labels[comp_index:comp_index + 1] = species_list + ['Composition:Kind']
         else:
             output_columns = [a.lower() for a in output_columns]
             col_labels = []
@@ -267,7 +269,7 @@ class ChemKED(object):
 
             if 'composition' in col_labels:
                 comp_index = col_labels.index('composition')
-                col_labels[comp_index:comp_index + 1] = species_list
+                col_labels[comp_index:comp_index + 1] = species_list + ['Composition:Kind']
             if 'reference' in col_labels:
                 ref_index = col_labels.index('reference')
                 col_labels[ref_index:ref_index + 1] = ['reference:' + a for a in Reference._fields]
@@ -295,6 +297,8 @@ class ChemKED(object):
                     row.append(getattr(d, col.replace(' ', '_')))
                 elif col == 'file authors':
                     row.append(getattr(self, col.replace(' ', '_'))[0]['name'])
+                elif col == 'Composition:Kind':
+                    row.append(d.composition_type)
                 else:
                     row.append(getattr(self, col.replace(' ', '_')))
             data.append(row)
