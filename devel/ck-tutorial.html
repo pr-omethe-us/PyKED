@@ -13,7 +13,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Schema Documentation" href="schema-docs.html" />
@@ -45,17 +44,17 @@ Perl, MATLAB, and many others. The YAML syntax is quite simple: the basic file s
 mappings, delimited by a colon. The key for the mapping is on the left of the colon, and the value
 on the right can be a single value, a sequence of values, a nested mapping, or some combination of
 these:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">key1</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>  <span class="c1"># Single-value mapping</span>
-<span class="l l-Scalar l-Scalar-Plain">key2</span><span class="p p-Indicator">:</span>  <span class="c1"># Sequence format</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">key1</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>  <span class="c1"># Single-value mapping</span>
+<span class="nt">key2</span><span class="p">:</span>  <span class="c1"># Sequence format</span>
   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
-<span class="l l-Scalar l-Scalar-Plain">key3</span><span class="p p-Indicator">:</span>  <span class="c1"># Nested mapping</span>
-  <span class="l l-Scalar l-Scalar-Plain">key4</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">key5</span><span class="p p-Indicator">:</span>  <span class="c1"># Sequence of mappings</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">key-s1</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-    <span class="l l-Scalar l-Scalar-Plain">key-s2</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">key-s2</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
-    <span class="l l-Scalar l-Scalar-Plain">key-s1</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">key3</span><span class="p">:</span>  <span class="c1"># Nested mapping</span>
+  <span class="nt">key4</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">key5</span><span class="p">:</span>  <span class="c1"># Sequence of mappings</span>
+  <span class="p p-Indicator">-</span> <span class="nt">key-s1</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">key-s2</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
+  <span class="p p-Indicator">-</span> <span class="nt">key-s2</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
+    <span class="nt">key-s1</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">value</span></code> can be a string, integer, or floating point number. The ChemKED format is designed to
@@ -85,11 +84,11 @@ experiment is published)</li>
 </ul>
 </div></blockquote>
 <p>A typical meta section might look something like:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">file-authors</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
-    <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
-<span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">file-authors</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
+    <span class="nt">ORCID</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
+<span class="nt">file-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">chemked-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
 </pre></div>
 </div>
 </div>
@@ -107,23 +106,23 @@ presented in the same work</li>
 </ul>
 </div></blockquote>
 <p>As an example, the following is the reference section from the work of Mittal et al. <a class="reference internal" href="#mittal2006" id="id2">[Mittal2006]</a>:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
-  <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Chih-Jen Sung</span>
-      <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-2046-8076</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Richard A Yetter</span>
-  <span class="l l-Scalar l-Scalar-Plain">journal</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">International Journal of Chemical Kinetics</span>
-  <span class="l l-Scalar l-Scalar-Plain">year</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2006</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">38</span>
-  <span class="l l-Scalar l-Scalar-Plain">pages</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">516-529</span>
-  <span class="l l-Scalar l-Scalar-Plain">detail</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Fig. 6, open circle</span>
-<span class="l l-Scalar l-Scalar-Plain">experiment-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
-<span class="l l-Scalar l-Scalar-Plain">apparatus</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">rapid compression machine</span>
-  <span class="l l-Scalar l-Scalar-Plain">institution</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Case Western Reserve University</span>
-  <span class="l l-Scalar l-Scalar-Plain">facility</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">CWRU RCM</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">reference</span><span class="p">:</span>
+  <span class="nt">doi</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
+  <span class="nt">authors</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Chih-Jen Sung</span>
+      <span class="nt">ORCID</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-2046-8076</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Richard A Yetter</span>
+  <span class="nt">journal</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">International Journal of Chemical Kinetics</span>
+  <span class="nt">year</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2006</span>
+  <span class="nt">volume</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">38</span>
+  <span class="nt">pages</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">516-529</span>
+  <span class="nt">detail</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fig. 6, open circle</span>
+<span class="nt">experiment-type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
+<span class="nt">apparatus</span><span class="p">:</span>
+  <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rapid compression machine</span>
+  <span class="nt">institution</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Case Western Reserve University</span>
+  <span class="nt">facility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">CWRU RCM</span>
 </pre></div>
 </div>
 </div>
@@ -147,43 +146,43 @@ fields, depending on what type of data is being encoded. The typical information
 </div></blockquote>
 <p>As an example, the following data is taken from the work of Stranic et al. <a class="reference internal" href="#stranic2012" id="id3">[Stranic2012]</a>. This
 example shows the inclusion of multiple experiments in the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code> key.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">datapoints</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1459 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">347 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.60 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1389 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">756 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.67 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1497 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">212 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.55 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1562 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">105 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.50 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
 </pre></div>
 </div>
 <p>Note that units are required for all quantities with units, and the units are validated to have the
@@ -194,25 +193,25 @@ Properties are stored in the <code class="docutils literal notranslate"><span cl
 point with a <strong>reference</strong>. The reference syntax is shown in the example above in the
 <code class="docutils literal notranslate"><span class="pre">composition</span></code> and <code class="docutils literal notranslate"><span class="pre">ignition-type</span></code> keys, with the <code class="docutils literal notranslate"><span class="pre">*comp</span></code> and <code class="docutils literal notranslate"><span class="pre">*ign</span></code> as the values.
 References are denoted by the <code class="docutils literal notranslate"><span class="pre">*</span></code>. An example of the <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> key is shown below:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">common-properties</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nl">&amp;comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
-    <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">t-butanol</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/C4H10O/c1-4(2,3)5/h5H,1-3H3</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">common-properties</span><span class="p">:</span>
+  <span class="nt">composition</span><span class="p">:</span> <span class="nl">&amp;comp</span>
+    <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
+    <span class="nt">species</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">t-butanol</span>
+        <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/C4H10O/c1-4(2,3)5/h5H,1-3H3</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.003333333</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
+        <span class="nt">InChI</span><span class="p">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.04</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
+        <span class="nt">InChI</span><span class="p">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.956666667</span>
-  <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nl">&amp;ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">OH*</span>
-    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1/2 max</span>
+  <span class="nt">ignition-type</span><span class="p">:</span> <span class="nl">&amp;ign</span>
+    <span class="nt">target</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">OH*</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1/2 max</span>
 </pre></div>
 </div>
 <p>In the <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> section, the <strong>anchor</strong> is created by the <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> followed by the name of
@@ -226,20 +225,20 @@ the anchor and reference syntax to avoid having to write the same value multiple
 <p>Values in data points can also have an associated uncertainty. This uncertainty can be absolute or
 relative, and is specified in the following way (the values in this example are arbitrary, and don’t
 represent actual experimental results):</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">datapoints</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1459 kelvin</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">uncertainty-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">absolute</span>
-        <span class="l l-Scalar l-Scalar-Plain">uncertainty</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">uncertainty-type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">absolute</span>
+        <span class="nt">uncertainty</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10 kelvin</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">347 us</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">uncertainty-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">relative</span>
-        <span class="l l-Scalar l-Scalar-Plain">uncertainty</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.01</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">uncertainty-type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">relative</span>
+        <span class="nt">uncertainty</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.01</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.60 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
 </pre></div>
 </div>
 <p>Note that if the absolute uncertainty is specified, its units must have the same dimensions as the
@@ -253,69 +252,69 @@ quantity.</p>
 <p>The following example encodes an experiment from the work of Mittal et al. <a class="reference internal" href="#mittal2006" id="id4">[Mittal2006]</a> in a rapid
 compression machine.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
-<span class="l l-Scalar l-Scalar-Plain">file-authors</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
-    <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
-<span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
-<span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
-  <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Chih-Jen Sung</span>
-      <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-2046-8076</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Richard A Yetter</span>
-  <span class="l l-Scalar l-Scalar-Plain">journal</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">International Journal of Chemical Kinetics</span>
-  <span class="l l-Scalar l-Scalar-Plain">year</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2006</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">38</span>
-  <span class="l l-Scalar l-Scalar-Plain">pages</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">516-529</span>
-  <span class="l l-Scalar l-Scalar-Plain">detail</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Fig. 6, open circle</span>
-<span class="l l-Scalar l-Scalar-Plain">experiment-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
-<span class="l l-Scalar l-Scalar-Plain">apparatus</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">rapid compression machine</span>
-  <span class="l l-Scalar l-Scalar-Plain">institution</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Case Western Reserve University</span>
-  <span class="l l-Scalar l-Scalar-Plain">facility</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">CWRU RCM</span>
-<span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+<span class="nt">file-authors</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Kyle E Niemeyer</span>
+    <span class="nt">ORCID</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-4425-7097</span>
+<span class="nt">file-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">chemked-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
+<span class="nt">reference</span><span class="p">:</span>
+  <span class="nt">doi</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1002/kin.20180</span>
+  <span class="nt">authors</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gaurav Mittal</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Chih-Jen Sung</span>
+      <span class="nt">ORCID</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0003-2046-8076</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Richard A Yetter</span>
+  <span class="nt">journal</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">International Journal of Chemical Kinetics</span>
+  <span class="nt">year</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2006</span>
+  <span class="nt">volume</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">38</span>
+  <span class="nt">pages</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">516-529</span>
+  <span class="nt">detail</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fig. 6, open circle</span>
+<span class="nt">experiment-type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
+<span class="nt">apparatus</span><span class="p">:</span>
+  <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rapid compression machine</span>
+  <span class="nt">institution</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Case Western Reserve University</span>
+  <span class="nt">facility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">CWRU RCM</span>
+<span class="nt">datapoints</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">297.4 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.0 ms</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">958.0 torr</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
-      <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">H2</span>
-          <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/H2/h1H</span>
-          <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span>
+      <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
+      <span class="nt">species</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">H2</span>
+          <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/H2/h1H</span>
+          <span class="nt">amount</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.12500</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
-          <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
-          <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
+          <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
+          <span class="nt">amount</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.06250</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">N2</span>
-          <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/N2/c1-2</span>
-          <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">N2</span>
+          <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/N2/c1-2</span>
+          <span class="nt">amount</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.18125</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
-          <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
-          <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
+          <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
+          <span class="nt">amount</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.63125</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">pressure</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">d/dt max</span>
-    <span class="l l-Scalar l-Scalar-Plain">rcm-data</span><span class="p p-Indicator">:</span>
-      <span class="l l-Scalar l-Scalar-Plain">compression-time</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-type</span><span class="p">:</span>
+      <span class="nt">target</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pressure</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">d/dt max</span>
+    <span class="nt">rcm-data</span><span class="p">:</span>
+      <span class="nt">compression-time</span><span class="p">:</span>
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">38.0 ms</span>
-    <span class="l l-Scalar l-Scalar-Plain">time-histories</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">volume</span>
-        <span class="l l-Scalar l-Scalar-Plain">time</span><span class="p p-Indicator">:</span>
-          <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">s</span>
-          <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-        <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span>
-          <span class="l l-Scalar l-Scalar-Plain">units</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">cm3</span>
-          <span class="l l-Scalar l-Scalar-Plain">column</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-        <span class="l l-Scalar l-Scalar-Plain">values</span><span class="p p-Indicator">:</span>
+    <span class="nt">time-histories</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">volume</span>
+        <span class="nt">time</span><span class="p">:</span>
+          <span class="nt">units</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">s</span>
+          <span class="nt">column</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+        <span class="nt">volume</span><span class="p">:</span>
+          <span class="nt">units</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cm3</span>
+          <span class="nt">column</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+        <span class="nt">values</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">0.00E+000</span><span class="p p-Indicator">,</span> <span class="nv">5.47669375000E+002</span><span class="p p-Indicator">]</span>
           <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">1.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.46608789894E+002</span><span class="p p-Indicator">]</span>
           <span class="p p-Indicator">-</span> <span class="p p-Indicator">[</span><span class="nv">2.00E-003</span><span class="p p-Indicator">,</span> <span class="nv">5.43427034574E+002</span><span class="p p-Indicator">]</span>
@@ -422,85 +421,85 @@ compression machine.</p>
 <p>The following example encodes some of the data from the work of Stranic et al. <a class="reference internal" href="#stranic2012" id="id5">[Stranic2012]</a> in the
 shock tube at Stanford.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
-<span class="l l-Scalar l-Scalar-Plain">file-authors</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Morgan Mayer</span>
-    <span class="l l-Scalar l-Scalar-Plain">ORCID</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0001-7137-5721</span>
-<span class="l l-Scalar l-Scalar-Plain">file-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="l l-Scalar l-Scalar-Plain">chemked-version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
-<span class="l l-Scalar l-Scalar-Plain">reference</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">doi</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1016/j.combustflame.2011.08.014</span>
-  <span class="l l-Scalar l-Scalar-Plain">authors</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ivo Stranic</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Deanna P. Chase</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Joseph T. Harmon</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Sheng Yang</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">David F. Davidson</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ronald K. Hanson</span>
-  <span class="l l-Scalar l-Scalar-Plain">journal</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Combustion and Flame</span>
-  <span class="l l-Scalar l-Scalar-Plain">year</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">2012</span>
-  <span class="l l-Scalar l-Scalar-Plain">volume</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">159</span>
-  <span class="l l-Scalar l-Scalar-Plain">pages</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">516-527</span>
-<span class="l l-Scalar l-Scalar-Plain">experiment-type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
-<span class="l l-Scalar l-Scalar-Plain">apparatus</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">shock tube</span>
-  <span class="l l-Scalar l-Scalar-Plain">institution</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">High Temperature Gasdynamics Laboratory, Stanford University</span>
-  <span class="l l-Scalar l-Scalar-Plain">facility</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">stainless steel shock tube</span>
-<span class="l l-Scalar l-Scalar-Plain">common-properties</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nl">&amp;comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">kind</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
-    <span class="l l-Scalar l-Scalar-Plain">species</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">t-butanol</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/C4H10O/c1-4(2,3)5/h5H,1-3H3</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+<span class="nt">file-authors</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Morgan Mayer</span>
+    <span class="nt">ORCID</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0000-0001-7137-5721</span>
+<span class="nt">file-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">chemked-version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
+<span class="nt">reference</span><span class="p">:</span>
+  <span class="nt">doi</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10.1016/j.combustflame.2011.08.014</span>
+  <span class="nt">authors</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ivo Stranic</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Deanna P. Chase</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Joseph T. Harmon</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Sheng Yang</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">David F. Davidson</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ronald K. Hanson</span>
+  <span class="nt">journal</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Combustion and Flame</span>
+  <span class="nt">year</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2012</span>
+  <span class="nt">volume</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">159</span>
+  <span class="nt">pages</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">516-527</span>
+<span class="nt">experiment-type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ignition delay</span>
+<span class="nt">apparatus</span><span class="p">:</span>
+  <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shock tube</span>
+  <span class="nt">institution</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">High Temperature Gasdynamics Laboratory, Stanford University</span>
+  <span class="nt">facility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">stainless steel shock tube</span>
+<span class="nt">common-properties</span><span class="p">:</span>
+  <span class="nt">composition</span><span class="p">:</span> <span class="nl">&amp;comp</span>
+    <span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mole fraction</span>
+    <span class="nt">species</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">t-butanol</span>
+        <span class="nt">InChI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1S/C4H10O/c1-4(2,3)5/h5H,1-3H3</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.003333333</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">O2</span>
+        <span class="nt">InChI</span><span class="p">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/O2/c1-2</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.04</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">species-name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">InChI</span><span class="p p-Indicator">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
-        <span class="l l-Scalar l-Scalar-Plain">amount</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">species-name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ar</span>
+        <span class="nt">InChI</span><span class="p">:</span>  <span class="l l-Scalar l-Scalar-Plain">1S/Ar</span>
+        <span class="nt">amount</span><span class="p">:</span>
           <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">0.956666667</span>
-  <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span>  <span class="nl">&amp;ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">target</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">OH*</span>
-    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1/2 max</span>
-<span class="l l-Scalar l-Scalar-Plain">datapoints</span><span class="p p-Indicator">:</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+  <span class="nt">ignition-type</span><span class="p">:</span>  <span class="nl">&amp;ign</span>
+    <span class="nt">target</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">OH*</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1/2 max</span>
+<span class="nt">datapoints</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1459 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">347 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.60 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1389 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">756 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.67 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1497 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">212 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.55 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
-  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">temperature</span><span class="p p-Indicator">:</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+  <span class="p p-Indicator">-</span> <span class="nt">temperature</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1562 kelvin</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-delay</span><span class="p p-Indicator">:</span>
+    <span class="nt">ignition-delay</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">105 us</span>
-    <span class="l l-Scalar l-Scalar-Plain">pressure</span><span class="p p-Indicator">:</span>
+    <span class="nt">pressure</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">1.50 atm</span>
-    <span class="l l-Scalar l-Scalar-Plain">composition</span><span class="p p-Indicator">:</span> <span class="nv">*comp</span>
-    <span class="l l-Scalar l-Scalar-Plain">ignition-type</span><span class="p p-Indicator">:</span> <span class="nv">*ign</span>
-    <span class="l l-Scalar l-Scalar-Plain">equivalence-ratio</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+    <span class="nt">composition</span><span class="p">:</span> <span class="nv">*comp</span>
+    <span class="nt">ignition-type</span><span class="p">:</span> <span class="nv">*ign</span>
+    <span class="nt">equivalence-ratio</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
 <span class="nn">...</span>
 </pre></div>
 </div>
@@ -594,23 +593,37 @@ Budapest, Hungary.</td></tr>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Creating ChemKED files</a><ul>
-<li><a class="reference internal" href="#chemked-overview">ChemKED Overview</a></li>
-<li><a class="reference internal" href="#the-meta-section">The Meta Section</a></li>
-<li><a class="reference internal" href="#the-reference-section">The Reference Section</a></li>
-<li><a class="reference internal" href="#the-data-section">The Data Section</a></li>
-<li><a class="reference internal" href="#examples">Examples</a><ul>
-<li><a class="reference internal" href="#single-data-point-with-volume-history">Single Data Point with Volume History</a></li>
-<li><a class="reference internal" href="#multiple-experiments">Multiple Experiments</a></li>
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
 </ul>
-</li>
-<li><a class="reference internal" href="#converting-from-respecth">Converting from ReSpecTh</a></li>
-<li><a class="reference internal" href="#works-cited">Works Cited</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
 </ul>
-</li>
-</ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -620,13 +633,6 @@ Budapest, Hungary.</td></tr>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/ck-tutorial.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -639,16 +645,24 @@ Budapest, Hungary.</td></tr>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2019, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/ck-tutorial.rst.txt"

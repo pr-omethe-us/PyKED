@@ -13,7 +13,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Validation" href="validation.html" />
@@ -52,7 +51,7 @@
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="http://docs.python-requests.org/en/master/api/#requests.HTTPError" title="(in Requests v2.19.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPError</span></code></a> – If the given ORCID cannot be found, an <a class="reference external" href="http://docs.python-requests.org/en/master/api/#requests.HTTPError" title="(in Requests v2.19.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPError</span></code></a>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="http://docs.python-requests.org/en/master/api/#requests.HTTPError" title="(in Requests v2.21.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPError</span></code></a> – If the given ORCID cannot be found, an <a class="reference external" href="http://docs.python-requests.org/en/master/api/#requests.HTTPError" title="(in Requests v2.21.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPError</span></code></a>
 is raised with status code 404</td>
 </tr>
 </tbody>
@@ -67,7 +66,39 @@ is raised with status code 404</td>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ORCID</a></li>
+</ul>
+
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -75,13 +106,6 @@ is raised with status code 404</td>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/orcid.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -94,16 +118,24 @@ is raised with status code 404</td>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2019, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/orcid.rst.txt"

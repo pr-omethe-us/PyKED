@@ -13,7 +13,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Converters" href="converters.html" />
@@ -86,54 +85,118 @@ be supplied as a keyword-argument.</li>
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.datapoints">
 <code class="descname">datapoints</code><a class="headerlink" href="#pyked.chemked.ChemKED.datapoints" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> – List of <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> objects storing each datapoint in the database.</p>
+<dd><p>List of <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> objects storing each datapoint in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.reference">
 <code class="descname">reference</code><a class="headerlink" href="#pyked.chemked.ChemKED.reference" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a> – Attributes include <code class="docutils literal notranslate"><span class="pre">volume</span></code>, <code class="docutils literal notranslate"><span class="pre">journal</span></code>, <code class="docutils literal notranslate"><span class="pre">doi</span></code>,
+<dd><p>Attributes include <code class="docutils literal notranslate"><span class="pre">volume</span></code>, <code class="docutils literal notranslate"><span class="pre">journal</span></code>, <code class="docutils literal notranslate"><span class="pre">doi</span></code>,
 <code class="docutils literal notranslate"><span class="pre">authors</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">year</span></code>, and <code class="docutils literal notranslate"><span class="pre">pages</span></code> describing the reference from which the
 datapoints are derived.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.apparatus">
 <code class="descname">apparatus</code><a class="headerlink" href="#pyked.chemked.ChemKED.apparatus" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a> – Attributes include <code class="docutils literal notranslate"><span class="pre">kind</span></code> of experimental
+<dd><p>Attributes include <code class="docutils literal notranslate"><span class="pre">kind</span></code> of experimental
 apparatus, and the <code class="docutils literal notranslate"><span class="pre">institution</span></code> and <code class="docutils literal notranslate"><span class="pre">facility</span></code> where the experimental apparatus is
 located.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.chemked_version">
 <code class="descname">chemked_version</code><a class="headerlink" href="#pyked.chemked.ChemKED.chemked_version" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> – Version of the ChemKED database schema used in this file.</p>
+<dd><p>Version of the ChemKED database schema used in this file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.experiment_type">
 <code class="descname">experiment_type</code><a class="headerlink" href="#pyked.chemked.ChemKED.experiment_type" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> – Type of exeperimental data contained in this database.</p>
+<dd><p>Type of exeperimental data contained in this database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.file_author">
 <code class="descname">file_author</code><a class="headerlink" href="#pyked.chemked.ChemKED.file_author" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> – Information about the author of the ChemKED database file.</p>
+<dd><p>Information about the author of the ChemKED database file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED.file_version">
 <code class="descname">file_version</code><a class="headerlink" href="#pyked.chemked.ChemKED.file_version" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> – Version of the ChemKED database file.</p>
+<dd><p>Version of the ChemKED database file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.ChemKED._properties">
 <code class="descname">_properties</code><a class="headerlink" href="#pyked.chemked.ChemKED._properties" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> – Original dictionary read from ChemKED database file, meant for
+<dd><p>Original dictionary read from ChemKED database file, meant for
 internal use.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -246,7 +309,9 @@ selected because the whole author list may be quite long.</p>
 <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> is used. No attempt is made to convert to a consistent basis; mole fractions
 will remain mole fractions, mass fractions will remain mass fractions, and mole percent
 will remain mole percent. Therefore, it is possible to end up with more than one type of
-composition specification in a given column. Caveat Emptor.</p>
+composition specification in a given column. However, if the composition is included
+in the resulting dataframe, the type of each composition will be specified by the “Kind”
+field in each row.</p>
 </div>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">()</span>
@@ -263,7 +328,7 @@ composition specification in a given column. Caveat Emptor.</p>
 </dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.23.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.24.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -368,120 +433,264 @@ parsed from the <a class="reference internal" href="#pyked.chemked.ChemKED" titl
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.composition">
 <code class="descname">composition</code><a class="headerlink" href="#pyked.chemked.DataPoint.composition" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> – List of dictionaries representing the species and their quantities</p>
+<dd><p>List of dictionaries representing the species and their quantities</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.ignition_delay">
 <code class="descname">ignition_delay</code><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> – The ignition delay of the experiment</p>
+<dd><p>The ignition delay of the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.temperature">
 <code class="descname">temperature</code><a class="headerlink" href="#pyked.chemked.DataPoint.temperature" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> – The temperature of the experiment</p>
+<dd><p>The temperature of the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.pressure">
 <code class="descname">pressure</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity</em> – The pressure of the experiment</p>
+<dd><p>The pressure of the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.pressure_rise">
 <code class="descname">pressure_rise</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_rise" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> – The amount of pressure rise during the induction
+<dd><p>The amount of pressure rise during the induction
 period of a shock tube experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.compression_time">
 <code class="descname">compression_time</code><a class="headerlink" href="#pyked.chemked.DataPoint.compression_time" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> – The compression time for an RCM experiment.</p>
+<dd><p>The compression time for an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.compressed_pressure">
 <code class="descname">compressed_pressure</code><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_pressure" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> – The pressure at the end of compression for
+<dd><p>The pressure at the end of compression for
 an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.compressed_temperature">
 <code class="descname">compressed_temperature</code><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_temperature" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> – The temperature at the end of compression
+<dd><p>The temperature at the end of compression
 for an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.first_stage_ignition_delay">
 <code class="descname">first_stage_ignition_delay</code><a class="headerlink" href="#pyked.chemked.DataPoint.first_stage_ignition_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pint.Quantity, optional</em> – The first stage ignition delay of the
+<dd><p>The first stage ignition delay of the
 experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt>
 <code class="descname">compression_time</code></dt>
-<dd><p><em>pint.Quantity, optional</em> – The compression time for an RCM experiment.</p>
+<dd><p>The compression time for an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pint.Quantity, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.ignition_type">
 <code class="descname">ignition_type</code><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_type" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> – Dictionary with the ignition target and type.</p>
+<dd><p>Dictionary with the ignition target and type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.volume_history">
 <code class="descname">volume_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.volume_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The volume history of the reactor
+<dd><p>The volume history of the reactor
 during an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.pressure_history">
 <code class="descname">pressure_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The pressure history of the reactor
+<dd><p>The pressure history of the reactor
 during an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.temperature_history">
 <code class="descname">temperature_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.temperature_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The temperature history of the
+<dd><p>The temperature history of the
 reactor during an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.piston_position_history">
 <code class="descname">piston_position_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.piston_position_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The piston position history
+<dd><p>The piston position history
 of the reactor during an RCM experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.light_emission_history">
 <code class="descname">light_emission_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.light_emission_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The light emission history
+<dd><p>The light emission history
 of the reactor during an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.OH_emission_history">
 <code class="descname">OH_emission_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.OH_emission_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The OH emission history of the
+<dd><p>The OH emission history of the
 reactor during an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.DataPoint.absorption_history">
 <code class="descname">absorption_history</code><a class="headerlink" href="#pyked.chemked.DataPoint.absorption_history" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional – The absorption history of the
+<dd><p>The absorption history of the
 reactor during an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/collections.html#collections.namedtuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -698,19 +907,35 @@ be done because no molecular weight information is known</td>
 <dl class="attribute">
 <dt id="pyked.chemked.TimeHistory.quantity">
 <code class="descname">quantity</code><a class="headerlink" href="#pyked.chemked.TimeHistory.quantity" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – the quantity of interest during the experiment</p>
+<dd><p>the quantity of interest during the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.TimeHistory.time">
 <code class="descname">time</code><a class="headerlink" href="#pyked.chemked.TimeHistory.time" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – the time during the experiment</p>
+<dd><p>the time during the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.TimeHistory.type">
 <code class="descname">type</code><a class="headerlink" href="#pyked.chemked.TimeHistory.type" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – the type of time history represented. Possible options are:</p>
+<dd><p>the type of time history represented. Possible options are:</p>
 <ul class="simple">
 <li>volume</li>
 <li>temperature</li>
@@ -720,6 +945,14 @@ be done because no molecular weight information is known</td>
 <li>OH emission</li>
 <li>absorption</li>
 </ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -731,13 +964,29 @@ be done because no molecular weight information is known</td>
 <dl class="attribute">
 <dt id="pyked.chemked.VolumeHistory.time">
 <code class="descname">time</code><a class="headerlink" href="#pyked.chemked.VolumeHistory.time" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – the time during the experiment</p>
+<dd><p>the time during the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyked.chemked.VolumeHistory.volume">
 <code class="descname">volume</code><a class="headerlink" href="#pyked.chemked.VolumeHistory.volume" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – the volume during the experiment</p>
+<dd><p>the volume during the experiment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -750,7 +999,39 @@ be done because no molecular weight information is known</td>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -759,13 +1040,6 @@ be done because no molecular weight information is known</td>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/chemked.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -778,16 +1052,24 @@ be done because no molecular weight information is known</td>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2018, Kyle E. Niemeyer and Bryan W. Weber.
+      &copy;2019, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/chemked.rst.txt"
