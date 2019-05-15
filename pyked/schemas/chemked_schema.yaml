@@ -7,6 +7,7 @@
 !include value_unit_schema.yaml
 !include composition_schema.yaml
 !include ignition_delay_schema.yaml
+!include species_profile_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -38,6 +39,7 @@ apparatus:
       allowed:
         - shock tube
         - rapid compression machine
+        - jet stirred reactor
       required: true
       type: string
     institution:
@@ -48,6 +50,7 @@ datapoints:
   required: true
   oneof:
     - *ignition-delay-schema
+    - *species-profile-schema
 reference:
   required: true
   type: dict
@@ -73,7 +76,7 @@ reference:
       type: integer
     pages:
       type: string
-chemked-version:  # TODO: Implement proper version comparison
+chemked-version:
   allowed:
     - 0.0.1
     - 0.1.0
@@ -93,6 +96,7 @@ chemked-version:  # TODO: Implement proper version comparison
 experiment-type:
   allowed:
     - ignition delay
+    - species profile
   required: true
   type: string
 file-authors:
