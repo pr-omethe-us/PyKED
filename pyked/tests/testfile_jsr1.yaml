@@ -1,82 +1,75 @@
-uthor: 
+---
+file-authors: 
     name: Benjamin Hoare
-    ORCID: 
+    ORCID: 0000-0001-7205-0777
 file-version: 1.0
+chemked-version: 0.4.1
 reference:
     doi: 10.1016/j.combustflame.2016.06.028
     authors:
         - name: Kuiwen Zhang
-          ORCID: 
         - name: Colin Banyon
-          ORCID:
         - name: John Bugler
-          ORCID:
         - name: Henry J. Curran
-          ORCID:
+          ORCID: 0000-0002-5124-8562
         - name: Anne Rodriguez
-          ORCID:
         - name: Olivier Herbinet
-          ORCID: 
-        - name: FrédériqueBattin-Leclerc
-          ORCID: 
-        - name: Christine B'Chir
-          ORCID: 
+        - name: Frédérique Battin-Leclerc
+          ORCID: 0000-0001-8265-7492
+        - name: Christine BChir
         - name: Karl Alexander Heufer
-          ORCID: 
+          ORCID: 0000-0003-1657-5231
     journal: Combustion and Flame
     year: 2016
     volume: 172
     pages: 116-135
     detail: An updated experimental and kinetic modeling study of n-heptane oxidation
-    journal: Journal of Physical Chemistry
-    year: 2012
-    volume: 116
-    pages: 6142-6158
-    detail: Improvment of modeling of the low-temperature oxidation of n-butane
     
-experiment-type: Species Profile
+experiment-type: species profile
 apparatus:
-    kind: JSR
-    institution: School of Chemistry, National University of Ireland Galway
-    facility: Nancy, France
-    reactor-volume: &volu
-        value: 0.000095
-        units: 'm^3'
-    assumptions: &assumptions
-        thermal-boundary: adiabatic
-        mechanical-boundary: constant pressure
-        equation-of-state: ideal gas
+    kind: jet stirred reactor
+    institution: University of Lorraine, Nancy, France
+    facility: LRGP JSR
+      
+common-properties:
+  pressure: &pres
+    - 1.067 bar
+  reactor-volume: &vol
+    - 0.000095 m^3
+  residence-time: &res
+    - 2 s
+  composition: &in
+    kind: mole fraction
+      - species: n-heptane
+        InChI: 1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3
+        amount: 0.005
+        uncertainty-type: relative
+        uncertainty: 0.05
+      - species: He
+        InChI: 1S/He
+        amount: 0.775
+        uncertainty-type: relative
+        uncertainty: 0.05 
+      - species: oxygen
+        InChI: 1S/O2/c1-2
+        amount: 0.22
+        uncertainty-type: relative
+        uncertainty: 0.05
+
 datapoints: 
     - csvfile: new_zhang_phi0.25.csv
           absolute-uncertainty: 
           relative-uncertainty: 
-      pressure: &pres
-          value: 1.067
-          units: bar
-          relative-uncertainty:
+      pressure: *pres
       temperature: &temp
           column-name: Temperature # values are provided in the CSV file
           units: K
           absolute-uncertaintiy: 3
-      residence-time: &restime
-          - 2 s 
-          - uncertainity: 
-      composition: &in # copy https://pr-omethe-us.github.io/PyKED/schema-docs.html#common-composition and  https://pr-omethe-us.github.io/PyKED/rcm-example.html
+      reactor-volume: *vol
+      residence-time: *res
+      inlet-composition: &in # copy https://pr-omethe-us.github.io/PyKED/schema-docs.html#common-composition and  https://pr-omethe-us.github.io/PyKED/rcm-example.html
+      outlet-composition: &out
           kind: mole fraction
-          - species: n-heptane
-            InChI: 1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3
-            amount: 0.005
-            relative-uncertainty: .05 
-          - species: He
-            InChI: 1S/He
-            amount: 0.775
-            relative-uncertainty: .05 
-          - species: oxygen
-            InChI: 1S/O2/c1-2
-            amount: 0.22
-            relative-uncertainty: .05 
-      outlet: &out
-          kind: mole fractio
           - species: carbon monoxide  # species names must correspond with column headers in the CSV file
             InChI: 1S/CH2O/c1-2/h1H2
           - species: carbon dioxide

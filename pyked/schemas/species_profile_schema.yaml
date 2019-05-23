@@ -1,4 +1,3 @@
-##Include assumptions//radius
 ##What to do about csv files??
 
 # Common reference for species profile schema
@@ -15,7 +14,5 @@ species-profile-schema: &species-profile-schema
       equivalence-ratio:
         type: float
         min: 0.0
-      max-pressure-rise: *value-unit-optional ##read in JSR paper, but not experimental data papers
-      pressure-valve-coefficent: *value-unit-optional ##only seen in simulation
       inlet-composition: *composition
       outlet-composition: *composition

@@ -29,7 +29,8 @@ common-properties:
     pressure: *value-unit-optional
     ignition-type: *ignition-type
     composition: *composition
-    pressure-rise: *value-unit-optional
+    reactor-volume: *value-unit-optional
+    residence-time: *value-unit-optional
 
 apparatus:
   required: true
