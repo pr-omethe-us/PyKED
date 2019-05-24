@@ -1,5 +1,3 @@
-##What to do about csv files??
-
 # Common reference for species profile schema
 species-profile-schema: &species-profile-schema
   type: list
@@ -7,7 +5,10 @@ species-profile-schema: &species-profile-schema
   schema:
     type: dict
     schema:
-      temperature: *value-unit-required
+      csv-file:
+        required: true
+        type: string
+      temperature:
       pressure: *value-unit-required
       reactor-volume: *value-unit-required
       residence-time: *value-unit-required

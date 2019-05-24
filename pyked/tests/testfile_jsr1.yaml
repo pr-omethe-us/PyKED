@@ -1,5 +1,7 @@
 ---
 file-authors: 
+    name: Anthony Stohr
+    ORCID: 0000-0002-2388-1723
     name: Benjamin Hoare
     ORCID: 0000-0001-7205-0777
 file-version: 1.0
@@ -31,43 +33,39 @@ apparatus:
     institution: University of Lorraine, Nancy, France
     facility: LRGP JSR
       
-common-properties:
-  pressure: &pres
-    - 1.067 bar
-  reactor-volume: &vol
-    - 0.000095 m^3
-  residence-time: &res
-    - 2 s
-  composition: &in
-    kind: mole fraction
-      - species: n-heptane
-        InChI: 1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3
-        amount: 0.005
-        uncertainty-type: relative
-        uncertainty: 0.05
-      - species: He
-        InChI: 1S/He
-        amount: 0.775
-        uncertainty-type: relative
-        uncertainty: 0.05 
-      - species: oxygen
-        InChI: 1S/O2/c1-2
-        amount: 0.22
-        uncertainty-type: relative
-        uncertainty: 0.05
-
 datapoints: 
     - csvfile: new_zhang_phi0.25.csv
-          absolute-uncertainty: 
-          relative-uncertainty: 
-      pressure: *pres
-      temperature: &temp
-          column-name: Temperature # values are provided in the CSV file
-          units: K
-          absolute-uncertaintiy: 3
-      reactor-volume: *vol
-      residence-time: *res
-      inlet-composition: &in # copy https://pr-omethe-us.github.io/PyKED/schema-docs.html#common-composition and  https://pr-omethe-us.github.io/PyKED/rcm-example.html
+      temperature:
+        - column-name: Temperature # values are provided in the CSV file
+        - units: K
+        - uncertainty-type: absolute
+          uncertainty: 3 K
+      pressure:
+        - 1.067 bar
+      reactor-volume:
+        - 0.000095 m3
+      residence-time:
+        - 2 s
+      inlet-composition: 
+        kind: mole fraction
+          - species: n-heptane
+            InChI: 1S/C7H16/c1-3-5-7-6-4-2/h3-7H2,1-2H3
+            amount: 
+              - 0.005
+              - uncertainty-type: relative
+                uncertainty: 0.05
+          - species: He
+            InChI: 1S/He
+            amount: 
+              - 0.775
+              - uncertainty-type: relative
+                uncertainty: 0.05 
+          - species: oxygen
+            InChI: 1S/O2/c1-2
+            amount:
+              - 0.22
+              - uncertainty-type: relative
+                uncertainty: 0.05
       outlet-composition: &out
           kind: mole fraction
           - species: carbon monoxide  # species names must correspond with column headers in the CSV file
