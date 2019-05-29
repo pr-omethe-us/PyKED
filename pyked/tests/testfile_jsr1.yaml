@@ -38,8 +38,9 @@ datapoints:
       temperature:
         - column-name: Temperature # values are provided in the CSV file
         - units: K
-        - uncertainty-type: absolute
-          uncertainty: 3 K
+        - uncertainty:
+            -type: absolute
+             value: 3 K
       pressure:
         - 1.067 bar
       reactor-volume:

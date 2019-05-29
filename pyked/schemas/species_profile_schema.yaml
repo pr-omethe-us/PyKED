@@ -9,6 +9,27 @@ species-profile-schema: &species-profile-schema
         required: true
         type: string
       temperature:
+        required: true
+        type: dict
+        schema:
+          column-name:
+            required: true
+            type: string
+          units:
+            required: true
+            type: string
+          uncertainty:
+            type: dict
+            schema:
+              type:
+                required: true
+                type: string
+                allowed:
+                  - relative
+                  - absolute
+              value:
+                required: true
+                type: string
       pressure: *value-unit-required
       reactor-volume: *value-unit-required
       residence-time: *value-unit-required
