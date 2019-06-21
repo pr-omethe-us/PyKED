@@ -1,0 +1,8 @@
+# Common reference for jet stirred reactors
+jsr-schema: &jsr-schema
+  type: list
+  schema:
+    type: dict
+    schema: 
+      inlet: *composition
+      
