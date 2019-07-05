@@ -15,7 +15,7 @@ import pytest
 
 # Local imports
 from ..validation import schema, OurValidator, yaml, Q_
-from ..chemked import ChemKED, DataPoint, Composition
+from ..chemked import ChemKED, IgnitionDataPoint, Composition
 from ..converters import get_datapoints, get_common_properties
 from .._version import __version__
 
@@ -547,18 +547,18 @@ class TestDataPoint(object):
 
     def test_create_datapoint(self):
         properties = self.load_properties('testfile_required.yaml')
-        DataPoint(properties[0])
+        IgnitionDataPoint(properties[0])
 
     def test_cantera_unknown_composition_type(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         d.composition_type = 'unknown type'
         with pytest.raises(ValueError):
             d.get_cantera_composition_string()
 
     def test_cantera_composition_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -569,14 +569,14 @@ class TestDataPoint(object):
 
     def test_cantera_composition_mole_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         assert d.composition_type == 'mass fraction'
         with pytest.raises(ValueError):
             d.get_cantera_mole_fraction()
 
     def test_cantera_composition_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -587,14 +587,14 @@ class TestDataPoint(object):
 
     def test_cantera_composition_mass_fraction_bad(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert d.composition_type == 'mole fraction'
         with pytest.raises(ValueError):
             d.get_cantera_mass_fraction()
 
     def test_cantera_composition_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[2])
+        d = IgnitionDataPoint(properties[2])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -605,7 +605,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_name_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -616,7 +616,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_inchi_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -627,7 +627,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_name_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[2])
+        d = IgnitionDataPoint(properties[2])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -638,7 +638,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_inchi_mole_percent(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[2])
+        d = IgnitionDataPoint(properties[2])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -649,7 +649,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_name_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -660,7 +660,7 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_by_inchi_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         # The order of the keys should not change between calls provided the contents of the
         # dictionary don't change. Therefore, spec_order should be the same order as the
         # Cantera mole fraction string constructed in a loop in the code
@@ -671,35 +671,35 @@ class TestDataPoint(object):
 
     def test_cantera_change_species_missing_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         species_conversion = {'this-does-not-exist': 'h2', 'O2': 'o2'}
         with pytest.raises(ValueError):
             d.get_cantera_mole_fraction(species_conversion)
 
     def test_cantera_change_species_missing_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         species_conversion = {'this-does-not-exist': 'h2', 'O2': 'o2'}
         with pytest.raises(ValueError):
             d.get_cantera_mass_fraction(species_conversion)
 
     def test_cantera_change_species_duplicate_mole_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         species_conversion = {'H2': 'h2', '1S/H2/h1H': 'h2'}
         with pytest.raises(ValueError):
             d.get_cantera_mole_fraction(species_conversion)
 
     def test_cantera_change_species_duplicate_mass_fraction(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         species_conversion = {'H2': 'h2', '1S/H2/h1H': 'h2'}
         with pytest.raises(ValueError):
             d.get_cantera_mass_fraction(species_conversion)
 
     def test_composition(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[2])
+        d = IgnitionDataPoint(properties[2])
         assert len(d.composition) == 3
         assert np.isclose(d.composition['H2'].amount, Q_(0.444))
         assert d.composition['H2'].species_name == 'H2'
@@ -710,23 +710,23 @@ class TestDataPoint(object):
 
     def test_ignition_delay(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.ignition_delay, Q_(471.54, 'us'))
 
     def test_first_stage_ignition_delay(self):
         properties = self.load_properties('testfile_rcm2.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.first_stage_ignition_delay.value, Q_(0.5, 'ms'))
         assert np.isclose(d.first_stage_ignition_delay.error, Q_(0.005, 'ms'))
 
     def test_temperature(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.temperature, Q_(1164.48, 'K'))
 
     def test_rcm_data(self):
         properties = self.load_properties('testfile_rcm2.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.rcm_data.compression_time, Q_(38.0, 'ms'))
         assert np.isclose(d.rcm_data.compressed_temperature.value, Q_(765, 'K'))
         assert np.isclose(d.rcm_data.compressed_temperature.error, Q_(7.65, 'K'))
@@ -737,32 +737,32 @@ class TestDataPoint(object):
 
     def test_pressure(self):
         properties = self.load_properties('testfile_required.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.pressure, Q_(220.0, 'kPa'))
 
     def test_pressure_rise(self):
         properties = self.load_properties('testfile_st2.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.pressure_rise, Q_(0.1, '1/ms'))
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_absolute_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.temperature.value, Q_(1164.48, 'K'))
         assert np.isclose(d.temperature.error, Q_(10, 'K'))
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_absolute_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.composition['O2'].amount.value, Q_(0.556))
         assert np.isclose(d.composition['O2'].amount.error, Q_(0.002))
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_relative_sym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
-        d = DataPoint(properties[1])
+        d = IgnitionDataPoint(properties[1])
         assert np.isclose(d.ignition_delay.value, Q_(471.54, 'us'))
         assert np.isclose(d.ignition_delay.error, Q_(47.154, 'us'))
         assert np.isclose(d.ignition_delay.rel, 0.1)
@@ -770,7 +770,7 @@ class TestDataPoint(object):
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
     def test_relative_sym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
         assert np.isclose(d.composition['H2'].amount.value, Q_(0.444))
         assert np.isclose(d.composition['H2'].amount.error, Q_(0.00444))
         assert np.isclose(d.composition['H2'].amount.rel, 0.01)
@@ -778,7 +778,7 @@ class TestDataPoint(object):
     def test_absolute_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         with pytest.warns(UserWarning) as record:
-            d = DataPoint(properties[2])
+            d = IgnitionDataPoint(properties[2])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
@@ -790,7 +790,7 @@ class TestDataPoint(object):
     def test_relative_asym_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         with pytest.warns(UserWarning) as record:
-            d = DataPoint(properties[3])
+            d = IgnitionDataPoint(properties[3])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
@@ -804,7 +804,7 @@ class TestDataPoint(object):
     def test_absolute_asym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         with pytest.warns(UserWarning) as record:
-            d = DataPoint(properties[0])
+            d = IgnitionDataPoint(properties[0])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
@@ -812,7 +812,7 @@ class TestDataPoint(object):
         assert np.isclose(d.composition['Ar'].amount.error, Q_(1.0))
 
         with pytest.warns(UserWarning) as record:
-            d = DataPoint(properties[1])
+            d = IgnitionDataPoint(properties[1])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
@@ -822,7 +822,7 @@ class TestDataPoint(object):
     def test_relative_asym_comp_uncertainty(self):
         properties = self.load_properties('testfile_uncertainty.yaml')
         with pytest.warns(UserWarning) as record:
-            d = DataPoint(properties[1])
+            d = IgnitionDataPoint(properties[1])
         m = str(record.pop(UserWarning).message)
         assert m == ('Asymmetric uncertainties are not supported. The maximum of lower-uncertainty '
                      'and upper-uncertainty has been used as the symmetric uncertainty.')
@@ -840,23 +840,23 @@ class TestDataPoint(object):
         for prop in ['uncertainty', 'uncertainty-type']:
             save = properties[0]['temperature'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[0])
+                IgnitionDataPoint(properties[0])
             properties[0]['temperature'][1][prop] = save
 
             save = properties[1]['ignition-delay'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[1])
+                IgnitionDataPoint(properties[1])
             properties[1]['ignition-delay'][1][prop] = save
 
         for prop in ['upper-uncertainty', 'lower-uncertainty']:
             save = properties[2]['temperature'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[2])
+                IgnitionDataPoint(properties[2])
             properties[0]['temperature'][1][prop] = save
 
             save = properties[3]['ignition-delay'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[3])
+                IgnitionDataPoint(properties[3])
             properties[1]['ignition-delay'][1][prop] = save
 
     @pytest.mark.filterwarnings('ignore:Asymmetric uncertainties')
@@ -865,23 +865,23 @@ class TestDataPoint(object):
         for prop in ['uncertainty', 'uncertainty-type']:
             save = properties[0]['composition']['species'][0]['amount'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[0])
+                IgnitionDataPoint(properties[0])
             properties[0]['composition']['species'][0]['amount'][1][prop] = save
 
             save = properties[0]['composition']['species'][1]['amount'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[0])
+                IgnitionDataPoint(properties[0])
             properties[0]['composition']['species'][1]['amount'][1][prop] = save
 
         for prop in ['upper-uncertainty', 'lower-uncertainty']:
             save = properties[0]['composition']['species'][2]['amount'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[0])
+                IgnitionDataPoint(properties[0])
             properties[0]['composition']['species'][2]['amount'][1][prop] = save
 
             save = properties[1]['composition']['species'][2]['amount'][1].pop(prop)
             with pytest.raises(ValueError):
-                DataPoint(properties[1])
+                IgnitionDataPoint(properties[1])
             properties[1]['composition']['species'][2]['amount'][1][prop] = save
 
     def test_volume_history(self):
@@ -891,7 +891,7 @@ class TestDataPoint(object):
         """
         properties = self.load_properties('testfile_rcm_old.yaml')
         with pytest.warns(DeprecationWarning) as record:
-            d = DataPoint(properties[0])
+            d = IgnitionDataPoint(properties[0])
         m = str(record.pop(DeprecationWarning).message)
         assert m == ('The volume-history field should be replaced by time-histories. '
                      'volume-history will be removed after PyKED 0.4')
@@ -942,7 +942,7 @@ class TestDataPoint(object):
         properties = self.load_properties('testfile_rcm.yaml')
         properties[0]['volume-history'] = {}
         with pytest.raises(TypeError) as record:
-            DataPoint(properties[0])
+            IgnitionDataPoint(properties[0])
 
         assert 'time-histories and volume-history are mutually exclusive' in str(record.value)
 
@@ -954,7 +954,7 @@ class TestDataPoint(object):
         """Check that all of the history types are set properly"""
         properties = self.load_properties('testfile_rcm.yaml')
         properties[0]['time-histories'][0]['type'] = history_type
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
 
         np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).time,
                                    Q_(np.arange(0, 9.7e-2, 1.e-3), 's')
@@ -1006,7 +1006,7 @@ class TestDataPoint(object):
         file_path = os.path.join('rcm_history.csv')
         filename = pkg_resources.resource_filename(__name__, file_path)
         properties[0]['time-histories'][0]['values'] = {'filename': filename}
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
 
         np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type)).time,
                                    Q_(np.arange(0, 9.7e-2, 1.e-3), 's')
@@ -1061,7 +1061,7 @@ class TestDataPoint(object):
         properties[0]['time-histories'][0]['type'] = history_type[0]
         properties[0]['time-histories'].append(deepcopy(properties[0]['time-histories'][0]))
         properties[0]['time-histories'][1]['type'] = history_type[1]
-        d = DataPoint(properties[0])
+        d = IgnitionDataPoint(properties[0])
 
         np.testing.assert_allclose(getattr(d, '{}_history'.format(history_type[0])).time,
                                    Q_(np.arange(0, 9.7e-2, 1.e-3), 's'))
@@ -1116,35 +1116,35 @@ class TestDataPoint(object):
         properties[0]['time-histories'].append(deepcopy(properties[0]['time-histories'][0]))
         properties[0]['time-histories'][1]['type'] = history_type[1]
         with pytest.raises(ValueError) as record:
-            DataPoint(properties[0])
+            IgnitionDataPoint(properties[0])
         assert ('Each history type may only be specified once. {} was '
                 'specified multiple times'.format(history_type[0])) in str(record.value)
 
     def test_supported_ignition_types(self):
         # pressure d/dt max
         properties = self.load_properties('testfile_st.yaml')
-        datapoints = [DataPoint(d) for d in properties]
+        datapoints = [IgnitionDataPoint(d) for d in properties]
         for d in datapoints:
             assert d.ignition_type['target'] == 'pressure'
             assert d.ignition_type['type'] == 'd/dt max'
 
         # OH, max
         properties = self.load_properties('testfile_st2.yaml')
-        datapoints = [DataPoint(d) for d in properties]
+        datapoints = [IgnitionDataPoint(d) for d in properties]
         for d in datapoints:
             assert d.ignition_type['target'] == 'OH'
             assert d.ignition_type['type'] == 'max'
 
         # OH*, 1/2 max
         properties = self.load_properties('testfile_st_p5.yaml')
-        datapoints = [DataPoint(d) for d in properties]
+        datapoints = [IgnitionDataPoint(d) for d in properties]
         for d in datapoints:
             assert d.ignition_type['target'] == 'OH*'
             assert d.ignition_type['type'] == '1/2 max'
 
         # CH, min
         properties = self.load_properties('testfile_required.yaml')
-        datapoints = [DataPoint(d) for d in properties]
+        datapoints = [IgnitionDataPoint(d) for d in properties]
         assert datapoints[0].ignition_type['target'] == 'CH'
         assert datapoints[0].ignition_type['type'] == 'min'
 
@@ -1154,7 +1154,7 @@ class TestDataPoint(object):
 
     def test_changing_ignition_type(self):
         properties = self.load_properties('testfile_st.yaml')
-        datapoints = [DataPoint(d) for d in properties]
+        datapoints = [IgnitionDataPoint(d) for d in properties]
         datapoints[0].ignition_type['target'] = 'temperature'
         assert datapoints[0].ignition_type['target'] == 'temperature'
         for d in datapoints[1:]:

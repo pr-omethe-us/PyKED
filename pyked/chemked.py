@@ -121,7 +121,7 @@ class ChemKED(object):
 
         self.datapoints = []
         for point in self._properties['datapoints']:
-            self.datapoints.append(DataPoint(point))
+            self.datapoints.append(IgnitionDataPoint(point))
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -585,7 +585,7 @@ class ChemKED(object):
         print('Converted to ' + filename)
 
 
-class DataPoint(object):
+class IgnitionDataPoint(object):
     """Class for a single datapoint.
 
     The `DataPoint` class stores the information associated with a single data point in the dataset
