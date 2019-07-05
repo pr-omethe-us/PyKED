@@ -7,7 +7,6 @@
 !include value_unit_schema.yaml
 !include composition_schema.yaml
 !include ignition_delay_schema.yaml
-!include species_profile_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -52,7 +51,6 @@ datapoints:
   required: true
   oneof:
     - *ignition-delay-schema
-    - *species-profile-schema
 reference:
   required: true
   type: dict

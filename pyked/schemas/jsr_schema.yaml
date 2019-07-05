@@ -5,4 +5,3 @@ jsr-schema: &jsr-schema
     type: dict
     schema: 
       inlet: *composition
-      
