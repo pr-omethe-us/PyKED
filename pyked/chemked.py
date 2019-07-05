@@ -79,6 +79,11 @@ Composition.SMILES.__doc__ = '(`str`) The SMILES identifier for the species'
 Composition.atomic_composition.__doc__ = '(`dict`) The atomic composition of the species'
 Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 
+JSR_Outlet_Composition = namedtuple('Composition', 'species_name InChI  amount')
+JSR_Outlet_Composition.__doc__ = 'Detail of the outlet composition of the mixture for the JSR experiment'
+JSR_Outlet_Composition.species_name.__doc__ = '(`str`) The name of the species'
+JSR_Outlet_Composition.InChI.__doc__ = '(`str`) The InChI identifier for the species'
+JSR_Outlet_Composition.amount.__doc__ = '(`list(~pint.Quantity)`) The amount of this species'
 
 class ChemKED(object):
     """Main ChemKED class.
@@ -600,28 +605,35 @@ class DataPoint(object):
 
     Specific types of data point should inherit from this.
     """
-    def process_column(self, properties, csv_df):
+    def process_column(self, csv_df,properties=None,outlet_comp=False,species_name=None):
         """
         Process a column data and return as a list of units.Quantity objects
         csv_df is a Pandas DataFrame.
         """
-        column_name = properties[0]['column-name']
-        data_list = []
-        for value in csv_df[column_name]:
-            for p in properties:
-                units = p.get('units', '')
-                if units: break
-                #todo: schema should enforce at most 1 units entry
-            
-            value_properties = [ f'{value} {units}' ]
+        if not outlet_comp:
+            column_name = properties[0]['column-name']
+            data_list = []
+            for value in csv_df[column_name]:
+                for p in properties:
+                    units = p.get('units', '')
+                    if units: break
+                    #todo: schema should enforce at most 1 units entry
+                
+                value_properties = [ f'{value} {units}' ]
 
-            for p in properties:
-                if p.get('uncertainty-type', False):
-                    # this is the uncertainty data
-                    value_properties.append(p)
+                for p in properties:
+                    if p.get('uncertainty-type', False):
+                        # this is the uncertainty data
+                        value_properties.append(p)
 
-            quant = self.process_quantity(value_properties)
-            data_list.append(quant)
+                quant = self.process_quantity(value_properties)
+                data_list.append(quant)
+        elif outlet_comp and species_name:
+            species_amounts = csv_df[species_name]
+            data_list = []
+            for species_amount in species_amounts:
+                column_property = [f'{species_amount}']
+                data_list.append(self.process_quantity(column_property))
         return data_list
 
 
@@ -677,7 +689,7 @@ class SpeciesProfileDataPoint(DataPoint):
     ]
 
     column_unit_props = [
-        'temperature', 
+        'temperature',
     ]
 
     def __init__(self, properties, csv_df):
@@ -690,12 +702,36 @@ class SpeciesProfileDataPoint(DataPoint):
 
         for prop in self.column_unit_props:
             if prop in properties:
-                data_list = self.process_column(properties[prop], csv_df)
+                data_list = self.process_column(properties = properties[prop], csv_df = csv_df)
                 setattr(self, prop.replace('-', '_'), data_list)
             else:
                 setattr(self, prop.replace('-', '_'), None)
 
-        
+        self.inlet_composition_type = properties['inlet-composition']['kind']
+        inlet_composition = {}
+        for species in properties['inlet-composition']['species']:
+            species_name = species['species-name']
+            amount = self.process_quantity(species['amount'])
+            InChI = species.get('InChI')
+            SMILES = species.get('SMILES')
+            atomic_composition = species.get('atomic-composition')
+            inlet_composition[species_name] = Composition(
+                species_name=species_name, InChI=InChI, SMILES=SMILES,
+                atomic_composition=atomic_composition, amount=amount)
+
+        setattr(self, 'inlet_composition', inlet_composition)
+
+
+        self.outlet_composition_type = properties['outlet-composition']['kind']
+        outlet_composition = {}
+        for species in properties['outlet-composition']['species']:
+            species_name = species['species-name']
+            list_of_pint_quantitites = self.process_column(csv_df = csv_df,species_name=species_name,outlet_comp=True)
+            InChI = species.get('InChI')
+            outlet_composition[species_name] = JSR_Outlet_Composition(
+                species_name=species_name, InChI=InChI, amount=list_of_pint_quantitites)
+
+        setattr(self, 'outlet_composition', outlet_composition)
 class IgnitionDataPoint(DataPoint):
     """Class for a single ignition delay datapoint.
 
