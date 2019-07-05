@@ -130,7 +130,7 @@ class ChemKED(object):
             for point in self._properties['datapoints']:
                 csv_file = os.path.join(os.path.split(yaml_file)[0], point['csvfile'])
                 csv_df= pd.read_csv(csv_file)
-                self.datapoints.extend(SpeciesProfileDataPoint(point, csv_df))
+                self.datapoints.append(SpeciesProfileDataPoint(point, csv_df))
 
 
         self.reference = Reference(
@@ -605,9 +605,9 @@ class DataPoint(object):
         Process a column data and return as a list of units.Quantity objects
         csv_df is a Pandas DataFrame.
         """
-        column_name = properties['column-name']
+        column_name = properties[0]['column-name']
         data_list = []
-        for value in df[column_name]:
+        for value in csv_df[column_name]:
             for p in properties:
                 units = p.get('units', '')
                 if units: break

@@ -45,7 +45,7 @@ datapoints:
         - uncertainty-type: absolute
           uncertainty: 0.01 bar # made up for testing
       reactor-volume:
-        - 0.000095 m3
+        - 0.095 litres
       residence-time:
         - 2 s
       inlet-composition: 
