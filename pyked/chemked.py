@@ -584,8 +584,54 @@ class ChemKED(object):
 
         print('Converted to ' + filename)
 
+class DataPoint(object):
+    """
+    A base class for a single datapoint.
 
-class IgnitionDataPoint(object):
+    Specific types of data point should inherit from this.
+    """
+    def process_quantity(self, properties):
+        """Process the uncertainty information from a given quantity and return it
+        """
+        quant = Q_(properties[0])
+        if len(properties) > 1:
+            unc = properties[1]
+            uncertainty = unc.get('uncertainty', False)
+            upper_uncertainty = unc.get('upper-uncertainty', False)
+            lower_uncertainty = unc.get('lower-uncertainty', False)
+            uncertainty_type = unc.get('uncertainty-type')
+            if uncertainty_type == 'relative':
+                if uncertainty:
+                    quant = quant.plus_minus(float(uncertainty), relative=True)
+                elif upper_uncertainty and lower_uncertainty:
+                    warn('Asymmetric uncertainties are not supported. The '
+                         'maximum of lower-uncertainty and upper-uncertainty '
+                         'has been used as the symmetric uncertainty.')
+                    uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
+                    quant = quant.plus_minus(uncertainty, relative=True)
+                else:
+                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                     '"lower-uncertainty" need to be specified.')
+            elif uncertainty_type == 'absolute':
+                if uncertainty:
+                    uncertainty = Q_(uncertainty)
+                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                elif upper_uncertainty and lower_uncertainty:
+                    warn('Asymmetric uncertainties are not supported. The '
+                         'maximum of lower-uncertainty and upper-uncertainty '
+                         'has been used as the symmetric uncertainty.')
+                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                else:
+                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
+                                     '"lower-uncertainty" need to be specified.')
+            else:
+                raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+
+        return quant
+
+        
+class IgnitionDataPoint(DataPoint):
     """Class for a single datapoint.
 
     The `DataPoint` class stores the information associated with a single data point in the dataset
@@ -719,45 +765,7 @@ class IgnitionDataPoint(object):
             if not hasattr(self, '{}_history'.format(h)):
                 setattr(self, '{}_history'.format(h), None)
 
-    def process_quantity(self, properties):
-        """Process the uncertainty information from a given quantity and return it
-        """
-        quant = Q_(properties[0])
-        if len(properties) > 1:
-            unc = properties[1]
-            uncertainty = unc.get('uncertainty', False)
-            upper_uncertainty = unc.get('upper-uncertainty', False)
-            lower_uncertainty = unc.get('lower-uncertainty', False)
-            uncertainty_type = unc.get('uncertainty-type')
-            if uncertainty_type == 'relative':
-                if uncertainty:
-                    quant = quant.plus_minus(float(uncertainty), relative=True)
-                elif upper_uncertainty and lower_uncertainty:
-                    warn('Asymmetric uncertainties are not supported. The '
-                         'maximum of lower-uncertainty and upper-uncertainty '
-                         'has been used as the symmetric uncertainty.')
-                    uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
-                    quant = quant.plus_minus(uncertainty, relative=True)
-                else:
-                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                     '"lower-uncertainty" need to be specified.')
-            elif uncertainty_type == 'absolute':
-                if uncertainty:
-                    uncertainty = Q_(uncertainty)
-                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                elif upper_uncertainty and lower_uncertainty:
-                    warn('Asymmetric uncertainties are not supported. The '
-                         'maximum of lower-uncertainty and upper-uncertainty '
-                         'has been used as the symmetric uncertainty.')
-                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
-                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                else:
-                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                     '"lower-uncertainty" need to be specified.')
-            else:
-                raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
 
-        return quant
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
