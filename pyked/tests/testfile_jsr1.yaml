@@ -42,6 +42,8 @@ datapoints:
           uncertainty: 3 K
       pressure:
         - 1.067 bar
+        - uncertainty-type: absolute
+          uncertainty: 0.01 bar # made up for testing
       reactor-volume:
         - 0.000095 m3
       residence-time:
