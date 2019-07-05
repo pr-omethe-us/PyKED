@@ -591,7 +591,9 @@ class DataPoint(object):
     Specific types of data point should inherit from this.
     """
     def process_quantity(self, properties):
-        """Process the uncertainty information from a given quantity and return it
+        """
+        Process the units and uncertainty information from a given quantity 
+        and return it as a units.Quantity object.
         """
         quant = Q_(properties[0])
         if len(properties) > 1:
@@ -632,10 +634,10 @@ class DataPoint(object):
 
         
 class IgnitionDataPoint(DataPoint):
-    """Class for a single datapoint.
+    """Class for a single ignition delay datapoint.
 
-    The `DataPoint` class stores the information associated with a single data point in the dataset
-    parsed from the `ChemKED` YAML input.
+    The `IgnitionDataPoint` class stores the information associated with a single ignition data point 
+    in the dataset parsed from the `ChemKED` YAML input.
 
     Arguments:
         properties (`dict`): Dictionary adhering to the ChemKED format for ``datapoints``
