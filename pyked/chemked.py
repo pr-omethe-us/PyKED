@@ -2,6 +2,7 @@
 Main ChemKED module
 """
 # Standard libraries
+import os
 from os.path import exists
 from collections import namedtuple
 from warnings import warn
@@ -11,6 +12,7 @@ import xml.dom.minidom as minidom
 from itertools import chain
 
 import numpy as np
+import pandas as pd
 
 # Local imports
 from .validation import schema, OurValidator, yaml, Q_
@@ -120,8 +122,16 @@ class ChemKED(object):
             self.validate_yaml(self._properties)
 
         self.datapoints = []
-        for point in self._properties['datapoints']:
-            self.datapoints.append(IgnitionDataPoint(point))
+        if self._properties['experiment-type'] == 'ignition delay':
+            for point in self._properties['datapoints']:
+                self.datapoints.append(IgnitionDataPoint(point))
+        elif self._properties['experiment-type'] == 'species profile':
+            assert len(self._properties['datapoints']) == 1, "Only one CSV file per YAML file please"
+            for point in self._properties['datapoints']:
+                csv_file = os.path.join(os.path.split(yaml_file)[0], point['csvfile'])
+                csv_df= pd.read_csv(csv_file)
+                self.datapoints.extend(SpeciesProfileDataPoint(point, csv_df))
+
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -590,6 +600,31 @@ class DataPoint(object):
 
     Specific types of data point should inherit from this.
     """
+    def process_column(self, properties, csv_df):
+        """
+        Process a column data and return as a list of units.Quantity objects
+        csv_df is a Pandas DataFrame.
+        """
+        column_name = properties['column-name']
+        data_list = []
+        for value in df[column_name]:
+            for p in properties:
+                units = p.get('units', '')
+                if units: break
+                #todo: schema should enforce at most 1 units entry
+            
+            value_properties = [ f'{value} {units}' ]
+
+            for p in properties:
+                if p.get('uncertainty-type', False):
+                    # this is the uncertainty data
+                    value_properties.append(p)
+
+            quant = self.process_quantity(value_properties)
+            data_list.append(quant)
+        return data_list
+
+
     def process_quantity(self, properties):
         """
         Process the units and uncertainty information from a given quantity 
@@ -629,8 +664,36 @@ class DataPoint(object):
                                      '"lower-uncertainty" need to be specified.')
             else:
                 raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
-
         return quant
+
+
+class SpeciesProfileDataPoint(DataPoint):
+    """
+    Class for a single JSR experiment data point.
+
+    """
+    value_unit_props = [
+        'pressure', 'reactor-volume', 'residence-time'
+    ]
+
+    column_unit_props = [
+        'temperature', 
+    ]
+
+    def __init__(self, properties, csv_df):
+        for prop in self.value_unit_props:
+            if prop in properties:
+                quant = self.process_quantity(properties[prop])
+                setattr(self, prop.replace('-', '_'), quant)
+            else:
+                setattr(self, prop.replace('-', '_'), None)
+
+        for prop in self.column_unit_props:
+            if prop in properties:
+                data_list = self.process_column(properties[prop], csv_df)
+                setattr(self, prop.replace('-', '_'), data_list)
+            else:
+                setattr(self, prop.replace('-', '_'), None)
 
         
 class IgnitionDataPoint(DataPoint):
