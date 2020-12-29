@@ -22,6 +22,6 @@ Please adhere to this code of conduct in any interactions you have in the PyKED 
 
 ## License
 
-PyKED is released under the BSD-3 clause license, see LICENSE for details.
+PyKED is released under the BSD-3 clause license, see [LICENSE](https://github.com/pr-omethe-us/PyKED/blob/master/LICENSE) for details.
 
-If you use this package as part of a scholarly work, please refer to CITATION.md for guidance on citing this resource.
+If you use this package as part of a scholarly work, please refer to [CITATION.md](https://github.com/pr-omethe-us/PyKED/blob/master/CITATION.md) for guidance on citing this resource.
