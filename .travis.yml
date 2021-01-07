@@ -52,26 +52,6 @@ script:
   - if [[ -z "$TRAVIS_TAG" ]]; then
       pytest -vv --cov=./;
       flake8 .;
-      if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
-        git checkout -- test-environment.yaml;
-        conda install -q sphinx doctr nbsphinx ipython;
-        python setup.py install;
-        cd docs;
-        make html SPHINXOPTS="-W";
-        cd ..;
-        doctr deploy devel;
-      fi
-    else
-      if [[ "$PYTHON" == "3.6" && "$TRAVIS_OS_NAME" == "linux" ]]; then
-        conda build conda.recipe;
-        anaconda -t $ANACONDA_TOKEN upload $HOME/miniconda/conda-bld/*/pyked*.tar.bz2;
-        python setup.py install;
-        cd docs;
-        make html SPHINXOPTS="-W";
-        cd ..;
-        doctr deploy --build-tags .;
-        doctr deploy --build-tags "tags/${TRAVIS_TAG}";
-      fi
     fi
   - set +e
 
@@ -79,14 +59,3 @@ after_success:
   - if [[ -z "$TRAVIS_TAG" ]]; then
       bash <(curl -s https://codecov.io/bash);
     fi
-
-deploy:
-  provider: pypi
-  user: bryanwweber
-  password:
-    secure: "wvS+7cF9MCqkrFT34C7CeSgz6titZPzrqETex6M9MQL66zzC845BbMsTy+hEbk2yeowPkBwnboqrESXI/zpuGiICZTLxJspfCcNWeUy/fqssdFQ2oqFK26fS2rzLnJh5ipKd3rvlVnH2aX4txht9g8CnHxsr6ugU4Ik02JeBmRNAkC8tHffyLVQpkiX4CWudoYxNMxKiIu90Vv62ai52b0N6YMHENroIa3+pDivkJhF/NvwIu5uHsnAKh3X8Ftl5OFoEal5mr0qWQb0+gL8XporpZ0Zpo0fYElp/qF/mnCtsd2xRMuAE8sVVyt0QdfpPSwJJekTgzUWi7B0vUQ4eNQUm+MUcP6093ixTaNSg4suRr6Qq+zc+dRV1TKBvvnI9VDvqxkebIve2r02Fjw3T8iYOb6p1Jp/qK68xsGZXeG7FaVwNIIcyfOZFXWcl8pDQqH1cBONRGBrA7Itew5+dAUkbXzkcmr1e/VxBe3SMvJRiGSnnwstRho88zjYb9Q7R74SspPY8CBpmSEo1hZ495pF/IbP5T5awNW9qoH2AZlPLJqp5nUdJ16vJagdXmcct/f8jnMqAC/jp9myGqdentLjTLbyiSF4JNKYjtPKdnEM+U1KawXnMJMP95O4KgiI6GUxVQCYX/YV7OtJn0Ruaxdv9CDckcIJSktnJw53fH4Y="
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME == "linux" && $PYTHON == "3.6"
-  distributions: "sdist bdist_wheel"
-  skip_upload_docs: true
