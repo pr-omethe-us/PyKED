@@ -12,9 +12,6 @@ jobs:
     steps:
       - run: sudo apt-get install pandoc
       - uses: actions/checkout@v2
-      - uses: docker://pandoc/core:2.9
-        with:
-          args: "--help"
 
       - name: Setup Python
         uses: actions/setup-python@v2
