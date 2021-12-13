@@ -96,6 +96,27 @@ class TestChemKED(object):
         with pytest.raises(ValueError):
             ChemKED(dict_input=properties)
 
+    def test_csv_time_history(self):
+        file_path = os.path.join('testfile_rcm3.yaml')
+        filename = pkg_resources.resource_filename(__name__, file_path)
+        csv_filename = pkg_resources.resource_filename(__name__, 'rcm_history.csv')
+        from_file = ChemKED(filename)
+
+        with open(filename, 'r') as f:
+            properties = yaml.safe_load(f)
+        properties['datapoints'][0]['time-histories'][0]['values']['filename'] = csv_filename
+        from_dict = ChemKED(dict_input=properties)
+
+        for exp in [from_file, from_dict]:
+            exp_fname = exp._properties['datapoints'][0]['time-histories'][0]['values']['filename']
+            assert(str(exp_fname) == csv_filename)
+
+        # Test case where 'values' is a dict, but doesn't contain 'filename'
+        del properties['datapoints'][0]['time-histories'][0]['values']['filename']
+        with pytest.raises(NotImplementedError):
+            ChemKED(dict_input=properties)
+
+
 
 class TestDataFrameOutput(object):
     """

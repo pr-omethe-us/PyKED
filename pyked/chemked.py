@@ -9,6 +9,9 @@ from copy import deepcopy
 import xml.etree.ElementTree as etree
 import xml.dom.minidom as minidom
 from itertools import chain
+from pathlib import Path
+from distutils.version import LooseVersion
+import sys
 
 import numpy as np
 
@@ -78,6 +81,15 @@ Composition.atomic_composition.__doc__ = '(`dict`) The atomic composition of the
 Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 
 
+if LooseVersion(sys.version) < '3.6':
+    # Allow old version of python to open Path objects.
+    oldopen = open
+
+    def open(file, mode='r', buffering=-1, encoding=None, errors=None,
+             newline=None, closefd=True, opener=None):
+        return oldopen(str(file), mode, buffering, encoding, errors, newline, closefd, opener)
+
+
 class ChemKED(object):
     """Main ChemKED class.
 
@@ -109,6 +121,7 @@ class ChemKED(object):
     """
     def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
+            yaml_file = Path(yaml_file)
             with open(yaml_file, 'r') as f:
                 self._properties = yaml.safe_load(f)
         elif dict_input is not None:
@@ -121,6 +134,17 @@ class ChemKED(object):
 
         self.datapoints = []
         for point in self._properties['datapoints']:
+            if 'time-histories' in point:
+                for th in point['time-histories']:
+                    try:
+                        filename = Path(th['values']['filename'])
+                    except TypeError:
+                        pass
+                    else:
+                        if yaml_file is not None:
+                            th['values']['filename'] = (yaml_file.parent / filename).resolve()
+                        else:
+                            th['values']['filename'] = filename.resolve()
             self.datapoints.append(DataPoint(point))
 
         self.reference = Reference(
