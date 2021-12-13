@@ -1,5 +1,0 @@
-=====
-ORCID
-=====
-
-.. automodule:: pyked.orcid
