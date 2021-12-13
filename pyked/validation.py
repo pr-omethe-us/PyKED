@@ -273,7 +273,11 @@ class OurValidator(Validator):
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'list'}}
         """
-        quantity = Q_(value[0])
+        try:
+            quantity = Q_(value[0])
+        except pint.OffsetUnitCalculusError:
+            values = value[0].split()
+            quantity = Q_(float(values[0]), ''.join(values[1:]))
         low_lim = 0.0 * units(property_units[field])
 
         try:
