@@ -79,12 +79,6 @@ Composition.SMILES.__doc__ = '(`str`) The SMILES identifier for the species'
 Composition.atomic_composition.__doc__ = '(`dict`) The atomic composition of the species'
 Composition.amount.__doc__ = '(`~pint.Quantity`) The amount of this species'
 
-JSR_Outlet_Composition = namedtuple('Composition', 'species_name InChI  amount')
-JSR_Outlet_Composition.__doc__ = 'Detail of the outlet composition of the mixture for the JSR experiment'
-JSR_Outlet_Composition.species_name.__doc__ = '(`str`) The name of the species'
-JSR_Outlet_Composition.InChI.__doc__ = '(`str`) The InChI identifier for the species'
-JSR_Outlet_Composition.amount.__doc__ = '(`list(~pint.Quantity)`) The amount of this species'
-
 
 class ChemKED(object):
     """Main ChemKED class.
@@ -132,11 +126,11 @@ class ChemKED(object):
             for point in self._properties['datapoints']:
                 self.datapoints.append(IgnitionDataPoint(point))
         elif self._properties['experiment-type'] == 'species profile':
-            assert len(self._properties['datapoints']) == 1, "Only one CSV file per YAML file please"
             for point in self._properties['datapoints']:
                 csv_file = os.path.join(os.path.split(yaml_file)[0], point['csvfile'])
                 csv_df = pd.read_csv(csv_file)
-                self.datapoints.append(SpeciesProfileDataPoint(point, csv_df))
+                for i in range(0, len(csv_df)):
+                    self.datapoints.append(SpeciesProfileDataPoint(point, csv_df, i))
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -714,7 +708,7 @@ class SpeciesProfileDataPoint(DataPoint):
         'temperature',
     ]
 
-    def __init__(self, properties, csv_df):
+    def __init__(self, properties, csv_df, row):
         for prop in self.value_unit_props:
             if prop in properties:
                 quant = self.process_quantity(properties[prop])
@@ -725,7 +719,7 @@ class SpeciesProfileDataPoint(DataPoint):
         for prop in self.column_unit_props:
             if prop in properties:
                 data_list = self.process_column(properties=properties[prop], csv_df=csv_df)
-                setattr(self, prop.replace('-', '_'), data_list)
+                setattr(self, prop.replace('-', '_'), data_list[row])
             else:
                 setattr(self, prop.replace('-', '_'), None)
 
@@ -738,8 +732,11 @@ class SpeciesProfileDataPoint(DataPoint):
             SMILES = species.get('SMILES')
             atomic_composition = species.get('atomic-composition')
             inlet_composition[species_name] = Composition(
-                species_name=species_name, InChI=InChI, SMILES=SMILES,
-                atomic_composition=atomic_composition, amount=amount)
+                species_name=species_name,
+                InChI=InChI, SMILES=SMILES,
+                atomic_composition=atomic_composition,
+                amount=amount
+            )
 
         setattr(self, 'inlet_composition', inlet_composition)
 
@@ -749,8 +746,16 @@ class SpeciesProfileDataPoint(DataPoint):
             species_name = species['species-name']
             list_of_pint_quantitites = self.process_column(csv_df=csv_df, species_name=species_name, outlet_comp=True)
             InChI = species.get('InChI')
-            outlet_composition[species_name] = JSR_Outlet_Composition(
-                species_name=species_name, InChI=InChI, amount=list_of_pint_quantitites)
+            SMILES = species.get('SMILES')
+            atomic_composition = species.get('atomic-composition')
+            amount = list_of_pint_quantitites[row]
+            outlet_composition[species_name] = Composition(
+                species_name=species_name,
+                InChI=InChI,
+                SMILES=SMILES,
+                atomic_composition=atomic_composition,
+                amount=amount
+            )
 
         setattr(self, 'outlet_composition', outlet_composition)
 
@@ -835,8 +840,12 @@ class IgnitionDataPoint(DataPoint):
             SMILES = species.get('SMILES')
             atomic_composition = species.get('atomic-composition')
             composition[species_name] = Composition(
-                species_name=species_name, InChI=InChI, SMILES=SMILES,
-                atomic_composition=atomic_composition, amount=amount)
+                species_name=species_name,
+                InChI=InChI,
+                SMILES=SMILES,
+                atomic_composition=atomic_composition,
+                amount=amount
+            )
 
         setattr(self, 'composition', composition)
 
