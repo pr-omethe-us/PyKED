@@ -85,6 +85,7 @@ JSR_Outlet_Composition.species_name.__doc__ = '(`str`) The name of the species'
 JSR_Outlet_Composition.InChI.__doc__ = '(`str`) The InChI identifier for the species'
 JSR_Outlet_Composition.amount.__doc__ = '(`list(~pint.Quantity)`) The amount of this species'
 
+
 class ChemKED(object):
     """Main ChemKED class.
 
@@ -134,9 +135,8 @@ class ChemKED(object):
             assert len(self._properties['datapoints']) == 1, "Only one CSV file per YAML file please"
             for point in self._properties['datapoints']:
                 csv_file = os.path.join(os.path.split(yaml_file)[0], point['csvfile'])
-                csv_df= pd.read_csv(csv_file)
+                csv_df = pd.read_csv(csv_file)
                 self.datapoints.append(SpeciesProfileDataPoint(point, csv_df))
-
 
         self.reference = Reference(
             volume=self._properties['reference'].get('volume'),
@@ -389,10 +389,11 @@ class ChemKED(object):
         citation = ''
         for author in self.reference.authors:
             citation += author['name'] + ', '
-        citation += (self.reference.journal + ' (' + str(self.reference.year) + ') ' +
-                     str(self.reference.volume) + ':' + self.reference.pages + '. ' +
-                     self.reference.detail
-                     )
+        citation += (
+            self.reference.journal + ' (' + str(self.reference.year) + ') '
+            + str(self.reference.volume) + ':' + self.reference.pages + '. '
+            + self.reference.detail
+        )
         reference.set('preferredKey', citation)
         reference.set('doi', self.reference.doi)
 
@@ -458,17 +459,21 @@ class ChemKED(object):
         datagroup_link.set('dataPointID', '')
 
         property_idx = {}
-        labels = {'temperature': 'T', 'pressure': 'P',
-                  'ignition delay': 'tau', 'pressure rise': 'dP/dt',
-                  }
+        labels = {
+            'temperature': 'T',
+            'pressure': 'P',
+            'ignition delay': 'tau',
+            'pressure rise': 'dP/dt',
+        }
 
         for prop_name in datagroup_properties:
             attribute = prop_name.replace(' ', '_')
             # This can't be hasattr because properties are set to the value None
             # if no value is specified in the file, so the attribute always exists
-            prop_indices = [i for i, dp in enumerate(self.datapoints)
-                            if getattr(dp, attribute) is not None
-                            ]
+            prop_indices = [
+                i for i, dp in enumerate(self.datapoints)
+                if getattr(dp, attribute) is not None
+            ]
             if prop_name in common or not prop_indices:
                 continue
 
@@ -487,9 +492,9 @@ class ChemKED(object):
             for dp in self.datapoints:
                 for species in dp.composition.values():
                     # Only add new property for species not already considered
-                    has_spec = any([species.species_name in d.values()
-                                    for d in property_idx.values()
-                                    ])
+                    has_spec = any(
+                        [species.species_name in d.values() for d in property_idx.values()]
+                    )
                     if not has_spec:
                         prop = etree.SubElement(datagroup, 'property')
                         prop.set('description', '')
@@ -522,9 +527,15 @@ class ChemKED(object):
                             value.text = str(item.amount.magnitude)
 
         # See https://stackoverflow.com/a/16097112 for the None.__ne__
-        history_types = ['volume_history', 'temperature_history', 'pressure_history',
-                         'piston_position_history', 'light_emission_history',
-                         'OH_emission_history', 'absorption_history']
+        history_types = [
+            'volume_history',
+            'temperature_history',
+            'pressure_history',
+            'piston_position_history',
+            'light_emission_history',
+            'OH_emission_history',
+            'absorption_history'
+        ]
         time_histories = [getattr(dp, p) for dp in self.datapoints for p in history_types]
         time_histories = list(filter(None.__ne__, time_histories))
 
@@ -585,8 +596,10 @@ class ChemKED(object):
             else:
                 ignition.set('type', self.datapoints[0].ignition_type['type'])
         else:
-            raise NotImplementedError('Different ignition targets or types for multiple datapoints '
-                                      'are not supported in ReSpecTh.')
+            raise NotImplementedError(
+                'Different ignition targets or types for multiple datapoints '
+                'are not supported in ReSpecTh.'
+            )
 
         et = etree.ElementTree(root)
         et.write(filename, encoding='utf-8', xml_declaration=True)
@@ -599,13 +612,14 @@ class ChemKED(object):
 
         print('Converted to ' + filename)
 
+
 class DataPoint(object):
     """
     A base class for a single datapoint.
 
     Specific types of data point should inherit from this.
     """
-    def process_column(self, csv_df,properties=None,outlet_comp=False,species_name=None):
+    def process_column(self, csv_df, properties=None, outlet_comp=False, species_name=None):
         """
         Process a column data and return as a list of units.Quantity objects
         csv_df is a Pandas DataFrame.
@@ -616,10 +630,11 @@ class DataPoint(object):
             for value in csv_df[column_name]:
                 for p in properties:
                     units = p.get('units', '')
-                    if units: break
-                    #todo: schema should enforce at most 1 units entry
-                
-                value_properties = [ f'{value} {units}' ]
+                    if units:
+                        break
+                    # TODO: schema should enforce at most 1 units entry
+
+                value_properties = [f'{value} {units}']
 
                 for p in properties:
                     if p.get('uncertainty-type', False):
@@ -636,10 +651,9 @@ class DataPoint(object):
                 data_list.append(self.process_quantity(column_property))
         return data_list
 
-
     def process_quantity(self, properties):
         """
-        Process the units and uncertainty information from a given quantity 
+        Process the units and uncertainty information from a given quantity
         and return it as a units.Quantity object.
         """
         quant = Q_(properties[0])
@@ -653,27 +667,35 @@ class DataPoint(object):
                 if uncertainty:
                     quant = quant.plus_minus(float(uncertainty), relative=True)
                 elif upper_uncertainty and lower_uncertainty:
-                    warn('Asymmetric uncertainties are not supported. The '
-                         'maximum of lower-uncertainty and upper-uncertainty '
-                         'has been used as the symmetric uncertainty.')
+                    warn(
+                        'Asymmetric uncertainties are not supported. The '
+                        'maximum of lower-uncertainty and upper-uncertainty '
+                        'has been used as the symmetric uncertainty.'
+                    )
                     uncertainty = max(float(upper_uncertainty), float(lower_uncertainty))
                     quant = quant.plus_minus(uncertainty, relative=True)
                 else:
-                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                     '"lower-uncertainty" need to be specified.')
+                    raise ValueError(
+                        'Either "uncertainty" or "upper-uncertainty" and '
+                        '"lower-uncertainty" need to be specified.'
+                    )
             elif uncertainty_type == 'absolute':
                 if uncertainty:
                     uncertainty = Q_(uncertainty)
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 elif upper_uncertainty and lower_uncertainty:
-                    warn('Asymmetric uncertainties are not supported. The '
-                         'maximum of lower-uncertainty and upper-uncertainty '
-                         'has been used as the symmetric uncertainty.')
+                    warn(
+                        'Asymmetric uncertainties are not supported. The '
+                        'maximum of lower-uncertainty and upper-uncertainty '
+                        'has been used as the symmetric uncertainty.'
+                    )
                     uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 else:
-                    raise ValueError('Either "uncertainty" or "upper-uncertainty" and '
-                                     '"lower-uncertainty" need to be specified.')
+                    raise ValueError(
+                        'Either "uncertainty" or "upper-uncertainty" and '
+                        '"lower-uncertainty" need to be specified.'
+                    )
             else:
                 raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
         return quant
@@ -702,7 +724,7 @@ class SpeciesProfileDataPoint(DataPoint):
 
         for prop in self.column_unit_props:
             if prop in properties:
-                data_list = self.process_column(properties = properties[prop], csv_df = csv_df)
+                data_list = self.process_column(properties=properties[prop], csv_df=csv_df)
                 setattr(self, prop.replace('-', '_'), data_list)
             else:
                 setattr(self, prop.replace('-', '_'), None)
@@ -721,21 +743,22 @@ class SpeciesProfileDataPoint(DataPoint):
 
         setattr(self, 'inlet_composition', inlet_composition)
 
-
         self.outlet_composition_type = properties['outlet-composition']['kind']
         outlet_composition = {}
         for species in properties['outlet-composition']['species']:
             species_name = species['species-name']
-            list_of_pint_quantitites = self.process_column(csv_df = csv_df,species_name=species_name,outlet_comp=True)
+            list_of_pint_quantitites = self.process_column(csv_df=csv_df, species_name=species_name, outlet_comp=True)
             InChI = species.get('InChI')
             outlet_composition[species_name] = JSR_Outlet_Composition(
                 species_name=species_name, InChI=InChI, amount=list_of_pint_quantitites)
 
         setattr(self, 'outlet_composition', outlet_composition)
+
+
 class IgnitionDataPoint(DataPoint):
     """Class for a single ignition delay datapoint.
 
-    The `IgnitionDataPoint` class stores the information associated with a single ignition data point 
+    The `IgnitionDataPoint` class stores the information associated with a single ignition data point
     in the dataset parsed from the `ChemKED` YAML input.
 
     Arguments:
@@ -826,8 +849,10 @@ class IgnitionDataPoint(DataPoint):
         if 'time-histories' in properties:
             for hist in properties['time-histories']:
                 if hasattr(self, '{}_history'.format(hist['type'].replace(' ', '_'))):
-                    raise ValueError('Each history type may only be specified once. {} was '
-                                     'specified multiple times'.format(hist['type']))
+                    raise ValueError(
+                        'Each history type may only be specified once. {} was '
+                        'specified multiple times'.format(hist['type'])
+                    )
                 time_col = hist['time']['column']
                 time_units = hist['time']['units']
                 quant_col = hist['quantity']['column']
@@ -847,9 +872,11 @@ class IgnitionDataPoint(DataPoint):
                 setattr(self, '{}_history'.format(hist['type'].replace(' ', '_')), time_history)
 
         if 'volume-history' in properties:
-            warn('The volume-history field should be replaced by time-histories. '
-                 'volume-history will be removed after PyKED 0.4',
-                 DeprecationWarning)
+            warn(
+                'The volume-history field should be replaced by time-histories. '
+                'volume-history will be removed after PyKED 0.4',
+                DeprecationWarning
+            )
             time_col = properties['volume-history']['time']['column']
             time_units = properties['volume-history']['time']['units']
             volume_col = properties['volume-history']['volume']['column']
@@ -860,13 +887,18 @@ class IgnitionDataPoint(DataPoint):
                 volume=Q_(values[:, volume_col], volume_units),
             )
 
-        history_types = ['volume', 'temperature', 'pressure', 'piston_position', 'light_emission',
-                         'OH_emission', 'absorption']
+        history_types = [
+            'volume',
+            'temperature',
+            'pressure',
+            'piston_position',
+            'light_emission',
+            'OH_emission',
+            'absorption'
+        ]
         for h in history_types:
             if not hasattr(self, '{}_history'.format(h)):
                 setattr(self, '{}_history'.format(h), None)
-
-
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
@@ -900,19 +932,22 @@ class IgnitionDataPoint(DataPoint):
 
         if species_conversion is None:
             comps = ['{!s}:{:.4e}'.format(c.species_name,
-                     c.amount.magnitude/factor) for c in self.composition.values()]
+                     c.amount.magnitude / factor) for c in self.composition.values()]
         else:
             comps = []
             for c in self.composition.values():
-                amount = c.amount.magnitude/factor
+                amount = c.amount.magnitude / factor
                 idents = [getattr(c, s, False) for s in ['species_name', 'InChI', 'SMILES']]
                 present = [i in species_conversion for i in idents]
                 if not any(present):
                     comps.append('{!s}:{:.4e}'.format(c.species_name, amount))
                 else:
                     if len([i for i in present if i]) > 1:
-                        raise ValueError('More than one conversion present for species {}'.format(
-                                         c.species_name))
+                        raise ValueError(
+                            'More than one conversion present for species {}'.format(
+                                c.species_name
+                            )
+                        )
 
                     ident = idents[present.index(True)]
                     species_replacement_name = species_conversion.pop(ident)
