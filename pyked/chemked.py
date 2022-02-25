@@ -613,37 +613,33 @@ class DataPoint(object):
 
     Specific types of data point should inherit from this.
     """
-    def process_column(self, csv_df, properties=None, outlet_comp=False, species_name=None):
+    def process_csv_row(self, csv_df, row, properties=None, outlet_comp=False, species_name=None):
         """
-        Process a column data and return as a list of units.Quantity objects
+        Process a single entry in column data and return as a units.Quantity object
         csv_df is a Pandas DataFrame.
         """
         if not outlet_comp:
             column_name = properties[0]['column-name']
-            data_list = []
-            for value in csv_df[column_name]:
-                for p in properties:
-                    units = p.get('units', '')
-                    if units:
-                        break
-                    # TODO: schema should enforce at most 1 units entry
+            value = csv_df[column_name][row]
+            for p in properties:
+                units = p.get('units', '')
+                if units:
+                    break
+                # TODO: schema should enforce at most 1 units entry
 
-                value_properties = [f'{value} {units}']
+            value_properties = [f'{value} {units}']
 
-                for p in properties:
-                    if p.get('uncertainty-type', False):
-                        # this is the uncertainty data
-                        value_properties.append(p)
+            for p in properties:
+                if p.get('uncertainty-type', False):
+                    # this is the uncertainty data
+                    value_properties.append(p)
 
-                quant = self.process_quantity(value_properties)
-                data_list.append(quant)
+            data_entry = self.process_quantity(value_properties)
         elif outlet_comp and species_name:
-            species_amounts = csv_df[species_name]
-            data_list = []
-            for species_amount in species_amounts:
-                column_property = [f'{species_amount}']
-                data_list.append(self.process_quantity(column_property))
-        return data_list
+            species_amount = csv_df[species_name][row]
+            column_property = [f'{species_amount}']
+            data_entry = self.process_quantity(column_property)
+        return data_entry
 
     def process_quantity(self, properties):
         """
@@ -718,8 +714,8 @@ class SpeciesProfileDataPoint(DataPoint):
 
         for prop in self.column_unit_props:
             if prop in properties:
-                data_list = self.process_column(properties=properties[prop], csv_df=csv_df)
-                setattr(self, prop.replace('-', '_'), data_list[row])
+                data_entry = self.process_csv_row(properties=properties[prop], csv_df=csv_df, row=row)
+                setattr(self, prop.replace('-', '_'), data_entry)
             else:
                 setattr(self, prop.replace('-', '_'), None)
 
@@ -744,11 +740,10 @@ class SpeciesProfileDataPoint(DataPoint):
         outlet_composition = {}
         for species in properties['outlet-composition']['species']:
             species_name = species['species-name']
-            list_of_pint_quantitites = self.process_column(csv_df=csv_df, species_name=species_name, outlet_comp=True)
+            amount = self.process_csv_row(csv_df=csv_df, row=row, species_name=species_name, outlet_comp=True)
             InChI = species.get('InChI')
             SMILES = species.get('SMILES')
             atomic_composition = species.get('atomic-composition')
-            amount = list_of_pint_quantitites[row]
             outlet_composition[species_name] = Composition(
                 species_name=species_name,
                 InChI=InChI,
