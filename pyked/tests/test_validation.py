@@ -359,7 +359,7 @@ class TestValidator(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with open(filename, 'r') as f:
-            return yaml.load(f)
+            return yaml.safe_load(f)
 
     @pytest.mark.parametrize("properties", [
         'testfile_st.yaml', 'testfile_st2.yaml', 'testfile_rcm.yaml', 'testfile_required.yaml',

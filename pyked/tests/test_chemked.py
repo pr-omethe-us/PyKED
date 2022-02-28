@@ -83,7 +83,7 @@ class TestChemKED(object):
 
         out, err = capfd.readouterr()
         assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
-                       "delay'] and are case sensitive.\n")
+                       "delay', 'species profile'] and are case sensitive.\n")
 
     def test_missing_input(self, capfd):
         file_path = os.path.join('testfile_required.yaml')
