@@ -29,6 +29,8 @@ common-properties:
     ignition-type: *ignition-type
     composition: *composition
     pressure-rise: *value-unit-optional
+    reactor-volume: *value-unit-optional
+    residence-time: *value-unit-optional
 
 apparatus:
   required: true
@@ -38,6 +40,7 @@ apparatus:
       allowed:
         - shock tube
         - rapid compression machine
+        - jet stirred reactor
       required: true
       type: string
     institution:
@@ -73,7 +76,7 @@ reference:
       type: integer
     pages:
       type: string
-chemked-version:  # TODO: Implement proper version comparison
+chemked-version:
   allowed:
     - 0.0.1
     - 0.1.0
@@ -93,6 +96,7 @@ chemked-version:  # TODO: Implement proper version comparison
 experiment-type:
   allowed:
     - ignition delay
+    - species profile
   required: true
   type: string
 file-authors:

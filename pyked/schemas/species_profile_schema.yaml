@@ -1,0 +1,40 @@
+# Common reference for species profile schema
+species-profile-schema: &species-profile-schema
+  type: list
+  minlength: 1
+  schema:
+    type: dict
+    schema:
+      csv-file:
+        required: true
+        type: string
+      temperature:
+        required: true
+        type: dict
+        schema:
+          column-name:
+            required: true
+            type: string
+          units:
+            required: true
+            type: string
+          uncertainty:
+            type: dict
+            schema:
+              type:
+                required: true
+                type: string
+                allowed:
+                  - relative
+                  - absolute
+              value:
+                required: true
+                type: string
+      pressure: *value-unit-required
+      reactor-volume: *value-unit-required
+      residence-time: *value-unit-required
+      equivalence-ratio:
+        type: float
+        min: 0.0
+      inlet-composition: *composition
+      outlet-composition: *composition
