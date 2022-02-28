@@ -690,11 +690,28 @@ class DataPoint(object):
                 raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
         return quant
 
+    def species_in_datapoint(self, species):
+        raise NotImplementedError
+
 
 class SpeciesProfileDataPoint(DataPoint):
     """
     Class for a single JSR experiment data point.
 
+    The `SpeciesProfileDataPoint` class stores the information associated with
+    a species concentration profile for one set of reactor conditions in the
+    dataset parsed from the `ChemKED` YAML input.
+
+    Arguments:
+        properties (`dict`): Dictionary adhering to the ChemKED format for ``datapoints``
+
+    Attributes:
+        inlet_composition (`dict`): Dictionary representing the species and their quantities
+        outet_composition (`dict`): Dictionary representing the species and their quantities
+        temperature (pint.Quantity): The temperature of the experiment
+        pressure (pint.Quantity): The pressure of the experiment
+        reactor_volume (pint.Quantity): The volume of the reactor
+        residence_time (pint.Quantity): Reactor volume divided by the volumetric flow rate
     """
     value_unit_props = [
         'pressure', 'reactor-volume', 'residence-time'
@@ -753,6 +770,12 @@ class SpeciesProfileDataPoint(DataPoint):
             )
 
         setattr(self, 'outlet_composition', outlet_composition)
+
+    def species_in_datapoint(self, species):
+        return (
+            species in self.outlet_composition.keys()
+            or species in self.inlet_composition.keys()
+        )
 
 
 class IgnitionDataPoint(DataPoint):
@@ -903,6 +926,9 @@ class IgnitionDataPoint(DataPoint):
         for h in history_types:
             if not hasattr(self, '{}_history'.format(h)):
                 setattr(self, '{}_history'.format(h), None)
+
+    def species_in_datapoint(self, species):
+        return species in self.composition.keys()
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
