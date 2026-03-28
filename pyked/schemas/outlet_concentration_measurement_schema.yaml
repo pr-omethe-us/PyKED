@@ -8,11 +8,7 @@ outlet-concentration-measurement-schema: &outlet-concentration-measurement-schem
       pressure: *value-unit-required
       temperature: *value-unit-required
       composition: *composition
-      equivalence-ratio:
-        type: float
-        min: 0.0
-      uncertainty: *uncertainty-list-optional
-      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
+      equivalence-ratio: *value-unit-optional
       residence-time: *value-unit-optional
       volumetric-flow-in-reference-state: *value-unit-optional
       measured-composition: *composition
