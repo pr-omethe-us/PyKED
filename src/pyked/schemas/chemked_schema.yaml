@@ -49,11 +49,7 @@ common-properties:
     reactor-diameter: *value-unit-optional
     pressure-in-reference-state: *value-unit-optional
     temperature-in-reference-state: *value-unit-optional
-    uncertainty: *uncertainty-list-optional
-    evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
-    equivalence-ratio:
-      type: float
-      min: 0.0
+    equivalence-ratio: *value-unit-optional
 
 apparatus:
   required: true

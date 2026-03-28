@@ -10,8 +10,4 @@ laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measureme
       laminar-burning-velocity: *value-unit-required
       pressure-rise: *value-unit-optional
       composition: *composition
-      equivalence-ratio:
-        type: float
-        min: 0.0
-      uncertainty: *uncertainty-list-optional
-      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
+      equivalence-ratio: *value-unit-optional

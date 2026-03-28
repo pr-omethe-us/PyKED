@@ -93,24 +93,39 @@ composition: &composition
                 - type: dict
                   schema:
                     uncertainty-type:
-                      required: true
                       type: string
                       allowed:
                         - absolute
                         - relative
                     uncertainty:
-                      required: true
                       type: float
                       excludes:
                         - upper-uncertainty
                         - lower-uncertainty
+                      dependencies:
+                        - uncertainty-type
                     upper-uncertainty:
-                      required: true
                       type: float
                       excludes: uncertainty
-                      dependencies: lower-uncertainty
+                      dependencies:
+                        - lower-uncertainty
+                        - uncertainty-type
                     lower-uncertainty:
-                      required: true
                       type: float
                       excludes: uncertainty
-                      dependencies: upper-uncertainty
+                      dependencies:
+                        - upper-uncertainty
+                        - uncertainty-type
+                    uncertainty-sourcetype:
+                      type: string
+                    evaluated-standard-deviation:
+                      type: float
+                    evaluated-standard-deviation-type:
+                      type: string
+                      allowed:
+                        - absolute
+                        - relative
+                    evaluated-standard-deviation-sourcetype:
+                      type: string
+                    evaluated-standard-deviation-method:
+                      type: string

@@ -25,11 +25,11 @@ uncertainty-entry: &uncertainty-entry
       allowed:
         - absolute
         - relative
-    bound:
-      type: string
     sourcetype:
       type: string
-    value: *value-unit-optional
+    uncertainty: *value-unit-optional
+    upper-uncertainty: *value-unit-optional
+    lower-uncertainty: *value-unit-optional
     species-name:
       type: string
     InChI:
