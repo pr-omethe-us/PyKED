@@ -92,3 +92,5 @@ ENV/
 
 # Mac stuff
 .DS_Store
+
+PR_DESCRIPTION.md

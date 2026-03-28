@@ -22,6 +22,7 @@ datagroup_properties = ['temperature', 'pressure', 'ignition delay',
                         'pressure rise', 'laminar burning velocity',
                         'distance', 'flow rate', 'residence time',
                         'volumetric flow in reference state',
+                        'volumetric flow rate in reference state',
                         ]
 """`list`: Valid properties for a ReSpecTh dataGroup"""
 
@@ -162,7 +163,9 @@ def get_experiment_kind(root):
     """
     properties = {}
 
-    exp_type_text = getattr(root.find('experimentType'), 'text', '')
+    exp_type_text = (getattr(root.find('experimentType'), 'text', '') or '').strip()
+    if not exp_type_text:
+        raise MissingElementError('experimentType')
     exp_type_map = {
         'Ignition delay measurement': 'ignition delay',
         'Laminar burning velocity measurement': 'laminar burning velocity measurement',
@@ -526,6 +529,14 @@ def ReSpecTh_to_ChemKED(filename_xml, file_author='', file_author_orcid='', *, v
     # Determine definition of ignition delay (only for ignition delay experiments)
     if properties['experiment-type'] == 'ignition delay':
         properties['common-properties']['ignition-type'] = get_ignition_type(root)
+
+    # Only parse datapoints for ignition delay experiments;
+    # other experiment types are not yet supported by this converter.
+    if properties['experiment-type'] != 'ignition delay':
+        raise NotImplementedError(
+            properties['experiment-type'] + ' datapoint parsing not yet supported '
+            'in ReSpecTh_to_ChemKED. Use batch_convert.py instead.'
+        )
 
     # Now parse datapoints
     properties['datapoints'] = get_datapoints(root)

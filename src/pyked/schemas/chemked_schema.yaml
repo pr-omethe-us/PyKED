@@ -32,7 +32,9 @@ common-properties:
   schema:
     pressure: *value-unit-optional
     temperature: *value-unit-optional
-    ignition-type: *ignition-type
+    ignition-type:
+      <<: *ignition-type
+      required: false
     composition: *composition
     pressure-rise: *value-unit-optional
     residence-time: *value-unit-optional
@@ -74,8 +76,8 @@ apparatus:
         - constant volume combustion chamber
         - premixed
         - unstretched
-        - extrapolation method to zero stretch : LS
-        - extrapolation method to zero stretch : NQ
+        - "extrapolation method to zero stretch : LS"
+        - "extrapolation method to zero stretch : NQ"
         - counterflow
         - OPF
         - HFM
