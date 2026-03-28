@@ -371,10 +371,110 @@ def parse_initial_composition(prop_elem):
     return comp
 
 
-def _parse_uncertainty_or_esd_common(prop_elem):
-    """Parse an uncertainty or evaluated-standard-deviation property from commonProperties.
+def _ref_to_property_key(reference, dg_defs=None):
+    """Map a ReSpecTh uncertainty reference string to a ChemKED property key.
 
-    Returns a list of entry dicts suitable for the YAML output.
+    Returns None for composition/initial-composition references (per-species,
+    no scalar property to attach to).
+    """
+    if reference in ('composition', 'initial composition'):
+        return None
+    alias_map = {
+        'Sl': 'laminar-burning-velocity',
+        'SL': 'laminar-burning-velocity',
+        'Phi': 'equivalence-ratio',
+    }
+    if reference in alias_map:
+        return alias_map[reference]
+    # If reference looks like a dataGroup column id (e.g. 'x1'), resolve it
+    if dg_defs and reference in dg_defs:
+        return prop_name_to_key(dg_defs[reference]['name'])
+    # General case: space→hyphen
+    return prop_name_to_key(reference)
+
+
+def _build_inline_uncertainty(kind, bound, value_str, units):
+    """Build a PyKED inline uncertainty dict from ReSpecTh attributes.
+
+    Maps:
+      kind='absolute'|'relative' → uncertainty-type
+      bound='plusminus'          → uncertainty: <value>
+      bound='plus'               → upper-uncertainty: <value>
+      bound='minus'              → lower-uncertainty: <value>
+    """
+    unc_dict = {'uncertainty-type': kind}
+    if kind == 'absolute':
+        unc_value = f'{value_str} {units}'.strip()
+    else:
+        # relative uncertainties are unitless
+        unc_value = value_str
+    if bound in ('plusminus', ''):
+        unc_dict['uncertainty'] = unc_value
+    elif bound == 'plus':
+        unc_dict['upper-uncertainty'] = unc_value
+    elif bound == 'minus':
+        unc_dict['lower-uncertainty'] = unc_value
+    else:
+        unc_dict['uncertainty'] = unc_value
+    return unc_dict
+
+
+def _merge_inline_uncertainty(existing, new):
+    """Merge two inline uncertainty dicts (e.g. separate plus + minus → one dict)."""
+    merged = dict(existing)
+    for key in ('uncertainty', 'upper-uncertainty', 'lower-uncertainty'):
+        if key in new:
+            merged[key] = new[key]
+    return merged
+
+
+def _attach_comp_uncertainty_inline(comp_block, species_name, kind, bound,
+                                    raw_value, units):
+    """Attach inline uncertainty to a species amount in a composition block.
+
+    Composition amounts use bare floats, so uncertainty values are also floats
+    (in the same implicit units as the composition ``kind``).
+
+    Returns True if successfully attached, False if species not found.
+    """
+    for spec in comp_block.get('species', []):
+        if spec.get('species-name') != species_name:
+            continue
+        amount = spec.get('amount')
+        if not (isinstance(amount, list) and len(amount) >= 1):
+            return False
+
+        # Compute float uncertainty value
+        if kind == 'relative':
+            unc_val = float(raw_value)
+        else:  # absolute
+            if units in ('ppm', 'ppb', 'percent'):
+                unc_val, _ = normalize_comp_units(str(raw_value), units)
+            else:
+                unc_val = float(raw_value)
+
+        unc_dict = {'uncertainty-type': kind}
+        if bound in ('plusminus', ''):
+            unc_dict['uncertainty'] = unc_val
+        elif bound == 'plus':
+            unc_dict['upper-uncertainty'] = unc_val
+        elif bound == 'minus':
+            unc_dict['lower-uncertainty'] = unc_val
+        else:
+            unc_dict['uncertainty'] = unc_val
+
+        if len(amount) == 1:
+            spec['amount'] = [amount[0], unc_dict]
+        elif len(amount) == 2 and isinstance(amount[1], dict):
+            spec['amount'] = [amount[0], _merge_inline_uncertainty(amount[1], unc_dict)]
+        return True
+    return False
+
+
+def _parse_esd_common(prop_elem):
+    """Parse an evaluated-standard-deviation property from commonProperties.
+
+    Returns a list of standalone entry dicts.
     """
     attrs = prop_elem.attrib
     reference = attrs.get('reference', '')
@@ -382,14 +482,13 @@ def _parse_uncertainty_or_esd_common(prop_elem):
     units = attrs.get('units', '')
 
     base = {'reference': reference, 'kind': kind}
-    for attr in ('sourcetype', 'bound', 'method'):
+    for attr in ('sourcetype', 'method'):
         val = attrs.get(attr)
         if val:
             base[attr] = val
 
     entries = []
-    if reference == 'composition':
-        # Per-species entries: interleaved <speciesLink> + <value> children
+    if reference in ('composition', 'initial composition'):
         species_links = prop_elem.findall('speciesLink')
         values = prop_elem.findall('value')
         for sl, val_el in zip(species_links, values):
@@ -408,12 +507,14 @@ def _parse_uncertainty_or_esd_common(prop_elem):
             entry = dict(base)
             entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
             entries.append(entry)
-
     return entries
 
 
 def parse_common_properties(root, exp_type):
     common = {}
+    pending_uncs = []  # uncertainty prop_elems to process in second pass
+
+    # First pass: collect scalar properties, compositions, eval-std-dev
     for prop_elem in root.findall('commonProperties/property'):
         name = prop_elem.attrib.get('name', '')
 
@@ -429,11 +530,82 @@ def parse_common_properties(root, exp_type):
             if val_el is not None:
                 key = prop_name_to_key(name)
                 common[key] = [f'{_clean_numeric(val_el.text)} {units}']
-        elif name in ('uncertainty', 'evaluated standard deviation'):
-            entries = _parse_uncertainty_or_esd_common(prop_elem)
+        elif name == 'uncertainty':
+            pending_uncs.append(prop_elem)
+        elif name == 'evaluated standard deviation':
+            entries = _parse_esd_common(prop_elem)
             if entries:
-                key = 'uncertainty' if name == 'uncertainty' else 'evaluated-standard-deviation'
-                common.setdefault(key, []).extend(entries)
+                common.setdefault('evaluated-standard-deviation', []).extend(entries)
+
+    # Second pass: attach uncertainty inline or as standalone list
+    inline_uncs = {}  # key → inline unc dict (for merging plus/minus pairs)
+    for prop_elem in pending_uncs:
+        attrs = prop_elem.attrib
+        reference = attrs.get('reference', '')
+        kind = attrs.get('kind', '')
+        units = attrs.get('units', '')
+        bound = attrs.get('bound', '')
+
+        target_key = _ref_to_property_key(reference)
+        if target_key is not None and target_key in common:
+            # Scalar-reference: convert to inline uncertainty on the property
+            val_el = prop_elem.find('value')
+            if val_el is not None:
+                unc_dict = _build_inline_uncertainty(
+                    kind, bound, _clean_numeric(val_el.text), units
+                )
+                if target_key in inline_uncs:
+                    inline_uncs[target_key] = _merge_inline_uncertainty(
+                        inline_uncs[target_key], unc_dict
+                    )
+                else:
+                    inline_uncs[target_key] = unc_dict
+        elif reference in ('composition', 'initial composition') and 'composition' in common:
+            # Composition-reference: inline on species amount fields
+            species_links = prop_elem.findall('speciesLink')
+            values = prop_elem.findall('value')
+            for sl, val_el in zip(species_links, values):
+                spec = parse_species_link(sl)
+                species_name = spec.get('species-name', '')
+                raw_val = _clean_numeric(val_el.text)
+                if not _attach_comp_uncertainty_inline(
+                    common['composition'], species_name, kind, bound,
+                    raw_val, units
+                ):
+                    # Species not found in composition – fall back to standalone
+                    entry = {'reference': reference, 'kind': kind}
+                    for attr in ('sourcetype', 'bound'):
+                        v = attrs.get(attr)
+                        if v:
+                            entry[attr] = v
+                    entry.update(spec)
+                    if units in ('ppm', 'ppb', 'percent'):
+                        conv_val, conv_units = normalize_comp_units(
+                            val_el.text.strip(), units
+                        )
+                        entry['value'] = [f'{conv_val} {conv_units}']
+                    else:
+                        entry['value'] = [f'{raw_val} {units}']
+                    common.setdefault('uncertainty', []).append(entry)
+        else:
+            # Unresolved reference: standalone list
+            base = {'reference': reference, 'kind': kind}
+            for attr in ('sourcetype', 'bound'):
+                val = attrs.get(attr)
+                if val:
+                    base[attr] = val
+            val_el = prop_elem.find('value')
+            if val_el is not None:
+                entry = dict(base)
+                entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+                common.setdefault('uncertainty', []).append(entry)
+
+    # Attach inline uncertainties to their property fields
+    for key, unc_dict in inline_uncs.items():
+        prop_val = common[key]
+        if isinstance(prop_val, list) and len(prop_val) >= 1:
+            # Append inline uncertainty dict: ['1010 K'] → ['1010 K', {...}]
+            common[key] = [prop_val[0], unc_dict]
 
     return common
 
@@ -524,10 +696,22 @@ def build_initial_composition(prop_defs, dp_elem):
     return comp
 
 
-def build_uncertainty_entries(dg_defs, dp_elem):
-    """Build uncertainty and evaluated-standard-deviation entries from datapoint columns."""
-    unc_entries = []
+def build_uncertainty_entries(dg_defs, dp_elem, dp=None):
+    """Build uncertainty and evaluated-standard-deviation entries from datapoint columns.
+
+    For uncertainty entries:
+      - Scalar references (temperature, pressure, etc.) are converted to inline
+        PyKED uncertainty format and attached directly to dp[key] if dp is given.
+      - Composition references are inlined on the matching species ``amount``
+        field in dp['composition'] or dp['measured-composition'] when possible.
+
+    For eval-std-dev, all entries stay as standalone list entries.
+
+    Returns (standalone_unc_entries, esd_entries).
+    """
+    standalone_unc = []
     esd_entries = []
+    inline_uncs = {}  # target_key → inline unc dict
 
     for val_el in dp_elem:
         pid = val_el.tag
@@ -536,30 +720,93 @@ def build_uncertainty_entries(dg_defs, dp_elem):
         pdef = dg_defs[pid]
         name = pdef['name']
 
-        if name == 'uncertainty':
-            target = unc_entries
-        elif name == 'evaluated standard deviation':
-            target = esd_entries
-        else:
+        if name not in ('uncertainty', 'evaluated standard deviation'):
             continue
 
-        entry = {'reference': pdef.get('reference', ''), 'kind': pdef.get('kind', '')}
-        for attr in ('sourcetype', 'bound', 'method'):
-            if attr in pdef:
-                entry[attr] = pdef[attr]
-        if 'species' in pdef:
-            entry.update(pdef['species'])
-
-        units = pdef.get('units', '')
         ref = pdef.get('reference', '')
-        if ref == 'composition' and units in ('ppm', 'ppb', 'percent'):
-            conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
-            entry['value'] = [f'{conv_val} {conv_units}']
-        else:
-            entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
-        target.append(entry)
+        kind = pdef.get('kind', '')
+        units = pdef.get('units', '')
 
-    return unc_entries, esd_entries
+        if name == 'evaluated standard deviation':
+            entry = {'reference': ref, 'kind': kind}
+            for attr in ('sourcetype', 'method'):
+                if attr in pdef:
+                    entry[attr] = pdef[attr]
+            if 'species' in pdef:
+                entry.update(pdef['species'])
+            if ref in ('composition', 'initial composition') and units in ('ppm', 'ppb', 'percent'):
+                conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
+                entry['value'] = [f'{conv_val} {conv_units}']
+            else:
+                entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+            esd_entries.append(entry)
+            continue
+
+        # name == 'uncertainty'
+        target_key = _ref_to_property_key(ref, dg_defs)
+        if target_key is not None and dp is not None and target_key in dp:
+            # Scalar reference: build inline uncertainty
+            bound = pdef.get('bound', '')
+            unc_dict = _build_inline_uncertainty(
+                kind, bound, _clean_numeric(val_el.text), units
+            )
+            if target_key in inline_uncs:
+                inline_uncs[target_key] = _merge_inline_uncertainty(
+                    inline_uncs[target_key], unc_dict
+                )
+            else:
+                inline_uncs[target_key] = unc_dict
+        elif ref in ('composition', 'initial composition') and dp is not None:
+            # Composition reference: try to inline on species amount fields
+            species_name = pdef.get('species', {}).get('species-name', '')
+            bound = pdef.get('bound', '')
+            raw_val = _clean_numeric(val_el.text)
+            inlined = False
+            if species_name:
+                for comp_key in ('composition', 'measured-composition'):
+                    comp_block = dp.get(comp_key)
+                    if comp_block and _attach_comp_uncertainty_inline(
+                        comp_block, species_name, kind, bound, raw_val, units
+                    ):
+                        inlined = True
+                        break
+            if not inlined:
+                # Fall back to standalone
+                entry = {'reference': ref, 'kind': kind}
+                for attr in ('sourcetype', 'bound'):
+                    if attr in pdef:
+                        entry[attr] = pdef[attr]
+                if 'species' in pdef:
+                    entry.update(pdef['species'])
+                if units in ('ppm', 'ppb', 'percent'):
+                    conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
+                    entry['value'] = [f'{conv_val} {conv_units}']
+                else:
+                    entry['value'] = [f'{raw_val} {units}']
+                standalone_unc.append(entry)
+        else:
+            # Unresolved reference: standalone
+            entry = {'reference': ref, 'kind': kind}
+            for attr in ('sourcetype', 'bound'):
+                if attr in pdef:
+                    entry[attr] = pdef[attr]
+            if 'species' in pdef:
+                entry.update(pdef['species'])
+            if ref in ('composition', 'initial composition') and units in ('ppm', 'ppb', 'percent'):
+                conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
+                entry['value'] = [f'{conv_val} {conv_units}']
+            else:
+                entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+            standalone_unc.append(entry)
+
+    # Attach inline uncertainties to the datapoint property fields
+    if dp is not None:
+        for key, unc_dict in inline_uncs.items():
+            prop_val = dp[key]
+            if isinstance(prop_val, list) and len(prop_val) >= 1:
+                dp[key] = [prop_val[0], unc_dict]
+
+    return standalone_unc, esd_entries
 
 
 # ---------------------------------------------------------------------------
@@ -591,7 +838,7 @@ def parse_idt_datapoints(root, dg, dg_defs, common):
                 continue
             if name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el, dp)
         if unc:
             dp['uncertainty'] = unc
         if esd:
@@ -662,7 +909,7 @@ def parse_lbv_datapoints(dg, dg_defs, common):
                 dp['equivalence-ratio'] = float(val_el.text)
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el, dp)
         if unc:
             dp['uncertainty'] = unc
         if esd:
@@ -693,7 +940,7 @@ def parse_jsr_datapoints(dg, dg_defs, common):
                 continue
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el, dp)
         if unc:
             dp['uncertainty'] = unc
         if esd:
@@ -781,7 +1028,7 @@ def parse_ocm_datapoints(dg, dg_defs, common):
                 dp['equivalence-ratio'] = float(val_el.text)
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el, dp)
         if unc:
             dp['uncertainty'] = unc
         if esd:
@@ -808,7 +1055,7 @@ def parse_bsfsm_datapoints(dg, dg_defs, common):
                 continue
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el, dp)
         if unc:
             dp['uncertainty'] = unc
         if esd:
@@ -897,6 +1144,73 @@ def _convert_file_inner(root, xml_path):
         for key, val in common.items():
             if key not in dp:
                 dp[key] = val
+
+    # Post-merge: inline any remaining standalone scalar uncertainties
+    for dp in props['datapoints']:
+        remaining = []
+        for entry in dp.get('uncertainty', []):
+            ref = entry.get('reference', '')
+            target_key = _ref_to_property_key(ref)
+            if target_key and target_key in dp:
+                unc_kind = entry.get('kind', '')
+                bound = entry.get('bound', '')
+                val_parts = entry.get('value', [''])[0].split(' ', 1)
+                val_str = val_parts[0]
+                unc_units = val_parts[1] if len(val_parts) > 1 else ''
+                unc_dict = _build_inline_uncertainty(unc_kind, bound, val_str, unc_units)
+                prop_val = dp[target_key]
+                if isinstance(prop_val, list) and len(prop_val) >= 1:
+                    if len(prop_val) == 2 and isinstance(prop_val[1], dict):
+                        dp[target_key] = [prop_val[0], _merge_inline_uncertainty(prop_val[1], unc_dict)]
+                    else:
+                        dp[target_key] = [prop_val[0], unc_dict]
+                else:
+                    remaining.append(entry)
+            elif ref in ('composition', 'initial composition'):
+                species_name = entry.get('species-name', '')
+                unc_kind = entry.get('kind', '')
+                bound = entry.get('bound', '')
+                val_parts = entry.get('value', [''])[0].split(' ', 1)
+                val_str = val_parts[0]
+                unc_units = val_parts[1] if len(val_parts) > 1 else ''
+                inlined = False
+                if species_name:
+                    for comp_key in ('composition', 'measured-composition'):
+                        comp_block = dp.get(comp_key)
+                        if comp_block and _attach_comp_uncertainty_inline(
+                            comp_block, species_name, unc_kind, bound,
+                            val_str, unc_units
+                        ):
+                            inlined = True
+                            break
+                if not inlined:
+                    remaining.append(entry)
+            else:
+                remaining.append(entry)
+        if remaining:
+            dp['uncertainty'] = remaining
+        elif 'uncertainty' in dp:
+            del dp['uncertainty']
+
+    # Clean up common uncertainty list: keep only entries still referenced by
+    # at least one datapoint (avoids duplication with inline values).
+    if 'uncertainty' in common:
+        # Gather keys of entries still needed by datapoints
+        still_needed = set()
+        for dp in props['datapoints']:
+            for entry in dp.get('uncertainty', []):
+                key = (entry.get('reference', ''), entry.get('species-name', ''),
+                       entry.get('kind', ''), entry.get('bound', ''))
+                still_needed.add(key)
+        remaining_common = [
+            e for e in common['uncertainty']
+            if (e.get('reference', ''), e.get('species-name', ''),
+                e.get('kind', ''), e.get('bound', '')) in still_needed
+        ]
+        if remaining_common:
+            common['uncertainty'] = remaining_common
+        else:
+            del common['uncertainty']
 
     return props
 
