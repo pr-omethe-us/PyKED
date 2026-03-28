@@ -1,5 +1,5 @@
-# Schema for laminar burning velocity measurement datapoints
-laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measurement-schema
+# Schema for jet stirred reactor measurement datapoints
+jet-stirred-reactor-measurement-schema: &jet-stirred-reactor-measurement-schema
   type: list
   minlength: 1
   schema:
@@ -7,11 +7,11 @@ laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measureme
     schema:
       pressure: *value-unit-required
       temperature: *value-unit-required
-      laminar-burning-velocity: *value-unit-required
-      pressure-rise: *value-unit-optional
       composition: *composition
       equivalence-ratio:
         type: float
         min: 0.0
+      environment-temperature: *value-unit-optional
       uncertainty: *uncertainty-list-optional
       evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
+      measured-composition: *composition

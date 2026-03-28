@@ -78,13 +78,17 @@ SCALAR_DG_PROPS = {
     'temperature', 'pressure', 'ignition delay', 'pressure rise',
     'laminar burning velocity', 'distance', 'flow rate',
     'residence time', 'volumetric flow rate in reference state',
-    'volume', 'time',
+    'volume', 'time', 'environment temperature',
 }
 
 # Properties valid as scalar value+unit in commonProperties
 SCALAR_COMMON_PROPS = {
     'temperature', 'pressure', 'residence time', 'volume',
-    'flow rate', 'reactor volume',
+    'flow rate', 'reactor volume', 'pressure rise',
+    'laminar burning velocity', 'environment temperature',
+    'global heat exchange coefficient', 'exchange area',
+    'reactor length', 'reactor diameter',
+    'pressure in reference state', 'temperature in reference state',
 }
 
 
@@ -252,6 +256,13 @@ def prop_name_to_key(name):
     special = {
         'volume': 'reactor-volume',
         'volumetric-flow-rate-in-reference-state': 'volumetric-flow-in-reference-state',
+        'environment-temperature': 'environment-temperature',
+        'global-heat-exchange-coefficient': 'global-heat-exchange-coefficient',
+        'exchange-area': 'exchange-area',
+        'reactor-length': 'reactor-length',
+        'reactor-diameter': 'reactor-diameter',
+        'pressure-in-reference-state': 'pressure-in-reference-state',
+        'temperature-in-reference-state': 'temperature-in-reference-state',
     }
     return special.get(key, key)
 
@@ -360,6 +371,47 @@ def parse_initial_composition(prop_elem):
     return comp
 
 
+def _parse_uncertainty_or_esd_common(prop_elem):
+    """Parse an uncertainty or evaluated-standard-deviation property from commonProperties.
+
+    Returns a list of entry dicts suitable for the YAML output.
+    """
+    attrs = prop_elem.attrib
+    reference = attrs.get('reference', '')
+    kind = attrs.get('kind', '')
+    units = attrs.get('units', '')
+
+    base = {'reference': reference, 'kind': kind}
+    for attr in ('sourcetype', 'bound', 'method'):
+        val = attrs.get(attr)
+        if val:
+            base[attr] = val
+
+    entries = []
+    if reference == 'composition':
+        # Per-species entries: interleaved <speciesLink> + <value> children
+        species_links = prop_elem.findall('speciesLink')
+        values = prop_elem.findall('value')
+        for sl, val_el in zip(species_links, values):
+            entry = dict(base)
+            spec = parse_species_link(sl)
+            entry.update(spec)
+            if units in ('ppm', 'ppb', 'percent'):
+                conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
+                entry['value'] = [f'{conv_val} {conv_units}']
+            else:
+                entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+            entries.append(entry)
+    else:
+        val_el = prop_elem.find('value')
+        if val_el is not None:
+            entry = dict(base)
+            entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+            entries.append(entry)
+
+    return entries
+
+
 def parse_common_properties(root, exp_type):
     common = {}
     for prop_elem in root.findall('commonProperties/property'):
@@ -377,9 +429,11 @@ def parse_common_properties(root, exp_type):
             if val_el is not None:
                 key = prop_name_to_key(name)
                 common[key] = [f'{_clean_numeric(val_el.text)} {units}']
-        # Silently skip: evaluated standard deviation, uncertainty,
-        # global heat exchange coefficient, exchange area, reactor length,
-        # reactor diameter, pressure/temperature in reference state, etc.
+        elif name in ('uncertainty', 'evaluated standard deviation'):
+            entries = _parse_uncertainty_or_esd_common(prop_elem)
+            if entries:
+                key = 'uncertainty' if name == 'uncertainty' else 'evaluated-standard-deviation'
+                common.setdefault(key, []).extend(entries)
 
     return common
 
@@ -400,7 +454,7 @@ def parse_ignition_type(root):
 # ---------------------------------------------------------------------------
 
 def parse_datagroup_props(data_group):
-    """Return {id: {name, units, species?}} for each <property> in a dataGroup."""
+    """Return {id: {name, units, species?, + uncertainty attrs}} for each <property>."""
     defs = {}
     for prop in data_group.findall('property'):
         pid = prop.attrib['id']
@@ -411,6 +465,11 @@ def parse_datagroup_props(data_group):
         sl = prop.find('speciesLink')
         if sl is not None:
             entry['species'] = parse_species_link(sl)
+        # Extra attributes for uncertainty / evaluated standard deviation
+        for attr in ('reference', 'kind', 'bound', 'method', 'sourcetype'):
+            val = prop.attrib.get(attr)
+            if val:
+                entry[attr] = val
         defs[pid] = entry
     return defs
 
@@ -442,6 +501,67 @@ def build_composition(prop_defs, dp_elem):
     return comp
 
 
+def build_initial_composition(prop_defs, dp_elem):
+    """Build initial composition dict from 'initial composition' columns."""
+    entries = []
+    for val_el in dp_elem:
+        pid = val_el.tag
+        if pid not in prop_defs:
+            continue
+        pdef = prop_defs[pid]
+        if pdef['name'] != 'initial composition':
+            continue
+        spec = dict(pdef.get('species', {}))
+        val, kind = normalize_comp_units(val_el.text, pdef['units'])
+        entries.append((spec, val, kind))
+    if not entries:
+        return None
+    target_kind, resolved = _reconcile_composition(entries)
+    comp = {'kind': target_kind, 'species': []}
+    for spec, val in resolved:
+        spec['amount'] = [val]
+        comp['species'].append(spec)
+    return comp
+
+
+def build_uncertainty_entries(dg_defs, dp_elem):
+    """Build uncertainty and evaluated-standard-deviation entries from datapoint columns."""
+    unc_entries = []
+    esd_entries = []
+
+    for val_el in dp_elem:
+        pid = val_el.tag
+        if pid not in dg_defs:
+            continue
+        pdef = dg_defs[pid]
+        name = pdef['name']
+
+        if name == 'uncertainty':
+            target = unc_entries
+        elif name == 'evaluated standard deviation':
+            target = esd_entries
+        else:
+            continue
+
+        entry = {'reference': pdef.get('reference', ''), 'kind': pdef.get('kind', '')}
+        for attr in ('sourcetype', 'bound', 'method'):
+            if attr in pdef:
+                entry[attr] = pdef[attr]
+        if 'species' in pdef:
+            entry.update(pdef['species'])
+
+        units = pdef.get('units', '')
+        ref = pdef.get('reference', '')
+        if ref == 'composition' and units in ('ppm', 'ppb', 'percent'):
+            conv_val, conv_units = normalize_comp_units(val_el.text.strip(), units)
+            entry['value'] = [f'{conv_val} {conv_units}']
+        else:
+            entry['value'] = [f'{_clean_numeric(val_el.text)} {units}']
+        target.append(entry)
+
+    return unc_entries, esd_entries
+
+
 # ---------------------------------------------------------------------------
 # Per-experiment-type datapoint parsers
 # ---------------------------------------------------------------------------
@@ -467,10 +587,15 @@ def parse_idt_datapoints(root, dg, dg_defs, common):
                 continue
             pdef = dg_defs[pid]
             name = pdef['name']
-            if name == 'composition':
+            if name in ('composition', 'uncertainty', 'evaluated standard deviation'):
                 continue
             if name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        if unc:
+            dp['uncertainty'] = unc
+        if esd:
+            dp['evaluated-standard-deviation'] = esd
         datapoints.append(dp)
 
     # Handle additional dataGroups (volume/pressure/temperature time histories)
@@ -537,7 +662,11 @@ def parse_lbv_datapoints(dg, dg_defs, common):
                 dp['equivalence-ratio'] = float(val_el.text)
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-            # Skip: uncertainty, evaluated standard deviation
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        if unc:
+            dp['uncertainty'] = unc
+        if esd:
+            dp['evaluated-standard-deviation'] = esd
         datapoints.append(dp)
     return datapoints
 
@@ -550,17 +679,25 @@ def parse_jsr_datapoints(dg, dg_defs, common):
         measured = build_composition(dg_defs, dp_el)
         if measured:
             dp['measured-composition'] = measured
+        init_comp = build_initial_composition(dg_defs, dp_el)
+        if init_comp:
+            dp['composition'] = init_comp
         for val_el in dp_el:
             pid = val_el.tag
             if pid not in dg_defs:
                 continue
             pdef = dg_defs[pid]
             name = pdef['name']
-            if name == 'composition':
+            if name in ('composition', 'initial composition',
+                        'uncertainty', 'evaluated standard deviation'):
                 continue
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-            # Skip: uncertainty, evaluated std dev, environment temperature
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        if unc:
+            dp['uncertainty'] = unc
+        if esd:
+            dp['evaluated-standard-deviation'] = esd
         datapoints.append(dp)
     return datapoints
 
@@ -596,12 +733,24 @@ def parse_ctpm_datapoints(dg, dg_defs, common):
         profile = {'species-name': spec_info.get('species-name', '')}
         if 'InChI' in spec_info:
             profile['InChI'] = spec_info['InChI']
-        profile['quantity'] = {'units': units}
+
+        # Determine if we need to convert ppm/ppb/percent → mole fraction
+        needs_conv = units in ('ppm', 'ppb', 'percent')
+        if needs_conv:
+            _, conv_units = normalize_comp_units('1', units)
+        else:
+            conv_units = units
+
+        profile['quantity'] = {'units': conv_units}
         profile['time'] = {'units': time_units}
         profile['values'] = []
         for row in rows:
             t_val = float(row.get(time_id, 0))
-            c_val = float(row.get(sid, 0))
+            c_raw = float(row.get(sid, 0))
+            if needs_conv:
+                c_val, _ = normalize_comp_units(str(c_raw), units)
+            else:
+                c_val = c_raw
             profile['values'].append([t_val, c_val])
         profiles.append(profile)
 
@@ -616,18 +765,27 @@ def parse_ocm_datapoints(dg, dg_defs, common):
         measured = build_composition(dg_defs, dp_el)
         if measured:
             dp['measured-composition'] = measured
+        init_comp = build_initial_composition(dg_defs, dp_el)
+        if init_comp:
+            dp['composition'] = init_comp
         for val_el in dp_el:
             pid = val_el.tag
             if pid not in dg_defs:
                 continue
             pdef = dg_defs[pid]
             name = pdef['name']
-            if name == 'composition':
+            if name in ('composition', 'initial composition',
+                        'uncertainty', 'evaluated standard deviation'):
                 continue
             elif name == 'equivalence ratio':
                 dp['equivalence-ratio'] = float(val_el.text)
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        if unc:
+            dp['uncertainty'] = unc
+        if esd:
+            dp['evaluated-standard-deviation'] = esd
         datapoints.append(dp)
     return datapoints
 
@@ -646,10 +804,15 @@ def parse_bsfsm_datapoints(dg, dg_defs, common):
                 continue
             pdef = dg_defs[pid]
             name = pdef['name']
-            if name == 'composition':
+            if name in ('composition', 'uncertainty', 'evaluated standard deviation'):
                 continue
             elif name in SCALAR_DG_PROPS:
                 dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        unc, esd = build_uncertainty_entries(dg_defs, dp_el)
+        if unc:
+            dp['uncertainty'] = unc
+        if esd:
+            dp['evaluated-standard-deviation'] = esd
         datapoints.append(dp)
     return datapoints
 
