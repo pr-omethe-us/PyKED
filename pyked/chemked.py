@@ -629,6 +629,9 @@ class DataPoint(object):
         'ignition-delay', 'first-stage-ignition-delay', 'temperature', 'pressure',
         'pressure-rise', 'laminar-burning-velocity', 'distance', 'flow-rate',
         'residence-time', 'volumetric-flow-in-reference-state', 'reactor-volume',
+        'environment-temperature', 'global-heat-exchange-coefficient', 'exchange-area',
+        'reactor-length', 'reactor-diameter',
+        'pressure-in-reference-state', 'temperature-in-reference-state',
     ]
 
     rcm_data_props = [
@@ -703,6 +706,10 @@ class DataPoint(object):
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
         self.ignition_type = deepcopy(properties.get('ignition-type'))
+
+        # Uncertainty and evaluated standard deviation metadata
+        self.uncertainty = properties.get('uncertainty', [])
+        self.evaluated_standard_deviation = properties.get('evaluated-standard-deviation', [])
 
         if 'time-histories' in properties and 'volume-history' in properties:
             raise TypeError('time-histories and volume-history are mutually exclusive')

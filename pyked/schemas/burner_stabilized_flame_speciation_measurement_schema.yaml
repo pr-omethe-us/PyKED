@@ -1,5 +1,5 @@
-# Schema for laminar burning velocity measurement datapoints
-laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measurement-schema
+# Schema for burner stabilized flame speciation measurement datapoints
+burner-stabilized-flame-speciation-measurement-schema: &burner-stabilized-flame-speciation-measurement-schema
   type: list
   minlength: 1
   schema:
@@ -7,11 +7,12 @@ laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measureme
     schema:
       pressure: *value-unit-required
       temperature: *value-unit-required
-      laminar-burning-velocity: *value-unit-required
-      pressure-rise: *value-unit-optional
       composition: *composition
       equivalence-ratio:
         type: float
         min: 0.0
       uncertainty: *uncertainty-list-optional
       evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
+      distance: *value-unit-required
+      flow-rate: *value-unit-optional
+      measured-composition: *composition
