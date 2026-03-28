@@ -14,6 +14,7 @@ Usage:
 import os
 import sys
 import xml.etree.ElementTree as ET
+from collections import Counter
 from pathlib import Path
 import yaml
 import argparse
@@ -164,26 +165,62 @@ def parse_species_link(elem):
     return info
 
 
+def _clean_numeric(text):
+    """Clean numeric string: strip leading zeros to avoid YAML octal issues."""
+    text = text.strip()
+    try:
+        val = float(text)
+        if val != val:  # NaN
+            return text
+        # Integer-valued: format as integer string
+        if val == int(val) and '.' not in text and 'e' not in text.lower():
+            return str(int(val))
+        # Otherwise format cleanly (strips trailing zeros, avoids float noise)
+        return f'{val:.12g}'
+    except (ValueError, OverflowError):
+        return text
+
+
 def normalize_comp_units(value_str, units):
     """Normalise composition amount → (float, kind_string).
 
-    Converts ppm, ppb, and percent to mole fraction for consistency.
-    Concentration units (mol/cm3 etc.) are kept as-is.
+    Matches the existing PyKED converter convention:
+      - percent  → mole percent  (value unchanged)
+      - ppm      → mole fraction (value × 1e-6)
+      - ppb      → mole fraction (value × 1e-9)
+      - mole fraction / mass fraction / mole percent → unchanged
     """
     val = float(value_str)
-    if units == 'mole fraction':
-        return val, 'mole fraction'
-    elif units == 'mass fraction':
-        return val, 'mass fraction'
-    elif units in ('mole percent', 'percent'):
-        return val / 100.0, 'mole fraction'
-    elif units == 'ppm':
-        return val * 1e-6, 'mole fraction'
-    elif units == 'ppb':
-        return val * 1e-9, 'mole fraction'
-    else:
-        # Keep as-is for concentration units (mol/cm3, etc.)
+    if units in ('mole fraction', 'mass fraction', 'mole percent'):
         return val, units
+    elif units in ('percent',):
+        return val, 'mole percent'
+    elif units == 'ppm':
+        return float(f'{val * 1e-6:.10g}'), 'mole fraction'
+    elif units == 'ppb':
+        return float(f'{val * 1e-9:.10g}'), 'mole fraction'
+    else:
+        # Concentration units (mol/cm3, etc.) – keep as-is
+        return val, units
+
+
+def _reconcile_composition(entries):
+    """Pick a single kind for the composition block.
+
+    *entries*: list of (spec_dict, value, kind) tuples.
+    Returns (target_kind, [(spec_dict, value)]).
+    After normalisation, all entries should share the same kind.
+    If mixed, the dominant kind is used and a warning is logged.
+    """
+    kinds = set(e[2] for e in entries)
+    if len(kinds) == 1:
+        k = kinds.pop()
+        return k, [(e[0], e[1]) for e in entries]
+    # Mixed units – pick dominant kind, pass values through as-is
+    kind_counts = Counter(e[2] for e in entries)
+    dominant = kind_counts.most_common(1)[0][0]
+    log.warning(f'Mixed composition units {dict(kind_counts)}; using {dominant!r}')
+    return dominant, [(e[0], e[1]) for e in entries]
 
 
 def prop_name_to_key(name):
@@ -279,7 +316,7 @@ def parse_experiment_kind(root):
 # ---------------------------------------------------------------------------
 
 def parse_initial_composition(prop_elem):
-    comp = {'kind': None, 'species': []}
+    entries = []  # [(spec_dict, value, kind)]
     for component in prop_elem.findall('component'):
         sl = component.find('speciesLink')
         amount_el = component.find('amount')
@@ -288,10 +325,15 @@ def parse_initial_composition(prop_elem):
         spec = parse_species_link(sl)
         units = amount_el.attrib.get('units', 'mole fraction')
         val, kind = normalize_comp_units(amount_el.text, units)
+        entries.append((spec, val, kind))
+    comp = {'kind': None, 'species': []}
+    if not entries:
+        return comp
+    target_kind, resolved = _reconcile_composition(entries)
+    comp['kind'] = target_kind
+    for spec, val in resolved:
         spec['amount'] = [val]
         comp['species'].append(spec)
-        if comp['kind'] is None:
-            comp['kind'] = kind
     return comp
 
 
@@ -311,7 +353,7 @@ def parse_common_properties(root, exp_type):
             units = prop_elem.attrib.get('units', '')
             if val_el is not None:
                 key = prop_name_to_key(name)
-                common[key] = [f'{val_el.text} {units}']
+                common[key] = [f'{_clean_numeric(val_el.text)} {units}']
         # Silently skip: evaluated standard deviation, uncertainty,
         # global heat exchange coefficient, exchange area, reactor length,
         # reactor diameter, pressure/temperature in reference state, etc.
@@ -356,7 +398,7 @@ def parse_datagroup_props(data_group):
 
 def build_composition(prop_defs, dp_elem):
     """Build a composition dict from composition columns in a datapoint."""
-    comp = {'kind': None, 'species': []}
+    entries = []  # [(spec_dict, value, kind)]
     for val_el in dp_elem:
         pid = val_el.tag
         if pid not in prop_defs:
@@ -365,12 +407,16 @@ def build_composition(prop_defs, dp_elem):
         if pdef['name'] != 'composition':
             continue
         spec = dict(pdef.get('species', {}))
-        amount, kind = normalize_comp_units(val_el.text, pdef['units'])
-        spec['amount'] = [amount]
+        val, kind = normalize_comp_units(val_el.text, pdef['units'])
+        entries.append((spec, val, kind))
+    if not entries:
+        return None
+    target_kind, resolved = _reconcile_composition(entries)
+    comp = {'kind': target_kind, 'species': []}
+    for spec, val in resolved:
+        spec['amount'] = [val]
         comp['species'].append(spec)
-        if comp['kind'] is None:
-            comp['kind'] = kind
-    return comp if comp['species'] else None
+    return comp
 
 
 # ---------------------------------------------------------------------------
@@ -378,8 +424,8 @@ def build_composition(prop_defs, dp_elem):
 # ---------------------------------------------------------------------------
 
 def _scalar_value(val_text, units):
-    """Build a scalar value+unit list entry like ['12.60 atm']."""
-    return [f'{val_text} {units}']
+    """Build a scalar value+unit list entry like ['700 K']."""
+    return [f'{_clean_numeric(val_text)} {units}']
 
 
 def parse_idt_datapoints(root, dg, dg_defs, common):
