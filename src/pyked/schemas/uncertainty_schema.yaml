@@ -1,8 +1,11 @@
-# Schema for uncertainty and evaluated standard deviation entries
+# Schema for composition-reference uncertainty and evaluated standard deviation
 #
-# These represent measurement quality metadata that can appear
-# in both common-properties and per-datapoint contexts.
+# Scalar-reference uncertainties (temperature, pressure, ignition delay, etc.)
+# use the existing PyKED inline uncertainty format in value_unit_schema.yaml.
+# These standalone lists are for per-species composition uncertainties (no
+# inline target) and evaluated standard deviation (a distinct concept).
 
+# Composition-reference uncertainty (per-species)
 uncertainty-entry: &uncertainty-entry
   type: dict
   schema:
@@ -29,6 +32,7 @@ uncertainty-list-optional: &uncertainty-list-optional
   type: list
   schema: *uncertainty-entry
 
+# Evaluated standard deviation (any reference)
 evaluated-standard-deviation-entry: &evaluated-standard-deviation-entry
   type: dict
   schema:
