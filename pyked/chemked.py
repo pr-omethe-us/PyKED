@@ -628,7 +628,7 @@ class DataPoint(object):
     value_unit_props = [
         'ignition-delay', 'first-stage-ignition-delay', 'temperature', 'pressure',
         'pressure-rise', 'laminar-burning-velocity', 'distance', 'flow-rate',
-        'residence-time', 'volumetric-flow-in-reference-state',
+        'residence-time', 'volumetric-flow-in-reference-state', 'reactor-volume',
     ]
 
     rcm_data_props = [

@@ -5,26 +5,46 @@ Converts experiment XML files from ReSpecTh/indirect/ to ChemKED YAML format
 and organises them into ChemKED-database directory structure.
 
 Usage:
-    python convert_respecth_to_chemked.py
-    python convert_respecth_to_chemked.py -i ReSpecTh/indirect -o ChemKED-database
-    python convert_respecth_to_chemked.py --file ReSpecTh/indirect/ammonia/.../x20100057.xml
-    python convert_respecth_to_chemked.py --dry-run
+    python batch_convert.py
+    python batch_convert.py -i ReSpecTh/indirect -o ChemKED-database
+    python batch_convert.py --file ReSpecTh/indirect/ammonia/.../x20100057.xml
+    python batch_convert.py --dry-run
 """
 
+import importlib
 import os
-import sys
 import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 import yaml
 import argparse
 import logging
-import traceback
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 log = logging.getLogger(__name__)
 
-CHEMKED_VERSION = '0.4.1'
+
+def _get_chemked_version():
+    """Return the ChemKED schema version from the packaged schema, or a default."""
+    default = '0.4.1'
+    try:
+        schema_mod = importlib.import_module('pyked.validation')
+    except ImportError:
+        return default
+    schema = getattr(schema_mod, 'schema', None)
+    if not isinstance(schema, dict):
+        return default
+    allowed = schema.get('chemked-version', {}).get('allowed')
+    if isinstance(allowed, (list, tuple)) and allowed:
+        return str(allowed[-1])
+    return default
+
+
+CHEMKED_VERSION = _get_chemked_version()
+
+
+class UnsupportedUnitsError(Exception):
+    """Raised when composition uses units not supported by the ChemKED schema."""
 
 
 # Custom YAML dumper that preserves dict insertion order
@@ -200,8 +220,11 @@ def normalize_comp_units(value_str, units):
     elif units == 'ppb':
         return float(f'{val * 1e-9:.10g}'), 'mole fraction'
     else:
-        # Concentration units (mol/cm3, etc.) – keep as-is
-        return val, units
+        raise UnsupportedUnitsError(
+            f'Composition units {units!r} not supported. '
+            'Must be one of: mole fraction, mass fraction, mole percent, '
+            'percent, ppm, or ppb.'
+        )
 
 
 def _reconcile_composition(entries):
@@ -653,6 +676,16 @@ def convert_file(xml_path):
     # Only handle <experiment> root elements
     if root.tag != 'experiment':
         return None
+
+    # Skip files with unsupported composition units (e.g. mol/cm3)
+    try:
+        return _convert_file_inner(root, xml_path)
+    except UnsupportedUnitsError as e:
+        log.info(f'Skipping {os.path.basename(xml_path)}: {e}')
+        return None
+
+
+def _convert_file_inner(root, xml_path):
 
     xml_filename = os.path.basename(xml_path)
 

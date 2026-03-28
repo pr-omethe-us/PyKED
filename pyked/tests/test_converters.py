@@ -353,6 +353,7 @@ class TestGetExperiment(object):
     """
     @pytest.mark.parametrize('apparatus', [
         'shock tube', 'rapid compression machine',
+        'flow reactor', 'jet stirred reactor', 'flame',
         ])
     def test_proper_experiment_types(self, apparatus):
         """Ensure proper validation of accepted experiment types.
@@ -368,12 +369,29 @@ class TestGetExperiment(object):
         assert ref['experiment-type'] == 'ignition delay'
         assert ref['apparatus']['kind'] == apparatus
 
+    @pytest.mark.parametrize('experiment_type,expected', [
+        ('Laminar burning velocity measurement', 'laminar burning velocity measurement'),
+        ('Outlet concentration measurement', 'outlet concentration measurement'),
+        ('Concentration time profile measurement', 'concentration time profile measurement'),
+        ('Jet stirred reactor measurement', 'jet stirred reactor measurement'),
+        ('Burner stabilized flame speciation measurement', 'burner stabilized flame speciation measurement'),
+        ])
+    def test_supported_experiment_types(self, experiment_type, expected):
+        """Ensure newly supported experiment types are accepted.
+        """
+        root = etree.Element('experiment')
+        exp = etree.SubElement(root, 'experimentType')
+        exp.text = experiment_type
+        app = etree.SubElement(root, 'apparatus')
+        kind = etree.SubElement(app, 'kind')
+        kind.text = 'shock tube'
+
+        ref = get_experiment_kind(root)
+        assert ref['experiment-type'] == expected
+
     @pytest.mark.parametrize('experiment_type', [
         'Laminar flame speed measurement',
-        'Outlet concentration measurement',
-        'Concentration time profile measurement',
-        'Jet stirred reactor measurement',
-        'Burner stabilized flame speciation measurement',
+        'Some unknown experiment',
         ])
     def test_invalid_experiment_types(self, experiment_type):
         """Ensure unsupported types raise correct errors.
@@ -389,8 +407,8 @@ class TestGetExperiment(object):
     @pytest.mark.parametrize('apparatus', [
         'perfectly stirred reactor', 'internal combustion engine', 'flow reactor'
         ])
-    def test_invalid_apparatus_types(self, apparatus):
-        """Ensure unsupported apparatus types raise correct errors.
+    def test_accepted_apparatus_types(self, apparatus):
+        """Ensure previously unsupported apparatus types are now accepted.
         """
         root = etree.Element('experiment')
         exp = etree.SubElement(root, 'experimentType')
@@ -399,9 +417,8 @@ class TestGetExperiment(object):
         kind = etree.SubElement(app, 'kind')
         kind.text = apparatus
 
-        with pytest.raises(NotImplementedError) as excinfo:
-            get_experiment_kind(root)
-        assert apparatus + ' experiment not (yet) supported' in str(excinfo.value)
+        ref = get_experiment_kind(root)
+        assert ref['apparatus']['kind'] == apparatus
 
     def test_missing_apparatus_kind(self):
         """Ensure proper error raised if missing apparatus kind.
