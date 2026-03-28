@@ -19,7 +19,9 @@ from . import chemked
 
 # Valid properties for ReSpecTh dataGroup
 datagroup_properties = ['temperature', 'pressure', 'ignition delay',
-                        'pressure rise',
+                        'pressure rise', 'laminar burning velocity',
+                        'distance', 'flow rate', 'residence time',
+                        'volumetric flow in reference state',
                         ]
 """`list`: Valid properties for a ReSpecTh dataGroup"""
 
@@ -159,20 +161,38 @@ def get_experiment_kind(root):
         properties (`dict`): Dictionary with experiment type and apparatus information.
     """
     properties = {}
-    if root.find('experimentType').text == 'Ignition delay measurement':
-        properties['experiment-type'] = 'ignition delay'
-    else:
-        raise NotImplementedError(root.find('experimentType').text + ' not (yet) supported')
+
+    exp_type_text = getattr(root.find('experimentType'), 'text', '')
+    exp_type_map = {
+        'Ignition delay measurement': 'ignition delay',
+        'Laminar burning velocity measurement': 'laminar burning velocity measurement',
+        'Concentration time profile measurement': 'concentration time profile measurement',
+        'Jet stirred reactor measurement': 'jet stirred reactor measurement',
+        'Outlet concentration measurement': 'outlet concentration measurement',
+        'Burner stabilized flame speciation measurement': 'burner stabilized flame speciation measurement',
+    }
+    matched_type = exp_type_map.get(exp_type_text)
+    if matched_type is None:
+        # Try case-insensitive match
+        for key, val in exp_type_map.items():
+            if key.lower() == exp_type_text.lower():
+                matched_type = val
+                break
+    if matched_type is None:
+        raise NotImplementedError(exp_type_text + ' not (yet) supported')
+    properties['experiment-type'] = matched_type
 
     properties['apparatus'] = {'kind': '', 'institution': '', 'facility': ''}
     kind = getattr(root.find('apparatus/kind'), 'text', False)
     # Test for missing attribute or empty string
     if not kind:
         raise MissingElementError('apparatus/kind')
-    elif kind in ['shock tube', 'rapid compression machine']:
-        properties['apparatus']['kind'] = kind
     else:
-        raise NotImplementedError(kind + ' experiment not (yet) supported')
+        properties['apparatus']['kind'] = kind
+
+    mode = getattr(root.find('apparatus/mode'), 'text', None)
+    if mode:
+        properties['apparatus']['mode'] = mode
 
     return properties
 
@@ -503,25 +523,28 @@ def ReSpecTh_to_ChemKED(filename_xml, file_author='', file_author_orcid='', *, v
     # Get properties shared across the file
     properties['common-properties'] = get_common_properties(root)
 
-    # Determine definition of ignition delay
-    properties['common-properties']['ignition-type'] = get_ignition_type(root)
+    # Determine definition of ignition delay (only for ignition delay experiments)
+    if properties['experiment-type'] == 'ignition delay':
+        properties['common-properties']['ignition-type'] = get_ignition_type(root)
 
-    # Now parse ignition delay datapoints
+    # Now parse datapoints
     properties['datapoints'] = get_datapoints(root)
 
-    # Ensure inclusion of pressure rise or volume history matches apparatus.
-    has_pres_rise = ('pressure-rise' in properties['common-properties'] or
-                     any([True for dp in properties['datapoints'] if 'pressure-rise' in dp])
-                     )
-    if has_pres_rise and properties['apparatus']['kind'] == 'rapid compression machine':
-        raise KeywordError('Pressure rise cannot be defined for RCM.')
+    # Ensure inclusion of pressure rise or volume history matches apparatus
+    # (only relevant for ignition delay experiments)
+    if properties['experiment-type'] == 'ignition delay':
+        has_pres_rise = ('pressure-rise' in properties['common-properties'] or
+                         any([True for dp in properties['datapoints'] if 'pressure-rise' in dp])
+                         )
+        if has_pres_rise and properties['apparatus']['kind'] == 'rapid compression machine':
+            raise KeywordError('Pressure rise cannot be defined for RCM.')
 
-    has_vol_hist = any(
-        [t.get('type') == 'volume' for dp in properties['datapoints']
-         for t in dp.get('time-histories', [{}])]
-    )
-    if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
-        raise KeywordError('Volume history cannot be defined for shock tube.')
+        has_vol_hist = any(
+            [t.get('type') == 'volume' for dp in properties['datapoints']
+             for t in dp.get('time-histories', [{}])]
+        )
+        if has_vol_hist and properties['apparatus']['kind'] == 'shock tube':
+            raise KeywordError('Volume history cannot be defined for shock tube.')
 
     # add any additional file authors
     if file_author_orcid and not file_author:

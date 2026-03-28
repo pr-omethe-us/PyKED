@@ -62,9 +62,15 @@ schema = yaml.safe_load(''.join(schema_list))
 # They are removed to prevent conflicts due to required variables, etc.
 for key in ['author', 'value-unit-required', 'value-unit-optional',
             'composition', 'ignition-type', 'value-with-uncertainty',
-            'value-without-uncertainty',
+            'value-without-uncertainty', 'time-shift',
+            'laminar-burning-velocity-measurement-schema',
+            'concentration-time-profile-measurement-schema',
+            'jet-stirred-reactor-measurement-schema',
+            'outlet-concentration-measurement-schema',
+            'burner-stabilized-flame-speciation-measurement-schema',
             ]:
-    del schema[key]
+    if key in schema:
+        del schema[key]
 
 # SI units for available value-type properties
 property_units = {
@@ -85,6 +91,12 @@ property_units = {
     'stroke': 'meter',
     'clearance': 'meter',
     'compression-ratio': 'dimensionless',
+    'laminar-burning-velocity': 'meter / second',
+    'distance': 'meter',
+    'flow-rate': 'kilogram / meter**2 / second',
+    'residence-time': 'second',
+    'reactor-volume': 'meter**3',
+    'volumetric-flow-in-reference-state': 'meter**3 / second',
 }
 
 

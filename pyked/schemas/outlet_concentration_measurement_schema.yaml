@@ -1,0 +1,16 @@
+# Schema for outlet concentration measurement datapoints
+outlet-concentration-measurement-schema: &outlet-concentration-measurement-schema
+  type: list
+  minlength: 1
+  schema:
+    type: dict
+    schema:
+      pressure: *value-unit-required
+      temperature: *value-unit-required
+      composition: *composition
+      equivalence-ratio:
+        type: float
+        min: 0.0
+      residence-time: *value-unit-optional
+      volumetric-flow-in-reference-state: *value-unit-optional
+      measured-composition: *composition

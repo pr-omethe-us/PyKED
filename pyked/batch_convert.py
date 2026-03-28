@@ -1,0 +1,794 @@
+#!/usr/bin/env python3
+"""Batch converter: ReSpecTh v2.3/v2.4 XML → ChemKED YAML
+
+Converts experiment XML files from ReSpecTh/indirect/ to ChemKED YAML format
+and organises them into ChemKED-database directory structure.
+
+Usage:
+    python convert_respecth_to_chemked.py
+    python convert_respecth_to_chemked.py -i ReSpecTh/indirect -o ChemKED-database
+    python convert_respecth_to_chemked.py --file ReSpecTh/indirect/ammonia/.../x20100057.xml
+    python convert_respecth_to_chemked.py --dry-run
+"""
+
+import os
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+import yaml
+import argparse
+import logging
+import traceback
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+log = logging.getLogger(__name__)
+
+CHEMKED_VERSION = '0.4.1'
+
+
+# Custom YAML dumper that preserves dict insertion order
+class _OrderedDumper(yaml.Dumper):
+    pass
+
+def _dict_representer(dumper, data):
+    return dumper.represent_mapping(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                                   data.items())
+
+_OrderedDumper.add_representer(dict, _dict_representer)
+
+
+def yaml_dump(data, stream):
+    """Dump data to YAML preserving dict key order."""
+    yaml.dump(data, stream, Dumper=_OrderedDumper,
+              default_flow_style=False, allow_unicode=True)
+
+# Experiment type mapping (ReSpecTh text → ChemKED value)
+EXP_TYPE_MAP = {
+    'ignition delay measurement': 'ignition delay',
+    'laminar burning velocity measurement': 'laminar burning velocity measurement',
+    'concentration time profile measurement': 'concentration time profile measurement',
+    'jet stirred reactor measurement': 'jet stirred reactor measurement',
+    'outlet concentration measurement': 'outlet concentration measurement',
+    'burner stabilized flame speciation measurement': 'burner stabilized flame speciation measurement',
+}
+
+# Properties valid as scalar value+unit in dataGroups
+SCALAR_DG_PROPS = {
+    'temperature', 'pressure', 'ignition delay', 'pressure rise',
+    'laminar burning velocity', 'distance', 'flow rate',
+    'residence time', 'volumetric flow rate in reference state',
+    'volume', 'time',
+}
+
+# Properties valid as scalar value+unit in commonProperties
+SCALAR_COMMON_PROPS = {
+    'temperature', 'pressure', 'residence time', 'volume',
+    'flow rate', 'reactor volume',
+}
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def decode_latex(s):
+    """Decode LaTeX accent commands to Unicode characters.
+
+    Handles patterns like {\\'{e}} → é, {\\"\\{u}} → ü, {\\`{e}} → è, etc.
+    Also strips remaining braces from BibTeX-style {name} groups.
+    """
+    import re
+    # Mapping of (accent_command, base_letter) → Unicode character
+    _accent_map = {
+        ("'", 'a'): 'á', ("'", 'A'): 'Á',
+        ("'", 'e'): 'é', ("'", 'E'): 'É',
+        ("'", 'i'): 'í', ("'", 'I'): 'Í',
+        ("'", 'o'): 'ó', ("'", 'O'): 'Ó',
+        ("'", 'u'): 'ú', ("'", 'U'): 'Ú',
+        ('"', 'a'): 'ä', ('"', 'A'): 'Ä',
+        ('"', 'e'): 'ë', ('"', 'E'): 'Ë',
+        ('"', 'i'): 'ï', ('"', 'I'): 'Ï',
+        ('"', 'o'): 'ö', ('"', 'O'): 'Ö',
+        ('"', 'u'): 'ü', ('"', 'U'): 'Ü',
+        ('`', 'a'): 'à', ('`', 'A'): 'À',
+        ('`', 'e'): 'è', ('`', 'E'): 'È',
+        ('`', 'i'): 'ì', ('`', 'I'): 'Ì',
+        ('`', 'o'): 'ò', ('`', 'O'): 'Ò',
+        ('`', 'u'): 'ù', ('`', 'U'): 'Ù',
+        ('^', 'a'): 'â', ('^', 'A'): 'Â',
+        ('^', 'e'): 'ê', ('^', 'E'): 'Ê',
+        ('^', 'i'): 'î', ('^', 'I'): 'Î',
+        ('^', 'o'): 'ô', ('^', 'O'): 'Ô',
+        ('^', 'u'): 'û', ('^', 'U'): 'Û',
+        ('~', 'n'): 'ñ', ('~', 'N'): 'Ñ',
+        ('c', 'c'): 'ç', ('c', 'C'): 'Ç',
+    }
+
+    def _replace_accent(m):
+        accent = m.group(1)
+        letter = m.group(2)
+        return _accent_map.get((accent, letter), letter)
+
+    # Pattern: {\CMD{letter}} or {\\CMD{letter}} where CMD is one of ' " ` ^ ~ c
+    # Outer braces may or may not be present
+    s = re.sub(r"\{?\\(['\"`^~c])\{([A-Za-z])\}\}?", _replace_accent, s)
+    # Also handle \\' without inner braces: {\'A} or \'{A}
+    s = re.sub(r"\{?\\(['\"`^~c])([A-Za-z])\}?", _replace_accent, s)
+    # Handle LaTeX \# → # and \& → &
+    s = s.replace('\\#', '#').replace('\\&', '&')
+    # Handle \text{...} → contents
+    s = re.sub(r'\\text\{([^}]*)\}', r'\1', s)
+    # Handle \textquotesingle → '
+    s = s.replace('\\textquotesingle', "'")
+    # Strip remaining BibTeX braces {word} → word
+    s = re.sub(r'\{([^{}]*)\}', r'\1', s)
+    # Clean up any double spaces
+    s = re.sub(r'  +', ' ', s).strip()
+    return s
+
+
+def parse_author_string(s):
+    """Parse 'Last, First and Last, First ...' → [{'name': 'First Last'}, ...]"""
+    authors = []
+    for part in s.split(' and '):
+        part = part.strip()
+        if not part:
+            continue
+        if ',' in part:
+            pieces = part.split(',', 1)
+            name = f"{pieces[1].strip()} {pieces[0].strip()}"
+        else:
+            name = part
+        authors.append({'name': decode_latex(name)})
+    return authors
+
+
+def first_author_last_name(authors):
+    """Return first author's last name for directory naming."""
+    if not authors:
+        return 'Unknown'
+    name = authors[0].get('name', 'Unknown')
+    parts = name.strip().split()
+    return parts[-1] if parts else 'Unknown'
+
+
+def parse_species_link(elem):
+    """Extract species info dict from a <speciesLink> element."""
+    info = {}
+    pk = elem.attrib.get('preferredKey', '')
+    if pk:
+        info['species-name'] = pk
+    inchi = elem.attrib.get('InChI')
+    if inchi:
+        info['InChI'] = inchi
+    return info
+
+
+def normalize_comp_units(value_str, units):
+    """Normalise composition amount → (float, kind_string).
+
+    Converts ppm, ppb, and percent to mole fraction for consistency.
+    Concentration units (mol/cm3 etc.) are kept as-is.
+    """
+    val = float(value_str)
+    if units == 'mole fraction':
+        return val, 'mole fraction'
+    elif units == 'mass fraction':
+        return val, 'mass fraction'
+    elif units in ('mole percent', 'percent'):
+        return val / 100.0, 'mole fraction'
+    elif units == 'ppm':
+        return val * 1e-6, 'mole fraction'
+    elif units == 'ppb':
+        return val * 1e-9, 'mole fraction'
+    else:
+        # Keep as-is for concentration units (mol/cm3, etc.)
+        return val, units
+
+
+def prop_name_to_key(name):
+    """Convert ReSpecTh property name → ChemKED YAML key."""
+    key = name.replace(' ', '-')
+    special = {
+        'volume': 'reactor-volume',
+        'volumetric-flow-rate-in-reference-state': 'volumetric-flow-in-reference-state',
+    }
+    return special.get(key, key)
+
+
+# ---------------------------------------------------------------------------
+# File metadata & reference
+# ---------------------------------------------------------------------------
+
+def parse_file_metadata(root):
+    file_author = (root.findtext('fileAuthor') or '').strip()
+    return {
+        'file-authors': [{'name': file_author or 'Unknown'}],
+        'file-version': 0,
+        'chemked-version': CHEMKED_VERSION,
+    }
+
+
+def parse_reference(root, xml_filename):
+    ref = {}
+    bib = root.find('bibliographyLink')
+    if bib is None:
+        ref['detail'] = f'Converted from ReSpecTh XML file {xml_filename}'
+        return ref
+
+    doi_el = bib.find('referenceDOI')
+    if doi_el is not None and doi_el.text:
+        ref['doi'] = doi_el.text.strip()
+
+    details = bib.find('details')
+    if details is not None:
+        auth = (details.findtext('author') or '').strip()
+        if auth:
+            ref['authors'] = parse_author_string(auth)
+        journal = (details.findtext('journal') or '').strip()
+        if journal:
+            ref['journal'] = decode_latex(journal)
+        year = (details.findtext('year') or '').strip()
+        if year:
+            ref['year'] = int(year)
+        vol = (details.findtext('volume') or '').strip()
+        if vol:
+            try:
+                ref['volume'] = int(vol)
+            except ValueError:
+                ref['volume'] = vol
+        pages = (details.findtext('pages') or '').strip()
+        if pages:
+            ref['pages'] = pages
+
+    # Fallback: use <description>
+    if not ref.get('authors'):
+        desc = (bib.findtext('description') or '').strip()
+        if desc:
+            ref['detail'] = desc
+
+    prefix = ref.get('detail', '')
+    ref['detail'] = (prefix + ' ' if prefix else '') + \
+                    f'Converted from ReSpecTh XML file {xml_filename}'
+    return ref
+
+
+# ---------------------------------------------------------------------------
+# Experiment kind & apparatus
+# ---------------------------------------------------------------------------
+
+def parse_experiment_kind(root):
+    exp_text = (root.findtext('experimentType') or '').strip().lower()
+    exp_type = EXP_TYPE_MAP.get(exp_text)
+    if exp_type is None:
+        raise ValueError(f'Unknown experiment type: {root.findtext("experimentType")}')
+
+    apparatus = {'kind': '', 'institution': '', 'facility': ''}
+    kind_el = root.find('apparatus/kind')
+    if kind_el is not None and kind_el.text:
+        apparatus['kind'] = kind_el.text.strip()
+    modes = root.findall('apparatus/mode')
+    if modes and modes[0].text:
+        apparatus['mode'] = modes[0].text.strip()
+
+    return exp_type, apparatus
+
+
+# ---------------------------------------------------------------------------
+# Common properties
+# ---------------------------------------------------------------------------
+
+def parse_initial_composition(prop_elem):
+    comp = {'kind': None, 'species': []}
+    for component in prop_elem.findall('component'):
+        sl = component.find('speciesLink')
+        amount_el = component.find('amount')
+        if sl is None or amount_el is None:
+            continue
+        spec = parse_species_link(sl)
+        units = amount_el.attrib.get('units', 'mole fraction')
+        val, kind = normalize_comp_units(amount_el.text, units)
+        spec['amount'] = [val]
+        comp['species'].append(spec)
+        if comp['kind'] is None:
+            comp['kind'] = kind
+    return comp
+
+
+def parse_common_properties(root, exp_type):
+    common = {}
+    for prop_elem in root.findall('commonProperties/property'):
+        name = prop_elem.attrib.get('name', '')
+
+        if name == 'initial composition':
+            common['composition'] = parse_initial_composition(prop_elem)
+        elif name == 'equivalence ratio':
+            val_el = prop_elem.find('value')
+            if val_el is not None:
+                common['equivalence-ratio'] = float(val_el.text)
+        elif name in SCALAR_COMMON_PROPS:
+            val_el = prop_elem.find('value')
+            units = prop_elem.attrib.get('units', '')
+            if val_el is not None:
+                key = prop_name_to_key(name)
+                common[key] = [f'{val_el.text} {units}']
+        # Silently skip: evaluated standard deviation, uncertainty,
+        # global heat exchange coefficient, exchange area, reactor length,
+        # reactor diameter, pressure/temperature in reference state, etc.
+
+    return common
+
+
+def parse_ignition_type(root):
+    elem = root.find('ignitionType')
+    if elem is None:
+        return None
+    target = elem.attrib.get('target', '')
+    ig_type = elem.attrib.get('type', '')
+    target_map = {'OHEX': 'OH*', 'CHEX': 'CH*', 'P': 'pressure', 'T': 'temperature'}
+    target = target_map.get(target.upper(), target)
+    return {'target': target, 'type': ig_type}
+
+
+# ---------------------------------------------------------------------------
+# DataGroup property definitions
+# ---------------------------------------------------------------------------
+
+def parse_datagroup_props(data_group):
+    """Return {id: {name, units, species?}} for each <property> in a dataGroup."""
+    defs = {}
+    for prop in data_group.findall('property'):
+        pid = prop.attrib['id']
+        entry = {
+            'name': prop.attrib['name'],
+            'units': prop.attrib.get('units', ''),
+        }
+        sl = prop.find('speciesLink')
+        if sl is not None:
+            entry['species'] = parse_species_link(sl)
+        defs[pid] = entry
+    return defs
+
+
+# ---------------------------------------------------------------------------
+# Composition builder from datapoint values
+# ---------------------------------------------------------------------------
+
+def build_composition(prop_defs, dp_elem):
+    """Build a composition dict from composition columns in a datapoint."""
+    comp = {'kind': None, 'species': []}
+    for val_el in dp_elem:
+        pid = val_el.tag
+        if pid not in prop_defs:
+            continue
+        pdef = prop_defs[pid]
+        if pdef['name'] != 'composition':
+            continue
+        spec = dict(pdef.get('species', {}))
+        amount, kind = normalize_comp_units(val_el.text, pdef['units'])
+        spec['amount'] = [amount]
+        comp['species'].append(spec)
+        if comp['kind'] is None:
+            comp['kind'] = kind
+    return comp if comp['species'] else None
+
+
+# ---------------------------------------------------------------------------
+# Per-experiment-type datapoint parsers
+# ---------------------------------------------------------------------------
+
+def _scalar_value(val_text, units):
+    """Build a scalar value+unit list entry like ['12.60 atm']."""
+    return [f'{val_text} {units}']
+
+
+def parse_idt_datapoints(root, dg, dg_defs, common):
+    """Ignition delay: pressure, temperature, ignition-delay per point.
+    Additional dataGroups may contain volume/pressure/temperature histories.
+    """
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        comp = build_composition(dg_defs, dp_el)
+        if comp:
+            dp['composition'] = comp
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name == 'composition':
+                continue
+            if name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        datapoints.append(dp)
+
+    # Handle additional dataGroups (volume/pressure/temperature time histories)
+    all_dgs = root.findall('dataGroup')
+    if len(all_dgs) > 1:
+        for extra_dg in all_dgs[1:]:
+            edefs = parse_datagroup_props(extra_dg)
+            time_tag = None
+            quant_info = []  # [(tag, type_name, units)]
+            for pid, pdef in edefs.items():
+                if pdef['name'] == 'time':
+                    time_tag = pid
+                elif pdef['name'] in ('volume', 'temperature', 'pressure'):
+                    quant_info.append((pid, pdef['name'], pdef['units']))
+            if time_tag is None or not quant_info:
+                continue
+            time_units = edefs[time_tag]['units']
+            histories = [
+                {
+                    'time': {'units': time_units, 'column': 0},
+                    'quantity': {'units': qi[2], 'column': 1},
+                    'type': qi[1],
+                    'values': [],
+                }
+                for qi in quant_info
+            ]
+            for dp_el in extra_dg.findall('dataPoint'):
+                t_val = None
+                q_vals = {}
+                for val_el in dp_el:
+                    if val_el.tag == time_tag:
+                        t_val = float(val_el.text)
+                    else:
+                        for qi in quant_info:
+                            if val_el.tag == qi[0]:
+                                q_vals[qi[1]] = float(val_el.text)
+                if t_val is not None:
+                    for h in histories:
+                        if h['type'] in q_vals:
+                            h['values'].append([t_val, q_vals[h['type']]])
+            if histories[0]['values']:
+                datapoints[0].setdefault('time-histories', []).extend(histories)
+
+    return datapoints
+
+
+def parse_lbv_datapoints(dg, dg_defs, common):
+    """Laminar burning velocity: composition, equivalence-ratio, LBV per point."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        comp = build_composition(dg_defs, dp_el)
+        if comp:
+            dp['composition'] = comp
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name == 'composition':
+                continue
+            elif name == 'equivalence ratio':
+                dp['equivalence-ratio'] = float(val_el.text)
+            elif name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+            # Skip: uncertainty, evaluated standard deviation
+        datapoints.append(dp)
+    return datapoints
+
+
+def parse_jsr_datapoints(dg, dg_defs, common):
+    """JSR: temperature varies, composition is measured outlet concentration."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        measured = build_composition(dg_defs, dp_el)
+        if measured:
+            dp['measured-composition'] = measured
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name == 'composition':
+                continue
+            elif name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+            # Skip: uncertainty, evaluated std dev, environment temperature
+        datapoints.append(dp)
+    return datapoints
+
+
+def parse_ctpm_datapoints(dg, dg_defs, common):
+    """Concentration time profile: tabular (time, species...) → single datapoint
+    with concentration-profiles list.
+    """
+    time_id = None
+    species_cols = []  # [(id, species_info, units)]
+    for pid, pdef in dg_defs.items():
+        if pdef['name'] == 'time':
+            time_id = pid
+        elif pdef['name'] in ('composition', 'concentration') and 'species' in pdef:
+            species_cols.append((pid, pdef['species'], pdef['units']))
+
+    if time_id is None or not species_cols:
+        return []
+
+    time_units = dg_defs[time_id]['units']
+
+    # Collect all rows
+    rows = []
+    for dp_el in dg.findall('dataPoint'):
+        row = {}
+        for val_el in dp_el:
+            row[val_el.tag] = val_el.text
+        rows.append(row)
+
+    # Build concentration profiles per species
+    profiles = []
+    for sid, spec_info, units in species_cols:
+        profile = {'species-name': spec_info.get('species-name', '')}
+        if 'InChI' in spec_info:
+            profile['InChI'] = spec_info['InChI']
+        profile['quantity'] = {'units': units}
+        profile['time'] = {'units': time_units}
+        profile['values'] = []
+        for row in rows:
+            t_val = float(row.get(time_id, 0))
+            c_val = float(row.get(sid, 0))
+            profile['values'].append([t_val, c_val])
+        profiles.append(profile)
+
+    return [{'concentration-profiles': profiles}]
+
+
+def parse_ocm_datapoints(dg, dg_defs, common):
+    """Outlet concentration: temperature & flow rate vary, measured compositions."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        measured = build_composition(dg_defs, dp_el)
+        if measured:
+            dp['measured-composition'] = measured
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name == 'composition':
+                continue
+            elif name == 'equivalence ratio':
+                dp['equivalence-ratio'] = float(val_el.text)
+            elif name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        datapoints.append(dp)
+    return datapoints
+
+
+def parse_bsfsm_datapoints(dg, dg_defs, common):
+    """Burner stabilised flame speciation: distance varies, measured compositions."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        measured = build_composition(dg_defs, dp_el)
+        if measured:
+            dp['measured-composition'] = measured
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name == 'composition':
+                continue
+            elif name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        datapoints.append(dp)
+    return datapoints
+
+
+# ---------------------------------------------------------------------------
+# Main conversion
+# ---------------------------------------------------------------------------
+
+PARSERS = {
+    'ignition delay': 'idt',
+    'laminar burning velocity measurement': 'lbv',
+    'jet stirred reactor measurement': 'jsr',
+    'concentration time profile measurement': 'ctpm',
+    'outlet concentration measurement': 'ocm',
+    'burner stabilized flame speciation measurement': 'bsfsm',
+}
+
+
+def convert_file(xml_path):
+    """Convert a single ReSpecTh XML file → ChemKED property dict (or None)."""
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    # Only handle <experiment> root elements
+    if root.tag != 'experiment':
+        return None
+
+    xml_filename = os.path.basename(xml_path)
+
+    props = parse_file_metadata(root)
+    props['reference'] = parse_reference(root, xml_filename)
+
+    exp_type, apparatus = parse_experiment_kind(root)
+    props['experiment-type'] = exp_type
+    props['apparatus'] = apparatus
+
+    common = parse_common_properties(root, exp_type)
+    props['common-properties'] = common
+
+    if exp_type == 'ignition delay':
+        ign_type = parse_ignition_type(root)
+        if ign_type:
+            common['ignition-type'] = ign_type
+
+    # Parse main dataGroup
+    all_dgs = root.findall('dataGroup')
+    if not all_dgs:
+        raise ValueError('No dataGroup found')
+
+    dg = all_dgs[0]
+    dg_defs = parse_datagroup_props(dg)
+
+    kind = PARSERS[exp_type]
+    if kind == 'idt':
+        props['datapoints'] = parse_idt_datapoints(root, dg, dg_defs, common)
+    elif kind == 'lbv':
+        props['datapoints'] = parse_lbv_datapoints(dg, dg_defs, common)
+    elif kind == 'jsr':
+        props['datapoints'] = parse_jsr_datapoints(dg, dg_defs, common)
+    elif kind == 'ctpm':
+        props['datapoints'] = parse_ctpm_datapoints(dg, dg_defs, common)
+    elif kind == 'ocm':
+        props['datapoints'] = parse_ocm_datapoints(dg, dg_defs, common)
+    elif kind == 'bsfsm':
+        props['datapoints'] = parse_bsfsm_datapoints(dg, dg_defs, common)
+
+    if not props.get('datapoints'):
+        raise ValueError('No datapoints parsed')
+
+    # Apply common properties to each datapoint (matches existing PyKED convention)
+    for dp in props['datapoints']:
+        for key, val in common.items():
+            if key not in dp:
+                dp[key] = val
+
+    return props
+
+
+# ---------------------------------------------------------------------------
+# Output path logic
+# ---------------------------------------------------------------------------
+
+def get_output_path(xml_path, input_dir, output_dir, reference):
+    """Determine output YAML path: output_dir/fuel/Author_Year/filename.yaml"""
+    rel = os.path.relpath(xml_path, input_dir)
+    parts = Path(rel).parts
+
+    fuel = parts[0] if len(parts) > 1 else 'unknown'
+
+    authors = reference.get('authors', [])
+    year = reference.get('year', 'unknown')
+    last_name = first_author_last_name(authors)
+    ref_dir = f'{last_name}_{year}'
+
+    yaml_name = Path(parts[-1]).stem + '.yaml'
+    return os.path.join(output_dir, fuel, ref_dir, yaml_name)
+
+
+# ---------------------------------------------------------------------------
+# Batch conversion
+# ---------------------------------------------------------------------------
+
+def batch_convert(input_dir, output_dir, dry_run=False):
+    stats = {'total': 0, 'success': 0, 'skipped': 0, 'errors': 0}
+    errors_log = []
+    type_counts = {}
+
+    xml_files = sorted(Path(input_dir).rglob('*.xml'))
+    stats['total'] = len(xml_files)
+    log.info(f'Found {len(xml_files)} XML files in {input_dir}')
+
+    for xml_path in xml_files:
+        xml_str = str(xml_path)
+        try:
+            result = convert_file(xml_str)
+            if result is None:
+                stats['skipped'] += 1
+                continue
+
+            exp_type = result['experiment-type']
+            type_counts[exp_type] = type_counts.get(exp_type, 0) + 1
+
+            out_path = get_output_path(xml_str, input_dir, output_dir,
+                                       result['reference'])
+
+            if dry_run:
+                log.debug(f'  Would write: {out_path}')
+            else:
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+                with open(out_path, 'w') as f:
+                    yaml_dump(result, f)
+
+            stats['success'] += 1
+
+        except Exception as e:
+            stats['errors'] += 1
+            errors_log.append((xml_str, str(e)))
+            log.warning(f'Error converting {xml_path.name}: {e}')
+
+    # Summary
+    log.info('')
+    log.info('=== Conversion Summary ===')
+    log.info(f'Total files:  {stats["total"]}')
+    log.info(f'Converted:    {stats["success"]}')
+    log.info(f'Skipped:      {stats["skipped"]}')
+    log.info(f'Errors:       {stats["errors"]}')
+    log.info('')
+    log.info('By experiment type:')
+    for t, c in sorted(type_counts.items()):
+        log.info(f'  {t}: {c}')
+
+    if errors_log:
+        log.info('')
+        log.info(f'First 20 errors:')
+        for path, err in errors_log[:20]:
+            log.info(f'  {os.path.basename(path)}: {err}')
+
+    return stats, errors_log
+
+
+def convert_single(xml_path, output_path=None):
+    """Convert a single file and optionally write output."""
+    result = convert_file(xml_path)
+    if result is None:
+        log.info(f'Skipped (not an <experiment> file): {xml_path}')
+        return
+
+    if output_path is None:
+        output_path = Path(xml_path).stem + '.yaml'
+
+    with open(output_path, 'w') as f:
+        yaml_dump(result, f)
+    log.info(f'Converted: {xml_path} → {output_path}')
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Batch convert ReSpecTh v2.3/v2.4 XML files to ChemKED YAML'
+    )
+    parser.add_argument('--input-dir', '-i', default='ReSpecTh/indirect',
+                        help='Input directory with ReSpecTh XML files '
+                             '(default: ReSpecTh/indirect)')
+    parser.add_argument('--output-dir', '-o', default='ChemKED-database',
+                        help='Output directory for ChemKED YAML files '
+                             '(default: ChemKED-database)')
+    parser.add_argument('--file', '-f', default=None,
+                        help='Convert a single XML file instead of batch')
+    parser.add_argument('--output-file', default=None,
+                        help='Output path for single-file mode')
+    parser.add_argument('--dry-run', '-n', action='store_true',
+                        help='Parse but do not write files')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Verbose output')
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    if args.file:
+        convert_single(args.file, args.output_file)
+    else:
+        batch_convert(args.input_dir, args.output_dir, dry_run=args.dry_run)
+
+
+if __name__ == '__main__':
+    main()

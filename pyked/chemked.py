@@ -627,7 +627,8 @@ class DataPoint(object):
     """
     value_unit_props = [
         'ignition-delay', 'first-stage-ignition-delay', 'temperature', 'pressure',
-        'pressure-rise',
+        'pressure-rise', 'laminar-burning-velocity', 'distance', 'flow-rate',
+        'residence-time', 'volumetric-flow-in-reference-state',
     ]
 
     rcm_data_props = [
@@ -656,19 +657,49 @@ class DataPoint(object):
         else:
             self.rcm_data = None
 
-        self.composition_type = properties['composition']['kind']
-        composition = {}
-        for species in properties['composition']['species']:
-            species_name = species['species-name']
-            amount = self.process_quantity(species['amount'])
-            InChI = species.get('InChI')
-            SMILES = species.get('SMILES')
-            atomic_composition = species.get('atomic-composition')
-            composition[species_name] = Composition(
-                species_name=species_name, InChI=InChI, SMILES=SMILES,
-                atomic_composition=atomic_composition, amount=amount)
+        if 'composition' in properties:
+            self.composition_type = properties['composition']['kind']
+            composition = {}
+            for species in properties['composition']['species']:
+                species_name = species['species-name']
+                amount = self.process_quantity(species['amount'])
+                InChI = species.get('InChI')
+                SMILES = species.get('SMILES')
+                atomic_composition = species.get('atomic-composition')
+                composition[species_name] = Composition(
+                    species_name=species_name, InChI=InChI, SMILES=SMILES,
+                    atomic_composition=atomic_composition, amount=amount)
+            setattr(self, 'composition', composition)
+        else:
+            self.composition_type = None
+            self.composition = {}
 
-        setattr(self, 'composition', composition)
+        # Measured composition (for JSR, OCM, BSFSM experiment types)
+        if 'measured-composition' in properties:
+            self.measured_composition_type = properties['measured-composition']['kind']
+            measured = {}
+            for species in properties['measured-composition']['species']:
+                species_name = species['species-name']
+                amount = self.process_quantity(species['amount'])
+                InChI = species.get('InChI')
+                SMILES = species.get('SMILES')
+                atomic_composition = species.get('atomic-composition')
+                measured[species_name] = Composition(
+                    species_name=species_name, InChI=InChI, SMILES=SMILES,
+                    atomic_composition=atomic_composition, amount=amount)
+            self.measured_composition = measured
+        else:
+            self.measured_composition_type = None
+            self.measured_composition = {}
+
+        # Concentration profiles (for concentration time profile measurement)
+        self.concentration_profiles = []
+        if 'concentration-profiles' in properties:
+            for profile in properties['concentration-profiles']:
+                self.concentration_profiles.append(profile)
+
+        # Time shift (for concentration time profile measurement)
+        self.time_shift = properties.get('time-shift')
 
         self.equivalence_ratio = properties.get('equivalence-ratio')
         self.ignition_type = deepcopy(properties.get('ignition-type'))
