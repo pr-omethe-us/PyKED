@@ -8,21 +8,20 @@ value-with-uncertainty: &value-with-uncertainty
     - type: dict
       schema:
         uncertainty-type:
-          required: true
           type: string
           allowed:
             - absolute
             - relative
         uncertainty:
-          required: true
           anyof_type:
             - string
             - float
           excludes:
             - upper-uncertainty
             - lower-uncertainty
+          dependencies:
+            - uncertainty-type
         upper-uncertainty:
-          required: true
           anyof_type:
             - string
             - float
@@ -30,8 +29,8 @@ value-with-uncertainty: &value-with-uncertainty
             - uncertainty
           dependencies:
             - lower-uncertainty
+            - uncertainty-type
         lower-uncertainty:
-          required: true
           anyof_type:
             - string
             - float
@@ -39,6 +38,22 @@ value-with-uncertainty: &value-with-uncertainty
             - uncertainty
           dependencies:
             - upper-uncertainty
+            - uncertainty-type
+        uncertainty-sourcetype:
+          type: string
+        evaluated-standard-deviation:
+          anyof_type:
+            - string
+            - float
+        evaluated-standard-deviation-type:
+          type: string
+          allowed:
+            - absolute
+            - relative
+        evaluated-standard-deviation-sourcetype:
+          type: string
+        evaluated-standard-deviation-method:
+          type: string
 value-without-uncertainty: &value-without-uncertainty
   isvalid_quantity: true
   items:

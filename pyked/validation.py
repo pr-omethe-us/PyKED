@@ -63,6 +63,10 @@ schema = yaml.safe_load(''.join(schema_list))
 for key in ['author', 'value-unit-required', 'value-unit-optional',
             'composition', 'ignition-type', 'value-with-uncertainty',
             'value-without-uncertainty', 'time-shift',
+
+            'uncertainty-entry', 'uncertainty-list-optional',
+            'evaluated-standard-deviation-entry',
+            'evaluated-standard-deviation-list-optional',
             'laminar-burning-velocity-measurement-schema',
             'concentration-time-profile-measurement-schema',
             'jet-stirred-reactor-measurement-schema',
@@ -91,6 +95,7 @@ property_units = {
     'stroke': 'meter',
     'clearance': 'meter',
     'compression-ratio': 'dimensionless',
+    'equivalence-ratio': 'dimensionless',
     'laminar-burning-velocity': 'meter / second',
     'distance': 'meter',
     'flow-rate': 'kilogram / meter**2 / second',
@@ -316,15 +321,17 @@ class OurValidator(Validator):
         # This len check is necessary for reasons that aren't quite clear to me
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
-        if len(value) > 1 and value[1]['uncertainty-type'] != 'relative':
-            if value[1].get('uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
+        if len(value) > 1:
+            unc_type = value[1].get('uncertainty-type')
+            if unc_type and unc_type != 'relative':
+                if value[1].get('uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
 
-            if value[1].get('upper-uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
+                if value[1].get('upper-uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
 
-            if value[1].get('lower-uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
+                if value[1].get('lower-uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).

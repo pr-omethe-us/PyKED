@@ -122,11 +122,7 @@ ignition-delay-schema: &ignition-delay-schema
           compression-ratio: *value-unit-optional
       temperature: *value-unit-required
       composition: *composition
-      equivalence-ratio:
-        type: float
-        min: 0.0
-      uncertainty: *uncertainty-list-optional
-      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
+      equivalence-ratio: *value-unit-optional
       time-histories:
         type: list
         minlength: 1
