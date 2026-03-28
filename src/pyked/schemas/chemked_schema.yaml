@@ -7,6 +7,11 @@
 !include value_unit_schema.yaml
 !include composition_schema.yaml
 !include ignition_delay_schema.yaml
+!include laminar_burning_velocity_measurement_schema.yaml
+!include concentration_time_profile_measurement_schema.yaml
+!include jet_stirred_reactor_measurement_schema.yaml
+!include outlet_concentration_measurement_schema.yaml
+!include burner_stabilized_flame_speciation_measurement_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -26,9 +31,16 @@ common-properties:
   type: dict
   schema:
     pressure: *value-unit-optional
+    temperature: *value-unit-optional
     ignition-type: *ignition-type
     composition: *composition
     pressure-rise: *value-unit-optional
+    residence-time: *value-unit-optional
+    reactor-volume: *value-unit-optional
+    flow-rate: *value-unit-optional
+    equivalence-ratio:
+      type: float
+      min: 0.0
 
 apparatus:
   required: true
@@ -38,8 +50,37 @@ apparatus:
       allowed:
         - shock tube
         - rapid compression machine
+        - stirred reactor
+        - stirred reactor (quartz)
+        - stirred reactor (fused silica)
+        - stirred reaction
+        - jet stirred reactor
+        - flow reactor
+        - flow reactor (quartz)
+        - flow reactor (alumina)
+        - flow reactor (recrystallized alumina)
+        - flame
+        - outwardly propagating spherical flame
+        - heat flux burner
       required: true
       type: string
+    mode:
+      type: string
+      allowed:
+        - reflected shock
+        - incident shock
+        - laminar
+        - burner stabilized
+        - constant volume combustion chamber
+        - premixed
+        - unstretched
+        - extrapolation method to zero stretch : LS
+        - extrapolation method to zero stretch : NQ
+        - counterflow
+        - OPF
+        - HFM
+        - CTF
+        - SFF
     institution:
       type: string
     facility:
@@ -48,6 +89,11 @@ datapoints:
   required: true
   oneof:
     - *ignition-delay-schema
+    - *laminar-burning-velocity-measurement-schema
+    - *concentration-time-profile-measurement-schema
+    - *jet-stirred-reactor-measurement-schema
+    - *outlet-concentration-measurement-schema
+    - *burner-stabilized-flame-speciation-measurement-schema
 reference:
   required: true
   type: dict
@@ -94,6 +140,11 @@ chemked-version:  # TODO: Implement proper version comparison
 experiment-type:
   allowed:
     - ignition delay
+    - laminar burning velocity measurement
+    - concentration time profile measurement
+    - jet stirred reactor measurement
+    - outlet concentration measurement
+    - burner stabilized flame speciation measurement
   required: true
   type: string
 file-authors:
