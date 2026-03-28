@@ -11,4 +11,7 @@ jet-stirred-reactor-measurement-schema: &jet-stirred-reactor-measurement-schema
       equivalence-ratio:
         type: float
         min: 0.0
+      environment-temperature: *value-unit-optional
+      uncertainty: *uncertainty-list-optional
+      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
       measured-composition: *composition

@@ -27,6 +27,8 @@ concentration-time-profile-measurement-schema: &concentration-time-profile-measu
       equivalence-ratio:
         type: float
         min: 0.0
+      uncertainty: *uncertainty-list-optional
+      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
       concentration-profiles:
         type: list
         required: true

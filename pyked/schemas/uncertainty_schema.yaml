@@ -1,0 +1,56 @@
+# Schema for uncertainty and evaluated standard deviation entries
+#
+# These represent measurement quality metadata that can appear
+# in both common-properties and per-datapoint contexts.
+
+uncertainty-entry: &uncertainty-entry
+  type: dict
+  schema:
+    reference:
+      required: true
+      type: string
+    kind:
+      required: true
+      type: string
+      allowed:
+        - absolute
+        - relative
+    bound:
+      type: string
+    sourcetype:
+      type: string
+    value: *value-unit-optional
+    species-name:
+      type: string
+    InChI:
+      type: string
+
+uncertainty-list-optional: &uncertainty-list-optional
+  type: list
+  schema: *uncertainty-entry
+
+evaluated-standard-deviation-entry: &evaluated-standard-deviation-entry
+  type: dict
+  schema:
+    reference:
+      required: true
+      type: string
+    kind:
+      required: true
+      type: string
+      allowed:
+        - absolute
+        - relative
+    method:
+      type: string
+    sourcetype:
+      type: string
+    value: *value-unit-optional
+    species-name:
+      type: string
+    InChI:
+      type: string
+
+evaluated-standard-deviation-list-optional: &evaluated-standard-deviation-list-optional
+  type: list
+  schema: *evaluated-standard-deviation-entry

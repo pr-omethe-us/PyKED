@@ -11,6 +11,8 @@ burner-stabilized-flame-speciation-measurement-schema: &burner-stabilized-flame-
       equivalence-ratio:
         type: float
         min: 0.0
+      uncertainty: *uncertainty-list-optional
+      evaluated-standard-deviation: *evaluated-standard-deviation-list-optional
       distance: *value-unit-required
       flow-rate: *value-unit-optional
       measured-composition: *composition
