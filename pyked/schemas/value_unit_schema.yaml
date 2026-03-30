@@ -63,11 +63,11 @@ value-without-uncertainty: &value-without-uncertainty
 value-unit-required: &value-unit-required
   type: list
   required: true
-  oneof:
+  anyof:
     - *value-with-uncertainty
     - *value-without-uncertainty
 value-unit-optional: &value-unit-optional
   type: list
-  oneof:
+  anyof:
     - *value-with-uncertainty
     - *value-without-uncertainty

@@ -20,12 +20,12 @@ with open(path.join(here, 'CITATION.md')) as citation_file:
 long_description = readme + '\n\n' + changelog + '\n\n' + citation
 
 install_requires = [
-    'pyyaml>=3.12,<4.0',
-    'cerberus>=1.0.0,<1.2',
-    'pint>=0.7.2,<0.9',
-    'numpy>=1.11.0,<2.0',
+    'pyyaml>=3.12',
+    'cerberus>=1.0.0,<2.0',
+    'pint>=0.7.2',
+    'numpy>=1.11.0',
     'habanero>=0.6.0',
-    'uncertainties>=3.0.1,<3.1',
+    'uncertainties>=3.0.1',
 ]
 
 tests_require = [
@@ -34,7 +34,7 @@ tests_require = [
 ]
 
 extras_require = {
-    'dataframes': ['pandas >=0.22.0,<0.23'],
+    'dataframes': ['pandas>=0.22.0'],
 }
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
@@ -70,7 +70,7 @@ setup(
     tests_require=tests_require,
     extras_require=extras_require,
     setup_requires=setup_requires,
-    python_requires='~=3.5',
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': ['convert_ck=pyked.converters:main',
                             'respth2ck=pyked.converters:respth2ck',

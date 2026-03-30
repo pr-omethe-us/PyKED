@@ -85,7 +85,7 @@ composition: &composition
           amount:
             required: true
             type: list
-            oneof:
+            anyof:
               - items:
                 - type: float
               - items:
