@@ -176,14 +176,30 @@ class ChemKED(object):
             `ValueError`: If the YAML file cannot be validated, a `ValueError` is raised whose
                 string contains the errors that are present.
         """
-        validator = OurValidator(schema)
-        if not validator.validate(properties):
-            for key, value in validator.errors.items():
-                if any(['unallowed value' in v for v in value]):
-                    print(('{key} has an illegal value. Allowed values are {values} and are case '
-                           'sensitive.').format(key=key, values=schema[key]['allowed']))
+        from cerberus.schema import UnvalidatedSchema
 
-            raise ValueError(validator.errors)
+        # Normalize equivalence-ratio: wrap scalar values in a list
+        # to match the schema expectation (type: list)
+        for dp in properties.get('datapoints', []):
+            if 'equivalence-ratio' in dp and not isinstance(dp['equivalence-ratio'], list):
+                dp['equivalence-ratio'] = [dp['equivalence-ratio']]
+
+        # Use UnvalidatedSchema to bypass cerberus 1.3's schema-of-schema
+        # validation, which fails because its internal SchemaValidator doesn't
+        # inherit OurValidator's custom _validate_isvalid_* rules.
+        validator = OurValidator()
+        validator._schema = UnvalidatedSchema(schema)
+        if not validator.validate(properties):
+            errors = validator.errors
+
+            for key, value in errors.items():
+                vals = value if isinstance(value, list) else [value]
+                if any('unallowed value' in str(v) for v in vals):
+                    if key in schema and 'allowed' in schema[key]:
+                        print(('{key} has an illegal value. Allowed values are {values} and are case '
+                               'sensitive.').format(key=key, values=schema[key]['allowed']))
+
+            raise ValueError(errors)
 
     def get_dataframe(self, output_columns=None):
         """Get a Pandas DataFrame of the datapoints in this instance.
@@ -450,9 +466,10 @@ class ChemKED(object):
         for prop_name in datagroup_properties:
             attribute = prop_name.replace(' ', '_')
             # This can't be hasattr because properties are set to the value None
-            # if no value is specified in the file, so the attribute always exists
+            # if no value is specified in the file, so the attribute always exists.
+            # Use default None for attributes not defined on DataPoint.
             prop_indices = [i for i, dp in enumerate(self.datapoints)
-                            if getattr(dp, attribute) is not None
+                            if getattr(dp, attribute, None) is not None
                             ]
             if prop_name in common or not prop_indices:
                 continue
@@ -496,8 +513,11 @@ class ChemKED(object):
             for idx, val in property_idx.items():
                 # handle regular properties a bit differently than composition
                 if val['name'] in datagroup_properties:
+                    quantity = getattr(dp, val['name'].replace(' ', '_'), None)
+                    if quantity is None:
+                        continue
                     value = etree.SubElement(datapoint, idx)
-                    quantity = getattr(dp, val['name'].replace(' ', '_')).to(val['units'])
+                    quantity = quantity.to(val['units'])
                     value.text = str(quantity.magnitude)
                 else:
                     # composition
@@ -767,6 +787,12 @@ class DataPoint(object):
             upper_uncertainty = unc.get('upper-uncertainty', False)
             lower_uncertainty = unc.get('lower-uncertainty', False)
             uncertainty_type = unc.get('uncertainty-type')
+
+            # If no uncertainty-type but has evaluated-standard-deviation fields,
+            # this is an ESD-only metadata dict — skip uncertainty processing.
+            if uncertainty_type is None and 'evaluated-standard-deviation' in unc:
+                return quant
+
             if uncertainty_type == 'relative':
                 if uncertainty:
                     quant = quant.plus_minus(float(uncertainty), relative=True)

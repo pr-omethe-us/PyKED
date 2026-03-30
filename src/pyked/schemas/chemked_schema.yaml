@@ -6,7 +6,6 @@
 # must be the first two includes.
 !include value_unit_schema.yaml
 !include composition_schema.yaml
-!include uncertainty_schema.yaml
 !include ignition_delay_schema.yaml
 !include laminar_burning_velocity_measurement_schema.yaml
 !include concentration_time_profile_measurement_schema.yaml
@@ -96,7 +95,7 @@ apparatus:
       type: string
 datapoints:
   required: true
-  oneof:
+  anyof:
     - *ignition-delay-schema
     - *laminar-burning-velocity-measurement-schema
     - *concentration-time-profile-measurement-schema
