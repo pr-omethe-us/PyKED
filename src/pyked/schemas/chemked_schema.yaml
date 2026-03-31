@@ -12,6 +12,7 @@
 !include jet_stirred_reactor_measurement_schema.yaml
 !include outlet_concentration_measurement_schema.yaml
 !include burner_stabilized_flame_speciation_measurement_schema.yaml
+!include rate_coefficient_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -102,6 +103,7 @@ datapoints:
     - *jet-stirred-reactor-measurement-schema
     - *outlet-concentration-measurement-schema
     - *burner-stabilized-flame-speciation-measurement-schema
+    - *rate-coefficient-schema
 reference:
   required: true
   type: dict
@@ -153,6 +155,7 @@ experiment-type:
     - jet stirred reactor measurement
     - outlet concentration measurement
     - burner stabilized flame speciation measurement
+    - rate coefficient
   required: true
   type: string
 file-authors:
@@ -163,3 +166,10 @@ file-authors:
 file-version:
   required: true
   type: integer
+# Optional fields for rate coefficient (kdetermination) experiments
+reaction:
+  type: string
+method:
+  type: string
+bulk-gas:
+  type: string

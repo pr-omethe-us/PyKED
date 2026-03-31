@@ -152,10 +152,10 @@ class TestGetReference(object):
         assert ref['volume'] == 32
         assert ref['pages'] == '2216-2226'
         assert len(ref['authors']) == 4
-        assert {'name': 'N CHAUMEIX'} in ref['authors']
-        assert {'name': 'S PICHON'} in ref['authors']
-        assert {'name': 'F LAFOSSE'} in ref['authors']
-        assert {'name': 'C PAILLARD'} in ref['authors']
+        assert {'name': 'N. Chaumeix'} in ref['authors']
+        assert {'name': 'S. Pichon'} in ref['authors']
+        assert {'name': 'F. Lafosse'} in ref['authors']
+        assert {'name': 'C.-E. Paillard'} in ref['authors']
 
     def test_missing_bibliography(self):
         """Test for completely missing bibliography element.
@@ -226,10 +226,10 @@ class TestGetReference(object):
         assert ref['volume'] == 32
         assert ref['pages'] == '2216-2226'
         assert len(ref['authors']) == 4
-        assert {'name': 'N CHAUMEIX'} in ref['authors']
-        assert {'name': 'S PICHON'} in ref['authors']
-        assert {'name': 'F LAFOSSE'} in ref['authors']
-        assert {'name': 'C PAILLARD'} in ref['authors']
+        assert {'name': 'N. Chaumeix'} in ref['authors']
+        assert {'name': 'S. Pichon'} in ref['authors']
+        assert {'name': 'F. Lafosse'} in ref['authors']
+        assert {'name': 'C.-E. Paillard'} in ref['authors']
 
     def test_incorrect_doi(self, capfd):
         """Ensure can handle invalid DOI.

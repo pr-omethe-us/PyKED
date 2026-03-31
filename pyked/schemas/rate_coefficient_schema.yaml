@@ -1,0 +1,17 @@
+# Schema for rate coefficient (kdetermination) datapoints
+#
+# Rate coefficient experiments measure k(T) for a specific reaction.
+# Datapoints contain temperature (required) and rate-coefficient (required).
+# Pressure and composition are optional (often absent for kdetermination data).
+
+rate-coefficient-schema: &rate-coefficient-schema
+  type: list
+  minlength: 1
+  schema:
+    type: dict
+    schema:
+      temperature: *value-unit-required
+      pressure: *value-unit-optional
+      rate-coefficient: *value-unit-required
+      composition: *composition
+      equivalence-ratio: *value-unit-optional
