@@ -135,7 +135,7 @@ def get_reference(root):
                 # Add ORCID if available
                 orcid = author.get('ORCID')
                 if orcid:
-                    auth['ORCID'] = orcid.lstrip('http://orcid.org/')
+                    auth['ORCID'] = orcid.removeprefix('https://orcid.org/').removeprefix('http://orcid.org/')
                 reference['authors'].append(auth)
 
     elif ref_key is not None:

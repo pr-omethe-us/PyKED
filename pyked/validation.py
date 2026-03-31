@@ -72,6 +72,9 @@ for key in ['author', 'value-unit-required', 'value-unit-optional',
             'jet-stirred-reactor-measurement-schema',
             'outlet-concentration-measurement-schema',
             'burner-stabilized-flame-speciation-measurement-schema',
+            'rate-coefficient-schema',
+            'ignition-delay-schema',
+            'time-history',
             ]:
     if key in schema:
         del schema[key]
@@ -102,6 +105,7 @@ property_units = {
     'residence-time': 'second',
     'reactor-volume': 'meter**3',
     'volumetric-flow-in-reference-state': 'meter**3 / second',
+    'rate-coefficient': None,  # units vary by reaction order; skip dimensional check
 }
 
 
@@ -186,6 +190,17 @@ def compare_name(given_name, family_name, question_name):
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references.
     """
+    def __init__(self, *args, **kwargs):
+        # Wrap schema in UnvalidatedSchema to bypass cerberus 1.3's internal
+        # schema-of-schema validation, which fails because its SchemaValidator
+        # doesn't know about our custom _validate_isvalid_* rules.
+        from cerberus.schema import UnvalidatedSchema
+        if args and isinstance(args[0], dict):
+            args = (UnvalidatedSchema(args[0]),) + args[1:]
+        if 'schema' in kwargs and isinstance(kwargs['schema'], dict):
+            kwargs['schema'] = UnvalidatedSchema(kwargs['schema'])
+        super().__init__(*args, **kwargs)
+
     def _validate_isvalid_t_range(self, isvalid_t_range, field, values):
         """Checks that the temperature ranges given for thermo data are valid
         Args:
@@ -291,16 +306,24 @@ class OurValidator(Validator):
              'value': {'type': 'list'}}
         """
         quantity = Q_(value[0])
-        low_lim = 0.0 * units(property_units[field])
+        expected_units = property_units.get(field)
+
+        if expected_units is None:
+            # No dimensional check (e.g. rate-coefficient: units vary by reaction order)
+            if quantity.magnitude <= 0:
+                self._error(field, 'value must be greater than 0.0')
+            return
+
+        low_lim = 0.0 * units(expected_units)
 
         try:
             if quantity <= low_lim:
                 self._error(
-                    field, 'value must be greater than 0.0 {}'.format(property_units[field]),
+                    field, 'value must be greater than 0.0 {}'.format(expected_units),
                 )
         except pint.DimensionalityError:
             self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units[field]
+                        'with ' + expected_units
                         )
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):

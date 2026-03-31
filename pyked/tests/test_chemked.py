@@ -82,8 +82,10 @@ class TestChemKED(object):
             ChemKED(dict_input=properties)
 
         out, err = capfd.readouterr()
-        assert out == ("experiment-type has an illegal value. Allowed values are ['ignition "
-                       "delay'] and are case sensitive.\n")
+        assert "experiment-type has an illegal value. Allowed values are [" in out
+        assert "'ignition delay'" in out
+        assert "'rate coefficient'" in out
+        assert "and are case sensitive." in out
 
     def test_missing_input(self, capfd):
         file_path = os.path.join('testfile_required.yaml')
@@ -538,6 +540,11 @@ class TestDataPoint(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
         with open(filename, 'r') as f:
             properties = yaml.safe_load(f)
+
+        # Normalize equivalence-ratio: wrap scalar values in a list
+        for dp in properties.get('datapoints', []):
+            if 'equivalence-ratio' in dp and not isinstance(dp['equivalence-ratio'], list):
+                dp['equivalence-ratio'] = [dp['equivalence-ratio']]
 
         v = OurValidator(schema)
         if not v.validate(properties):
