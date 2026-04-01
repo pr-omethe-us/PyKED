@@ -92,6 +92,7 @@ SCALAR_DG_PROPS = {
     'laminar burning velocity', 'distance', 'flow rate',
     'residence time', 'volumetric flow rate in reference state',
     'volume', 'time', 'environment temperature',
+    'rate coefficient', 'branching ratio',
 }
 
 # Properties valid as scalar value+unit in commonProperties
@@ -264,7 +265,7 @@ def _reconcile_composition(entries):
 
 
 def prop_name_to_key(name):
-    """Convert ReSpecTh property name → ChemKED YAML key."""
+    """Convert ReSpecTh property name to ChemKED YAML key."""
     key = name.replace(' ', '-')
     special = {
         'volume': 'reactor-volume',
@@ -286,11 +287,33 @@ def prop_name_to_key(name):
 
 def parse_file_metadata(root):
     file_author = (root.findtext('fileAuthor') or '').strip()
-    return {
+    props = {
         'file-authors': [{'name': file_author or 'Unknown'}],
         'file-version': 0,
         'chemked-version': CHEMKED_VERSION,
     }
+
+    file_doi = (root.findtext('fileDOI') or '').strip()
+    if file_doi:
+        props['file-doi'] = file_doi
+
+    # ReSpecTh version
+    rsv = root.find('ReSpecThVersion')
+    if rsv is not None:
+        major = (rsv.findtext('major') or '').strip()
+        minor = (rsv.findtext('minor') or '').strip()
+        if major:
+            props['respecth-version'] = f'{major}.{minor}' if minor else major
+
+    first_pub = (root.findtext('firstPublicationDate') or '').strip()
+    if first_pub:
+        props['first-publication-date'] = first_pub
+
+    last_mod = (root.findtext('lastModificationDate') or '').strip()
+    if last_mod:
+        props['last-modification-date'] = last_mod
+
+    return props
 
 
 def parse_reference(root, xml_filename):
@@ -304,6 +327,17 @@ def parse_reference(root, xml_filename):
     if doi_el is not None and doi_el.text:
         ref['doi'] = doi_el.text.strip()
 
+    # Location, table, figure from bibliographyLink attributes/elements
+    location = (bib.findtext('location') or '').strip()
+    if location:
+        ref['location'] = location
+    table = (bib.findtext('table') or '').strip()
+    if table:
+        ref['table'] = table
+    figure = (bib.findtext('figure') or '').strip()
+    if figure:
+        ref['figure'] = figure
+
     details = bib.find('details')
     if details is not None:
         auth = (details.findtext('author') or '').strip()
@@ -312,6 +346,9 @@ def parse_reference(root, xml_filename):
         journal = (details.findtext('journal') or '').strip()
         if journal:
             ref['journal'] = decode_latex(journal)
+        title = (details.findtext('title') or '').strip()
+        if title:
+            ref['title'] = decode_latex(title)
         year = (details.findtext('year') or '').strip()
         if year:
             ref['year'] = int(year)
@@ -324,6 +361,12 @@ def parse_reference(root, xml_filename):
         pages = (details.findtext('pages') or '').strip()
         if pages:
             ref['pages'] = pages
+        number = (details.findtext('number') or '').strip()
+        if number:
+            ref['number'] = number
+        pub_type = (details.findtext('type') or '').strip()
+        if pub_type:
+            ref['publication-type'] = pub_type
 
     # Fallback: use <description>
     if not ref.get('authors'):
@@ -609,6 +652,7 @@ def parse_common_properties(root, exp_type):
 
     # Second pass: inline uncertainties
     inline_uncs = {}  # key → inline unc dict (for merging plus/minus pairs)
+    pending_unc_entries = []  # unresolvable species uncertainties
     for prop_elem in pending_uncs:
         attrs = prop_elem.attrib
         reference = attrs.get('reference', '')
@@ -639,10 +683,18 @@ def parse_common_properties(root, exp_type):
                 spec = parse_species_link(sl)
                 species_name = spec.get('species-name', '')
                 raw_val = _clean_numeric(val_el.text)
-                _attach_comp_uncertainty_inline(
+                if not _attach_comp_uncertainty_inline(
                     common['composition'], species_name, kind, bound,
                     raw_val, units, sourcetype
-                )
+                ):
+                    # Species not in initial composition (e.g., measured species)
+                    pending_unc_entries.append({
+                        'reference': reference, 'kind': kind,
+                        'units': units, 'bound': bound,
+                        'sourcetype': sourcetype,
+                        'value': raw_val,
+                        'species-name': species_name,
+                    })
 
     # Attach inline uncertainties to their property fields
     for key, unc_dict in inline_uncs.items():
@@ -674,10 +726,18 @@ def parse_common_properties(root, exp_type):
             for sl, val_el in zip(species_links, values):
                 spec = parse_species_link(sl)
                 species_name = spec.get('species-name', '')
-                _attach_comp_esd_inline(
+                if not _attach_comp_esd_inline(
                     common['composition'], species_name, kind,
                     _clean_numeric(val_el.text), units, sourcetype, method
-                )
+                ):
+                    # Species not in initial composition (e.g., measured species)
+                    pending_esd_entries.append({
+                        'reference': reference, 'kind': kind,
+                        'units': units, 'sourcetype': sourcetype,
+                        'method': method,
+                        'value': _clean_numeric(val_el.text),
+                        'species-name': species_name,
+                    })
         else:
             # Can't resolve yet — save for post-merge
             if reference in ('composition', 'initial composition'):
@@ -704,6 +764,9 @@ def parse_common_properties(root, exp_type):
 
     if pending_esd_entries:
         common['_pending_esd'] = pending_esd_entries
+
+    if pending_unc_entries:
+        common['_pending_unc'] = pending_unc_entries
 
     return common
 
@@ -1132,6 +1195,104 @@ def parse_bsfsm_datapoints(dg, dg_defs, common):
 
 
 # ---------------------------------------------------------------------------
+# Reaction parsing (kdetermination files)
+# ---------------------------------------------------------------------------
+
+def parse_reactions(root):
+    """Parse <reaction> elements → list of reaction dicts."""
+    reactions = []
+    for rxn in root.findall('reaction'):
+        entry = {
+            'preferred-key': rxn.attrib.get('preferredKey', ''),
+        }
+        order = rxn.attrib.get('order')
+        if order:
+            try:
+                entry['order'] = int(order)
+            except ValueError:
+                entry['order'] = order
+        bulk_gas = rxn.attrib.get('bulkgas')
+        if bulk_gas:
+            entry['bulk-gas'] = bulk_gas
+
+        reactants = []
+        for i in range(1, 10):
+            r = rxn.findtext(f'reactant{i}')
+            if r:
+                reactants.append(r.strip())
+            else:
+                break
+        if reactants:
+            entry['reactants'] = reactants
+
+        products = []
+        for i in range(1, 10):
+            p = rxn.findtext(f'product{i}')
+            if p:
+                products.append(p.strip())
+            else:
+                break
+        if products:
+            entry['products'] = products
+
+        reactions.append(entry)
+    return reactions
+
+
+# ---------------------------------------------------------------------------
+# kdetermination datapoint parser
+# ---------------------------------------------------------------------------
+
+def parse_kdet_datapoints(dg, dg_defs, common):
+    """Rate coefficient / branching ratio: temperature, rate-coefficient/branching-ratio,
+    optional pressure per point."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name in ('uncertainty', 'evaluated standard deviation'):
+                continue
+            if name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        unc = build_uncertainty_entries(dg_defs, dp_el, dp)
+        if unc:
+            dp['uncertainty'] = unc
+        datapoints.append(dp)
+    return datapoints
+
+
+# ---------------------------------------------------------------------------
+# tdetermination datapoint parser
+# ---------------------------------------------------------------------------
+
+def parse_tdet_datapoints(dg, dg_defs, common):
+    """Thermochemical data: temperature and thermodynamic properties per point."""
+    datapoints = []
+    for dp_el in dg.findall('dataPoint'):
+        dp = {}
+        for val_el in dp_el:
+            pid = val_el.tag
+            if pid not in dg_defs:
+                continue
+            pdef = dg_defs[pid]
+            name = pdef['name']
+            if name in ('uncertainty', 'evaluated standard deviation'):
+                continue
+            if name in SCALAR_DG_PROPS:
+                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
+        unc = build_uncertainty_entries(dg_defs, dp_el, dp)
+        if unc:
+            dp['uncertainty'] = unc
+        datapoints.append(dp)
+    return datapoints
+
+
+# ---------------------------------------------------------------------------
 # Main conversion
 # ---------------------------------------------------------------------------
 
@@ -1146,19 +1307,24 @@ PARSERS = {
 
 
 def convert_file(xml_path):
-    """Convert a single ReSpecTh XML file → ChemKED property dict (or None)."""
+    """Convert a single ReSpecTh XML file → ChemKED property dict (or None).
+
+    Supports <experiment>, <kdetermination>, and <tdetermination> root elements.
+    """
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
-    # Only handle <experiment> root elements
-    if root.tag != 'experiment':
-        return None
-
-    # Skip files with unsupported composition units (e.g. mol/cm3)
-    try:
-        return _convert_file_inner(root, xml_path)
-    except UnsupportedUnitsError as e:
-        log.info(f'Skipping {os.path.basename(xml_path)}: {e}')
+    if root.tag == 'experiment':
+        try:
+            return _convert_file_inner(root, xml_path)
+        except UnsupportedUnitsError as e:
+            log.info(f'Skipping {os.path.basename(xml_path)}: {e}')
+            return None
+    elif root.tag == 'kdetermination':
+        return _convert_kdetermination(root, xml_path)
+    elif root.tag == 'tdetermination':
+        return _convert_tdetermination(root, xml_path)
+    else:
         return None
 
 
@@ -1168,10 +1334,23 @@ def _convert_file_inner(root, xml_path):
 
     props = parse_file_metadata(root)
     props['reference'] = parse_reference(root, xml_filename)
+    props['file-type'] = 'experiment'
 
     exp_type, apparatus = parse_experiment_kind(root)
     props['experiment-type'] = exp_type
     props['apparatus'] = apparatus
+
+    # Method and comments
+    method = (root.findtext('method') or '').strip()
+    if method:
+        props['method'] = method
+
+    comments = []
+    for c_el in root.findall('comment'):
+        if c_el.text and c_el.text.strip():
+            comments.append(c_el.text.strip())
+    if comments:
+        props['comments'] = comments
 
     common = parse_common_properties(root, exp_type)
     props['common-properties'] = common
@@ -1284,10 +1463,191 @@ def _convert_file_inner(root, xml_path):
                         ):
                             break
 
+        # Inline pending uncertainties from common properties (measured species)
+        for unc_entry in dp.pop('_pending_unc', []):
+            ref = unc_entry.get('reference', '')
+            if ref in ('composition', 'initial composition'):
+                species_name = unc_entry.get('species-name', '')
+                unc_kind = unc_entry.get('kind', '')
+                bound = unc_entry.get('bound', 'plusminus')
+                raw_val = unc_entry.get('value', '')
+                unc_units = unc_entry.get('units', '')
+                sourcetype = unc_entry.get('sourcetype', '')
+                if species_name:
+                    for comp_key in ('composition', 'measured-composition'):
+                        comp_block = dp.get(comp_key)
+                        if comp_block and _attach_comp_uncertainty_inline(
+                            comp_block, species_name, unc_kind, bound,
+                            raw_val, unc_units, sourcetype
+                        ):
+                            break
+
     # Clean up common properties — remove temporary keys
     common.pop('uncertainty', None)
     common.pop('evaluated-standard-deviation', None)
     common.pop('_pending_esd', None)
+    common.pop('_pending_unc', None)
+
+    return props
+
+
+# ---------------------------------------------------------------------------
+# kdetermination conversion
+# ---------------------------------------------------------------------------
+
+def _convert_kdetermination(root, xml_path):
+    """Convert a <kdetermination> XML file to a ChemKED-style property dict."""
+    xml_filename = os.path.basename(xml_path)
+
+    props = parse_file_metadata(root)
+    props['reference'] = parse_reference(root, xml_filename)
+    props['file-type'] = 'kdetermination'
+    props['experiment-type'] = 'rate coefficient'
+
+    # Parse reactions
+    reactions = parse_reactions(root)
+    if reactions:
+        props['reactions'] = reactions
+
+    # Method and comments
+    method = (root.findtext('method') or '').strip()
+    if method:
+        props['method'] = method
+
+    comments = []
+    for c_el in root.findall('comment'):
+        if c_el.text and c_el.text.strip():
+            comments.append(c_el.text.strip())
+    if comments:
+        props['comments'] = comments
+
+    # Common properties (parsed the same way as experiments)
+    common = parse_common_properties(root, 'rate coefficient')
+    props['common-properties'] = common
+
+    # Parse dataGroup
+    all_dgs = root.findall('dataGroup')
+    if not all_dgs:
+        raise ValueError('No dataGroup found')
+
+    dg = all_dgs[0]
+    dg_defs = parse_datagroup_props(dg)
+
+    props['datapoints'] = parse_kdet_datapoints(dg, dg_defs, common)
+
+    if not props.get('datapoints'):
+        raise ValueError('No datapoints parsed')
+
+    # Apply common properties to each datapoint
+    for dp in props['datapoints']:
+        for key, val in common.items():
+            if key not in dp:
+                dp[key] = val
+
+    # Post-merge inline remaining uncertainties (same as experiment)
+    _UNC_KEYS = ('uncertainty', 'upper-uncertainty', 'lower-uncertainty')
+
+    def _extract_unc_from_entry(entry):
+        for bk in _UNC_KEYS:
+            if bk in entry:
+                raw = entry[bk]
+                val_str = raw[0] if isinstance(raw, list) else str(raw)
+                parts = val_str.split(' ', 1)
+                return bk, parts[0], (parts[1] if len(parts) > 1 else '')
+        return None, '', ''
+
+    for dp in props['datapoints']:
+        for entry in dp.pop('uncertainty', []):
+            ref = entry.get('reference', '')
+            target_key = _ref_to_property_key(ref)
+            sourcetype = entry.get('sourcetype', '')
+            if target_key and target_key in dp:
+                unc_kind = entry.get('kind', '')
+                bound_key, val_str, unc_units = _extract_unc_from_entry(entry)
+                if bound_key is None:
+                    continue
+                unc_dict = {'uncertainty-type': unc_kind}
+                unc_dict[bound_key] = _format_unc_value(val_str, unc_units, unc_kind)
+                if sourcetype:
+                    unc_dict['uncertainty-sourcetype'] = sourcetype
+                prop_val = dp[target_key]
+                if isinstance(prop_val, list) and len(prop_val) >= 1:
+                    if len(prop_val) == 2 and isinstance(prop_val[1], dict):
+                        dp[target_key] = [prop_val[0], _merge_inline_uncertainty(prop_val[1], unc_dict)]
+                    else:
+                        dp[target_key] = [prop_val[0], unc_dict]
+
+        for esd_entry in dp.pop('_pending_esd', []):
+            reference = esd_entry['reference']
+            target_key = _ref_to_property_key(reference)
+            if target_key and target_key in dp:
+                esd_fields = _build_inline_esd(
+                    esd_entry['kind'], esd_entry['value'], esd_entry['units'],
+                    esd_entry.get('sourcetype'), esd_entry.get('method')
+                )
+                _attach_metadata_to_property(dp, target_key, esd_fields)
+
+    common.pop('uncertainty', None)
+    common.pop('evaluated-standard-deviation', None)
+    common.pop('_pending_esd', None)
+    common.pop('_pending_unc', None)
+
+    return props
+
+
+# ---------------------------------------------------------------------------
+# tdetermination conversion
+# ---------------------------------------------------------------------------
+
+def _convert_tdetermination(root, xml_path):
+    """Convert a <tdetermination> XML file to a ChemKED-style property dict."""
+    xml_filename = os.path.basename(xml_path)
+
+    props = parse_file_metadata(root)
+    props['reference'] = parse_reference(root, xml_filename)
+    props['file-type'] = 'tdetermination'
+    props['experiment-type'] = 'thermochemical'
+
+    # Parse reactions (tdetermination may have species/reaction info)
+    reactions = parse_reactions(root)
+    if reactions:
+        props['reactions'] = reactions
+
+    method = (root.findtext('method') or '').strip()
+    if method:
+        props['method'] = method
+
+    comments = []
+    for c_el in root.findall('comment'):
+        if c_el.text and c_el.text.strip():
+            comments.append(c_el.text.strip())
+    if comments:
+        props['comments'] = comments
+
+    common = parse_common_properties(root, 'thermochemical')
+    props['common-properties'] = common
+
+    all_dgs = root.findall('dataGroup')
+    if not all_dgs:
+        raise ValueError('No dataGroup found')
+
+    dg = all_dgs[0]
+    dg_defs = parse_datagroup_props(dg)
+
+    props['datapoints'] = parse_tdet_datapoints(dg, dg_defs, common)
+
+    if not props.get('datapoints'):
+        raise ValueError('No datapoints parsed')
+
+    for dp in props['datapoints']:
+        for key, val in common.items():
+            if key not in dp:
+                dp[key] = val
+
+    common.pop('uncertainty', None)
+    common.pop('evaluated-standard-deviation', None)
+    common.pop('_pending_esd', None)
+    common.pop('_pending_unc', None)
 
     return props
 
@@ -1378,7 +1738,7 @@ def convert_single(xml_path, output_path=None):
     """Convert a single file and optionally write output."""
     result = convert_file(xml_path)
     if result is None:
-        log.info(f'Skipped (not an <experiment> file): {xml_path}')
+        log.info(f'Skipped (unsupported root element): {xml_path}')
         return
 
     if output_path is None:
@@ -1386,7 +1746,8 @@ def convert_single(xml_path, output_path=None):
 
     with open(output_path, 'w') as f:
         yaml_dump(result, f)
-    log.info(f'Converted: {xml_path} → {output_path}')
+    file_type = result.get('file-type', 'experiment')
+    log.info(f'Converted ({file_type}): {xml_path} → {output_path}')
 
 
 # ---------------------------------------------------------------------------
