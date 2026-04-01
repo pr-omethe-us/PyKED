@@ -2,6 +2,8 @@
 Main ChemKED module
 """
 # Standard libraries
+import re
+from decimal import Decimal, InvalidOperation
 from os.path import exists
 from collections import namedtuple
 from warnings import warn
@@ -15,6 +17,7 @@ import numpy as np
 # Local imports
 from .validation import schema, OurValidator, yaml, Q_
 from .converters import datagroup_properties, ReSpecTh_to_ChemKED
+from pint import DimensionalityError
 
 VolumeHistory = namedtuple('VolumeHistory', ['time', 'volume'])
 VolumeHistory.__doc__ = 'Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4'  # noqa: E501
@@ -778,10 +781,47 @@ class DataPoint(object):
             if not hasattr(self, '{}_history'.format(h)):
                 setattr(self, '{}_history'.format(h), None)
 
+    # Match a leading number (with optional scientific notation) followed by units.
+    _NUM_UNIT_RE = re.compile(
+        r'^([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s+(.+)$'
+    )
+    # Condensed exponent notation: letter immediately followed by a negative
+    # integer (e.g. "s-1", "mol-1").  Only negative exponents are converted to
+    # avoid false positives on strings like "H2O".
+    _UNIT_EXP_RE = re.compile(r'([A-Za-z])(-\d+)')
+
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it
         """
-        quant = Q_(properties[0])
+        raw = properties[0]
+        if isinstance(raw, str):
+            m = self._NUM_UNIT_RE.match(raw)
+            if m:
+                value_f = float(m.group(1))
+                unit_str = m.group(2)
+                try:
+                    # Preferred: separate value and units avoids pint
+                    # expression-parser bugs with 'e' (Euler's number)
+                    # and '-' (subtraction).
+                    quant = Q_(value_f, unit_str)
+                except Exception:
+                    # Unit string may use condensed exponent notation
+                    # (e.g. "s-1") which parse_units doesn't understand.
+                    norm = self._UNIT_EXP_RE.sub(r'\1**\2', unit_str)
+                    try:
+                        quant = Q_(value_f, norm)
+                    except Exception:
+                        # Unit string may be a compound expression
+                        # (e.g. "1 / second") that parse_units can't handle.
+                        # Fall back to expression parsing with the numeric
+                        # value in fixed-point notation so pint never sees
+                        # 'e' or 'E' in the number.
+                        safe_val = format(Decimal(str(value_f)), 'f')
+                        quant = Q_(f"{safe_val} {norm}")
+            else:
+                quant = Q_(raw)
+        else:
+            quant = Q_(raw)
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get('uncertainty', False)
