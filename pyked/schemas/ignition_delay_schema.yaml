@@ -33,6 +33,8 @@ ignition-type: &ignition-type
         - relative concentration
       required: true
       type: string
+    amount:
+      type: float
 
 time-history: &time-history
   type: dict

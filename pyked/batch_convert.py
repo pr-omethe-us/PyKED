@@ -793,7 +793,15 @@ def parse_ignition_type(root):
         'baseline min intercept from d/dt': 'd/dt min extrapolated',
     }
     ig_type = ign_type_map.get(ig_type, ig_type)
-    return {'target': target, 'type': ig_type}
+    result = {'target': target, 'type': ig_type}
+    # Capture amount for relative concentration (fraction of peak at which ignition is detected)
+    amount_str = elem.attrib.get('amount', '')
+    if amount_str:
+        try:
+            result['amount'] = float(amount_str)
+        except ValueError:
+            pass
+    return result
 
 
 # ---------------------------------------------------------------------------
