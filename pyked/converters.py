@@ -21,7 +21,6 @@ from . import chemked
 datagroup_properties = ['temperature', 'pressure', 'ignition delay',
                         'pressure rise', 'laminar burning velocity',
                         'distance', 'flow rate', 'residence time',
-                        'volumetric flow in reference state',
                         'volumetric flow rate in reference state',
                         ]
 """`list`: Valid properties for a ReSpecTh dataGroup"""
