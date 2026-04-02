@@ -106,6 +106,14 @@ property_units = {
     'reactor-volume': 'meter**3',
     'volumetric-flow-in-reference-state': 'meter**3 / second',
     'rate-coefficient': None,  # units vary by reaction order; skip dimensional check
+    # Non-IDT experiment type properties
+    'environment-temperature': 'kelvin',
+    'global-heat-exchange-coefficient': 'watt / meter**2 / kelvin',
+    'exchange-area': 'meter**2',
+    'reactor-length': 'meter',
+    'reactor-diameter': 'meter',
+    'pressure-in-reference-state': 'pascal',
+    'temperature-in-reference-state': 'kelvin',
 }
 
 
@@ -345,16 +353,42 @@ class OurValidator(Validator):
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
         if len(value) > 1:
-            unc_type = value[1].get('uncertainty-type')
+            unc_dict = value[1]
+
+            # Reject dicts that contain neither uncertainty fields nor
+            # evaluated-standard-deviation fields — an empty {} passes
+            # Cerberus schema validation (no keys are required) but would
+            # crash DataPoint.process_quantity() with a missing uncertainty-type error.
+            _uncertainty_keys = {
+                'uncertainty-type', 'uncertainty',
+                'upper-uncertainty', 'lower-uncertainty', 'uncertainty-sourcetype',
+            }
+            _eval_sd_keys = {
+                'evaluated-standard-deviation', 'evaluated-standard-deviation-type',
+                'evaluated-standard-deviation-sourcetype', 'evaluated-standard-deviation-method',
+            }
+            if not (unc_dict.keys() & _uncertainty_keys) and \
+               not (unc_dict.keys() & _eval_sd_keys):
+                self._error(
+                    field,
+                    'uncertainty dict must contain at least one uncertainty field '
+                    '(uncertainty-type, uncertainty, upper-uncertainty, lower-uncertainty) '
+                    'or evaluated-standard-deviation field; got: {}'.format(
+                        dict(unc_dict) or 'empty dict'
+                    )
+                )
+                return
+
+            unc_type = unc_dict.get('uncertainty-type')
             if unc_type and unc_type != 'relative':
-                if value[1].get('uncertainty') is not None:
-                    self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
+                if unc_dict.get('uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [unc_dict['uncertainty']])
 
-                if value[1].get('upper-uncertainty') is not None:
-                    self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
+                if unc_dict.get('upper-uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [unc_dict['upper-uncertainty']])
 
-                if value[1].get('lower-uncertainty') is not None:
-                    self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
+                if unc_dict.get('lower-uncertainty') is not None:
+                    self._validate_isvalid_quantity(True, field, [unc_dict['lower-uncertainty']])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
