@@ -20,6 +20,7 @@ ignition-type: &ignition-type
         - 1/2 max
         - min
         - d/dt max extrapolated
+        - d/dt min extrapolated
       required: true
       type: string
 
