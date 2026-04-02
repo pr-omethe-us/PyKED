@@ -782,10 +782,11 @@ def parse_ignition_type(root):
     elem = root.find('ignitionType')
     if elem is None:
         return None
-    target = elem.attrib.get('target', '')
+    target = elem.attrib.get('target', '').rstrip(';').strip()
     ig_type = elem.attrib.get('type', '')
-    target_map = {'OHEX': 'OH*', 'CHEX': 'CH*', 'P': 'pressure', 'T': 'temperature'}
-    target = target_map.get(target.upper(), target)
+    target_map = {'OHEX': 'OHEX', 'CHEX': 'CHEX', 'P': 'pressure', 'T': 'temperature',
+                  'OH*': 'OH*', 'CH*': 'CH*', 'CO2*': 'CO2'}
+    target = target_map.get(target.upper(), target_map.get(target, target))
     # Map ReSpecTh ignition type names to PyKED schema values (mirrors converters.py)
     ign_type_map = {
         'baseline max intercept from d/dt': 'd/dt max extrapolated',

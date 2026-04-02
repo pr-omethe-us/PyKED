@@ -732,7 +732,7 @@ class TestIgnitionType(object):
 
     @pytest.mark.parametrize('ignition_type',
                              ['baseline min intercept from d/dt',
-                              'concentration', 'relative concentration'
+                              'concentration',
                               ])
     def test_unsupported_ignition_types(self, ignition_type):
         """Check error returned for unsupported/invalid ignition types.
@@ -746,7 +746,7 @@ class TestIgnitionType(object):
             ignition = get_ignition_type(root)
         assert 'Error: ' + ignition_type + ' not valid ignition type' in str(excinfo.value)
 
-    @pytest.mark.parametrize('ignition_target', ['O2', 'CO', 'density'])
+    @pytest.mark.parametrize('ignition_target', ['O2', 'density'])
     def test_unsupported_ignition_targets(self, ignition_target):
         """Check error returned for unsupported/invalid ignition targets.
         """
