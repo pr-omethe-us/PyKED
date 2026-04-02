@@ -47,9 +47,10 @@ class UnsupportedUnitsError(Exception):
     """Raised when composition uses units not supported by the ChemKED schema."""
 
 
-# Custom YAML dumper that preserves dict insertion order
+# Custom YAML dumper that preserves dict insertion order and indents block sequences
 class _OrderedDumper(yaml.Dumper):
-    pass
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow=flow, indentless=False)
 
 def _dict_representer(dumper, data):
     return dumper.represent_mapping(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
@@ -70,7 +71,7 @@ _OrderedDumper.add_representer(_FlowList, _flow_list_representer)
 
 
 def yaml_dump(data, stream):
-    """Dump data to YAML preserving dict key order."""
+    """Dump data to YAML preserving dict key order with indented block sequences."""
     stream.write('---\n')
     yaml.dump(data, stream, Dumper=_OrderedDumper,
               default_flow_style=False, allow_unicode=True)
@@ -293,25 +294,8 @@ def parse_file_metadata(root):
         'chemked-version': CHEMKED_VERSION,
     }
 
-    file_doi = (root.findtext('fileDOI') or '').strip()
-    if file_doi:
-        props['file-doi'] = file_doi
-
-    # ReSpecTh version
-    rsv = root.find('ReSpecThVersion')
-    if rsv is not None:
-        major = (rsv.findtext('major') or '').strip()
-        minor = (rsv.findtext('minor') or '').strip()
-        if major:
-            props['respecth-version'] = f'{major}.{minor}' if minor else major
-
-    first_pub = (root.findtext('firstPublicationDate') or '').strip()
-    if first_pub:
-        props['first-publication-date'] = first_pub
-
-    last_mod = (root.findtext('lastModificationDate') or '').strip()
-    if last_mod:
-        props['last-modification-date'] = last_mod
+    # Note: file-doi, respecth-version, first-publication-date, last-modification-date
+    # are ReSpecTh-specific fields not recognised by the PyKED schema — omit them.
 
     return props
 
@@ -327,17 +311,6 @@ def parse_reference(root, xml_filename):
     if doi_el is not None and doi_el.text:
         ref['doi'] = doi_el.text.strip()
 
-    # Location, table, figure from bibliographyLink attributes/elements
-    location = (bib.findtext('location') or '').strip()
-    if location:
-        ref['location'] = location
-    table = (bib.findtext('table') or '').strip()
-    if table:
-        ref['table'] = table
-    figure = (bib.findtext('figure') or '').strip()
-    if figure:
-        ref['figure'] = figure
-
     details = bib.find('details')
     if details is not None:
         auth = (details.findtext('author') or '').strip()
@@ -346,9 +319,6 @@ def parse_reference(root, xml_filename):
         journal = (details.findtext('journal') or '').strip()
         if journal:
             ref['journal'] = decode_latex(journal)
-        title = (details.findtext('title') or '').strip()
-        if title:
-            ref['title'] = decode_latex(title)
         year = (details.findtext('year') or '').strip()
         if year:
             ref['year'] = int(year)
@@ -360,13 +330,12 @@ def parse_reference(root, xml_filename):
                 ref['volume'] = vol
         pages = (details.findtext('pages') or '').strip()
         if pages:
+            # Normalise en-dash/double-hyphen page ranges to single hyphen (e.g. 239--245 → 239-245)
+            import re as _re
+            pages = _re.sub(r'-{2,}', '-', pages).replace('\u2013', '-')
             ref['pages'] = pages
-        number = (details.findtext('number') or '').strip()
-        if number:
-            ref['number'] = number
-        pub_type = (details.findtext('type') or '').strip()
-        if pub_type:
-            ref['publication-type'] = pub_type
+        # Note: title, location, table, figure, number, publication-type are not
+        # recognised by the PyKED schema — omit them.
 
     # Fallback: use <description>
     if not ref.get('authors'):
@@ -779,6 +748,12 @@ def parse_ignition_type(root):
     ig_type = elem.attrib.get('type', '')
     target_map = {'OHEX': 'OH*', 'CHEX': 'CH*', 'P': 'pressure', 'T': 'temperature'}
     target = target_map.get(target.upper(), target)
+    # Map ReSpecTh ignition type names to PyKED schema values (mirrors converters.py)
+    ign_type_map = {
+        'baseline max intercept from d/dt': 'd/dt max extrapolated',
+        'baseline min intercept from d/dt': 'd/dt min extrapolated',
+    }
+    ig_type = ign_type_map.get(ig_type, ig_type)
     return {'target': target, 'type': ig_type}
 
 
@@ -1306,31 +1281,39 @@ PARSERS = {
 }
 
 
-def convert_file(xml_path):
+def convert_file(xml_path, original_filename=None):
     """Convert a single ReSpecTh XML file → ChemKED property dict (or None).
 
     Supports <experiment>, <kdetermination>, and <tdetermination> root elements.
+
+    Parameters
+    ----------
+    xml_path : str
+        Path to the XML file on disk.
+    original_filename : str, optional
+        The original filename to record in the ``reference.detail`` field.
+        Defaults to ``os.path.basename(xml_path)``.
     """
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
     if root.tag == 'experiment':
         try:
-            return _convert_file_inner(root, xml_path)
+            return _convert_file_inner(root, xml_path, original_filename)
         except UnsupportedUnitsError as e:
             log.info(f'Skipping {os.path.basename(xml_path)}: {e}')
             return None
     elif root.tag == 'kdetermination':
-        return _convert_kdetermination(root, xml_path)
+        return _convert_kdetermination(root, xml_path, original_filename)
     elif root.tag == 'tdetermination':
-        return _convert_tdetermination(root, xml_path)
+        return _convert_tdetermination(root, xml_path, original_filename)
     else:
         return None
 
 
-def _convert_file_inner(root, xml_path):
+def _convert_file_inner(root, xml_path, original_filename=None):
 
-    xml_filename = os.path.basename(xml_path)
+    xml_filename = original_filename or os.path.basename(xml_path)
 
     props = parse_file_metadata(root)
     props['reference'] = parse_reference(root, xml_filename)
@@ -1495,9 +1478,9 @@ def _convert_file_inner(root, xml_path):
 # kdetermination conversion
 # ---------------------------------------------------------------------------
 
-def _convert_kdetermination(root, xml_path):
+def _convert_kdetermination(root, xml_path, original_filename=None):
     """Convert a <kdetermination> XML file to a ChemKED-style property dict."""
-    xml_filename = os.path.basename(xml_path)
+    xml_filename = original_filename or os.path.basename(xml_path)
 
     props = parse_file_metadata(root)
     props['reference'] = parse_reference(root, xml_filename)
@@ -1599,9 +1582,9 @@ def _convert_kdetermination(root, xml_path):
 # tdetermination conversion
 # ---------------------------------------------------------------------------
 
-def _convert_tdetermination(root, xml_path):
+def _convert_tdetermination(root, xml_path, original_filename=None):
     """Convert a <tdetermination> XML file to a ChemKED-style property dict."""
-    xml_filename = os.path.basename(xml_path)
+    xml_filename = original_filename or os.path.basename(xml_path)
 
     props = parse_file_metadata(root)
     props['reference'] = parse_reference(root, xml_filename)

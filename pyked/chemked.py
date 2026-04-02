@@ -590,6 +590,8 @@ class ChemKED(object):
                 ignition.set('target', self.datapoints[0].ignition_type['target'])
             if ign_types[0]['type'] == 'd/dt max extrapolated':
                 ignition.set('type', 'baseline max intercept from d/dt')
+            elif ign_types[0]['type'] == 'd/dt min extrapolated':
+                ignition.set('type', 'baseline min intercept from d/dt')
             else:
                 ignition.set('type', self.datapoints[0].ignition_type['type'])
         else:
