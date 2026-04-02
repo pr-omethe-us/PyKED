@@ -326,10 +326,15 @@ def get_ignition_type(root):
     elif ign_target == 'T':
         ign_target = 'temperature'
 
-    if ign_target not in ['pressure', 'temperature', 'OH', 'OH*', 'CH*', 'CH']:
+    _valid_targets = {
+        'pressure', 'temperature', 'OH', 'OH*', 'CH', 'CH*',
+        'NH3', 'CO2', 'N2O', 'CH4', 'OHEX', 'CHEX',
+    }
+    if ign_target not in _valid_targets:
         raise KeywordError(ign_target + ' not valid ignition target')
 
-    if ign_type not in ['max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated']:
+    _valid_types = {'max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated', 'd/dt min extrapolated'}
+    if ign_type not in _valid_types:
         raise KeywordError(ign_type + ' not valid ignition type')
 
     properties['type'] = ign_type

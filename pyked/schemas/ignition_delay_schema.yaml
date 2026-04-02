@@ -13,6 +13,12 @@ ignition-type: &ignition-type
         - OH*
         - CH
         - CH*
+        - NH3
+        - CO2
+        - N2O
+        - CH4
+        - OHEX
+        - CHEX
     type:
       allowed:
         - d/dt max
