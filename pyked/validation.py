@@ -413,7 +413,20 @@ class OurValidator(Validator):
                     self._error(field, 'Pages were specified in the YAML but are not present in '
                                 'the DOI reference.')
             else:
-                if pages is None or pages != ref_pages:
+                # CrossRef often returns only the start page (e.g. "1697") while the
+                # full range "1697-1702" is correct.  Accept if the file pages start
+                # with the CrossRef start page or match exactly.
+                def _norm_pages(p):
+                    return p.strip().replace('\u2013', '-').replace('--', '-') if p else p
+                ref_norm = _norm_pages(ref_pages)
+                file_norm = _norm_pages(pages)
+                pages_ok = (
+                    file_norm == ref_norm
+                    or (file_norm or '').startswith(ref_norm + '-')
+                    or (ref_norm or '').startswith((file_norm or '').split('-')[0] + '-')
+                    or ref_norm == (file_norm or '').split('-')[0]
+                )
+                if pages is None or not pages_ok:
                     self._error(field, 'pages should be {}'.format(ref_pages))
 
             # check that all authors present
