@@ -165,6 +165,10 @@ file-authors:
 file-version:
   required: true
   type: integer
+comments:
+  type: list
+  schema:
+    type: string
 # Optional fields for rate coefficient (kdetermination) experiments
 reaction:
   type: string

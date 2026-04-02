@@ -19,6 +19,9 @@ ignition-type: &ignition-type
         - CH4
         - OHEX
         - CHEX
+        - CO
+        - H2O
+        - C2
     type:
       allowed:
         - d/dt max
@@ -27,6 +30,7 @@ ignition-type: &ignition-type
         - min
         - d/dt max extrapolated
         - d/dt min extrapolated
+        - relative concentration
       required: true
       type: string
 

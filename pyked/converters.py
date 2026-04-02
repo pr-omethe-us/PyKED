@@ -328,11 +328,13 @@ def get_ignition_type(root):
     _valid_targets = {
         'pressure', 'temperature', 'OH', 'OH*', 'CH', 'CH*',
         'NH3', 'CO2', 'N2O', 'CH4', 'OHEX', 'CHEX',
+        'CO', 'H2O', 'C2',
     }
     if ign_target not in _valid_targets:
         raise KeywordError(ign_target + ' not valid ignition target')
 
-    _valid_types = {'max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated', 'd/dt min extrapolated'}
+    _valid_types = {'max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated', 'd/dt min extrapolated',
+                    'relative concentration'}
     if ign_type not in _valid_types:
         raise KeywordError(ign_type + ' not valid ignition type')
 
