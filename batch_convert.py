@@ -107,6 +107,11 @@ SCALAR_COMMON_PROPS = {
 }
 
 
+# Compact inverse-unit notation used in ReSpecTh that pint cannot parse.
+# e.g. "ms-1" is ambiguous (pint reads it as millisecond, dimensionless);
+# map to unambiguous reciprocal forms. Mirrors converters.py's "Torr"→"torr".
+_INV_UNIT_MAP = {'ms-1': '1/ms', 's-1': '1/s', 'cm-1': '1/cm', 'K-1': '1/K'}
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -168,8 +173,38 @@ def decode_latex(s):
 
 
 def parse_author_string(s):
-    """Parse 'Last, First and Last, First ...' → [{'name': 'First Last'}, ...]"""
+    """Parse author strings into [{'name': 'First Last'}, ...].
+
+    Handles two common ReSpecTh formats:
+    - 'Last, First and Last, First ...'  (and-separated)
+    - 'Last, F., Last, F., ...'          (comma-separated initials, no 'and')
+    """
+    import re as _re
+    s = s.strip()
     authors = []
+
+    # Detect comma-only format: 'Last, F., Last, F., ...'
+    # Heuristic: if ' and ' is absent but the string has repeated 'Word, X.,' pattern
+    if ' and ' not in s and _re.search(r'\w+,\s+\w+\.(?:,|$)', s):
+        # Split on ', ' followed by a word that is itself followed by ', ' or end
+        # Strategy: collect tokens by splitting on ', ' and pairing them up
+        tokens = [t.strip() for t in s.split(',')]
+        tokens = [t for t in tokens if t]
+        i = 0
+        while i < len(tokens):
+            last = tokens[i]
+            # Next token is the initial/first name (may end with '.')
+            if i + 1 < len(tokens):
+                first = tokens[i + 1].strip()
+                name = f"{first} {last}"
+                i += 2
+            else:
+                name = last
+                i += 1
+            authors.append({'name': decode_latex(name)})
+        return authors
+
+    # Standard 'and'-separated format
     for part in s.split(' and '):
         part = part.strip()
         if not part:
@@ -611,6 +646,9 @@ def parse_common_properties(root, exp_type):
         elif name in SCALAR_COMMON_PROPS:
             val_el = prop_elem.find('value')
             units = prop_elem.attrib.get('units', '')
+            # Normalise compact inverse-unit notation that pint cannot parse
+            # e.g. "ms-1" → "1/ms", matching converters.py's "Torr" → "torr" pattern
+            units = _INV_UNIT_MAP.get(units, units)
             if val_el is not None:
                 key = prop_name_to_key(name)
                 common[key] = [f'{_clean_numeric(val_el.text)} {units}']
@@ -930,6 +968,7 @@ def build_uncertainty_entries(dg_defs, dp_elem, dp=None):
 
 def _scalar_value(val_text, units):
     """Build a scalar value+unit list entry like ['700 K']."""
+    units = _INV_UNIT_MAP.get(units, units)
     return [f'{_clean_numeric(val_text)} {units}']
 
 
