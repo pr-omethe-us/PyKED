@@ -12,6 +12,7 @@ rate-coefficient-schema: &rate-coefficient-schema
     schema:
       temperature: *value-unit-required
       pressure: *value-unit-optional
-      rate-coefficient: *value-unit-required
+      rate-coefficient: *value-unit-optional
+      branching-ratio: *value-unit-optional
       composition: *composition
       equivalence-ratio: *value-unit-optional
