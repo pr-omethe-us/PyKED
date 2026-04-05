@@ -22,6 +22,14 @@ ignition-type: &ignition-type
         - CO
         - H2O
         - C2
+        - O
+        - CH3OH
+        - CH3
+        - O2
+        - soot
+        - CO;O
+        - "[O]*[CO]"
+        - NEOC5H11
     type:
       allowed:
         - d/dt max
@@ -31,6 +39,9 @@ ignition-type: &ignition-type
         - d/dt max extrapolated
         - d/dt min extrapolated
         - relative concentration
+        - d/dt second max
+        - concentration
+        - relative increase
       required: true
       type: string
     amount:
