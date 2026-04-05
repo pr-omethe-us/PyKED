@@ -122,7 +122,8 @@ def get_reference(root):
             reference['doi'] = elem.attrib['doi']
             # Now get elements of the reference data
             # Assume that the reference returned by the DOI lookup always has a container-title
-            reference['journal'] = ref.get('container-title')[0]
+            import html as _html_mod
+            reference['journal'] = _html_mod.unescape(ref.get('container-title')[0])
             ref_year = ref.get('published-print') or ref.get('published-online')
             reference['year'] = int(ref_year['date-parts'][0][0])
             reference['volume'] = int(ref.get('volume'))
@@ -329,12 +330,13 @@ def get_ignition_type(root):
         'pressure', 'temperature', 'OH', 'OH*', 'CH', 'CH*',
         'NH3', 'CO2', 'N2O', 'CH4', 'OHEX', 'CHEX',
         'CO', 'H2O', 'C2',
+        'O', 'CH3OH', 'CH3', 'O2', 'soot', 'CO;O', '[O]*[CO]', 'NEOC5H11',
     }
     if ign_target not in _valid_targets:
         raise KeywordError(ign_target + ' not valid ignition target')
 
     _valid_types = {'max', 'd/dt max', '1/2 max', 'min', 'd/dt max extrapolated', 'd/dt min extrapolated',
-                    'relative concentration'}
+                    'relative concentration', 'd/dt second max', 'concentration', 'relative increase'}
     if ign_type not in _valid_types:
         raise KeywordError(ign_type + ' not valid ignition type')
 
