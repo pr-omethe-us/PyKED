@@ -792,6 +792,22 @@ class DataPoint(object):
     # avoid false positives on strings like "H2O".
     _UNIT_EXP_RE = re.compile(r'([A-Za-z])(-\d+)')
 
+    def _parse_val_units(self, raw):
+        """Split a 'value units' string into (float, unit_str) for Q_().
+
+        Applies condensed-exponent normalization (e.g. 'molecule-1' → 'molecule**-1')
+        only to the unit part, not the numeric part, to avoid mis-converting
+        scientific notation like '4.52e-12'.
+        Returns (float, unit_str) for use as Q_(float, unit_str), or (raw,) as
+        fallback for Q_(raw) expression parsing.
+        """
+        m = self._NUM_UNIT_RE.match(raw)
+        if m:
+            val_f = float(m.group(1))
+            unit_str = self._UNIT_EXP_RE.sub(r'\1**\2', m.group(2))
+            return val_f, unit_str
+        return (raw,)
+
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it
         """
@@ -850,13 +866,16 @@ class DataPoint(object):
                                      '"lower-uncertainty" need to be specified.')
             elif uncertainty_type == 'absolute':
                 if uncertainty:
-                    uncertainty = Q_(uncertainty)
+                    uncertainty = Q_(*self._parse_val_units(str(uncertainty)))
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 elif upper_uncertainty and lower_uncertainty:
                     warn('Asymmetric uncertainties are not supported. The '
                          'maximum of lower-uncertainty and upper-uncertainty '
                          'has been used as the symmetric uncertainty.')
-                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                    uncertainty = max(
+                        Q_(*self._parse_val_units(str(upper_uncertainty))),
+                        Q_(*self._parse_val_units(str(lower_uncertainty))),
+                    )
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 else:
                     raise ValueError('Either "uncertainty" or "upper-uncertainty" and '

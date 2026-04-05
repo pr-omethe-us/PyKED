@@ -70,6 +70,7 @@ apparatus:
         - flame
         - outwardly propagating spherical flame
         - heat flux burner
+        - flame cone method
       required: true
       type: string
     mode:
@@ -77,11 +78,19 @@ apparatus:
       allowed:
         - reflected shock
         - incident shock
+        - reflected shock wave
+        - incident shock wave
         - laminar
+        - turbulent
         - burner stabilized
+        - burner-stabilized
         - constant volume combustion chamber
         - premixed
         - unstretched
+        - spherical
+        - cylindrical
+        - slot burner
+        - modified Bunsen burner
         - "extrapolation method to zero stretch : LS"
         - "extrapolation method to zero stretch : NQ"
         - counterflow

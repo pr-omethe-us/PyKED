@@ -5,7 +5,7 @@ composition: &composition
   schema:
     kind:
       type: string
-      allowed: ['mass fraction', 'mole fraction', 'mole percent']
+      allowed: ['mass fraction', 'mole fraction', 'mole percent', 'mol/cm3', 'mol/m3', 'mol/L', 'mol/dm3']
     species:
       type: list
       required: true
@@ -56,20 +56,17 @@ composition: &composition
                 type: string
           InChI:
             type: string
-            required: true
             excludes:
               - atomic-composition
               - SMILES
           SMILES:
             type: string
-            required: true
             excludes:
               - atomic-composition
               - InChI
           atomic-composition:
             type: list
             minlength: 1
-            required: true
             excludes:
               - InChI
               - SMILES
