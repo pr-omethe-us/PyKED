@@ -20,6 +20,11 @@ import yaml
 import argparse
 import logging
 
+try:
+    from pyked.chemked import ChemKED as _ChemKED
+except Exception:
+    _ChemKED = None
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 log = logging.getLogger(__name__)
 
@@ -64,8 +69,7 @@ class _FlowList(list):
     pass
 
 def _flow_list_representer(dumper, data):
-    return dumper.represent_sequence(yaml.resolver.BaseResolver.DEFAULT_SEQUENCE_TAG,
-                                    data, flow_style=True)
+    return dumper.represent_sequence(yaml.resolver.BaseResolver.DEFAULT_SEQUENCE_TAG, data, flow_style=True)
 
 _OrderedDumper.add_representer(_FlowList, _flow_list_representer)
 
@@ -110,7 +114,30 @@ SCALAR_COMMON_PROPS = {
 # Compact inverse-unit notation used in ReSpecTh that pint cannot parse.
 # e.g. "ms-1" is ambiguous (pint reads it as millisecond, dimensionless);
 # map to unambiguous reciprocal forms. Mirrors converters.py's "Torr"→"torr".
-_INV_UNIT_MAP = {'ms-1': '1/ms', 's-1': '1/s', 'cm-1': '1/cm', 'K-1': '1/K'}
+_INV_UNIT_MAP = {'ms-1': '1/ms', 's-1': '1/s', 'cm-1': '1/cm', 'K-1': '1/K',
+                 'unitless': 'dimensionless'}
+
+
+def _normalize_units(unit_str):
+    """Rewrite unit strings with implicit negative exponents to pint-compatible form.
+
+    Converts e.g. 'kg m-2 s-1' → 'kg * m**-2 * s**-1' so that pint does not
+    misinterpret the '-' as arithmetic subtraction.
+    Also handles ReSpecTh underscore-separated units like 'cm3_mol-1_s-1'.
+    """
+    import re as _re
+    # First apply the simple inverse map
+    unit_str = _INV_UNIT_MAP.get(unit_str, unit_str)
+    # Replace underscore separators with spaces (ReSpecTh k-file convention: cm3_mol-1_s-1)
+    # Only replace underscores that appear between unit token characters (not leading/trailing)
+    unit_str = _re.sub(r'(?<=\w)_(?=\w)', ' ', unit_str)
+    # Replace patterns like 'TOKEN-N' (letter/digit token followed by hyphen-digit)
+    # with 'TOKEN**-N', but only when the token is a known unit symbol (not a standalone '-').
+    unit_str = _re.sub(r'([a-zA-Z]+)(-\d+)', r'\1**\2', unit_str)
+    # Replace spaces used as implicit multiplication with ' * '
+    # (only between unit tokens, not touching '**')
+    unit_str = _re.sub(r'(?<=\w) +(?=\w)', ' * ', unit_str)
+    return unit_str
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -241,7 +268,10 @@ def parse_species_link(elem):
 
 def _clean_numeric(text):
     """Clean numeric string: strip leading zeros to avoid YAML octal issues."""
+    import re as _re
     text = text.strip()
+    # Handle Fortran-style exponents without 'e': e.g. '5.93+005' → '5.93e+005'
+    text = _re.sub(r'^([+-]?\d+\.?\d*)([+-]\d+)$', r'\1e\2', text)
     try:
         val = float(text)
         if val != val:  # NaN
@@ -273,11 +303,13 @@ def normalize_comp_units(value_str, units):
         return float(f'{val * 1e-6:.10g}'), 'mole fraction'
     elif units == 'ppb':
         return float(f'{val * 1e-9:.10g}'), 'mole fraction'
+    elif units in ('mol/cm3', 'mol/m3', 'mol/L', 'mol/dm3'):
+        return val, units
     else:
         raise UnsupportedUnitsError(
             f'Composition units {units!r} not supported. '
             'Must be one of: mole fraction, mass fraction, mole percent, '
-            'percent, ppm, or ppb.'
+            'percent, ppm, ppb, or mol/cm3.'
         )
 
 
@@ -287,17 +319,28 @@ def _reconcile_composition(entries):
     *entries*: list of (spec_dict, value, kind) tuples.
     Returns (target_kind, [(spec_dict, value)]).
     After normalisation, all entries should share the same kind.
-    If mixed, the dominant kind is used and a warning is logged.
+    If mixed, the dominant kind is used and minority entries are converted.
     """
     kinds = set(e[2] for e in entries)
     if len(kinds) == 1:
         k = kinds.pop()
         return k, [(e[0], e[1]) for e in entries]
-    # Mixed units – pick dominant kind, pass values through as-is
+    # Mixed units – pick dominant kind, convert minority entries
     kind_counts = Counter(e[2] for e in entries)
     dominant = kind_counts.most_common(1)[0][0]
-    log.warning(f'Mixed composition units {dict(kind_counts)}; using {dominant!r}')
-    return dominant, [(e[0], e[1]) for e in entries]
+    log.warning(f'Mixed composition units {dict(kind_counts)}; converting all to {dominant!r}')
+    converted = []
+    for spec, val, kind in entries:
+        if kind == dominant:
+            converted.append((spec, val))
+        elif dominant == 'mole fraction' and kind == 'mole percent':
+            converted.append((spec, round(val / 100.0, 10)))
+        elif dominant == 'mole percent' and kind == 'mole fraction':
+            converted.append((spec, round(val * 100.0, 10)))
+        else:
+            # Fallback: convert both to mole fraction via ppm/ppb already handled upstream
+            converted.append((spec, val))
+    return dominant, converted
 
 
 def prop_name_to_key(name):
@@ -360,9 +403,12 @@ def parse_reference(root, xml_filename):
         vol = (details.findtext('volume') or '').strip()
         if vol:
             try:
-                ref['volume'] = int(vol)
-            except ValueError:
-                ref['volume'] = vol
+                # handles '32 I' → 32, '110–111' or '110-111' → 110
+                import re as _re2
+                m_vol = _re2.search(r'\d+', vol)
+                ref['volume'] = int(m_vol.group()) if m_vol else int(vol.split()[0])
+            except (ValueError, IndexError, AttributeError):
+                pass  # omit non-parseable volume; CrossRef enrichment will set it
         pages = (details.findtext('pages') or '').strip()
         if pages:
             # Normalise en-dash/double-hyphen page ranges to single hyphen (e.g. 239--245 → 239-245)
@@ -381,6 +427,55 @@ def parse_reference(root, xml_filename):
     prefix = ref.get('detail', '')
     ref['detail'] = (prefix + ' ' if prefix else '') + \
                     f'Converted from ReSpecTh XML file {xml_filename}'
+
+    # Enrich journal name and authors from CrossRef so the YAML matches
+    # what PyKED's CrossRef validation expects.
+    if ref.get('doi'):
+        try:
+            import habanero as _habanero
+            from requests.exceptions import ConnectionError as _ConnErr
+            _cr = _habanero.Crossref(mailto='prometheus@pr.omethe.us')
+            _msg = _cr.works(ids=ref['doi'])['message']
+            # Canonical journal title
+            container = _msg.get('container-title')
+            if container:
+                import html as _html_mod
+                ref['journal'] = _html_mod.unescape(container[0])
+            # Canonical author list: family + given → "Given Family"
+            cr_authors = _msg.get('author', [])
+            if cr_authors:
+                names = []
+                for a in cr_authors:
+                    given = a.get('given', '').strip()
+                    family = a.get('family', '').strip()
+                    if given and family:
+                        names.append({'name': f'{given} {family}'})
+                    elif family:
+                        names.append({'name': family})
+                if names:
+                    ref['authors'] = names
+            # Canonical year
+            pub = _msg.get('published-print') or _msg.get('published-online')
+            if pub:
+                ref['year'] = pub['date-parts'][0][0]
+            # Canonical volume (integer)
+            cr_vol = _msg.get('volume')
+            if cr_vol is not None:
+                try:
+                    # CrossRef may return combined volumes like "110-111"; use first number
+                    import re as _re3
+                    m_cv = _re3.search(r'\d+', str(cr_vol))
+                    ref['volume'] = int(m_cv.group()) if m_cv else int(cr_vol)
+                except (ValueError, TypeError, AttributeError):
+                    pass
+            # Canonical pages
+            cr_pages = _msg.get('page')
+            if cr_pages:
+                import re as _re2
+                ref['pages'] = _re2.sub(r'-{2,}', '-', cr_pages).replace('\u2013', '-')
+        except Exception:
+            pass  # network unavailable or DOI not in CrossRef — keep ReSpecTh values
+
     return ref
 
 
@@ -394,13 +489,28 @@ def parse_experiment_kind(root):
     if exp_type is None:
         raise ValueError(f'Unknown experiment type: {root.findtext("experimentType")}')
 
+    _default_apparatus_kind = {
+        'ignition delay': 'shock tube',
+        'laminar burning velocity measurement': 'outwardly propagating spherical flame',
+        'concentration time profile measurement': 'flow reactor',
+        'jet stirred reactor measurement': 'jet stirred reactor',
+        'outlet concentration measurement': 'flow reactor',
+        'burner stabilized flame speciation measurement': 'flame',
+    }
     apparatus = {'kind': '', 'institution': '', 'facility': ''}
     kind_el = root.find('apparatus/kind')
     if kind_el is not None and kind_el.text:
         apparatus['kind'] = kind_el.text.strip()
+    if not apparatus['kind'] and exp_type in _default_apparatus_kind:
+        apparatus['kind'] = _default_apparatus_kind[exp_type]
+    _mode_aliases = {
+        'reflected': 'reflected shock',
+        'incident': 'incident shock',
+    }
     modes = root.findall('apparatus/mode')
     if modes and modes[0].text:
-        apparatus['mode'] = modes[0].text.strip()
+        raw_mode = modes[0].text.strip()
+        apparatus['mode'] = _mode_aliases.get(raw_mode, raw_mode)
 
     return exp_type, apparatus
 
@@ -484,7 +594,7 @@ def _build_inline_uncertainty(kind, bound, value_str, units, sourcetype=None):
 def _merge_inline_uncertainty(existing, new):
     """Merge two inline uncertainty dicts (e.g. separate plus + minus → one dict)."""
     merged = dict(existing)
-    for key in ('uncertainty', 'upper-uncertainty', 'lower-uncertainty',
+    for key in ('uncertainty-type', 'uncertainty', 'upper-uncertainty', 'lower-uncertainty',
                 'uncertainty-sourcetype'):
         if key in new:
             merged[key] = new[key]
@@ -638,7 +748,19 @@ def parse_common_properties(root, exp_type):
         name = prop_elem.attrib.get('name', '')
 
         if name == 'initial composition':
-            common['composition'] = parse_initial_composition(prop_elem)
+            comp = parse_initial_composition(prop_elem)
+            if comp and comp.get('species'):
+                import numpy as _np_cp
+                total = 100.0 if comp.get('kind') == 'mole percent' else 1.0
+                comp_sum = sum(sp['amount'][0] for sp in comp['species'] if sp.get('amount'))
+                if not _np_cp.isclose(total, comp_sum, rtol=0.0, atol=total * 0.11):
+                    # Partial CP composition (sum deviates >11% from expected total).
+                    # Store for merging into per-dp compositions; don't use as standalone.
+                    common['_partial_cp_composition'] = comp
+                else:
+                    common['composition'] = comp
+            else:
+                common['composition'] = comp
         elif name == 'equivalence ratio':
             val_el = prop_elem.find('value')
             if val_el is not None:
@@ -646,9 +768,7 @@ def parse_common_properties(root, exp_type):
         elif name in SCALAR_COMMON_PROPS:
             val_el = prop_elem.find('value')
             units = prop_elem.attrib.get('units', '')
-            # Normalise compact inverse-unit notation that pint cannot parse
-            # e.g. "ms-1" → "1/ms", matching converters.py's "Torr" → "torr" pattern
-            units = _INV_UNIT_MAP.get(units, units)
+            units = _normalize_units(units)
             if val_el is not None:
                 key = prop_name_to_key(name)
                 common[key] = [f'{_clean_numeric(val_el.text)} {units}']
@@ -845,6 +965,11 @@ def build_composition(prop_defs, dp_elem):
             continue
         spec = dict(pdef.get('species', {}))
         val, kind = normalize_comp_units(val_el.text, pdef['units'])
+        if val < 0:
+            # -1.0 is a sentinel for "below detection limit"; skip these species
+            log.debug(f'Skipping species {spec.get("species-name", "?")} with negative '
+                      f'value {val} (below detection limit)')
+            continue
         entries.append((spec, val, kind))
     if not entries:
         return None
@@ -856,9 +981,67 @@ def build_composition(prop_defs, dp_elem):
     return comp
 
 
-def build_initial_composition(prop_defs, dp_elem):
-    """Build initial composition dict from 'initial composition' columns."""
+def _add_balance_diluent(measured, initial_composition):
+    """Top up measured-composition to sum to 1.0 using the diluent from initial_composition.
+
+    For JSR/flow-reactor experiments only a subset of species are measured.
+    The balance (typically N2 or Ar diluent) is inferred from the initial
+    composition and added so the mole fractions sum to 1.0 as required by
+    PyKED validation.
+
+    Args:
+        measured (dict): composition dict built by build_composition().
+        initial_composition (dict | None): common-properties composition dict.
+
+    Returns:
+        dict: measured composition with balance species added if needed.
+    """
+    if measured is None or initial_composition is None:
+        return measured
+
+    kind = measured.get('kind', 'mole fraction')
+    total = 100.0 if kind == 'mole percent' else 1.0
+    current_sum = sum(sp['amount'][0] for sp in measured['species'])
+
+    import numpy as np
+    if np.isclose(total, current_sum):
+        return measured  # already sums to 1.0
+
+    measured_names = {sp['species-name'] for sp in measured['species']}
+
+    # Find the diluent: species in initial_composition not already measured,
+    # with the largest mole fraction (i.e. the main diluent, e.g. N2 or Ar).
+    init_kind = initial_composition.get('kind', 'mole fraction')
+    init_total = 100.0 if init_kind == 'mole percent' else 1.0
+    candidates = [
+        sp for sp in initial_composition.get('species', [])
+        if sp['species-name'] not in measured_names
+    ]
+    if not candidates:
+        return measured
+
+    # Pick the dominant non-measured species
+    diluent_spec = max(candidates, key=lambda s: s['amount'][0])
+    balance = total - current_sum
+    if balance <= 0:
+        return measured
+
+    # Build a minimal species entry (copy identifiers, set inferred amount)
+    diluent_entry = {k: v for k, v in diluent_spec.items() if k != 'amount'}
+    diluent_entry['amount'] = [round(balance, 8)]
+    measured['species'].append(diluent_entry)
+    return measured
+
+
+def build_initial_composition(prop_defs, dp_elem, partial_cp_composition=None):
+    """Build initial composition dict from 'initial composition' columns.
+
+    If *partial_cp_composition* is given (a partial common-property composition
+    that didn't sum to 1.0), its species are merged into the per-datapoint
+    composition so the combined block sums correctly.
+    """
     entries = []
+    dp_species_names = set()
     for val_el in dp_elem:
         pid = val_el.tag
         if pid not in prop_defs:
@@ -869,8 +1052,18 @@ def build_initial_composition(prop_defs, dp_elem):
         spec = dict(pdef.get('species', {}))
         val, kind = normalize_comp_units(val_el.text, pdef['units'])
         entries.append((spec, val, kind))
+        dp_species_names.add(spec.get('species-name', ''))
     if not entries:
         return None
+    # Merge species from partial CP composition that aren't already in per-dp
+    if partial_cp_composition and partial_cp_composition.get('species'):
+        cp_kind = partial_cp_composition.get('kind', 'mole fraction')
+        for sp in partial_cp_composition['species']:
+            sname = sp.get('species-name', '')
+            if sname and sname not in dp_species_names:
+                spec_copy = {k: v for k, v in sp.items() if k != 'amount'}
+                val = sp['amount'][0]
+                entries.append((spec_copy, val, cp_kind))
     target_kind, resolved = _reconcile_composition(entries)
     comp = {'kind': target_kind, 'species': []}
     for spec, val in resolved:
@@ -977,7 +1170,7 @@ def build_uncertainty_entries(dg_defs, dp_elem, dp=None):
 
 def _scalar_value(val_text, units):
     """Build a scalar value+unit list entry like ['700 K']."""
-    units = _INV_UNIT_MAP.get(units, units)
+    units = _normalize_units(units)
     return [f'{_clean_numeric(val_text)} {units}']
 
 
@@ -1009,7 +1202,18 @@ def parse_idt_datapoints(root, dg, dg_defs, common):
     # Handle additional dataGroups (volume/pressure/temperature time histories)
     all_dgs = root.findall('dataGroup')
     if len(all_dgs) > 1:
-        for extra_dg in all_dgs[1:]:
+        extra_dgs = all_dgs[1:]
+        # If number of extra dataGroups matches number of datapoints, assign 1:1
+        # (RCM pattern: each condition has its own volume-time trace).
+        # Otherwise assign all histories to datapoints[0].
+        if len(extra_dgs) == len(datapoints):
+            dp_targets = list(range(len(datapoints)))
+        else:
+            # Assign sequentially up to min(dgs, dps); skip extras (target=-1)
+            n = min(len(extra_dgs), len(datapoints))
+            dp_targets = list(range(n)) + [-1] * (len(extra_dgs) - n)
+
+        for idx_dg, extra_dg in enumerate(extra_dgs):
             edefs = parse_datagroup_props(extra_dg)
             time_tag = None
             quant_info = []  # [(tag, type_name, units)]
@@ -1044,8 +1248,9 @@ def parse_idt_datapoints(root, dg, dg_defs, common):
                     for h in histories:
                         if h['type'] in q_vals:
                             h['values'].append(_FlowList([t_val, q_vals[h['type']]]))
-            if histories[0]['values']:
-                datapoints[0].setdefault('time-histories', []).extend(histories)
+            target = dp_targets[idx_dg]
+            if histories[0]['values'] and target >= 0:
+                datapoints[target].setdefault('time-histories', []).extend(histories)
 
     return datapoints
 
@@ -1082,12 +1287,16 @@ def parse_jsr_datapoints(dg, dg_defs, common):
     datapoints = []
     for dp_el in dg.findall('dataPoint'):
         dp = {}
-        measured = build_composition(dg_defs, dp_el)
-        if measured:
-            dp['measured-composition'] = measured
-        init_comp = build_initial_composition(dg_defs, dp_el)
+        init_comp = build_initial_composition(dg_defs, dp_el, common.get('_partial_cp_composition'))
         if init_comp:
             dp['composition'] = init_comp
+        measured = build_composition(dg_defs, dp_el)
+        if measured:
+            ref_comp = (init_comp
+                        or common.get('composition')
+                        or common.get('_partial_cp_composition'))
+            measured = _add_balance_diluent(measured, ref_comp)
+            dp['measured-composition'] = measured
         for val_el in dp_el:
             pid = val_el.tag
             if pid not in dg_defs:
@@ -1166,12 +1375,16 @@ def parse_ocm_datapoints(dg, dg_defs, common):
     datapoints = []
     for dp_el in dg.findall('dataPoint'):
         dp = {}
-        measured = build_composition(dg_defs, dp_el)
-        if measured:
-            dp['measured-composition'] = measured
-        init_comp = build_initial_composition(dg_defs, dp_el)
+        init_comp = build_initial_composition(dg_defs, dp_el, common.get('_partial_cp_composition'))
         if init_comp:
             dp['composition'] = init_comp
+        measured = build_composition(dg_defs, dp_el)
+        if measured:
+            ref_comp = (init_comp
+                        or common.get('composition')
+                        or common.get('_partial_cp_composition'))
+            measured = _add_balance_diluent(measured, ref_comp)
+            dp['measured-composition'] = measured
         for val_el in dp_el:
             pid = val_el.tag
             if pid not in dg_defs:
@@ -1199,6 +1412,8 @@ def parse_bsfsm_datapoints(dg, dg_defs, common):
         dp = {}
         measured = build_composition(dg_defs, dp_el)
         if measured:
+            ref_comp = common.get('composition')
+            measured = _add_balance_diluent(measured, ref_comp)
             dp['measured-composition'] = measured
         for val_el in dp_el:
             pid = val_el.tag
@@ -1518,6 +1733,7 @@ def _convert_file_inner(root, xml_path, original_filename=None):
     common.pop('evaluated-standard-deviation', None)
     common.pop('_pending_esd', None)
     common.pop('_pending_unc', None)
+    common.pop('_partial_cp_composition', None)
 
     return props
 
@@ -1535,15 +1751,31 @@ def _convert_kdetermination(root, xml_path, original_filename=None):
     props['file-type'] = 'kdetermination'
     props['experiment-type'] = 'rate coefficient'
 
-    # Parse reactions
+    # Parse reactions — schema expects 'reaction' (string) and 'bulk-gas' (string)
     reactions = parse_reactions(root)
     if reactions:
-        props['reactions'] = reactions
+        primary = reactions[0]
+        if primary.get('preferred-key'):
+            props['reaction'] = primary['preferred-key']
+        if primary.get('bulk-gas'):
+            props['bulk-gas'] = primary['bulk-gas']
 
-    # Method and comments
+    # Method and apparatus
     method = (root.findtext('method') or '').strip()
     if method:
         props['method'] = method
+    # Map method text to apparatus kind
+    _method_to_apparatus = {
+        'shock tube': 'shock tube',
+        'shock wave': 'shock tube',
+        'flow tube': 'flow reactor',
+        'flow reactor': 'flow reactor',
+        'static reactor': 'flow reactor',
+        'stirred reactor': 'stirred reactor',
+        'flame': 'flame',
+    }
+    apparatus_kind = _method_to_apparatus.get(method.lower(), 'shock tube')
+    props['apparatus'] = {'kind': apparatus_kind}
 
     comments = []
     for c_el in root.findall('comment'):
@@ -1622,6 +1854,7 @@ def _convert_kdetermination(root, xml_path, original_filename=None):
     common.pop('evaluated-standard-deviation', None)
     common.pop('_pending_esd', None)
     common.pop('_pending_unc', None)
+    common.pop('_partial_cp_composition', None)
 
     return props
 
@@ -1642,7 +1875,11 @@ def _convert_tdetermination(root, xml_path, original_filename=None):
     # Parse reactions (tdetermination may have species/reaction info)
     reactions = parse_reactions(root)
     if reactions:
-        props['reactions'] = reactions
+        primary = reactions[0]
+        if primary.get('preferred-key'):
+            props['reaction'] = primary['preferred-key']
+        if primary.get('bulk-gas'):
+            props['bulk-gas'] = primary['bulk-gas']
 
     method = (root.findtext('method') or '').strip()
     if method:
@@ -1679,6 +1916,7 @@ def _convert_tdetermination(root, xml_path, original_filename=None):
     common.pop('evaluated-standard-deviation', None)
     common.pop('_pending_esd', None)
     common.pop('_pending_unc', None)
+    common.pop('_partial_cp_composition', None)
 
     return props
 
@@ -1708,8 +1946,9 @@ def get_output_path(xml_path, input_dir, output_dir, reference):
 # ---------------------------------------------------------------------------
 
 def batch_convert(input_dir, output_dir, dry_run=False):
-    stats = {'total': 0, 'success': 0, 'skipped': 0, 'errors': 0}
+    stats = {'total': 0, 'success': 0, 'skipped': 0, 'errors': 0, 'validation_errors': 0}
     errors_log = []
+    validation_errors_log = []
     type_counts = {}
 
     xml_files = sorted(Path(input_dir).rglob('*.xml'))
@@ -1732,12 +1971,24 @@ def batch_convert(input_dir, output_dir, dry_run=False):
 
             if dry_run:
                 log.debug(f'  Would write: {out_path}')
+                stats['success'] += 1
             else:
                 os.makedirs(os.path.dirname(out_path), exist_ok=True)
+                result.pop('file-type', None)
                 with open(out_path, 'w') as f:
                     yaml_dump(result, f)
 
-            stats['success'] += 1
+                # Post-write PyKED validation
+                if _ChemKED is not None:
+                    try:
+                        _ChemKED(yaml_file=out_path)
+                        stats['success'] += 1
+                    except Exception as ve:
+                        stats['validation_errors'] += 1
+                        validation_errors_log.append((xml_str, str(ve)))
+                        log.warning(f'Validation error in {xml_path.name}: {ve}')
+                else:
+                    stats['success'] += 1
 
         except Exception as e:
             stats['errors'] += 1
@@ -1747,10 +1998,11 @@ def batch_convert(input_dir, output_dir, dry_run=False):
     # Summary
     log.info('')
     log.info('=== Conversion Summary ===')
-    log.info(f'Total files:  {stats["total"]}')
-    log.info(f'Converted:    {stats["success"]}')
-    log.info(f'Skipped:      {stats["skipped"]}')
-    log.info(f'Errors:       {stats["errors"]}')
+    log.info(f'Total files:       {stats["total"]}')
+    log.info(f'Converted:         {stats["success"]}')
+    log.info(f'Skipped:           {stats["skipped"]}')
+    log.info(f'Conversion errors: {stats["errors"]}')
+    log.info(f'Validation errors: {stats["validation_errors"]}')
     log.info('')
     log.info('By experiment type:')
     for t, c in sorted(type_counts.items()):
@@ -1758,11 +2010,17 @@ def batch_convert(input_dir, output_dir, dry_run=False):
 
     if errors_log:
         log.info('')
-        log.info(f'First 20 errors:')
+        log.info('First 20 conversion errors:')
         for path, err in errors_log[:20]:
             log.info(f'  {os.path.basename(path)}: {err}')
 
-    return stats, errors_log
+    if validation_errors_log:
+        log.info('')
+        log.info('First 20 validation errors:')
+        for path, err in validation_errors_log[:20]:
+            log.info(f'  {os.path.basename(path)}: {err}')
+
+    return stats, errors_log, validation_errors_log
 
 
 def convert_single(xml_path, output_path=None):
@@ -1775,9 +2033,9 @@ def convert_single(xml_path, output_path=None):
     if output_path is None:
         output_path = Path(xml_path).stem + '.yaml'
 
+    file_type = result.pop('file-type', 'experiment')
     with open(output_path, 'w') as f:
         yaml_dump(result, f)
-    file_type = result.get('file-type', 'experiment')
     log.info(f'Converted ({file_type}): {xml_path} → {output_path}')
 
 
