@@ -195,7 +195,8 @@ def get_experiment_kind(root):
 
     mode = getattr(root.find('apparatus/mode'), 'text', None)
     if mode:
-        properties['apparatus']['mode'] = mode
+        modes = root.findall('apparatus/mode')
+        properties['apparatus']['mode'] = [m.text.strip() for m in modes if m.text]
 
     return properties
 
