@@ -36,6 +36,7 @@ common-properties:
     ignition-type:
       <<: *ignition-type
       required: false
+    ignition-delay: *value-unit-optional
     composition: *composition
     pressure-rise: *value-unit-optional
     residence-time: *value-unit-optional
@@ -74,30 +75,41 @@ apparatus:
       required: true
       type: string
     mode:
-      type: string
-      allowed:
-        - reflected shock
-        - incident shock
-        - reflected shock wave
-        - incident shock wave
-        - laminar
-        - turbulent
-        - burner stabilized
-        - burner-stabilized
-        - constant volume combustion chamber
-        - premixed
-        - unstretched
-        - spherical
-        - cylindrical
-        - slot burner
-        - modified Bunsen burner
-        - "extrapolation method to zero stretch : LS"
-        - "extrapolation method to zero stretch : NQ"
-        - counterflow
-        - OPF
-        - HFM
-        - CTF
-        - SFF
+      type: list
+      schema:
+        type: string
+        allowed:
+          - reflected shock
+          - incident shock
+          - reflected shock wave
+          - incident shock wave
+          - laminar
+          - turbulent
+          - burner stabilized
+          - burner-stabilized
+          - constant volume combustion chamber
+          - premixed
+          - unstretched
+          - spherical
+          - cylindrical
+          - slot burner
+          - modified Bunsen burner
+          - counterflow
+          - twin flat
+          - adiabatic
+          - OPF
+          - HFM
+          - CTF
+          - SFF
+          - FCM
+          - LFF
+          - Heat Flux Burner
+          - "OPF?"
+          - "FCM?"
+          - "LFF?"
+          - "extrapolation method to zero stretch: LS"
+          - "extrapolation method to zero stretch: NQ"
+          - "extrapolation method to zero stretch: LC"
     institution:
       type: string
     facility:

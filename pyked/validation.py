@@ -349,6 +349,10 @@ class OurValidator(Validator):
             {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
              'value': {'type': 'list'}}
         """
+        # Metadata-only entry (e.g. ESD in common-properties without a value)
+        if isinstance(value[0], dict):
+            return
+
         val_str = _normalize_unit_str(value[0])
         quantity = Q_(val_str)
         expected_units = property_units.get(field)
