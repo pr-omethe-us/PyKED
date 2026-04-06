@@ -379,6 +379,7 @@ def parse_file_metadata(root):
 
 
 def parse_reference(root, xml_filename):
+    import re as _re
     ref = {}
     bib = root.find('bibliographyLink')
     if bib is None:
@@ -404,15 +405,13 @@ def parse_reference(root, xml_filename):
         if vol:
             try:
                 # handles '32 I' → 32, '110–111' or '110-111' → 110
-                import re as _re2
-                m_vol = _re2.search(r'\d+', vol)
+                m_vol = _re.search(r'\d+', vol)
                 ref['volume'] = int(m_vol.group()) if m_vol else int(vol.split()[0])
             except (ValueError, IndexError, AttributeError):
                 pass  # omit non-parseable volume; CrossRef enrichment will set it
         pages = (details.findtext('pages') or '').strip()
         if pages:
             # Normalise en-dash/double-hyphen page ranges to single hyphen (e.g. 239--245 → 239-245)
-            import re as _re
             pages = _re.sub(r'-{2,}', '-', pages).replace('\u2013', '-')
             ref['pages'] = pages
         # Note: title, location, table, figure, number, publication-type are not
