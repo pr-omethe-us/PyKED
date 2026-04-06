@@ -280,7 +280,7 @@ def _clean_numeric(text):
         if val == int(val) and '.' not in text and 'e' not in text.lower():
             return str(int(val))
         # Otherwise format cleanly (strips trailing zeros, avoids float noise)
-        return f'{val:.12g}'
+        return f'{val:.15g}'
     except (ValueError, OverflowError):
         return text
 
@@ -300,9 +300,9 @@ def normalize_comp_units(value_str, units):
     elif units in ('percent',):
         return val, 'mole percent'
     elif units == 'ppm':
-        return float(f'{val * 1e-6:.10g}'), 'mole fraction'
+        return float(f'{val * 1e-6:.12g}'), 'mole fraction'
     elif units == 'ppb':
-        return float(f'{val * 1e-9:.10g}'), 'mole fraction'
+        return float(f'{val * 1e-9:.12g}'), 'mole fraction'
     elif units in ('mol/cm3', 'mol/m3', 'mol/L', 'mol/dm3'):
         return val, units
     else:
@@ -334,9 +334,9 @@ def _reconcile_composition(entries):
         if kind == dominant:
             converted.append((spec, val))
         elif dominant == 'mole fraction' and kind == 'mole percent':
-            converted.append((spec, round(val / 100.0, 10)))
+            converted.append((spec, round(val / 100.0, 12)))
         elif dominant == 'mole percent' and kind == 'mole fraction':
-            converted.append((spec, round(val * 100.0, 10)))
+            converted.append((spec, round(val * 100.0, 12)))
         else:
             # Fallback: convert both to mole fraction via ppm/ppb already handled upstream
             converted.append((spec, val))
@@ -455,7 +455,7 @@ def parse_reference(root, xml_filename):
                 if names:
                     ref['authors'] = names
             # Canonical year
-            pub = _msg.get('published-print') or _msg.get('published-online')
+            pub = _msg.get('published-print') or _msg.get('published-online') or _msg.get('published') or _msg.get('issued')
             if pub:
                 ref['year'] = pub['date-parts'][0][0]
             # Canonical volume (integer)
@@ -463,16 +463,14 @@ def parse_reference(root, xml_filename):
             if cr_vol is not None:
                 try:
                     # CrossRef may return combined volumes like "110-111"; use first number
-                    import re as _re3
-                    m_cv = _re3.search(r'\d+', str(cr_vol))
+                    m_cv = _re.search(r'\d+', str(cr_vol))
                     ref['volume'] = int(m_cv.group()) if m_cv else int(cr_vol)
                 except (ValueError, TypeError, AttributeError):
                     pass
-            # Canonical pages
-            cr_pages = _msg.get('page')
+            # Canonical pages (some journals use article-number instead of page)
+            cr_pages = _msg.get('page') or _msg.get('article-number')
             if cr_pages:
-                import re as _re2
-                ref['pages'] = _re2.sub(r'-{2,}', '-', cr_pages).replace('\u2013', '-')
+                ref['pages'] = _re.sub(r'-{2,}', '-', cr_pages).replace('\u2013', '-')
         except Exception:
             pass  # network unavailable or DOI not in CrossRef — keep ReSpecTh values
 
@@ -508,9 +506,14 @@ def parse_experiment_kind(root):
         'incident': 'incident shock',
     }
     modes = root.findall('apparatus/mode')
-    if modes and modes[0].text:
-        raw_mode = modes[0].text.strip()
-        apparatus['mode'] = _mode_aliases.get(raw_mode, raw_mode)
+    if modes:
+        mode_list = []
+        for m in modes:
+            if m.text:
+                raw = m.text.strip()
+                mode_list.append(_mode_aliases.get(raw, raw))
+        if mode_list:
+            apparatus['mode'] = mode_list
 
     return exp_type, apparatus
 
@@ -866,8 +869,9 @@ def parse_common_properties(root, exp_type):
                         'species-name': species_name,
                     })
         else:
-            # Can't resolve yet — save for post-merge
+            # Target property not in common (varies per datapoint)
             if reference in ('composition', 'initial composition'):
+                # Composition ESDs that aren't in common yet — save for post-merge
                 species_links = prop_elem.findall('speciesLink')
                 values = prop_elem.findall('value')
                 for sl, val_el in zip(species_links, values):
@@ -879,7 +883,17 @@ def parse_common_properties(root, exp_type):
                         'value': _clean_numeric(val_el.text),
                         'species-name': spec.get('species-name', ''),
                     })
+            elif target_key is not None:
+                # Scalar ESD for a per-dp property — keep as metadata-only
+                # in common-properties (no value, just the ESD dict)
+                val_el = prop_elem.find('value')
+                if val_el is not None:
+                    esd_fields = _build_inline_esd(
+                        kind, _clean_numeric(val_el.text), units, sourcetype, method
+                    )
+                    common[target_key] = [esd_fields]
             else:
+                # Unknown reference — save for post-merge
                 val_el = prop_elem.find('value')
                 if val_el is not None:
                     pending_esd_entries.append({
