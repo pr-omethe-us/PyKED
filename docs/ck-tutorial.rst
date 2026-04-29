@@ -70,7 +70,7 @@ The Reference Section
 In the reference section, information about the experimental facility and the article where the data
 is published is collected. This information typically includes:
 
-    * the type of experiment (for now, only autoignition experiments are supported)
+    * the type of experiment (ignition delay, laminar burning velocity, etc.)
     * the type and location of the experimental apparatus (rapid compression machine or shock tube)
     * the article authors and the journal, DOI, volume, and issue where the data was published
     * a note about where in the paper the data was collected from, if multiple data sets are
