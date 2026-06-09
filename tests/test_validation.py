@@ -491,7 +491,7 @@ class TestValidator:
             assert v.validate(properties)
         except AssertionError:
             print(v.errors)
-            assert False
+            raise AssertionError() from None
 
     @pytest.mark.parametrize(
         "field",
@@ -977,23 +977,23 @@ class TestValidator:
 
     def test_composition_relative_uncertainty_validation(self):
         """Ensure composition with relative uncertainty are validated properly."""
-        species = [dict(amount=[1.0, {"uncertainty-type": "relative", "uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "relative", "uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_uncertainty_validation(self):
         """Ensure that quantites with absolute uncertainty are validated properly."""
-        species = [dict(amount=[1.0, {"uncertainty-type": "absolute", "uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "absolute", "uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         result = v.validate(dp, update=True)
         assert result
 
     def test_composition_absolute_asym_uncertainty_validation(self):
         """Ensure composition values with absolute asymmetric uncertainty are validated properly."""
         species = [
-            dict(
-                amount=[
+            {
+                "amount": [
                     1.0,
                     {
                         "uncertainty-type": "relative",
@@ -1001,28 +1001,28 @@ class TestValidator:
                         "lower-uncertainty": 0.1,
                     },
                 ]
-            )
+            }
         ]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         result = v.validate(dp, update=True)
         assert result
 
     def test_composition_missing_lower_upper_uncertainty(self):
         """Test that having a single asymmetric uncertainty fails validation."""
-        species = [dict(amount=[1.0, {"uncertainty-type": "relative", "upper-uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "relative", "upper-uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         result = v.validate(dp, update=True)
         assert not result
 
-        species = [dict(amount=[1.0, {"uncertainty-type": "relative", "lower-uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "relative", "lower-uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         result = v.validate(dp, update=True)
         assert not result
 
     def test_composition_missing_lower_upper_uncertainty_message(self):
         """Test that having a single asymmetric uncertainty fails validation."""
-        species = [dict(amount=[1.0, {"uncertainty-type": "relative", "upper-uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "relative", "upper-uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         v.validate(dp, update=True)
         error_str = "field 'lower-uncertainty' is required"
         assert (
@@ -1032,8 +1032,8 @@ class TestValidator:
             ][0][0][0]["amount"][1]["oneof definition 1"][0][1][0]["upper-uncertainty"][0]
         )
 
-        species = [dict(amount=[1.0, {"uncertainty-type": "relative", "lower-uncertainty": 0.1}])]
-        dp = dict(datapoints=[dict(composition=dict(kind="mole fraction", species=species))])
+        species = [{"amount": [1.0, {"uncertainty-type": "relative", "lower-uncertainty": 0.1}]}]
+        dp = {"datapoints": [{"composition": {"kind": "mole fraction", "species": species}}]}
         v.validate(dp, update=True)
         error_str = "field 'upper-uncertainty' is required"
         assert (
@@ -1045,15 +1045,15 @@ class TestValidator:
 
     def test_incorrect_composition_kind(self):
         """Test to make sure that bad composition kinds are rejected."""
-        species = [dict(amount=[1.0])]
-        dp = dict(datapoints=[dict(composition=dict(kind="bad value", species=species))])
+        species = [{"amount": [1.0]}]
+        dp = {"datapoints": [{"composition": {"kind": "bad value", "species": species}}]}
         result = v.validate(dp, update=True)
         assert not result
 
     def test_incorrect_composition_kind_message(self):
         """Test to make sure that bad composition kinds are rejected."""
-        species = [dict(amount=[1.0])]
-        dp = dict(datapoints=[dict(composition=dict(kind="bad value", species=species))])
+        species = [{"amount": [1.0]}]
+        dp = {"datapoints": [{"composition": {"kind": "bad value", "species": species}}]}
         v.validate(dp, update=True)
         error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
         assert (

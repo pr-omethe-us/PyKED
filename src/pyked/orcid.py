@@ -1,6 +1,4 @@
-"""
-Module for ORCID interaction
-"""
+"""Module for ORCID interaction"""
 
 import httpx
 

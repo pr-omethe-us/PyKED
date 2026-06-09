@@ -3,6 +3,7 @@ Test module for chemked.py
 """
 
 # Standard libraries
+import itertools
 import os
 import warnings
 import xml.etree.ElementTree as etree
@@ -76,7 +77,7 @@ class TestChemKED:
         with pytest.raises(ValueError):
             ChemKED(dict_input=properties)
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         assert out == (
             "experiment-type has an illegal value. Allowed values are ['ignition "
             "delay'] and are case sensitive.\n"
@@ -371,9 +372,9 @@ class TestConvertToReSpecTh:
         filename = os.path.join("tests", "testfile_st.yaml")
         c = ChemKED(filename)
 
-        for idx, dp in enumerate(c.datapoints):
-            c.datapoints[idx].composition = dict(
-                H2=Composition(
+        for idx, _dp in enumerate(c.datapoints):
+            c.datapoints[idx].composition = {
+                "H2": Composition(
                     **{
                         "amount": Q_(0.1, "dimensionless"),
                         "species_name": "H2",
@@ -382,7 +383,7 @@ class TestConvertToReSpecTh:
                         "atomic_composition": None,
                     }
                 ),
-                O2=Composition(
+                "O2": Composition(
                     **{
                         "amount": Q_(0.1, "dimensionless"),
                         "species_name": "O2",
@@ -391,7 +392,7 @@ class TestConvertToReSpecTh:
                         "atomic_composition": None,
                     }
                 ),
-                Ar=Composition(
+                "Ar": Composition(
                     **{
                         "amount": Q_(0.8, "dimensionless"),
                         "species_name": "Ar",
@@ -400,7 +401,7 @@ class TestConvertToReSpecTh:
                         "atomic_composition": None,
                     }
                 ),
-            )
+            }
 
         with TemporaryDirectory() as temp_dir:
             newfile = os.path.join(temp_dir, "test.xml")
@@ -1194,11 +1195,7 @@ class TestDataPoint:
         )
         np.testing.assert_allclose(getattr(d, f"{history_type}_history").quantity, quants)
         assert all(
-            [
-                getattr(d, f"{h}_history") is None
-                for h in self.time_history_types
-                if h != history_type
-            ]
+            getattr(d, f"{h}_history") is None for h in self.time_history_types if h != history_type
         )
 
     @pytest.mark.parametrize("history_type", time_history_types)
@@ -1321,14 +1318,10 @@ class TestDataPoint:
         )
         np.testing.assert_allclose(getattr(d, f"{history_type}_history").quantity, quants)
         assert all(
-            [
-                getattr(d, f"{h}_history") is None
-                for h in self.time_history_types
-                if h != history_type
-            ]
+            getattr(d, f"{h}_history") is None for h in self.time_history_types if h != history_type
         )
 
-    @pytest.mark.parametrize("history_type", zip(time_history_types[:-1], time_history_types[1:]))
+    @pytest.mark.parametrize("history_type", itertools.pairwise(time_history_types))
     def test_multiple_time_histories(self, history_type):
         """Check that multiple of the history types are set properly.
 
@@ -1458,11 +1451,9 @@ class TestDataPoint:
         np.testing.assert_allclose(getattr(d, f"{history_type[0]}_history").quantity, quants)
         np.testing.assert_allclose(getattr(d, f"{history_type[1]}_history").quantity, quants)
         assert all(
-            [
-                getattr(d, f"{h}_history") is None
-                for h in self.time_history_types
-                if h not in history_type
-            ]
+            getattr(d, f"{h}_history") is None
+            for h in self.time_history_types
+            if h not in history_type
         )
 
     @pytest.mark.parametrize("history_type", zip(time_history_types, time_history_types))

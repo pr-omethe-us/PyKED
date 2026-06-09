@@ -139,7 +139,7 @@ def compare_name(given_name, family_name, question_name):
     name_split = list(filter(None, re.split(r"[, \-.]+", question_name)))
     first_name = [name_split[0]]
     if len(name_split) > 2:
-        first_name += [n for n in name_split[1:-num_family_names]]
+        first_name += list(name_split[1:-num_family_names])
 
     if len(first_name) > 1 and len(given_name) == len(first_name):
         # both have same number of first and middle names/initials
@@ -184,12 +184,12 @@ class OurValidator(Validator):
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
-        if all([isinstance(v, (float, int)) for v in values]):
+        if all(isinstance(v, (float, int)) for v in values):
             # If no units given, assume Kelvin
             T_low = Q_(values[0], "K")
             T_mid = Q_(values[1], "K")
             T_hi = Q_(values[2], "K")
-        elif all([isinstance(v, str) for v in values]):
+        elif all(isinstance(v, str) for v in values):
             T_low = Q_(values[0])
             T_mid = Q_(values[1])
             T_hi = Q_(values[2])

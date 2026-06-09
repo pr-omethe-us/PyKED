@@ -49,7 +49,7 @@ master_doc = "index"
 project = "PyKED"
 author = "Kyle E. Niemeyer and Bryan W. Weber"
 this_year = datetime.date.today().year
-copyright = f"{this_year}, {author}"
+copyright = f"{this_year}, {author}"  # noqa: A001
 
 try:
     release = get_version("pyked")

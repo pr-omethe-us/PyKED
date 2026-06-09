@@ -1,6 +1,4 @@
-"""
-Main ChemKED module
-"""
+"""Main ChemKED module"""
 
 # Standard libraries
 import xml.dom.minidom as minidom
@@ -9,6 +7,7 @@ from collections import namedtuple
 from copy import deepcopy
 from itertools import chain
 from os.path import exists
+from typing import Any, ClassVar
 from warnings import warn
 
 import numpy as np
@@ -117,6 +116,11 @@ class ChemKED:
             internal use.
     """
 
+    chemked_version: Any
+    experiment_type: Any
+    file_authors: Any
+    file_version: Any
+
     def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
             with open(yaml_file) as f:
@@ -195,7 +199,7 @@ class ChemKED:
         validator = OurValidator(schema)
         if not validator.validate(properties):
             for key, value in validator.errors.items():
-                if any(["unallowed value" in v for v in value]):
+                if any("unallowed value" in v for v in value):
                     print(
                         (
                             "{key} has an illegal value. Allowed values are {values} and are case "
@@ -285,7 +289,7 @@ class ChemKED:
         if output_columns is None or len(output_columns) == 0:
             col_labels = valid_labels
             comp_index = col_labels.index("composition")
-            col_labels[comp_index : comp_index + 1] = species_list + ["Composition:Kind"]
+            col_labels[comp_index : comp_index + 1] = [*species_list, "Composition:Kind"]
         else:
             output_columns = [a.lower() for a in output_columns]
             col_labels = []
@@ -297,7 +301,7 @@ class ChemKED:
 
             if "composition" in col_labels:
                 comp_index = col_labels.index("composition")
-                col_labels[comp_index : comp_index + 1] = species_list + ["Composition:Kind"]
+                col_labels[comp_index : comp_index + 1] = [*species_list, "Composition:Kind"]
             if "reference" in col_labels:
                 ref_index = col_labels.index("reference")
                 col_labels[ref_index : ref_index + 1] = [
@@ -442,7 +446,7 @@ class ChemKED:
                 "Error: ReSpecTh does not support varying composition " "type among datapoints."
             )
 
-        if all([composition == dp.composition for dp in self.datapoints]):
+        if all(composition == dp.composition for dp in self.datapoints):
             # initial composition is common
             common.append("composition")
             prop = etree.SubElement(common_properties, "property")
@@ -473,10 +477,10 @@ class ChemKED:
                     prop = etree.SubElement(common_properties, "property")
                     prop.set("description", "")
                     prop.set("name", prop_name)
-                    prop.set("units", str(quantities[0].units))
+                    prop.set("units", str(quantities[0].units))  # type: ignore[union-attr]
 
                     value = etree.SubElement(prop, "value")
-                    value.text = str(quantities[0].magnitude)
+                    value.text = str(quantities[0].magnitude)  # type: ignore[union-attr]
 
         # Ignition delay can't be common, unless only a single datapoint.
 
@@ -486,7 +490,7 @@ class ChemKED:
         datagroup_link.set("dataGroupID", "")
         datagroup_link.set("dataPointID", "")
 
-        property_idx = {}
+        property_idx: dict[str, Any] = {}
         labels = {
             "temperature": "T",
             "pressure": "P",
@@ -520,7 +524,7 @@ class ChemKED:
                 for species in dp.composition.values():
                     # Only add new property for species not already considered
                     has_spec = any(
-                        [species.species_name in d.values() for d in property_idx.values()]
+                        species.species_name in d.values() for d in property_idx.values()
                     )
                     if not has_spec:
                         prop = etree.SubElement(datagroup, "property")
@@ -616,12 +620,12 @@ class ChemKED:
         if all(ign_types) and ign_types.count(ign_types[0]) == len(ign_types):
             # In ReSpecTh files all datapoints must share ignition type
             ignition = etree.SubElement(root, "ignitionType")
-            if ign_types[0]["target"] in ["pressure", "temperature"]:
-                ignition.set("target", ign_types[0]["target"][0].upper())
+            if ign_types[0]["target"] in ["pressure", "temperature"]:  # type: ignore[index]
+                ignition.set("target", ign_types[0]["target"][0].upper())  # type: ignore[index]
             else:
                 # options left are species
                 ignition.set("target", self.datapoints[0].ignition_type["target"])
-            if ign_types[0]["type"] == "d/dt max extrapolated":
+            if ign_types[0]["type"] == "d/dt max extrapolated":  # type: ignore[index]
                 ignition.set("type", "baseline max intercept from d/dt")
             else:
                 ignition.set("type", self.datapoints[0].ignition_type["type"])
@@ -683,7 +687,7 @@ class DataPoint:
             reactor during an experiment.
     """
 
-    value_unit_props = [
+    value_unit_props: ClassVar[list[str]] = [
         "ignition-delay",
         "first-stage-ignition-delay",
         "temperature",
@@ -691,7 +695,7 @@ class DataPoint:
         "pressure-rise",
     ]
 
-    rcm_data_props = [
+    rcm_data_props: ClassVar[list[str]] = [
         "compressed-pressure",
         "compressed-temperature",
         "compression-time",
@@ -717,7 +721,7 @@ class DataPoint:
                     rcm_props[prop.replace("-", "_")] = quant
                 else:
                     rcm_props[prop.replace("-", "_")] = None
-            self.rcm_data = RCMData(**rcm_props)
+            self.rcm_data: RCMData | None = RCMData(**rcm_props)
         else:
             self.rcm_data = None
 

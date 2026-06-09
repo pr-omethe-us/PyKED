@@ -4,6 +4,7 @@
 import os
 import xml.etree.ElementTree as etree
 from argparse import ArgumentParser
+from typing import Any
 from warnings import warn
 
 import habanero
@@ -68,7 +69,7 @@ def get_file_metadata(root):
     Returns:
         properties (`dict`): Dictionary with file metadata
     """
-    properties = {}
+    properties: dict[str, Any] = {}
 
     file_author = getattr(root.find("fileAuthor"), "text", False)
     # Test for missing attribute or empty string in the same statement
@@ -109,7 +110,7 @@ def get_reference(root):
             ref = crossref_api.works(ids=ref_doi)["message"]
         except (httpx.HTTPStatusError, habanero.RequestError, httpx.ConnectError):
             if ref_key is None:
-                raise KeywordError("DOI not found and preferredKey attribute not set")
+                raise KeywordError("DOI not found and preferredKey attribute not set") from None
             else:
                 warn(
                     "Missing doi attribute in bibliographyLink or lookup failed. "
@@ -163,7 +164,7 @@ def get_experiment_kind(root):
     Returns:
         properties (`dict`): Dictionary with experiment type and apparatus information.
     """
-    properties = {}
+    properties: dict[str, Any] = {}
     if root.find("experimentType").text == "Ignition delay measurement":
         properties["experiment-type"] = "ignition delay"
     else:
@@ -177,7 +178,7 @@ def get_experiment_kind(root):
     elif kind in ["shock tube", "rapid compression machine"]:
         properties["apparatus"]["kind"] = kind
     else:
-        raise NotImplementedError(kind + " experiment not (yet) supported")
+        raise NotImplementedError(kind + " experiment not (yet) supported")  # type: ignore[operator]
 
     return properties
 
@@ -191,7 +192,7 @@ def get_common_properties(root):
     Returns:
         properties (`dict`): Dictionary with common properties
     """
-    properties = {}
+    properties: dict[str, Any] = {}
 
     for elem in root.iterfind("commonProperties/property"):
         name = elem.attrib["name"]
@@ -257,8 +258,8 @@ def get_common_properties(root):
             quantity = 1.0 * unit_registry(units)
             try:
                 quantity.to(property_units[field])
-            except pint.DimensionalityError:
-                raise KeywordError("units incompatible for property " + name)
+            except pint.DimensionalityError as err:
+                raise KeywordError("units incompatible for property " + name) from err
 
             properties[field] = [" ".join([elem.find("value").text, units])]
 
@@ -347,7 +348,7 @@ def get_datapoints(root):
     for prop in dataGroup.findall("property"):
         unit_id[prop.attrib["id"]] = prop.attrib["units"]
         temp_prop = prop.attrib["name"]
-        if temp_prop not in datagroup_properties + ["composition"]:
+        if temp_prop not in [*datagroup_properties, "composition"]:
             raise KeyError(temp_prop + " not valid dataPoint property")
         property_id[prop.attrib["id"]] = temp_prop
 
@@ -368,7 +369,7 @@ def get_datapoints(root):
     # now get data points
     datapoints = []
     for dp in dataGroup.findall("dataPoint"):
-        datapoint = {}
+        datapoint: dict[str, Any] = {}
         if "composition" in property_id.values():
             datapoint["composition"] = {"species": [], "kind": None}
 
@@ -527,17 +528,15 @@ def ReSpecTh_to_ChemKED(filename_xml, file_author="", file_author_orcid="", *, v
 
     # Ensure inclusion of pressure rise or volume history matches apparatus.
     has_pres_rise = "pressure-rise" in properties["common-properties"] or any(
-        [True for dp in properties["datapoints"] if "pressure-rise" in dp]
+        True for dp in properties["datapoints"] if "pressure-rise" in dp
     )
     if has_pres_rise and properties["apparatus"]["kind"] == "rapid compression machine":
         raise KeywordError("Pressure rise cannot be defined for RCM.")
 
     has_vol_hist = any(
-        [
-            t.get("type") == "volume"
-            for dp in properties["datapoints"]
-            for t in dp.get("time-histories", [{}])
-        ]
+        t.get("type") == "volume"
+        for dp in properties["datapoints"]
+        for t in dp.get("time-histories", [{}])
     )
     if has_vol_hist and properties["apparatus"]["kind"] == "shock tube":
         raise KeywordError("Volume history cannot be defined for shock tube.")
