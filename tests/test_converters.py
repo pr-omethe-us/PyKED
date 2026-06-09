@@ -12,7 +12,6 @@ from tempfile import TemporaryDirectory
 import numpy.random
 import pytest
 from numpy.testing import assert_allclose
-from requests.exceptions import ConnectionError
 
 from pyked._version import __version__
 from pyked.chemked import ChemKED

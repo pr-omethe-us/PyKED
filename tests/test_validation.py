@@ -8,7 +8,6 @@ import socket
 
 import pytest
 import yaml
-from requests.exceptions import ConnectionError
 
 from pyked._version import __version__
 from pyked.validation import OurValidator, compare_name, property_units, schema
