@@ -4,18 +4,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.5.0] - 2026-06-09
 ### Added
 - Add codemeta file
+- GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14
+- GitHub Actions workflow for deploying documentation to GitHub Pages
+- GitHub Actions workflow for publishing to PyPI on version tags using Trusted Publishers
+- `pytest-cov` to test dependencies
+- Optional `docs` dependency group (`sphinx`, `nbsphinx`, `ipython`)
+- `httpx` as a direct dependency for HTTP calls in `orcid.py`
+- pytest `testpaths`, `filterwarnings`, and coverage configuration in `pyproject.toml`
+- ruff, mypy, and pre-commit-hooks to `.pre-commit-config.yaml`
 
 ### Changed
+- switched to Coveralls for code coverage
 - Directly use the Markdown formatting of the README on pypi, rather than converting to reST
-- Remove unnecessary `orcid` package from the test environment
-- Specify versions of all package dependencies
-- Use pip to install package in conda build
 - Composition type is included in the pandas data-frame resulting from `to_dataframe()`
+- Migrated from `setup.py`/`setup.cfg` to `pyproject.toml` with hatchling build backend
+- Moved source to `src/pyked/` layout; tests moved to top-level `tests/` directory
+- `orcid.py` now uses `httpx` instead of `requests` for HTTP calls; exception handling updated throughout to use `httpx` exceptions (habanero switched from `requests` to `httpx` internally)
+- Updated conda recipe to use `load_file_regex` for version, updated all dependency pins, require Python >= 3.10
+- Updated README badges: removed Travis CI, Appveyor, and Dependency CI badges; added GitHub Actions CI badge; updated Codecov to `main` branch
+- Updated `docs/conf.py`: replaced deprecated `pkg_resources` with `importlib.metadata`; replaced deprecated `autodoc_default_flags` with `autodoc_default_options`; updated intersphinx mappings; fixed `language = None` deprecation; removed legacy Travis CI environment check
+- Updated example notebooks: fixed GitHub URLs from `master` branch to `main`, updated file paths from `pyked/tests/` to `tests/`, updated `http://` links to `https://`
+- Updated `ck-tutorial.rst` reference URLs from `http://` to `https://`
 
 ### Fixed
+- `filter` in `chemked.py` incompatible with Python 3.14; replaced with list comprehension
+- ORCID URL stripping in `converters.py` used `lstrip()` (strips characters, not a prefix) causing malformed ORCIDs when Crossref returns `https://` URLs; replaced with `rfind('/')` approach consistent with `validation.py`
+- Test assertions for Crossref author names updated to match current API response format
+- Test path assertions for ReSpecTh conversion detail string corrected after test directory migration
+- `pandas.util.testing` (removed in pandas 1.0) replaced with `pandas.testing` in test fixtures
+- Unclosed socket in `test_validation.py` `no_internet()` helper
+- Duplicate `compression_time` entry in `DataPoint` docstring causing Sphinx build failure
+- Removed stale "testing line" left in `docs/index.rst` from 2021
+
+### Removed
+- `setup.py`, `setup.cfg` replaced by `pyproject.toml`
+- `appveyor.yml` replaced by GitHub Actions
+- `requirements.txt` replaced by `pyproject.toml` dependencies
+- `MANIFEST.in` not needed with hatchling build backend
+- `requests` as a direct dependency (replaced by `httpx`)
 
 ## [0.4.1] - 2018-03-09
 ### Added
@@ -142,7 +171,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.1...HEAD
 [0.4.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0

@@ -4,8 +4,8 @@
 - [ ] Documentation updated
 
 Changes proposed in this pull request:
-- 
-- 
-- 
+-
+-
+-
 
 @pr-omethe-us/chemked

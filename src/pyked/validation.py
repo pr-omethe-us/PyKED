@@ -1,52 +1,52 @@
-"""Validation class for ChemKED schema.
-"""
-from warnings import warn
+"""Validation class for ChemKED schema."""
+
 import re
+from importlib import resources
+from warnings import warn
 
-from pkg_resources import resource_filename
-import yaml
-
+import habanero
+import httpx
 import numpy as np
 import pint
-from requests.exceptions import HTTPError, ConnectionError
-from cerberus import Validator, SchemaError
-import habanero
+import yaml
+from cerberus import SchemaError, Validator
+
+from . import schemas
 from .orcid import search_orcid
 
 units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
 
-units.define('cm3 = centimeter**3')
+units.define("cm3 = centimeter**3")
 Q_ = units.Quantity
 
-crossref_api = habanero.Crossref(mailto='prometheus@pr.omethe.us')
+crossref_api = habanero.Crossref(mailto="prometheus@pr.omethe.us")
 
 # Load the ChemKED schema definition file
-schema_file = resource_filename(__name__, 'schemas/chemked_schema.yaml')
-with open(schema_file, 'r') as f:
+schema_file = resources.files(schemas) / "chemked_schema.yaml"
+with schema_file.open("r", encoding="utf-8") as f:
     schema_list = f.readlines()
 
 inc_start = None
 inc_end = None
 inc_list = []
 no_includes = False
-for l_num, l in enumerate(schema_list):
-    if l.startswith('!include'):
+for l_num, line in enumerate(schema_list):
+    if line.startswith("!include"):
         if no_includes:  # pragma: no cover
-            raise SchemaError('All included files must be first in the main schema')
+            raise SchemaError("All included files must be first in the main schema")
 
         if inc_start is None:
             inc_start = l_num
 
         if inc_end is not None:  # pragma: no cover
-            raise SchemaError('All included files must be first in the main schema')
+            raise SchemaError("All included files must be first in the main schema")
 
-        inc_fname = l.split('!include')[1].strip()
-        inc_fname = resource_filename(__name__, 'schemas/' + inc_fname)
-        with open(inc_fname, 'r') as f:
+        inc_fname = resources.files(schemas) / line.split("!include")[1].strip()
+        with inc_fname.open("r") as f:
             inc_list.extend(f.readlines())
     else:
-        if not l.strip() or l.startswith('#') or l.startswith('---'):
+        if not line.strip() or line.startswith("#") or line.startswith("---"):
             continue
 
         if inc_start is None:  # pragma: no cover
@@ -56,35 +56,40 @@ for l_num, l in enumerate(schema_list):
             inc_end = l_num
 
 schema_list[inc_start:inc_end] = inc_list
-schema = yaml.safe_load(''.join(schema_list))
+schema = yaml.safe_load("".join(schema_list))
 
 # These top-level keys in the schema serve as references for lower-level keys.
 # They are removed to prevent conflicts due to required variables, etc.
-for key in ['author', 'value-unit-required', 'value-unit-optional',
-            'composition', 'ignition-type', 'value-with-uncertainty',
-            'value-without-uncertainty',
-            ]:
+for key in [
+    "author",
+    "value-unit-required",
+    "value-unit-optional",
+    "composition",
+    "ignition-type",
+    "value-with-uncertainty",
+    "value-without-uncertainty",
+]:
     del schema[key]
 
 # SI units for available value-type properties
 property_units = {
-    'temperature': 'kelvin',
-    'compressed-temperature': 'kelvin',
-    'pressure': 'pascal',
-    'compressed-pressure': 'pascal',
-    'ignition-delay': 'second',
-    'first-stage-ignition-delay': 'second',
-    'pressure-rise': '1.0 / second',
-    'compression-time': 'second',
-    'volume': 'meter**3',
-    'time': 'second',
-    'piston position': 'meter',
-    'emission': 'dimensionless',
-    'absorption': 'dimensionless',
-    'concentration': 'mole/meter**3',
-    'stroke': 'meter',
-    'clearance': 'meter',
-    'compression-ratio': 'dimensionless',
+    "temperature": "kelvin",
+    "compressed-temperature": "kelvin",
+    "pressure": "pascal",
+    "compressed-pressure": "pascal",
+    "ignition-delay": "second",
+    "first-stage-ignition-delay": "second",
+    "pressure-rise": "1.0 / second",
+    "compression-time": "second",
+    "volume": "meter**3",
+    "time": "second",
+    "piston position": "meter",
+    "emission": "dimensionless",
+    "absorption": "dimensionless",
+    "concentration": "mole/meter**3",
+    "stroke": "meter",
+    "clearance": "meter",
+    "compression-ratio": "dimensionless",
 }
 
 
@@ -116,15 +121,15 @@ def compare_name(given_name, family_name, question_name):
     question_name = question_name.lower()
 
     # rearrange names given as "last, first middle"
-    if ',' in question_name:
-        name_split = question_name.split(',')
+    if "," in question_name:
+        name_split = question_name.split(",")
         name_split.reverse()
-        question_name = ' '.join(name_split).strip()
+        question_name = " ".join(name_split).strip()
 
     # remove periods
-    question_name = question_name.replace('.', '')
-    given_name = given_name.replace('.', '')
-    family_name = family_name.replace('.', '')
+    question_name = question_name.replace(".", "")
+    given_name = given_name.replace(".", "")
+    family_name = family_name.replace(".", "")
 
     # split names by , <space> - .
     given_name = list(filter(None, re.split(r"[, \-.]+", given_name)))
@@ -157,18 +162,18 @@ def compare_name(given_name, family_name, question_name):
         first_name[0] = name_split[0][0]
 
     # Hyphenated last name may need to be reconnected
-    if num_family_names == 1 and '-' in family_name:
-        num_hyphen = family_name.count('-')
-        family_name_compare = '-'.join(name_split[-(num_hyphen + 1):])
+    if num_family_names == 1 and "-" in family_name:
+        num_hyphen = family_name.count("-")
+        family_name_compare = "-".join(name_split[-(num_hyphen + 1) :])
     else:
-        family_name_compare = ' '.join(name_split[-num_family_names:])
+        family_name_compare = " ".join(name_split[-num_family_names:])
 
     return given_name == first_name and family_name == family_name_compare
 
 
 class OurValidator(Validator):
-    """Custom validator with rules for Quantities and references.
-    """
+    """Custom validator with rules for Quantities and references."""
+
     def _validate_isvalid_t_range(self, isvalid_t_range, field, values):
         """Checks that the temperature ranges given for thermo data are valid
         Args:
@@ -177,89 +182,100 @@ class OurValidator(Validator):
             values (`list`): List of temperature values indicating low, middle, and high ranges
 
         The rule's arguments are validated against this schema:
-            {'isvalid_t_range': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'list'}}
+            {'type': 'boolean'}
         """
         if all([isinstance(v, (float, int)) for v in values]):
             # If no units given, assume Kelvin
-            T_low = Q_(values[0], 'K')
-            T_mid = Q_(values[1], 'K')
-            T_hi = Q_(values[2], 'K')
+            T_low = Q_(values[0], "K")
+            T_mid = Q_(values[1], "K")
+            T_hi = Q_(values[2], "K")
         elif all([isinstance(v, str) for v in values]):
             T_low = Q_(values[0])
             T_mid = Q_(values[1])
             T_hi = Q_(values[2])
         else:
-            self._error(field, 'The temperatures in the range must all be either with units or '
-                               'without units, they cannot be mixed')
+            self._error(
+                field,
+                "The temperatures in the range must all be either with units or "
+                "without units, they cannot be mixed",
+            )
             return False
 
         if min([T_low, T_mid, T_hi]) != T_low:
-            self._error(field, 'The first element of the T_range must be the lower limit')
+            self._error(field, "The first element of the T_range must be the lower limit")
         if max([T_low, T_mid, T_hi]) != T_hi:
-            self._error(field, 'The last element of the T_range must be the upper limit')
+            self._error(field, "The last element of the T_range must be the upper limit")
 
     def _validate_isvalid_unit(self, isvalid_unit, field, value):
         """Checks for appropriate units using Pint unit registry.
+
         Args:
             isvalid_unit (`bool`): flag from schema indicating units to be checked.
             field (`str`): property associated with units in question.
             value (`dict`): dictionary of values from file associated with this property.
 
         The rule's arguments are validated against this schema:
-            {'isvalid_unit': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+            {'type': 'boolean'}
         """
-        quantity = 1.0 * units(value['units'])
+        quantity = 1.0 * units(value["units"])
         try:
             quantity.to(property_units[field])
         except pint.DimensionalityError:
-            self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units[field]
-                        )
+            self._error(
+                field,
+                "incompatible units; should be consistent " "with " + property_units[field],
+            )
 
     def _validate_isvalid_history(self, isvalid_history, field, value):
         """Checks that the given time history is properly formatted.
 
         Args:
-            isvalid_history (`bool`): flag from schema indicating units to be checked.
+            isvalid_history (`bool`): flag from schema indicating history to be checked.
             field (`str`): property associated with history in question.
             value (`dict`): dictionary of values from file associated with this property.
 
         The rule's arguments are validated against this schema:
-            {'isvalid_history': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+            {'type': 'boolean'}
         """
         # Check the type has appropriate units
-        history_type = value['type']
-        if history_type.endswith('emission'):
-            history_type = 'emission'
-        elif history_type.endswith('absorption'):
-            history_type = 'absorption'
-        quantity = 1.0*(units(value['quantity']['units']))
+        history_type = value["type"]
+        if history_type.endswith("emission"):
+            history_type = "emission"
+        elif history_type.endswith("absorption"):
+            history_type = "absorption"
+        quantity = 1.0 * (units(value["quantity"]["units"]))
         try:
             quantity.to(property_units[history_type])
         except pint.DimensionalityError:
-            self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units[history_type])
+            self._error(
+                field,
+                "incompatible units; should be consistent " "with " + property_units[history_type],
+            )
 
         # Check that time has appropriate units
-        time = 1.0*(units(value['time']['units']))
+        time = 1.0 * (units(value["time"]["units"]))
         try:
-            time.to(property_units['time'])
+            time.to(property_units["time"])
         except pint.DimensionalityError:
-            self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units['time'])
+            self._error(
+                field,
+                "incompatible units; should be consistent " "with " + property_units["time"],
+            )
 
         # Check that the values have the right number of columns
-        n_cols = len(value['values'][0])
-        max_cols = max(value['time']['column'],
-                       value['quantity']['column'],
-                       value.get('uncertainty', {}).get('column', 0)) + 1
+        n_cols = len(value["values"][0])
+        max_cols = (
+            max(
+                value["time"]["column"],
+                value["quantity"]["column"],
+                value.get("uncertainty", {}).get("column", 0),
+            )
+            + 1
+        )
         if n_cols > max_cols:
-            self._error(field, 'too many columns in the values')
+            self._error(field, "too many columns in the values")
         elif n_cols < max_cols:
-            self._error(field, 'not enough columns in the values')
+            self._error(field, "not enough columns in the values")
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
@@ -270,8 +286,7 @@ class OurValidator(Validator):
             value (`list`): list whose first element is a string representing a value with units
 
         The rule's arguments are validated against this schema:
-            {'isvalid_quantity': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'list'}}
+            {'type': 'boolean'}
         """
         quantity = Q_(value[0])
         low_lim = 0.0 * units(property_units[field])
@@ -279,12 +294,14 @@ class OurValidator(Validator):
         try:
             if quantity <= low_lim:
                 self._error(
-                    field, 'value must be greater than 0.0 {}'.format(property_units[field]),
+                    field,
+                    f"value must be greater than 0.0 {property_units[field]}",
                 )
         except pint.DimensionalityError:
-            self._error(field, 'incompatible units; should be consistent '
-                        'with ' + property_units[field]
-                        )
+            self._error(
+                field,
+                "incompatible units; should be consistent " "with " + property_units[field],
+            )
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
         """Checks for valid given value and appropriate units with uncertainty.
@@ -296,23 +313,22 @@ class OurValidator(Validator):
                 the uncertainty
 
         The rule's arguments are validated against this schema:
-            {'isvalid_uncertainty': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'list'}}
+            {'type': 'boolean'}
         """
         self._validate_isvalid_quantity(True, field, value)
 
         # This len check is necessary for reasons that aren't quite clear to me
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
-        if len(value) > 1 and value[1]['uncertainty-type'] != 'relative':
-            if value[1].get('uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['uncertainty']])
+        if len(value) > 1 and value[1]["uncertainty-type"] != "relative":
+            if value[1].get("uncertainty") is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]["uncertainty"]])
 
-            if value[1].get('upper-uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['upper-uncertainty']])
+            if value[1].get("upper-uncertainty") is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]["upper-uncertainty"]])
 
-            if value[1].get('lower-uncertainty') is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]['lower-uncertainty']])
+            if value[1].get("lower-uncertainty") is not None:
+                self._validate_isvalid_quantity(True, field, [value[1]["lower-uncertainty"]])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
@@ -323,99 +339,109 @@ class OurValidator(Validator):
             value (`dict`): dictionary of reference metadata.
 
         The rule's arguments are validated against this schema:
-            {'isvalid_reference': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+            {'type': 'boolean'}
 
         """
-        if 'doi' in value:
+        if "doi" in value:
             try:
-                ref = crossref_api.works(ids=value['doi'])['message']
-            except (HTTPError, habanero.RequestError):
-                self._error(field, 'DOI not found')
+                ref = crossref_api.works(ids=value["doi"])["message"]
+            except (httpx.HTTPStatusError, habanero.RequestError):
+                self._error(field, "DOI not found")
                 return
-            except ConnectionError:
-                warn('network not available, DOI not validated.')
+            except httpx.ConnectError:
+                warn("network not available, DOI not validated.")
                 return
 
             # Assume that the reference returned by the DOI lookup always has a container-title
-            ref_container = ref.get('container-title')[0]
+            ref_container = ref.get("container-title")[0]
             # TODO: Add other container types: value.get('journal') or value.get('report') or ...
             # note that there's a type field in the ref that is journal-article, proceedings-article
-            container = value.get('journal')
+            container = value.get("journal")
             if container is None or container != ref_container:
-                self._error(field, 'journal should be {}'.format(ref_container))
+                self._error(field, f"journal should be {ref_container}")
 
             # Assume that the reference returned by DOI lookup always has a year
-            ref_year = ref.get('published-print') or ref.get('published-online')
-            ref_year = ref_year['date-parts'][0][0]
-            year = value.get('year')
+            ref_year = ref.get("published-print") or ref.get("published-online")
+            ref_year = ref_year["date-parts"][0][0]
+            year = value.get("year")
             if year is None or year != ref_year:
-                self._error(field, 'year should be {}'.format(ref_year))
+                self._error(field, f"year should be {ref_year}")
 
             # Volume number might not be in the reference
-            ref_volume = ref.get('volume')
-            volume = value.get('volume')
+            ref_volume = ref.get("volume")
+            volume = value.get("volume")
             if ref_volume is None:
                 if volume is not None:
-                    self._error(field, 'Volume was specified in the YAML but is not present in the '
-                                'DOI reference.')
+                    self._error(
+                        field,
+                        "Volume was specified in the YAML but is not present in the "
+                        "DOI reference.",
+                    )
             else:
                 if volume is None or int(volume) != int(ref_volume):
-                    self._error(field, 'volume should be {}'.format(ref_volume))
+                    self._error(field, f"volume should be {ref_volume}")
 
             # Pages might not be in the reference
-            ref_pages = ref.get('page')
-            pages = value.get('pages')
+            ref_pages = ref.get("page")
+            pages = value.get("pages")
             if ref_pages is None:
                 if pages is not None:
-                    self._error(field, 'Pages were specified in the YAML but are not present in '
-                                'the DOI reference.')
+                    self._error(
+                        field,
+                        "Pages were specified in the YAML but are not present in "
+                        "the DOI reference.",
+                    )
             else:
                 if pages is None or pages != ref_pages:
-                    self._error(field, 'pages should be {}'.format(ref_pages))
+                    self._error(field, f"pages should be {ref_pages}")
 
             # check that all authors present
-            authors = value['authors'][:]
-            author_names = [a['name'] for a in authors]
-            for author in ref['author']:
+            authors = value["authors"][:]
+            author_names = [a["name"] for a in authors]
+            for author in ref["author"]:
                 # find using family name
                 author_match = next(
-                    (a for a in authors if
-                     compare_name(author['given'], author['family'], a['name'])
-                     ),
-                    None
-                    )
+                    (
+                        a
+                        for a in authors
+                        if compare_name(author["given"], author["family"], a["name"])
+                    ),
+                    None,
+                )
                 # error if missing author in given reference information
                 if author_match is None:
-                    self._error(field, 'Missing author: ' +
-                                ' '.join([author['given'], author['family']])
-                                )
+                    self._error(
+                        field,
+                        "Missing author: " + " ".join([author["given"], author["family"]]),
+                    )
                 else:
-                    author_names.remove(author_match['name'])
+                    author_names.remove(author_match["name"])
 
                     # validate ORCID if given
-                    orcid = author.get('ORCID')
+                    orcid = author.get("ORCID")
                     if orcid:
                         # Crossref may give ORCID as http://orcid.org/####-####-####-####
                         # so need to strip the leading URL
-                        orcid = orcid[orcid.rfind('/') + 1:]
+                        orcid = orcid[orcid.rfind("/") + 1 :]
 
-                        if 'ORCID' in author_match:
-                            if author_match['ORCID'] != orcid:
+                        if "ORCID" in author_match:
+                            if author_match["ORCID"] != orcid:
                                 self._error(
-                                    field, author_match['name'] + ' ORCID does ' +
-                                    'not match that in reference. Reference: ' +
-                                    orcid + '. Given: ' + author_match['ORCID']
-                                    )
+                                    field,
+                                    author_match["name"]
+                                    + " ORCID does "
+                                    + "not match that in reference. Reference: "
+                                    + orcid
+                                    + ". Given: "
+                                    + author_match["ORCID"],
+                                )
                         else:
                             # ORCID not given, suggest adding it
-                            warn('ORCID ' + orcid + ' missing for ' + author_match['name'])
+                            warn("ORCID " + orcid + " missing for " + author_match["name"])
 
             # check for extra names given
             if len(author_names) > 0:
-                self._error(field, 'Extra author(s) given: ' +
-                            ', '.join(author_names)
-                            )
+                self._error(field, "Extra author(s) given: " + ", ".join(author_names))
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
@@ -426,29 +452,29 @@ class OurValidator(Validator):
             value (`dict`): dictionary of author metadata.
 
         The rule's arguments are validated against this schema:
-            {'isvalid_orcid': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+            {'type': 'boolean'}
 
         """
-        if isvalid_orcid and 'ORCID' in value:
+        if isvalid_orcid and "ORCID" in value:
             try:
-                res = search_orcid(value['ORCID'])
-            except ConnectionError:
-                warn('network not available, ORCID not validated.')
+                res = search_orcid(value["ORCID"])
+            except httpx.ConnectError:
+                warn("network not available, ORCID not validated.")
                 return
-            except HTTPError:
-                self._error(field, 'ORCID incorrect or invalid for ' +
-                            value['name']
-                            )
+            except httpx.HTTPStatusError:
+                self._error(field, "ORCID incorrect or invalid for " + value["name"])
                 return
 
-            family_name = res['name']['family-name']['value']
-            given_name = res['name']['given-names']['value']
-            if not compare_name(given_name, family_name, value['name']):
-                self._error(field, 'Name and ORCID do not match. Name supplied: ' +
-                            value['name'] + '. Name associated with ORCID: ' +
-                            ' '.join([given_name, family_name])
-                            )
+            family_name = res["name"]["family-name"]["value"]
+            given_name = res["name"]["given-names"]["value"]
+            if not compare_name(given_name, family_name, value["name"]):
+                self._error(
+                    field,
+                    "Name and ORCID do not match. Name supplied: "
+                    + value["name"]
+                    + ". Name associated with ORCID: "
+                    + " ".join([given_name, family_name]),
+                )
 
     def _validate_isvalid_composition(self, isvalid_composition, field, value):
         """Checks for valid specification of composition.
@@ -460,41 +486,55 @@ class OurValidator(Validator):
             value (dict): dictionary of composition
 
         The rule's arguments are validated against this schema:
-            {'isvalid_composition': {'type': 'bool'}, 'field': {'type': 'str'},
-             'value': {'type': 'dict'}}
+            {'type': 'boolean'}
         """
         sum_amount = 0.0
-        if value['kind'] in ['mass fraction', 'mole fraction']:
+        if value["kind"] in ["mass fraction", "mole fraction"]:
             low_lim = 0.0
             up_lim = 1.0
             total_amount = 1.0
-        elif value['kind'] in ['mole percent']:
+        elif value["kind"] in ["mole percent"]:
             low_lim = 0.0
             up_lim = 100.0
             total_amount = 100.0
         else:
-            self._error(field, 'composition kind must be "mole percent", "mass fraction", or '
-                        '"mole fraction"')
+            self._error(
+                field,
+                'composition kind must be "mole percent", "mass fraction", or ' '"mole fraction"',
+            )
             return False
 
-        for sp in value['species']:
-            amount = sp['amount'][0]
+        for sp in value["species"]:
+            amount = sp["amount"][0]
             sum_amount += amount
 
             # Check that amount within bounds, based on kind specified
             if amount < low_lim:
-                self._error(field, 'Species ' + sp['species-name'] + ' ' +
-                            value['kind'] + ' must be greater than {:.1f}'.format(low_lim)
-                            )
+                self._error(
+                    field,
+                    "Species "
+                    + sp["species-name"]
+                    + " "
+                    + value["kind"]
+                    + f" must be greater than {low_lim:.1f}",
+                )
             elif amount > up_lim:
-                self._error(field, 'Species ' + sp['species-name'] + ' ' +
-                            value['kind'] + ' must be less than {:.1f}'.format(up_lim)
-                            )
+                self._error(
+                    field,
+                    "Species "
+                    + sp["species-name"]
+                    + " "
+                    + value["kind"]
+                    + f" must be less than {up_lim:.1f}",
+                )
 
         # Make sure mole/mass fraction sum to 1
         if not np.isclose(total_amount, sum_amount):
-            self._error(field, 'Species ' + value['kind'] +
-                        's do not sum to {:.1f}: '.format(total_amount) +
-                        '{:f}'.format(sum_amount)
-                        )
+            self._error(
+                field,
+                "Species "
+                + value["kind"]
+                + f"s do not sum to {total_amount:.1f}: "
+                + f"{sum_amount:f}",
+            )
         # TODO: validate InChI, SMILES, or atomic-composition

@@ -1,8 +1,10 @@
 """
 Module for ORCID interaction
 """
-import requests
-headers = {'Accept': 'application/json'}
+
+import httpx
+
+headers = {"Accept": "application/json"}
 
 
 def search_orcid(orcid):
@@ -19,11 +21,10 @@ def search_orcid(orcid):
         `dict`: Dictionary with the JSON response from the API
 
     Raises:
-        `~requests.HTTPError`: If the given ORCID cannot be found, an `~requests.HTTPError`
-            is raised with status code 404
+        `~httpx.HTTPStatusError`: If the given ORCID cannot be found, an
+            `~httpx.HTTPStatusError` is raised with status code 404
     """
-    url = 'https://pub.orcid.org/v2.1/{orcid}/person'.format(orcid=orcid)
-    r = requests.get(url, headers=headers)
-    if r.status_code != 200:
-        r.raise_for_status()
+    url = f"https://pub.orcid.org/v2.1/{orcid}/person"
+    r = httpx.get(url, headers=headers)
+    r.raise_for_status()
     return r.json()

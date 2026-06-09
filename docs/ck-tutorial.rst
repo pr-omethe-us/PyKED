@@ -542,7 +542,7 @@ Works Cited
 -----------
 
 .. [yaml12] Ben-Kiki, Oren, Clark Evans, and Ingy döt Net. 2009. "YAML Ain't Markup
-            Language (Yaml™) Version 1.2." http://www.yaml.org/spec/1.2/spec.html.
+            Language (Yaml™) Version 1.2." https://yaml.org/spec/1.2/spec.html.
 
 .. [Mittal2006] Mittal, Gaurav, Chih-Jen Sung, and Richard A. Yetter. 2006.
                 "Autoignition of H2/CO at Elevated Pressures in a Rapid Compression
@@ -561,4 +561,4 @@ Works Cited
                 Budapest, Hungary.
 
 .. [Varga2015b] Varga, Tamás. "ReSpecTh Kinetics Data Format Specification v1.0." 2015.
-                http://respecth.hu/
+                https://respecth.hu/
