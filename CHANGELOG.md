@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.5.0] - 2026-06-09
 ### Added
 - Add codemeta file
-- GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14
+- GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14 on Linux, and Python 3.14 on macOS and Windows
 - GitHub Actions workflow for deploying documentation to GitHub Pages
 - GitHub Actions workflow for publishing to PyPI on version tags using Trusted Publishers
 - `pytest-cov` to test dependencies
