@@ -223,7 +223,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent " "with " + property_units[field],
+        f"incompatible units; should be consistent with {property_units[field]}",
             )
 
     def _validate_isvalid_history(self, isvalid_history, field, value):
@@ -300,7 +300,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent " "with " + property_units[field],
+        f"incompatible units; should be consistent with {property_units[field]}",
             )
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
@@ -412,7 +412,7 @@ class OurValidator(Validator):
                 if author_match is None:
                     self._error(
                         field,
-                        "Missing author: " + " ".join([author["given"], author["family"]]),
+            f"Missing author: {author['given']} {author['family']}",
                     )
                 else:
                     author_names.remove(author_match["name"])
