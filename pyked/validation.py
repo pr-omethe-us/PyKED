@@ -97,10 +97,7 @@ for key in ['author', 'value-unit-required', 'value-unit-optional',
             'evaluated-standard-deviation-entry',
             'evaluated-standard-deviation-list-optional',
             'laminar-burning-velocity-measurement-schema',
-            'concentration-time-profile-measurement-schema',
-            'jet-stirred-reactor-measurement-schema',
-            'outlet-concentration-measurement-schema',
-            'burner-stabilized-flame-speciation-measurement-schema',
+            'speciation-measurement-schema',
             'rate-coefficient-schema',
             'ignition-delay-schema',
             'time-history',
@@ -336,6 +333,38 @@ class OurValidator(Validator):
             self._error(field, 'too many columns in the values')
         elif n_cols < max_cols:
             self._error(field, 'not enough columns in the values')
+
+    def _validate_isvalid_speciation(self, isvalid_speciation, field, value):
+        """Checks that a speciation datapoint's profile rows are well formed.
+
+        Each ``concentration-profiles`` row must carry one value per declared
+        ``independent-variables`` entry, followed by the measured amount, with an
+        optional trailing uncertainty. So a row has ``n + 1`` or ``n + 2`` columns,
+        where ``n`` is the number of independent variables.
+
+        Args:
+            isvalid_speciation (`bool`): flag from schema.
+            field (`str`): the datapoint field.
+            value (`dict`): the speciation datapoint dictionary.
+
+        The rule's arguments are validated against this schema:
+            {'isvalid_speciation': {'type': 'bool'}, 'field': {'type': 'str'},
+             'value': {'type': 'dict'}}
+        """
+        n = len(value.get('independent-variables', []))
+        if n < 1:
+            self._error(field, 'at least one independent-variable is required')
+            return
+        for prof in value.get('concentration-profiles', []):
+            species = prof.get('species-name', '?')
+            for row in prof.get('values', []):
+                if len(row) not in (n + 1, n + 2):
+                    self._error(
+                        field,
+                        'concentration-profiles row for {0} must have {1} or {2} '
+                        'columns ({3} independent-variable(s) + amount '
+                        '[+ uncertainty]); got {4}'.format(
+                            species, n + 1, n + 2, n, len(row)))
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
