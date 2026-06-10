@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Migrated from `setup.py`/`setup.cfg` to `pyproject.toml` with hatchling build backend
 - Moved source to `src/pyked/` layout; tests moved to top-level `tests/` directory
 - `orcid.py` now uses `httpx` instead of `requests` for HTTP calls; exception handling updated throughout to use `httpx` exceptions (habanero switched from `requests` to `httpx` internally)
+- `orcid.py` updated to use ORCID public API v3.0
 - Updated conda recipe to use `load_file_regex` for version, updated all dependency pins, require Python >= 3.10
 - Updated README badges: removed Travis CI, Appveyor, and Dependency CI badges; added GitHub Actions CI badge; updated Codecov to `main` branch
 - Updated `docs/conf.py`: replaced deprecated `pkg_resources` with `importlib.metadata`; replaced deprecated `autodoc_default_flags` with `autodoc_default_options`; updated intersphinx mappings; fixed `language = None` deprecation; removed legacy Travis CI environment check

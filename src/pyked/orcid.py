@@ -22,7 +22,7 @@ def search_orcid(orcid):
         `~httpx.HTTPStatusError`: If the given ORCID cannot be found, an
             `~httpx.HTTPStatusError` is raised with status code 404
     """
-    url = f"https://pub.orcid.org/v2.1/{orcid}/person"
+    url = f"https://pub.orcid.org/v3.0/{orcid}/person"
     r = httpx.get(url, headers=headers)
     r.raise_for_status()
     return r.json()
