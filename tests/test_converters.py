@@ -129,7 +129,7 @@ class TestGetReference:
         yield
         socket.socket = old_socket
 
-    def test_valid_reference(self):
+    def test_valid_reference(self, mock_crossref_api):
         """Ensure valid reference reads properly."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -219,7 +219,7 @@ class TestGetReference:
             "Fig. 12., right, open diamond."
         )
 
-    def test_missing_preferredkey(self):
+    def test_missing_preferredkey(self, mock_crossref_api):
         """Ensure can handle DOI with missing ``preferredKey``."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -239,7 +239,7 @@ class TestGetReference:
         assert {"name": "F. Lafosse"} in ref["authors"]
         assert {"name": "C.-E. Paillard"} in ref["authors"]
 
-    def test_incorrect_doi(self, capfd):
+    def test_incorrect_doi(self, capfd, mock_crossref_api):
         """Ensure can handle invalid DOI."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -266,7 +266,7 @@ class TestGetReference:
             "Fig. 12., right, open diamond."
         )
 
-    def test_incorrect_doi_period_at_end(self, capfd):
+    def test_incorrect_doi_period_at_end(self, capfd, mock_crossref_api):
         """Ensure can handle invalid DOI with period at end of reference."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -319,7 +319,7 @@ class TestGetReference:
             "Fig. 12., right, open diamond."
         )
 
-    def test_missing_doi_preferredkey(self):
+    def test_missing_doi_preferredkey(self, mock_crossref_api):
         """Ensure error if missing both DOI and ``preferredKey``."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -340,7 +340,7 @@ class TestGetReference:
             excinfo.value
         )
 
-    def test_doi_author_orcid(self):
+    def test_doi_author_orcid(self, mock_crossref_api):
         """Test proper addition of author ORCID if present."""
         root = etree.Element("experiment")
         ref = etree.SubElement(root, "bibliographyLink")
@@ -1407,7 +1407,7 @@ class TestConvertReSpecTh:
         assert c.file_authors[1].get("ORCID", None) is None
 
 
-@pytest.mark.usefixtures("mock_crossref_api")
+@pytest.mark.usefixtures("mock_all_apis")
 class TestConverterMain:
     """ """
 

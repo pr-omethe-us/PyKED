@@ -26,6 +26,7 @@ schema["chemked-version"]["allowed"].append(__version__)
 warnings.simplefilter("always")
 
 
+@pytest.mark.usefixtures("mock_all_apis")
 class TestChemKED:
     """ """
 
@@ -94,6 +95,7 @@ class TestChemKED:
             ChemKED(dict_input=properties)
 
 
+@pytest.mark.usefixtures("mock_all_apis")
 class TestDataFrameOutput:
     """ """
 
@@ -191,7 +193,7 @@ class TestDataFrameOutput:
         assert c.iloc[1]["O2"] == Q_(0.0, "dimensionless")
 
 
-@pytest.mark.usefixtures("mock_crossref_api")
+@pytest.mark.usefixtures("mock_all_apis")
 class TestWriteFile:
     """ """
 
@@ -247,7 +249,7 @@ class TestWriteFile:
         assert properties == c._properties
 
 
-@pytest.mark.usefixtures("mock_crossref_api")
+@pytest.mark.usefixtures("mock_all_apis")
 class TestConvertToReSpecTh:
     """Tests for conversion of ChemKED to ReSpecTh"""
 
@@ -575,7 +577,7 @@ class TestConvertToReSpecTh:
         )
 
 
-@pytest.mark.usefixtures("mock_crossref_api")
+@pytest.mark.usefixtures("mock_all_apis")
 class TestDataPoint:
     """ """
 

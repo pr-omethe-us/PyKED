@@ -79,6 +79,10 @@ ck2respth = "pyked.converters:ck2respth"
 # tools
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "live_api: tests that call external APIs; run with 'pytest -m live_api'",
+]
+addopts = "-m 'not live_api'"
 filterwarnings = [
     "ignore::pint.UnitStrippedWarning",
 ]

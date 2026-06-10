@@ -4,30 +4,12 @@ Tests for the utils
 
 # Standard libraries
 import os
-import socket
 
 import pytest
 import yaml
 
 from pyked._version import __version__
 from pyked.validation import OurValidator, compare_name, property_units, schema
-
-
-def no_internet(host="8.8.8.8", port=53, timeout=1):
-    """Test whether internet is available
-
-    http://stackoverflow.com/a/33117579/2449192
-    """
-    try:
-        socket.setdefaulttimeout(timeout)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((host, port))
-        return False
-    except OSError:
-        return True
-
-
-internet_missing = pytest.mark.skipif(no_internet(), reason="Internet not available")
 
 schema["chemked-version"]["allowed"].append(__version__)
 
@@ -122,14 +104,12 @@ class TestValidator:
         m = str(record.pop(UserWarning).message)
         assert m == "network not available, ORCID not validated."
 
-    @internet_missing
-    def test_invalid_DOI(self):
+    def test_invalid_DOI(self, mock_crossref_api):
         """Test for proper response to incorrect/invalid DOI."""
         v.validate({"reference": {"doi": "10.1000/invalid.doi"}}, update=True)
         assert v.errors["reference"][0] == "DOI not found"
 
-    @internet_missing
-    def test_invalid_ORCID(self):
+    def test_invalid_ORCID(self, mock_orcid_api):
         """Test for proper response to incorrect/invalid ORCID."""
         v.validate(
             {"file-authors": [{"ORCID": "0000-0000-0000-0000", "name": "Kyle Niemeyer"}]},
@@ -137,8 +117,7 @@ class TestValidator:
         )
         assert v.errors["file-authors"][0][0][0] == "ORCID incorrect or invalid for Kyle Niemeyer"
 
-    @internet_missing
-    def test_invalid_ORCID_name(self):
+    def test_invalid_ORCID_name(self, mock_orcid_api):
         """Test for proper response to incorrect name with ORCID."""
         v.validate(
             {"file-authors": [{"ORCID": "0000-0003-4425-7097", "name": "Bryan Weber"}]},
@@ -150,8 +129,7 @@ class TestValidator:
             "with ORCID: Kyle Niemeyer"
         )
 
-    @internet_missing
-    def test_suggest_ORCID(self):
+    def test_suggest_ORCID(self, mock_all_apis):
         """Test for proper suggestion for missing ORCID."""
         authors = [
             {"name": "Kyle E Niemeyer"},
@@ -172,8 +150,7 @@ class TestValidator:
         m = str(record.pop(UserWarning).message)
         assert m == "ORCID 0000-0003-4425-7097 missing for Kyle E Niemeyer"
 
-    @internet_missing
-    def test_missing_author(self):
+    def test_missing_author(self, mock_crossref_api):
         """Test for proper error for missing author."""
         authors = [
             {"name": "Kyle E Niemeyer", "ORCID": "0000-0003-4425-7097"},
@@ -191,8 +168,7 @@ class TestValidator:
         )
         assert ("Missing author: Xin Hui") in v.errors["reference"]
 
-    @internet_missing
-    def test_valid_reference_authors(self):
+    def test_valid_reference_authors(self, mock_orcid_api):
         """Ensure correct validation of reference authors"""
         # update=True means to ignore required keys that are left out for testing
         authors = [
@@ -201,8 +177,7 @@ class TestValidator:
         ]
         assert v.validate({"reference": {"authors": authors}}, update=True)
 
-    @internet_missing
-    def test_unmatching_ORCIDs(self):
+    def test_unmatching_ORCIDs(self, mock_crossref_api):
         """Ensure appropriate error for author ORCID not matching that via DOI"""
         # update=True means to ignore required keys that are left out for testing
         authors = [
@@ -226,8 +201,7 @@ class TestValidator:
             "Given: " + authors[0]["ORCID"]
         ) in v.errors["reference"]
 
-    @internet_missing
-    def test_extra_authors(self):
+    def test_extra_authors(self, mock_crossref_api):
         """Ensure appropriate error for extra authors given."""
         # update=True means to ignore required keys that are left out for testing
         authors = [
@@ -248,8 +222,7 @@ class TestValidator:
         )
         assert ("Extra author(s) given: Bryan W Weber") in v.errors["reference"]
 
-    @internet_missing
-    def test_two_authors_same_surname(self):
+    def test_two_authors_same_surname(self, mock_crossref_api):
         """Ensure author validation can distinguish authors with same surname."""
         # missing Liuyan Lu from author list
         authors = [
@@ -289,8 +262,7 @@ class TestValidator:
         )
         assert ("Missing author: Tianfeng Lu") in v.errors["reference"]
 
-    @internet_missing
-    def test_wrong_year(self):
+    def test_wrong_year(self, mock_crossref_api):
         """Test that the wrong year in the YAML compared to DOI lookup is an error."""
         authors = [
             {"name": "Zhuyin Ren"},
@@ -316,8 +288,7 @@ class TestValidator:
         assert not result
         assert "year should be 2014" == v.errors["reference"][0]
 
-    @internet_missing
-    def test_wrong_journal(self):
+    def test_wrong_journal(self, mock_crossref_api):
         """Test that the wrong journal in the YAML compared to DOI lookup is an error."""
         authors = [
             {"name": "Zhuyin Ren"},
@@ -376,8 +347,7 @@ class TestValidator:
         )
         assert result
 
-    @internet_missing
-    def test_wrong_volume(self):
+    def test_wrong_volume(self, mock_crossref_api):
         """Test that the wrong volume in the YAML compared to DOI lookup is an error."""
         authors = [
             {"name": "Zhuyin Ren"},
@@ -403,8 +373,7 @@ class TestValidator:
         assert not result
         assert "volume should be 161" == v.errors["reference"][0]
 
-    @internet_missing
-    def test_wrong_page(self):
+    def test_wrong_page(self, mock_crossref_api):
         """Test that the wrong page in the YAML compared to DOI lookup is an error."""
         authors = [
             {"name": "Zhuyin Ren"},
@@ -430,8 +399,7 @@ class TestValidator:
         assert not result
         assert "pages should be 127-137" == v.errors["reference"][0]
 
-    @internet_missing
-    def test_no_page_in_DOI(self):
+    def test_no_page_in_DOI(self, mock_crossref_api):
         """Providing a page should produce an error while no page provided should pass"""
         authors = [{"name": "F. Xu"}, {"name": "V. Nori"}, {"name": "J. Basani"}]
         result = v.validate(
@@ -483,7 +451,7 @@ class TestValidator:
         ],
         indirect=["properties"],
     )
-    def test_valid_yaml(self, properties):
+    def test_valid_yaml(self, properties, mock_all_apis):
         """Ensure ChemKED YAML is validated"""
         try:
             assert v.validate(properties)
@@ -1059,7 +1027,7 @@ class TestValidator:
         )
 
     @pytest.mark.parametrize("properties", ["testfile_st_thermo.yaml"], indirect=["properties"])
-    def test_composition_thermo(self, properties):
+    def test_composition_thermo(self, properties, mock_all_apis):
         """Test to make sure that correct thermo fields validate correctly"""
         try:
             assert v.validate(properties)
@@ -1068,7 +1036,7 @@ class TestValidator:
             raise
 
     @pytest.mark.parametrize("properties", ["testfile_st_thermo.yaml"], indirect=["properties"])
-    def test_composition_thermo_bad(self, properties):
+    def test_composition_thermo_bad(self, properties, mock_all_apis):
         """Test to make sure that bad thermo fields raise an error"""
         thermo = properties["datapoints"][0]["composition"]["species"][0]["thermo"]
         thermo["T_ranges"] = [1000.0, 200.0, 5000.0]

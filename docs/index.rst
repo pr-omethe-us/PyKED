@@ -33,6 +33,7 @@ User's Guide
    ck-tutorial
    schema-docs
    pyked-examples
+   development
    releases
 
 Code API
