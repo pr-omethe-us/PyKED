@@ -1295,6 +1295,7 @@ class TestGetDatapoints:
         ) in str(excinfo.value)
 
 
+@pytest.mark.usefixtures("mock_crossref_api")
 class TestConvertReSpecTh:
     """ """
 
@@ -1406,6 +1407,7 @@ class TestConvertReSpecTh:
         assert c.file_authors[1].get("ORCID", None) is None
 
 
+@pytest.mark.usefixtures("mock_crossref_api")
 class TestConverterMain:
     """ """
 

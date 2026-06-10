@@ -343,8 +343,7 @@ class TestValidator:
         assert not result
         assert "journal should be Combustion and Flame" == v.errors["reference"][0]
 
-    @internet_missing
-    def test_no_volume_in_DOI(self):
+    def test_no_volume_in_DOI(self, mock_crossref_api):
         """Providing a volume should produce an error while no volume provided should pass"""
         authors = [{"name": "F. Xu"}, {"name": "V. Nori"}, {"name": "J. Basani"}]
         result = v.validate(

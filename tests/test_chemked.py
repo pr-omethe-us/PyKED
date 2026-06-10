@@ -191,6 +191,7 @@ class TestDataFrameOutput:
         assert c.iloc[1]["O2"] == Q_(0.0, "dimensionless")
 
 
+@pytest.mark.usefixtures("mock_crossref_api")
 class TestWriteFile:
     """ """
 
@@ -246,6 +247,7 @@ class TestWriteFile:
         assert properties == c._properties
 
 
+@pytest.mark.usefixtures("mock_crossref_api")
 class TestConvertToReSpecTh:
     """Tests for conversion of ChemKED to ReSpecTh"""
 
@@ -573,6 +575,7 @@ class TestConvertToReSpecTh:
         )
 
 
+@pytest.mark.usefixtures("mock_crossref_api")
 class TestDataPoint:
     """ """
 
