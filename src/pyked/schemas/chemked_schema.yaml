@@ -8,10 +8,7 @@
 !include composition_schema.yaml
 !include ignition_delay_schema.yaml
 !include laminar_burning_velocity_measurement_schema.yaml
-!include concentration_time_profile_measurement_schema.yaml
-!include jet_stirred_reactor_measurement_schema.yaml
-!include outlet_concentration_measurement_schema.yaml
-!include burner_stabilized_flame_speciation_measurement_schema.yaml
+!include speciation_measurement_schema.yaml
 !include rate_coefficient_schema.yaml
 ######################################################
 
@@ -50,6 +47,7 @@ common-properties:
     reactor-diameter: *value-unit-optional
     pressure-in-reference-state: *value-unit-optional
     temperature-in-reference-state: *value-unit-optional
+    volumetric-flow-in-reference-state: *value-unit-optional
     equivalence-ratio: *value-unit-optional
 
 apparatus:
@@ -104,9 +102,9 @@ apparatus:
           - FCM
           - LFF
           - Heat Flux Burner
-          - "OPF?"
-          - "FCM?"
-          - "LFF?"
+          - "OPF"
+          - "FCM"
+          - "LFF"
           - "extrapolation method to zero stretch: LS"
           - "extrapolation method to zero stretch: NQ"
           - "extrapolation method to zero stretch: LC"
@@ -119,10 +117,7 @@ datapoints:
   anyof:
     - *ignition-delay-schema
     - *laminar-burning-velocity-measurement-schema
-    - *concentration-time-profile-measurement-schema
-    - *jet-stirred-reactor-measurement-schema
-    - *outlet-concentration-measurement-schema
-    - *burner-stabilized-flame-speciation-measurement-schema
+    - *speciation-measurement-schema
     - *rate-coefficient-schema
 reference:
   required: true
@@ -171,10 +166,7 @@ experiment-type:
   allowed:
     - ignition delay
     - laminar burning velocity measurement
-    - concentration time profile measurement
-    - jet stirred reactor measurement
-    - outlet concentration measurement
-    - burner stabilized flame speciation measurement
+    - speciation measurement
     - rate coefficient
   required: true
   type: string
