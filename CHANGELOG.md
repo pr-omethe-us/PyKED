@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.5.0] - 2026-06-09
+## [Unreleased]
 ### Added
 - Add codemeta file
 - GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14 on Linux, and Python 3.14 on macOS and Windows
@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GitHub Actions workflow for publishing to PyPI on version tags using Trusted Publishers
 - `pytest-cov` to test dependencies
 - Optional `docs` dependency group (`sphinx`, `nbsphinx`, `ipython`)
-- `httpx` as a direct dependency for HTTP calls in `orcid.py`
+- `httpx2` as a direct dependency for HTTP calls in `orcid.py`
 - pytest `testpaths`, `filterwarnings`, and coverage configuration in `pyproject.toml`
 - `live_api` pytest marker and `tests/test_live_api.py` with contract tests that verify mock data still matches real Crossref and ORCID API responses
 - GitHub Actions workflow (`.github/workflows/live-api.yml`) running live API contract tests on a weekly schedule and on manual dispatch
@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Composition type is included in the pandas data-frame resulting from `to_dataframe()`
 - Migrated from `setup.py`/`setup.cfg` to `pyproject.toml` with hatchling build backend
 - Moved source to `src/pyked/` layout; tests moved to top-level `tests/` directory
-- `orcid.py` now uses `httpx` instead of `requests` for HTTP calls; exception handling updated throughout to use `httpx` exceptions (habanero switched from `requests` to `httpx` internally)
+- `orcid.py` now uses `httpx2` instead of `requests` for HTTP calls; exception handling updated throughout to use `httpx2` exceptions
 - `orcid.py` updated to use ORCID public API v3.0
 - Updated conda recipe to use `load_file_regex` for version, updated all dependency pins, require Python >= 3.10
 - Updated README badges: removed Travis CI, Appveyor, and Dependency CI badges; added GitHub Actions CI badge; updated Codecov to `main` branch
@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `appveyor.yml` replaced by GitHub Actions
 - `requirements.txt` replaced by `pyproject.toml` dependencies
 - `MANIFEST.in` not needed with hatchling build backend
-- `requests` as a direct dependency (replaced by `httpx`)
+- `requests` as a direct dependency (replaced by `httpx2`)
 
 ## [0.4.1] - 2018-03-09
 ### Added

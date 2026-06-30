@@ -1,6 +1,6 @@
 """Module for ORCID interaction"""
 
-import httpx
+import httpx2 as httpx
 
 headers = {"Accept": "application/json"}
 

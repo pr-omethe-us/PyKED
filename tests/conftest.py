@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import habanero
-import httpx
+import httpx2 as httpx
 import pytest
 
 from tests._mock_data import CROSSREF_INVALID_DOIS, CROSSREF_RESPONSES, ORCID_RESPONSES

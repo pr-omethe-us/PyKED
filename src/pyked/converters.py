@@ -8,7 +8,7 @@ from typing import Any
 from warnings import warn
 
 import habanero
-import httpx
+import httpx2 as httpx
 import pint
 
 from . import chemked
