@@ -3,89 +3,110 @@
 # Standard libraries
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as etree
-from collections import namedtuple
 from copy import deepcopy
 from itertools import chain
 from os.path import exists
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NamedTuple
 from warnings import warn
 
 import numpy as np
+import pint
 
 from .converters import ReSpecTh_to_ChemKED, datagroup_properties
 
 # Local imports
 from .validation import Q_, OurValidator, schema, yaml
 
-VolumeHistory = namedtuple("VolumeHistory", ["time", "volume"])
-VolumeHistory.__doc__ = (
-    "Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4"  # noqa: E501
-)
-VolumeHistory.time.__doc__ = "(`~numpy.ndarray`): the time during the experiment"
-VolumeHistory.volume.__doc__ = "(`~numpy.ndarray`): the volume during the experiment"
 
-TimeHistory = namedtuple("TimeHistory", ["time", "quantity", "type"])
-TimeHistory.__doc__ = "Time history of the quantity in an RCM experiment"
-TimeHistory.time.__doc__ = "(`~numpy.ndarray`): the time during the experiment"
-TimeHistory.quantity.__doc__ = "(`~numpy.ndarray`): the quantity of interest during the experiment"
-TimeHistory.type.__doc__ = """\
-(`str`): the type of time history represented. Possible options are:
+class VolumeHistory(NamedTuple):
+    """Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4"""
 
-* volume
-* temperature
-* pressure
-* piston position
-* light emission
-* OH emission
-* absorption
-"""
+    time: pint.Quantity
+    """(`~pint.Quantity`): the time during the experiment"""
+    volume: pint.Quantity
+    """(`~pint.Quantity`): the volume during the experiment"""
 
-RCMData = namedtuple(
-    "RCMData",
-    [
-        "compressed_pressure",
-        "compressed_temperature",
-        "compression_time",
-        "stroke",
-        "clearance",
-        "compression_ratio",
-    ],
-)
-RCMData.__doc__ = "Data fields specific to rapid compression machine experiments"
-RCMData.compressed_pressure.__doc__ = "(`~pint.Quantity`) The pressure at the end of compression"
-RCMData.compressed_temperature.__doc__ = """\
-(`~pint.Quantity`) The temperature at the end of compression"""
-RCMData.compression_time.__doc__ = "(`~pint.Quantity`) The duration of the compression stroke"
-RCMData.stroke.__doc__ = "(`~pint.Quantity`) The length of the stroke"
-RCMData.clearance.__doc__ = """\
-(`~pint.Quantity`) The clearance between piston face and end wall at the end of compression"""
-RCMData.compression_ratio.__doc__ = "(`~pint.Quantity`) The volumetric compression ratio"
 
-Reference = namedtuple(
-    "Reference", ["volume", "journal", "doi", "authors", "detail", "year", "pages"]
-)
-Reference.__doc__ = "Information about the article or report where the data can be found"
-Reference.volume.__doc__ = "(`str`) The journal volume"
-Reference.journal.__doc__ = "(`str`) The name of the journal"
-Reference.doi.__doc__ = "(`str`) The Digital Object Identifier of the article"
-Reference.authors.__doc__ = "(`list`) The list of authors of the article"
-Reference.detail.__doc__ = "(`str`) Detail about where the data can be found in the article"
-Reference.year.__doc__ = "(`str`) The year the article was published"
-Reference.pages.__doc__ = "(`str`) The pages in the journal where the article was published"
+class TimeHistory(NamedTuple):
+    """Time history of the quantity in an RCM experiment"""
 
-Apparatus = namedtuple("Apparatus", ["kind", "institution", "facility"])
-Apparatus.__doc__ = "Information about the experimental apparatus used to generate the data"
-Apparatus.kind.__doc__ = "(`str`) The kind of experimental apparatus"
-Apparatus.institution.__doc__ = "(`str`) The institution where the experiment is located"
-Apparatus.facility.__doc__ = "(`str`) The particular experimental facility at the location"
+    time: pint.Quantity
+    """(`~pint.Quantity`): the time during the experiment"""
+    quantity: pint.Quantity
+    """(`~pint.Quantity`): the quantity of interest during the experiment"""
+    type: str
+    """(`str`): the type of time history represented. Possible options are:
 
-Composition = namedtuple("Composition", "species_name InChI SMILES atomic_composition amount")
-Composition.__doc__ = "Detail of the initial composition of the mixture for the experiment"
-Composition.species_name.__doc__ = "(`str`) The name of the species"
-Composition.InChI.__doc__ = "(`str`) The InChI identifier for the species"
-Composition.SMILES.__doc__ = "(`str`) The SMILES identifier for the species"
-Composition.atomic_composition.__doc__ = "(`dict`) The atomic composition of the species"
-Composition.amount.__doc__ = "(`~pint.Quantity`) The amount of this species"
+    * volume
+    * temperature
+    * pressure
+    * piston position
+    * light emission
+    * OH emission
+    * absorption
+    """
+
+
+class RCMData(NamedTuple):
+    """Data fields specific to rapid compression machine experiments"""
+
+    compressed_pressure: pint.Quantity | None
+    """(`~pint.Quantity`) The pressure at the end of compression"""
+    compressed_temperature: pint.Quantity | None
+    """(`~pint.Quantity`) The temperature at the end of compression"""
+    compression_time: pint.Quantity | None
+    """(`~pint.Quantity`) The duration of the compression stroke"""
+    stroke: pint.Quantity | None
+    """(`~pint.Quantity`) The length of the stroke"""
+    clearance: pint.Quantity | None
+    """(`~pint.Quantity`) The clearance between piston face and end wall at the end of compression"""
+    compression_ratio: pint.Quantity | None
+    """(`~pint.Quantity`) The volumetric compression ratio"""
+
+
+class Reference(NamedTuple):
+    """Information about the article or report where the data can be found"""
+
+    volume: str | None
+    """(`str`) The journal volume"""
+    journal: str | None
+    """(`str`) The name of the journal"""
+    doi: str | None
+    """(`str`) The Digital Object Identifier of the article"""
+    authors: list | None
+    """(`list`) The list of authors of the article"""
+    detail: str | None
+    """(`str`) Detail about where the data can be found in the article"""
+    year: int | None
+    """(`int`) The year the article was published"""
+    pages: str | None
+    """(`str`) The pages in the journal where the article was published"""
+
+
+class Apparatus(NamedTuple):
+    """Information about the experimental apparatus used to generate the data"""
+
+    kind: str | None
+    """(`str`) The kind of experimental apparatus"""
+    institution: str | None
+    """(`str`) The institution where the experiment is located"""
+    facility: str | None
+    """(`str`) The particular experimental facility at the location"""
+
+
+class Composition(NamedTuple):
+    """Detail of the initial composition of the mixture for the experiment"""
+
+    species_name: str
+    """(`str`) The name of the species"""
+    InChI: str | None
+    """(`str`) The InChI identifier for the species"""
+    SMILES: str | None
+    """(`str`) The SMILES identifier for the species"""
+    atomic_composition: dict | None
+    """(`dict`) The atomic composition of the species"""
+    amount: pint.Quantity
+    """(`~pint.Quantity`) The amount of this species"""
 
 
 class ChemKED:
