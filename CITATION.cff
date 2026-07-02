@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata in this file,
+  or use the DOI for the specific version you used.
+type: software
+title: PyKED
+abstract: >-
+  Python interface to the ChemKED (Chemical Kinetics Experimental Data) database
+  format for validating and interacting with fundamental combustion experimental data.
+authors:
+  - family-names: Niemeyer
+    given-names: Kyle E.
+    orcid: https://orcid.org/0000-0003-4425-7097
+    email: kyleniemeyer@fastmail.com
+  - family-names: Weber
+    given-names: Bryan W.
+    orcid: https://orcid.org/0000-0003-0815-9270
+    email: bryan.w.weber@gmail.com
+version: 0.4.1
+date-released: "2018-03-09"
+license: BSD-3-Clause
+repository-code: https://github.com/pr-omethe-us/PyKED
+url: https://pr-omethe-us.github.io/PyKED/
+keywords:
+  - combustion
+  - experimental data
+  - chemical kinetics
+  - YAML
+  - data standard
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.597935
+    description: Zenodo concept DOI (resolves to the latest version)

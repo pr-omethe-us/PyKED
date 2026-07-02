@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Development and testing documentation in `docs/development.rst` and `CONTRIBUTING.md`
 
 ### Changed
+- replaces `codemeta.json` file with `CITATION.cff`
 - All tests that previously called external APIs directly now use mock fixtures; `addopts = "-m 'not live_api'"` in `pyproject.toml` excludes live API tests from the default run
 - switched to Coveralls for code coverage
 - Directly use the Markdown formatting of the README on pypi, rather than converting to reST
