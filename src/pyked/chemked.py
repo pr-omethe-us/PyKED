@@ -435,19 +435,10 @@ class ChemKED:
             raise NotImplementedError("Only ignition delay type supported for conversion.")
 
         reference = etree.SubElement(root, "bibliographyLink")
-        citation = ""
-        for author in self.reference.authors:
-            citation += author["name"] + ", "
-        citation += (
-            self.reference.journal
-            + " ("
-            + str(self.reference.year)
-            + ") "
-            + str(self.reference.volume)
-            + ":"
-            + self.reference.pages
-            + ". "
-            + self.reference.detail
+        citation = (
+            f"{', '.join(a['name'] for a in self.reference.authors)}, "
+            f"{self.reference.journal} ({self.reference.year}) "
+            f"{self.reference.volume}:{self.reference.pages}. {self.reference.detail}"
         )
         reference.set("preferredKey", citation)
         reference.set("doi", self.reference.doi)
