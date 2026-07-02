@@ -18,7 +18,9 @@ from .converters import ReSpecTh_to_ChemKED, datagroup_properties
 from .validation import Q_, OurValidator, schema, yaml
 
 VolumeHistory = namedtuple("VolumeHistory", ["time", "volume"])
-VolumeHistory.__doc__ = "Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4"  # noqa: E501
+VolumeHistory.__doc__ = (
+    "Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4"  # noqa: E501
+)
 VolumeHistory.time.__doc__ = "(`~numpy.ndarray`): the time during the experiment"
 VolumeHistory.volume.__doc__ = "(`~numpy.ndarray`): the volume during the experiment"
 
@@ -366,7 +368,7 @@ class ChemKED:
         # Ensure file isn't already present
         if exists(filename) and not overwrite:
             raise OSError(
-                filename + ' already present. Specify "overwrite=True" ' "to overwrite, or rename."
+                filename + ' already present. Specify "overwrite=True" to overwrite, or rename.'
             )
 
         with open(filename, "w") as yaml_file:
@@ -443,7 +445,7 @@ class ChemKED:
         composition_type = self.datapoints[0].composition_type
         if not all(dp.composition_type == composition_type for dp in self.datapoints):
             raise NotImplementedError(
-                "Error: ReSpecTh does not support varying composition " "type among datapoints."
+                "Error: ReSpecTh does not support varying composition type among datapoints."
             )
 
         if all(composition == dp.composition for dp in self.datapoints):
@@ -572,7 +574,7 @@ class ChemKED:
 
         if len(self.datapoints) > 1 and len(time_histories) > 1:
             raise NotImplementedError(
-                "Error: ReSpecTh files do not support multiple datapoints " "with a time history."
+                "Error: ReSpecTh files do not support multiple datapoints with a time history."
             )
         elif len(time_histories) > 0:
             for dg_idx, hist in enumerate(time_histories):
@@ -944,7 +946,7 @@ class DataPoint:
         """
         if self.composition_type == "mass fraction":
             raise ValueError(
-                "Cannot get mole fractions from the given composition.\n" f"{self.composition}"
+                f"Cannot get mole fractions from the given composition.\n{self.composition}"
             )
         else:
             return self.get_cantera_composition_string(species_conversion)
@@ -982,7 +984,7 @@ class DataPoint:
         """
         if self.composition_type in ["mole fraction", "mole percent"]:
             raise ValueError(
-                "Cannot get mass fractions from the given composition.\n" f"{self.composition}"
+                f"Cannot get mass fractions from the given composition.\n{self.composition}"
             )
         else:
             return self.get_cantera_composition_string(species_conversion)

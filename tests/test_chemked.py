@@ -490,7 +490,7 @@ class TestConvertToReSpecTh:
         with pytest.raises(NotImplementedError) as excinfo:
             c.convert_to_ReSpecTh("test.xml")
         assert (
-            "Error: ReSpecTh does not support varying composition " "type among datapoints."
+            "Error: ReSpecTh does not support varying composition type among datapoints."
         ) in str(excinfo.value)
 
     def test_conversion_to_respecth_error_volume_history_datapoints(self):

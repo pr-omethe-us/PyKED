@@ -249,7 +249,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent " "with " + property_units[history_type],
+                "incompatible units; should be consistent with " + property_units[history_type],
             )
 
         # Check that time has appropriate units
@@ -259,7 +259,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent " "with " + property_units["time"],
+                "incompatible units; should be consistent with " + property_units["time"],
             )
 
         # Check that the values have the right number of columns
@@ -374,8 +374,7 @@ class OurValidator(Validator):
                 if volume is not None:
                     self._error(
                         field,
-                        "Volume was specified in the YAML but is not present in the "
-                        "DOI reference.",
+                        "Volume was specified in the YAML but is not present in the DOI reference.",
                     )
             else:
                 if volume is None or int(volume) != int(ref_volume):
@@ -500,7 +499,7 @@ class OurValidator(Validator):
         else:
             self._error(
                 field,
-                'composition kind must be "mole percent", "mass fraction", or ' '"mole fraction"',
+                'composition kind must be "mole percent", "mass fraction", or "mole fraction"',
             )
             return False
 

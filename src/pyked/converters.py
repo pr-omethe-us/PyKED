@@ -473,11 +473,11 @@ def get_datapoints(root):
                         quants[quant_type] = quant
                     else:
                         raise KeywordError(
-                            f"Value tag {val.tag} not found in dataGroup tags: " f"{quant_tags}"
+                            f"Value tag {val.tag} not found in dataGroup tags: {quant_tags}"
                         )
                 if time is None or len(quants) == 0:
                     raise KeywordError(
-                        "Both time and quantity values required in each " "time-history dataPoint."
+                        "Both time and quantity values required in each time-history dataPoint."
                     )
                 for t in time_histories:
                     t["values"].append([time, quants[t["type"]]])

@@ -331,7 +331,7 @@ class TestValidator:
         )
         assert not result
         assert (
-            "Volume was specified in the YAML but is not present in " "the DOI reference."
+            "Volume was specified in the YAML but is not present in the DOI reference."
         ) == v.errors["reference"][0]
 
         result = v.validate(
@@ -416,7 +416,7 @@ class TestValidator:
         )
         assert not result
         assert (
-            "Pages were specified in the YAML but are not present in " "the DOI reference."
+            "Pages were specified in the YAML but are not present in the DOI reference."
         ) == v.errors["reference"][0]
 
         result = v.validate(

@@ -38,29 +38,27 @@ class TestCrossrefContract:
         real_pub = real.get("published-print") or real.get("published-online", {})
         real_year = real_pub["date-parts"][0][0]
         mock_year = mock["published-print"]["date-parts"][0][0]
-        assert (
-            real_year == mock_year
-        ), f"year mismatch for {doi}: real={real_year}, mock={mock_year}"
+        assert real_year == mock_year, (
+            f"year mismatch for {doi}: real={real_year}, mock={mock_year}"
+        )
 
         # volume (optional)
         if "volume" in mock:
             assert str(real.get("volume", "")) == str(mock["volume"]), (
-                f"volume mismatch for {doi}: "
-                f"real={real.get('volume')!r}, mock={mock['volume']!r}"
+                f"volume mismatch for {doi}: real={real.get('volume')!r}, mock={mock['volume']!r}"
             )
 
         # page (optional)
         if "page" in mock:
             assert real.get("page", "") == mock["page"], (
-                f"page mismatch for {doi}: " f"real={real.get('page')!r}, mock={mock['page']!r}"
+                f"page mismatch for {doi}: real={real.get('page')!r}, mock={mock['page']!r}"
             )
 
         # author family names
         real_families = {a["family"] for a in real.get("author", [])}
         mock_families = {a["family"] for a in mock.get("author", [])}
         assert real_families == mock_families, (
-            f"author family names mismatch for {doi}: "
-            f"real={real_families}, mock={mock_families}"
+            f"author family names mismatch for {doi}: real={real_families}, mock={mock_families}"
         )
 
 
@@ -82,14 +80,14 @@ class TestOrcidContract:
 
         real_family = real["name"]["family-name"]["value"]
         mock_family = mock["name"]["family-name"]["value"]
-        assert (
-            real_family == mock_family
-        ), f"family-name mismatch for {orcid}: real={real_family!r}, mock={mock_family!r}"
+        assert real_family == mock_family, (
+            f"family-name mismatch for {orcid}: real={real_family!r}, mock={mock_family!r}"
+        )
 
         real_given = real["name"]["given-names"]["value"]
         mock_given = mock["name"]["given-names"]["value"]
         # Only check that the mock given name is a prefix/match of the real one
         # (mock may use "Kyle" while real has "Kyle E.")
-        assert real_given.startswith(
-            mock_given
-        ), f"given-names mismatch for {orcid}: real={real_given!r}, mock={mock_given!r}"
+        assert real_given.startswith(mock_given), (
+            f"given-names mismatch for {orcid}: real={real_given!r}, mock={mock_given!r}"
+        )

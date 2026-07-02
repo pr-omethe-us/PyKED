@@ -336,7 +336,7 @@ class TestGetReference:
 
         with pytest.raises(MissingAttributeError) as excinfo:
             get_reference(root)
-        assert "Error: required attribute preferredKey of bibliographyLink " "is missing." in str(
+        assert "Error: required attribute preferredKey of bibliographyLink is missing." in str(
             excinfo.value
         )
 
@@ -583,9 +583,9 @@ class TestCommonProperties:
 
         with pytest.raises(KeywordError) as excinfo:
             get_common_properties(root)
-        assert (
-            "Error: composition units mass fraction not consistent " "with mole fraction"
-        ) in str(excinfo.value)
+        assert ("Error: composition units mass fraction not consistent with mole fraction") in str(
+            excinfo.value
+        )
 
     def test_common_composition_units_ppm_ppb(self):
         """Test proper handling of common composition unit conversion for ppm and ppb."""
@@ -793,8 +793,9 @@ class TestGetDatapoints:
         prop.set("units", "us")
 
         num_points = 10
-        temps = numpy.random.uniform(low=300.0, high=1000.0, size=(num_points,))
-        ignition_delays = numpy.random.uniform(low=100.0, high=700.0, size=(num_points,))
+        rng = numpy.random.default_rng()
+        temps = rng.uniform(low=300.0, high=1000.0, size=(num_points,))
+        ignition_delays = rng.uniform(low=100.0, high=700.0, size=(num_points,))
 
         for temp, ignition_delay in zip(temps, ignition_delays):
             datapoint = etree.SubElement(datagroup, "dataPoint")
@@ -826,8 +827,9 @@ class TestGetDatapoints:
         prop.set("name", "ignition delay")
         prop.set("units", "us")
 
-        temp = numpy.random.uniform(low=300.0, high=1000.0)
-        ignition_delay = numpy.random.uniform(low=100.0, high=700.0)
+        rng = numpy.random.default_rng()
+        temp = rng.uniform(low=300.0, high=1000.0)
+        ignition_delay = rng.uniform(low=100.0, high=700.0)
         datapoint = etree.SubElement(datagroup, "dataPoint")
         x1 = etree.SubElement(datapoint, "x1")
         x1.text = str(temp)
@@ -988,8 +990,7 @@ class TestGetDatapoints:
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
         assert (
-            "Only volume, temperature, pressure, and time are allowed in a time-history "
-            "dataGroup."
+            "Only volume, temperature, pressure, and time are allowed in a time-history dataGroup."
         ) in str(excinfo.value)
 
         # remove bad property description, but retain bad extra dataPoint value
@@ -1290,9 +1291,9 @@ class TestGetDatapoints:
 
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert (
-            "Error: composition units mole fraction not consistent with " "mass fraction"
-        ) in str(excinfo.value)
+        assert ("Error: composition units mole fraction not consistent with mass fraction") in str(
+            excinfo.value
+        )
 
 
 @pytest.mark.usefixtures("mock_crossref_api")
