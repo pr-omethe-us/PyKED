@@ -1,47 +1,35 @@
-name: github pages
+name: Deploy Docs
 
 on:
   push:
     branches:
-      - master
-      - docs_deploy
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - run: sudo apt-get install pandoc
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.6'
+          python-version: "3.14"
+          cache: pip
 
-      - name: Upgrade pip
+      - name: Install package and docs dependencies
         run: |
-          # install pip=>20.1 to use "pip cache dir"
-          python3 -m pip install --upgrade pip
+          sudo apt-get install -y pandoc
+          pip install -e . --group docs
 
-      - name: Get pip cache dir
-        id: pip-cache
-        run: echo "::set-output name=dir::$(pip cache dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: python3 -m pip install -r ./requirements.txt
-
-      - run: export PYTHONPATH=$PYTHONPATH:$(pwd); cd docs; make html SPHINXOPTS="-W"
+      - name: Build docs
+        run: cd docs && make html SPHINXOPTS="-W"
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3.7.3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+          publish_dir: ./docs/_build/html

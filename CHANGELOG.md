@@ -7,15 +7,47 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Add codemeta file
+- GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14 on Linux, and Python 3.14 on macOS and Windows
+- GitHub Actions workflow for deploying documentation to GitHub Pages, and separate workflow for publishing to PyPI on version tags using Trusted Publishers
+- Updates dependency groups: `pytest-cov` in `test`,  `ruff` in `lint`
+- Adds ruff, mypy, and pre-commit-hooks to `.pre-commit-config.yaml`
+- `httpx2` as a direct dependency for HTTP calls in `orcid.py`
+- pytest `testpaths`, `filterwarnings`, and coverage configuration in `pyproject.toml`
+- `live_api` pytest marker and `tests/test_live_api.py` with contract tests that verify mock data still matches real Crossref and ORCID API responses
+- GitHub Actions workflow (`.github/workflows/live-api.yml`) running live API contract tests on a weekly schedule and on manual dispatch
+- `tests/_mock_data.py` centralising shared Crossref and ORCID mock data for use by both `conftest.py` and `test_live_api.py`
+- `mock_orcid_api` and `mock_all_apis` fixtures in `tests/conftest.py`
+- Development and testing documentation in `docs/development.rst` and `CONTRIBUTING.md`
 
 ### Changed
+- replaces `os.path` with `pathlib.Path` operations
+- replaces `codemeta.json` file with `CITATION.cff`
+- All tests that previously called external APIs directly now use mock fixtures; `addopts = "-m 'not live_api'"` in `pyproject.toml` excludes live API tests from the default run
+- switched to Coveralls for code coverage
 - Directly use the Markdown formatting of the README on pypi, rather than converting to reST
-- Remove unnecessary `orcid` package from the test environment
-- Specify versions of all package dependencies
-- Use pip to install package in conda build
 - Composition type is included in the pandas data-frame resulting from `to_dataframe()`
+- Migrated from `setup.py`/`setup.cfg` to `pyproject.toml` with hatchling build backend
+- `pandas` moved from optional `dataframes` extra into main dependencies
+- Moved source to `src/pyked/` layout; tests moved to top-level `tests/` directory
+- `orcid.py` now uses `httpx2` instead of `requests` for HTTP calls, and updated to use ORCID public API v3.0
+- Updated conda recipe to use `load_file_regex` for version, updated all dependency pins, require Python >= 3.10
+- Updated README badges; added GitHub Actions CI badge; updated Codecov to `main` branch
+- Updated `docs/conf.py`: replaced deprecated `pkg_resources` with `importlib.metadata`; replaced deprecated `autodoc_default_flags` with `autodoc_default_options`; updated intersphinx mappings; fixed `language = None` deprecation; removed legacy Travis CI environment check
+- Updated paths and URLs in example notebooks and `ck-tutorial.rst`
 
 ### Fixed
+- `filter` in `chemked.py` incompatible with Python 3.14; replaced with list comprehension
+- ORCID URL stripping in `converters.py` used `lstrip()` (strips characters, not a prefix) causing malformed ORCIDs when Crossref returns `https://` URLs; replaced with `rfind('/')` approach consistent with `validation.py`
+- Test assertions for Crossref author names updated to match current API response format
+- Test path assertions for ReSpecTh conversion detail string corrected after test directory migration
+- `pandas.util.testing` (removed in pandas 1.0) replaced with `pandas.testing` in test fixtures
+- Removed `no_internet()` helper and `internet_missing` skip marker from `test_validation.py`; tests now mock APIs instead of skipping when offline
+- Duplicate `compression_time` entry in `DataPoint` docstring causing Sphinx build failure
+
+### Removed
+- `appveyor.yml` replaced by GitHub Actions
+- `requirements.txt` replaced by `pyproject.toml` dependencies
+- `MANIFEST.in` not needed with hatchling build backend
 
 ## [0.4.1] - 2018-03-09
 ### Added
@@ -142,7 +174,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.1...HEAD
 [0.4.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0

@@ -6,18 +6,7 @@ Installation
 Stable
 ------
 
-PyKED is available for Python 3.5 and 3.6 on Linux, macOS, and Windows via ``conda`` and ``pip``.
-For ``conda`` installation, use the ``pr-omethe-us`` channel::
-
-    conda install -c pr-omethe-us pyked
-
-Note that you might need to include the ``conda-forge`` channel by editing your conda
-configuration::
-
-    conda config --append channels conda-forge
-    conda install -c pr-omethe-us pyked
-
-You can also install with ``pip``::
+PyKED can be easily installed using ``pip``::
 
     pip install pyked
 
@@ -29,16 +18,7 @@ PyKED can be installed from source by cloning the git repository and changing in
     git clone https://github.com/pr-omethe-us/PyKED
     cd PyKED
 
-Then run::
-
-    conda develop .
-
-if you're using ``conda`` (you may need to install ``conda-build`` first). To uninstall, run::
-
-    conda develop . --uninstall
-
-Note that this doesn't install the standalone converter scripts. With ``pip``, installing
-is done by::
+then, with ``pip``, installing is done by::
 
     pip install -e .
 

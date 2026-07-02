@@ -1,0 +1,107 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyked"
+dynamic = ["version"]
+description = "Package for manipulating Chemical Kinetics Experimental Data (ChemKED) files."
+authors = [
+    {name = "Kyle E. Niemeyer", email = "kyleniemeyer@fastmail.com"},
+    {name = "Bryan W. Weber", email = "bryan.w.weber@gmail.com"}
+]
+maintainers = [
+    {name = "Kyle E. Niemeyer", email = "kyleniemeyer@fastmail.com"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["chemical kinetics"]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+    'Topic :: Scientific/Engineering :: Chemistry',
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.0.0",
+    "pyyaml",
+    "cerberus",
+    "pint>0.24.0",
+    "uncertainties>=3.2",
+    "habanero>=2.9.1",
+    "httpx2>=2.0",
+    "pandas>=2.2.0",
+]
+
+[dependency-groups]
+test = ["pytest", "pytest-cov",]
+lint = ["pre-commit", "ruff",]
+docs = ["sphinx", "nbsphinx", "ipython",]
+all = [
+    {include-group = "test"},
+    {include-group = "lint"},
+    {include-group = "docs"},
+]
+
+[tool.hatch.version]
+path = "src/pyked/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyked"]
+
+[project.urls]
+Homepage = "https://github.com/pr-omethe-us/PyKED"
+Documentation = "https://pr-omethe-us.github.io/PyKED/"
+Repository = "https://github.com/pr-omethe-us/PyKED"
+"Bug Tracker" = "https://github.com/pr-omethe-us/PyKED/issues"
+Changelog = "https://github.com/pr-omethe-us/PyKED/blob/main/CHANGELOG.md"
+
+[project.scripts]
+convert_ck = "pyked.converters:main"
+respth2ck = "pyked.converters:respth2ck"
+ck2respth = "pyked.converters:ck2respth"
+
+# tools
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "live_api: tests that call external APIs; run with 'pytest -m live_api'",
+]
+addopts = "-m 'not live_api'"
+filterwarnings = [
+    "ignore::pint.UnitStrippedWarning",
+]
+
+# https://github.com/charliermarsh/ruff
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "NPY", "PD"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "RUF012"]
+"docs/*.ipynb" = ["N803", "B007"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pyked"]
+
+[tool.coverage.run]
+source = ["pyked"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "if __name__ == .__main__.:",
+]

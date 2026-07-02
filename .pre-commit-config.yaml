@@ -1,0 +1,18 @@
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: "^\\.github/(PULL_REQUEST_TEMPLATE|ISSUE_TEMPLATE)\\.md$"
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: "^src/pyked/schemas/"
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+        args: [--fix, --unsafe-fixes]
+      - id: ruff-format
