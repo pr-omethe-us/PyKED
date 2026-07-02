@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ChemKED &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Converters" href="converters.html" />
+    <link rel="prev" title="Releases" href="releases.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-pyked.chemked">
+<span id="chemked"></span><h1>ChemKED<a class="headerlink" href="#module-pyked.chemked" title="Link to this heading">¶</a></h1>
+<p>Main ChemKED module</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.Apparatus">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">Apparatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">institution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">facility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#Apparatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.Apparatus" title="Link to this definition">¶</a></dt>
+<dd><p>Information about the experimental apparatus used to generate the data</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Apparatus.facility">
+<span class="sig-name descname"><span class="pre">facility</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Apparatus.facility" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The particular experimental facility at the location</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Apparatus.institution">
+<span class="sig-name descname"><span class="pre">institution</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Apparatus.institution" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The institution where the experiment is located</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Apparatus.kind">
+<span class="sig-name descname"><span class="pre">kind</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Apparatus.kind" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The kind of experimental apparatus</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">ChemKED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yaml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED" title="Link to this definition">¶</a></dt>
+<dd><p>Main ChemKED class.</p>
+<p>The ChemKED class stores information about the contents of a ChemKED database
+file. It stores each datapoint associated with the database and provides access
+the the reference information, versions, and file author.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yaml_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – The filename of the YAML database in ChemKED format.</p></li>
+<li><p><strong>dict_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – A dictionary with the parsed ouput of YAML file in ChemKED
+format.</p></li>
+<li><p><strong>skip_validation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – Whether validation of the ChemKED should be done. Must
+be supplied as a keyword-argument.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.datapoints">
+<span class="sig-name descname"><span class="pre">datapoints</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.datapoints" title="Link to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> objects storing each datapoint in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.reference">
+<span class="sig-name descname"><span class="pre">reference</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.reference" title="Link to this definition">¶</a></dt>
+<dd><p>Attributes include <code class="docutils literal notranslate"><span class="pre">volume</span></code>, <code class="docutils literal notranslate"><span class="pre">journal</span></code>, <code class="docutils literal notranslate"><span class="pre">doi</span></code>,
+<code class="docutils literal notranslate"><span class="pre">authors</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">year</span></code>, and <code class="docutils literal notranslate"><span class="pre">pages</span></code> describing the reference from which the
+datapoints are derived.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.apparatus">
+<span class="sig-name descname"><span class="pre">apparatus</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.apparatus" title="Link to this definition">¶</a></dt>
+<dd><p>Attributes include <code class="docutils literal notranslate"><span class="pre">kind</span></code> of experimental
+apparatus, and the <code class="docutils literal notranslate"><span class="pre">institution</span></code> and <code class="docutils literal notranslate"><span class="pre">facility</span></code> where the experimental apparatus is
+located.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.chemked_version">
+<span class="sig-name descname"><span class="pre">chemked_version</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.chemked_version" title="Link to this definition">¶</a></dt>
+<dd><p>Version of the ChemKED database schema used in this file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.experiment_type">
+<span class="sig-name descname"><span class="pre">experiment_type</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.experiment_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of exeperimental data contained in this database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.file_author">
+<span class="sig-name descname"><span class="pre">file_author</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.file_author" title="Link to this definition">¶</a></dt>
+<dd><p>Information about the author of the ChemKED database file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.file_version">
+<span class="sig-name descname"><span class="pre">file_version</span></span><a class="headerlink" href="#pyked.chemked.ChemKED.file_version" title="Link to this definition">¶</a></dt>
+<dd><p>Version of the ChemKED database file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED._properties">
+<span class="sig-name descname"><span class="pre">_properties</span></span><a class="headerlink" href="#pyked.chemked.ChemKED._properties" title="Link to this definition">¶</a></dt>
+<dd><p>Original dictionary read from ChemKED database file, meant for
+internal use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.convert_to_ReSpecTh">
+<span class="sig-name descname"><span class="pre">convert_to_ReSpecTh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.convert_to_ReSpecTh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED.convert_to_ReSpecTh" title="Link to this definition">¶</a></dt>
+<dd><p>Convert ChemKED record to ReSpecTh XML file.</p>
+<p>This converter uses common information in a ChemKED file to generate a
+ReSpecTh XML file. Note that some information may be lost, as ChemKED stores
+some additional attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Filename for output ReSpecTh XML file.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="n">xml_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.from_respecth">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_respecth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename_xml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author_orcid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.from_respecth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED.from_respecth" title="Link to this definition">¶</a></dt>
+<dd><p>Construct a ChemKED instance directly from a ReSpecTh file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename_xml</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Filename of the ReSpecTh-formatted XML file to be imported</p></li>
+<li><p><strong>file_author</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – File author to be added to the list generated from the
+XML file</p></li>
+<li><p><strong>file_author_orcid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – ORCID for the file author being added to the list
+of file authors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of the <a class="reference internal" href="#pyked.chemked.ChemKED" title="pyked.chemked.ChemKED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemKED</span></code></a> class containing the data in <code class="docutils literal notranslate"><span class="pre">filename_xml</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyked.chemked.ChemKED" title="pyked.chemked.ChemKED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemKED</span></code></a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;Bryan W. Weber&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="o">.</span><span class="n">from_respecth</span><span class="p">(</span><span class="s1">&#39;respecth_file.xml&#39;</span><span class="p">,</span> <span class="n">file_author</span><span class="o">=</span><span class="s1">&#39;Bryan W. Weber&#39;</span><span class="p">,</span>
+<span class="go">                               file_author_orcid=&#39;0000-0000-0000-0000&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.get_dataframe">
+<span class="sig-name descname"><span class="pre">get_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.get_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED.get_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Get a Pandas DataFrame of the datapoints in this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_columns</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – <p>List of strings specifying the columns to include
+in the output DataFrame. The default is <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, which outputs all of the
+columns. Options include (not case sensitive):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Temperature</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Pressure</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ignition</span> <span class="pre">Delay</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Composition</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Equivalence</span> <span class="pre">Ratio</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Apparatus</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Experiment</span> <span class="pre">Type</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">Author</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">Version</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ChemKED</span> <span class="pre">Version</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>In addition, specific fields from the <code class="docutils literal notranslate"><span class="pre">Reference</span></code> and <code class="docutils literal notranslate"><span class="pre">Apparatus</span></code> attributes can
+be included by specifying the name after a colon. These options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Volume</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Journal</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:DOI</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Authors</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Detail</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Year</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference:Pages</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Apparatus:Kind</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Apparatus:Facility</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Apparatus:Institution</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>Only the first author is printed when <code class="docutils literal notranslate"><span class="pre">Reference</span></code> or <code class="docutils literal notranslate"><span class="pre">Reference:Authors</span></code> is
+selected because the whole author list may be quite long.</p>
+</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the Composition is selected as an output type, the composition specified in the
+<a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> is used. No attempt is made to convert to a consistent basis; mole fractions
+will remain mole fractions, mass fractions will remain mass fractions, and mole percent
+will remain mole percent. Therefore, it is possible to end up with more than one type of
+composition specification in a given column. However, if the composition is included
+in the resulting dataframe, the type of each composition will be specified by the “Kind”
+field in each row.</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">([</span><span class="s1">&#39;Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Ignition Delay&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Contains the information regarding each point in the <code class="docutils literal notranslate"><span class="pre">datapoints</span></code></dt><dd><p>attribute</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.validate_yaml">
+<span class="sig-name descname"><span class="pre">validate_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.validate_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED.validate_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Validate the parsed YAML file for adherance to the ChemKED format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Dictionary created from the parsed YAML file</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the YAML file cannot be validated, a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> is raised whose
+    string contains the errors that are present.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.ChemKED.write_file">
+<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#ChemKED.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.ChemKED.write_file" title="Link to this definition">¶</a></dt>
+<dd><p>Write new ChemKED YAML file based on object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Filename for target YAML file</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – Whether to overwrite file with given name if present.
+Must be supplied as a keyword-argument.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.14)"><strong>NameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">filename</span></code> is already present, and <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> is not <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">new_yaml_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.Composition">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">Composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">InChI</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">SMILES</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomic_composition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#Composition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.Composition" title="Link to this definition">¶</a></dt>
+<dd><p>Detail of the initial composition of the mixture for the experiment</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Composition.InChI">
+<span class="sig-name descname"><span class="pre">InChI</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Composition.InChI" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The InChI identifier for the species</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Composition.SMILES">
+<span class="sig-name descname"><span class="pre">SMILES</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Composition.SMILES" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The SMILES identifier for the species</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Composition.amount">
+<span class="sig-name descname"><span class="pre">amount</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span><a class="headerlink" href="#pyked.chemked.Composition.amount" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The amount of this species</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Composition.atomic_composition">
+<span class="sig-name descname"><span class="pre">atomic_composition</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Composition.atomic_composition" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) The atomic composition of the species</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Composition.species_name">
+<span class="sig-name descname"><span class="pre">species_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pyked.chemked.Composition.species_name" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The name of the species</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">DataPoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.DataPoint" title="Link to this definition">¶</a></dt>
+<dd><p>Class for a single datapoint.</p>
+<p>The <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> class stores the information associated with a single data point in the dataset
+parsed from the <a class="reference internal" href="#pyked.chemked.ChemKED" title="pyked.chemked.ChemKED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemKED</span></code></a> YAML input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Dictionary adhering to the ChemKED format for <code class="docutils literal notranslate"><span class="pre">datapoints</span></code></p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.composition">
+<span class="sig-name descname"><span class="pre">composition</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.composition" title="Link to this definition">¶</a></dt>
+<dd><p>List of dictionaries representing the species and their quantities</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.ignition_delay">
+<span class="sig-name descname"><span class="pre">ignition_delay</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_delay" title="Link to this definition">¶</a></dt>
+<dd><p>The ignition delay of the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.temperature">
+<span class="sig-name descname"><span class="pre">temperature</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.temperature" title="Link to this definition">¶</a></dt>
+<dd><p>The temperature of the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.pressure">
+<span class="sig-name descname"><span class="pre">pressure</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.pressure" title="Link to this definition">¶</a></dt>
+<dd><p>The pressure of the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.pressure_rise">
+<span class="sig-name descname"><span class="pre">pressure_rise</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_rise" title="Link to this definition">¶</a></dt>
+<dd><p>The amount of pressure rise during the induction
+period of a shock tube experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.compression_time">
+<span class="sig-name descname"><span class="pre">compression_time</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.compression_time" title="Link to this definition">¶</a></dt>
+<dd><p>The compression time for an RCM experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.compressed_pressure">
+<span class="sig-name descname"><span class="pre">compressed_pressure</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_pressure" title="Link to this definition">¶</a></dt>
+<dd><p>The pressure at the end of compression for
+an RCM experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.compressed_temperature">
+<span class="sig-name descname"><span class="pre">compressed_temperature</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.compressed_temperature" title="Link to this definition">¶</a></dt>
+<dd><p>The temperature at the end of compression
+for an RCM experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.first_stage_ignition_delay">
+<span class="sig-name descname"><span class="pre">first_stage_ignition_delay</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.first_stage_ignition_delay" title="Link to this definition">¶</a></dt>
+<dd><p>The first stage ignition delay of the
+experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)">pint.Quantity</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.ignition_type">
+<span class="sig-name descname"><span class="pre">ignition_type</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.ignition_type" title="Link to this definition">¶</a></dt>
+<dd><p>Dictionary with the ignition target and type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.volume_history">
+<span class="sig-name descname"><span class="pre">volume_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.volume_history" title="Link to this definition">¶</a></dt>
+<dd><p>The volume history of the reactor
+during an RCM experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.pressure_history">
+<span class="sig-name descname"><span class="pre">pressure_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.pressure_history" title="Link to this definition">¶</a></dt>
+<dd><p>The pressure history of the reactor
+during an experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.temperature_history">
+<span class="sig-name descname"><span class="pre">temperature_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.temperature_history" title="Link to this definition">¶</a></dt>
+<dd><p>The temperature history of the
+reactor during an experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.piston_position_history">
+<span class="sig-name descname"><span class="pre">piston_position_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.piston_position_history" title="Link to this definition">¶</a></dt>
+<dd><p>The piston position history
+of the reactor during an RCM experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.light_emission_history">
+<span class="sig-name descname"><span class="pre">light_emission_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.light_emission_history" title="Link to this definition">¶</a></dt>
+<dd><p>The light emission history
+of the reactor during an experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.OH_emission_history">
+<span class="sig-name descname"><span class="pre">OH_emission_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.OH_emission_history" title="Link to this definition">¶</a></dt>
+<dd><p>The OH emission history of the
+reactor during an experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.absorption_history">
+<span class="sig-name descname"><span class="pre">absorption_history</span></span><a class="headerlink" href="#pyked.chemked.DataPoint.absorption_history" title="Link to this definition">¶</a></dt>
+<dd><p>The absorption history of the
+reactor during an experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.namedtuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple</span></code></a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.get_cantera_composition_string">
+<span class="sig-name descname"><span class="pre">get_cantera_composition_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_conversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_composition_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_composition_string" title="Link to this definition">¶</a></dt>
+<dd><p>Get the composition in a string format suitable for input to Cantera.</p>
+<p>Returns a formatted string no matter the type of composition. As such, this method
+is not recommended for end users; instead, prefer the <a class="reference internal" href="#pyked.chemked.DataPoint.get_cantera_mole_fraction" title="pyked.chemked.DataPoint.get_cantera_mole_fraction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cantera_mole_fraction</span></code></a>
+or <a class="reference internal" href="#pyked.chemked.DataPoint.get_cantera_mass_fraction" title="pyked.chemked.DataPoint.get_cantera_mass_fraction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cantera_mass_fraction</span></code></a> methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>String in the <code class="docutils literal notranslate"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the composition type of the <a class="reference internal" href="#pyked.chemked.DataPoint" title="pyked.chemked.DataPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPoint</span></code></a> is not one of
+    <code class="docutils literal notranslate"><span class="pre">'mass</span> <span class="pre">fraction'</span></code>, <code class="docutils literal notranslate"><span class="pre">'mole</span> <span class="pre">fraction'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'mole</span> <span class="pre">percent'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.get_cantera_mass_fraction">
+<span class="sig-name descname"><span class="pre">get_cantera_mass_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_conversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mass_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mass_fraction" title="Link to this definition">¶</a></dt>
+<dd><p>Get the mass fractions in a string format suitable for input to Cantera.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>String of mass fractions in the <code class="docutils literal notranslate"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the composition type is <code class="docutils literal notranslate"><span class="pre">'mole</span> <span class="pre">fraction'</span></code> or
+    <code class="docutils literal notranslate"><span class="pre">'mole</span> <span class="pre">percent'</span></code>, the conversion cannot be done because no molecular
+    weight information is known</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">DataPoint</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">()</span>
+<span class="go">&#39;H2:2.2525e-04, O2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;H2&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;1S/H2/h1H&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;1S/O2/c1-2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mass_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:2.2525e-04, o2:4.4775e-03, Ar:9.9530e-01&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.get_cantera_mole_fraction">
+<span class="sig-name descname"><span class="pre">get_cantera_mole_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_conversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.get_cantera_mole_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.DataPoint.get_cantera_mole_fraction" title="Link to this definition">¶</a></dt>
+<dd><p>Get the mole fractions in a string format suitable for input to Cantera.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>species_conversion</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Mapping of species identifier to a
+species name. This argument should be supplied when the name of the
+species in the ChemKED YAML file does not match the name of the same
+species in a chemical kinetic mechanism. The species identifier (the key
+of the mapping) can be the name, InChI, or SMILES provided in the ChemKED
+file, while the value associated with a key should be the desired name in
+the Cantera format output string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>String of mole fractions in the <code class="docutils literal notranslate"><span class="pre">SPEC:AMT,</span> <span class="pre">SPEC:AMT</span></code> format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the composition type is <code class="docutils literal notranslate"><span class="pre">'mass</span> <span class="pre">fraction'</span></code>, the conversion cannot
+    be done because no molecular weight information is known</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">DataPoint</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
+<span class="go">&#39;H2:4.4400e-03, O2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;H2&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;1S/H2/h1H&#39;</span><span class="p">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;1S/O2/c1-2&#39;</span><span class="p">:</span> <span class="s1">&#39;o2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
+<span class="go">&#39;h2:4.4400e-03, o2:5.5600e-03, Ar:9.9000e-01&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyked.chemked.DataPoint.process_quantity">
+<span class="sig-name descname"><span class="pre">process_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#DataPoint.process_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.DataPoint.process_quantity" title="Link to this definition">¶</a></dt>
+<dd><p>Process the uncertainty information from a given quantity and return it</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">RCMData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compressed_pressure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compressed_temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stroke</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">clearance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#RCMData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.RCMData" title="Link to this definition">¶</a></dt>
+<dd><p>Data fields specific to rapid compression machine experiments</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.clearance">
+<span class="sig-name descname"><span class="pre">clearance</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.clearance" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The clearance between piston face and end wall at the end of compression</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.compressed_pressure">
+<span class="sig-name descname"><span class="pre">compressed_pressure</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.compressed_pressure" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The pressure at the end of compression</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.compressed_temperature">
+<span class="sig-name descname"><span class="pre">compressed_temperature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.compressed_temperature" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The temperature at the end of compression</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.compression_ratio">
+<span class="sig-name descname"><span class="pre">compression_ratio</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.compression_ratio" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The volumetric compression ratio</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.compression_time">
+<span class="sig-name descname"><span class="pre">compression_time</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.compression_time" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The duration of the compression stroke</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.RCMData.stroke">
+<span class="sig-name descname"><span class="pre">stroke</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.RCMData.stroke" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>) The length of the stroke</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.Reference">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">Reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">doi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">detail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#Reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.Reference" title="Link to this definition">¶</a></dt>
+<dd><p>Information about the article or report where the data can be found</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.authors">
+<span class="sig-name descname"><span class="pre">authors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.authors" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) The list of authors of the article</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.detail">
+<span class="sig-name descname"><span class="pre">detail</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.detail" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) Detail about where the data can be found in the article</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.doi">
+<span class="sig-name descname"><span class="pre">doi</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.doi" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The Digital Object Identifier of the article</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.journal">
+<span class="sig-name descname"><span class="pre">journal</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.journal" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The name of the journal</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.pages">
+<span class="sig-name descname"><span class="pre">pages</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.pages" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The pages in the journal where the article was published</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.volume">
+<span class="sig-name descname"><span class="pre">volume</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.volume" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) The journal volume</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.Reference.year">
+<span class="sig-name descname"><span class="pre">year</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pyked.chemked.Reference.year" title="Link to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) The year the article was published</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.TimeHistory">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">TimeHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#TimeHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.TimeHistory" title="Link to this definition">¶</a></dt>
+<dd><p>Time history of the quantity in an RCM experiment</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.TimeHistory.quantity">
+<span class="sig-name descname"><span class="pre">quantity</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span><a class="headerlink" href="#pyked.chemked.TimeHistory.quantity" title="Link to this definition">¶</a></dt>
+<dd><p>the quantity of interest during the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.TimeHistory.time">
+<span class="sig-name descname"><span class="pre">time</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span><a class="headerlink" href="#pyked.chemked.TimeHistory.time" title="Link to this definition">¶</a></dt>
+<dd><p>the time during the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.TimeHistory.type">
+<span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pyked.chemked.TimeHistory.type" title="Link to this definition">¶</a></dt>
+<dd><p>the type of time history represented. Possible options are:</p>
+<ul class="simple">
+<li><p>volume</p></li>
+<li><p>temperature</p></li>
+<li><p>pressure</p></li>
+<li><p>piston position</p></li>
+<li><p>light emission</p></li>
+<li><p>OH emission</p></li>
+<li><p>absorption</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyked.chemked.VolumeHistory">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.chemked.</span></span><span class="sig-name descname"><span class="pre">VolumeHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/chemked.html#VolumeHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.chemked.VolumeHistory" title="Link to this definition">¶</a></dt>
+<dd><p>Time history of the volume in an RCM experiment. Deprecated, to be removed after PyKED 0.4</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.VolumeHistory.time">
+<span class="sig-name descname"><span class="pre">time</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span><a class="headerlink" href="#pyked.chemked.VolumeHistory.time" title="Link to this definition">¶</a></dt>
+<dd><p>the time during the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyked.chemked.VolumeHistory.volume">
+<span class="sig-name descname"><span class="pre">volume</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><span class="pre">Quantity</span></a></span><a class="headerlink" href="#pyked.chemked.VolumeHistory.volume" title="Link to this definition">¶</a></dt>
+<dd><p>the volume during the experiment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Quantity" title="(in pint v0.25.3rc1.dev1+g5e79411e1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Quantity</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ChemKED</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.Apparatus"><code class="docutils literal notranslate"><span class="pre">Apparatus</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.ChemKED"><code class="docutils literal notranslate"><span class="pre">ChemKED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.Composition"><code class="docutils literal notranslate"><span class="pre">Composition</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.DataPoint"><code class="docutils literal notranslate"><span class="pre">DataPoint</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.RCMData"><code class="docutils literal notranslate"><span class="pre">RCMData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.Reference"><code class="docutils literal notranslate"><span class="pre">Reference</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.TimeHistory"><code class="docutils literal notranslate"><span class="pre">TimeHistory</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.chemked.VolumeHistory"><code class="docutils literal notranslate"><span class="pre">VolumeHistory</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="releases.html" title="previous chapter">Releases</a></li>
+      <li>Next: <a href="converters.html" title="next chapter">Converters</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/chemked.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

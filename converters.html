@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Converters &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Validation" href="validation.html" />
+    <link rel="prev" title="ChemKED" href="chemked.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-pyked.converters">
+<span id="converters"></span><h1>Converters<a class="headerlink" href="#module-pyked.converters" title="Link to this heading">¶</a></h1>
+<p>Module with converters from other formats.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyked.converters.KeywordError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">KeywordError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#KeywordError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.KeywordError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised for errors in keyword parsing.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyked.converters.MissingAttributeError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">MissingAttributeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#MissingAttributeError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.MissingAttributeError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised for missing required attribute.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyked.converters.MissingElementError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">MissingElementError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#MissingElementError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.MissingElementError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised for missing required elements.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyked.converters.ParseError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ParseError</span></span><a class="reference internal" href="_modules/pyked/converters.html#ParseError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ParseError" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for errors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.ReSpecTh_to_ChemKED">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ReSpecTh_to_ChemKED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename_xml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author_orcid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ReSpecTh_to_ChemKED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ReSpecTh_to_ChemKED" title="Link to this definition">¶</a></dt>
+<dd><p>Convert ReSpecTh XML file to ChemKED-compliant dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename_xml</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of ReSpecTh XML file to be converted.</p></li>
+<li><p><strong>file_author</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – Name to override original file author</p></li>
+<li><p><strong>file_author_orcid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – ORCID of file author</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional, keyword-only) – Set to <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a> to validate the resulting
+property dictionary with <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemKED</span></code>. Set to <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a> if the file is being loaded and will
+be validated at some other point before use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.ck2respth">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ck2respth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ck2respth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ck2respth" title="Link to this definition">¶</a></dt>
+<dd><p>Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.datagroup_properties">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">datagroup_properties</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['temperature',</span> <span class="pre">'pressure',</span> <span class="pre">'ignition</span> <span class="pre">delay',</span> <span class="pre">'pressure</span> <span class="pre">rise']</span></span><a class="headerlink" href="#pyked.converters.datagroup_properties" title="Link to this definition">¶</a></dt>
+<dd><p>Valid properties for a ReSpecTh dataGroup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_common_properties">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_common_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_common_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_common_properties" title="Link to this definition">¶</a></dt>
+<dd><p>Read common properties from root of ReSpecTh XML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with common properties</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_datapoints">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_datapoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_datapoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_datapoints" title="Link to this definition">¶</a></dt>
+<dd><p>Parse datapoints with ignition delay from file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with ignition delay data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_experiment_kind">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_experiment_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_experiment_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_experiment_kind" title="Link to this definition">¶</a></dt>
+<dd><p>Read common properties from root of ReSpecTh XML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with experiment type and apparatus information.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_file_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_file_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_file_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_file_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Read and parse ReSpecTh XML file metadata (file author, version, etc.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with file metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_ignition_type">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_ignition_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_ignition_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_ignition_type" title="Link to this definition">¶</a></dt>
+<dd><p>Gets ignition type and target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with ignition type/target information</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_reference">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_reference" title="Link to this definition">¶</a></dt>
+<dd><p>Read reference info from root of ReSpecTh XML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with reference information</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.main">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.main" title="Link to this definition">¶</a></dt>
+<dd><p>General function for converting between ReSpecTh and ChemKED files based on extension.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.respth2ck">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">respth2ck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#respth2ck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.respth2ck" title="Link to this definition">¶</a></dt>
+<dd><p>Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Converters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.KeywordError"><code class="docutils literal notranslate"><span class="pre">KeywordError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.MissingAttributeError"><code class="docutils literal notranslate"><span class="pre">MissingAttributeError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.MissingElementError"><code class="docutils literal notranslate"><span class="pre">MissingElementError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ParseError"><code class="docutils literal notranslate"><span class="pre">ParseError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ReSpecTh_to_ChemKED"><code class="docutils literal notranslate"><span class="pre">ReSpecTh_to_ChemKED()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ck2respth"><code class="docutils literal notranslate"><span class="pre">ck2respth()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.datagroup_properties"><code class="docutils literal notranslate"><span class="pre">datagroup_properties</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_common_properties"><code class="docutils literal notranslate"><span class="pre">get_common_properties()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_datapoints"><code class="docutils literal notranslate"><span class="pre">get_datapoints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_experiment_kind"><code class="docutils literal notranslate"><span class="pre">get_experiment_kind()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_file_metadata"><code class="docutils literal notranslate"><span class="pre">get_file_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_ignition_type"><code class="docutils literal notranslate"><span class="pre">get_ignition_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_reference"><code class="docutils literal notranslate"><span class="pre">get_reference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.respth2ck"><code class="docutils literal notranslate"><span class="pre">respth2ck()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="chemked.html" title="previous chapter">ChemKED</a></li>
+      <li>Next: <a href="validation.html" title="next chapter">Validation</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/converters.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Development &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Releases" href="releases.html" />
+    <link rel="prev" title="RCM modeling with varying reactor volume" href="rcm-example.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="development">
+<h1>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h1>
+<p>This page covers how to set up a development environment and run the test suite when
+contributing to PyKED.</p>
+<section id="installing-for-development">
+<h2>Installing for development<a class="headerlink" href="#installing-for-development" title="Link to this heading">¶</a></h2>
+<p>Clone the repository and install in editable mode with all developer dependencies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pr</span><span class="o">-</span><span class="n">omethe</span><span class="o">-</span><span class="n">us</span><span class="o">/</span><span class="n">PyKED</span>
+<span class="n">cd</span> <span class="n">PyKED</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span> <span class="o">--</span><span class="n">group</span> <span class="nb">all</span>
+</pre></div>
+</div>
+</section>
+<section id="running-the-tests">
+<h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Link to this heading">¶</a></h2>
+<p>PyKED uses a two-tier test structure: a fast, fully-mocked default suite and a separate set of
+live API contract tests that verify the mocks stay accurate.</p>
+<section id="default-suite">
+<h3>Default suite<a class="headerlink" href="#default-suite" title="Link to this heading">¶</a></h3>
+<p>All tests in the default suite use mock responses for the Crossref and ORCID external APIs, so
+they run offline and at full speed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span>                   <span class="c1"># run all tests</span>
+<span class="n">pytest</span> <span class="o">--</span><span class="n">cov</span><span class="o">=</span><span class="n">pyked</span>       <span class="c1"># with coverage report</span>
+<span class="n">pytest</span> <span class="o">-</span><span class="n">v</span>                <span class="c1"># verbose output</span>
+</pre></div>
+</div>
+</section>
+<section id="live-api-contract-tests">
+<h3>Live API contract tests<a class="headerlink" href="#live-api-contract-tests" title="Link to this heading">¶</a></h3>
+<p>A separate set of tests marked <code class="docutils literal notranslate"><span class="pre">live_api</span></code> call the real Crossref and ORCID APIs to confirm
+that the mock data in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code> still matches actual responses. These are excluded
+from the default run to keep CI reliable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">m</span> <span class="n">live_api</span> <span class="o">-</span><span class="n">v</span>
+</pre></div>
+</div>
+<p>You can also narrow the scope:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">m</span> <span class="n">live_api</span> <span class="o">-</span><span class="n">v</span> <span class="o">-</span><span class="n">k</span> <span class="s2">&quot;Crossref&quot;</span>   <span class="c1"># Crossref contract tests only</span>
+<span class="n">pytest</span> <span class="o">-</span><span class="n">m</span> <span class="n">live_api</span> <span class="o">-</span><span class="n">v</span> <span class="o">-</span><span class="n">k</span> <span class="s2">&quot;Orcid&quot;</span>      <span class="c1"># ORCID contract tests only</span>
+</pre></div>
+</div>
+<p>These contract tests run automatically every Monday at 06:00 UTC via GitHub Actions. If the
+weekly run fails, the mock data likely needs updating — compare the failure output against the
+entries in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code> and update as needed.</p>
+</section>
+</section>
+<section id="adding-new-api-dependent-tests">
+<h2>Adding new API-dependent tests<a class="headerlink" href="#adding-new-api-dependent-tests" title="Link to this heading">¶</a></h2>
+<p>If you add a test that loads a ChemKED file with a DOI or author ORCID, the validation layer
+will call the Crossref and/or ORCID APIs. Rather than hitting the real APIs, extend the mocks:</p>
+<ol class="arabic simple">
+<li><p>Add your DOI’s expected response to <code class="docutils literal notranslate"><span class="pre">CROSSREF_RESPONSES</span></code> in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code>.</p></li>
+<li><p>Add any ORCID identifiers to <code class="docutils literal notranslate"><span class="pre">ORCID_RESPONSES</span></code> in the same file.</p></li>
+<li><p>Apply the appropriate fixture to your test:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mock_crossref_api</span></code> — patches Crossref only</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mock_orcid_api</span></code> — patches ORCID only</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mock_all_apis</span></code> — patches both (preferred for most cases)</p></li>
+</ul>
+</li>
+</ol>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">test_my_new_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_all_apis</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">yaml_file</span><span class="o">=</span><span class="s2">&quot;tests/my_new_file.yaml&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">doi</span> <span class="o">==</span> <span class="s2">&quot;10.xxxx/my.doi&quot;</span>
+</pre></div>
+</div>
+<p>The mock data is also what the live contract tests compare against, so adding the entry to
+<code class="docutils literal notranslate"><span class="pre">_mock_data.py</span></code> simultaneously keeps both the unit test mocks and the contract tests correct.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="rcm-example.html" title="previous chapter">RCM modeling with varying reactor volume</a></li>
+      <li>Next: <a href="releases.html" title="next chapter">Releases</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/development.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

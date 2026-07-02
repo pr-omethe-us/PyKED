@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PyKED 0.4.2a1 &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="pyked-release">
+<h1>PyKED 0.4.2a1<a class="headerlink" href="#pyked-release" title="Link to this heading">¶</a></h1>
+<a class="reference internal image-reference" href="_images/pyked-logo.png"><img alt="PyKED logo" class="align-right" src="_images/pyked-logo.png" style="width: 25%;" />
+</a>
+<p>PyKED is a Python package that provides the reference implementation of the interface to ChemKED
+files. PyKED reads ChemKED files, validates their structure and content, and allows the user to
+interact with the data contained in the ChemKED file. PyKED is licensed under the permissive,
+open-source BSD 3-clause license. The source code is publicly available on GitHub at
+<a class="reference external" href="https://github.com/pr-omethe-us/PyKED">https://github.com/pr-omethe-us/PyKED</a>.</p>
+<p>This is the documentation for the 0.4.2a1 version of PyKED. The documentation
+for the unreleased, developers’ version of PyKED is available at
+<a class="reference external" href="https://pr-omethe-us.github.io/PyKED/devel">https://pr-omethe-us.github.io/PyKED/devel</a>, and documentation for old releases
+is available on the <a class="reference external" href="https://pr-omethe-us.github.io/PyKED/releases.html">Releases page</a>.
+The stable version of the documentation is always available at <a class="reference external" href="https://pr-omethe-us.github.io/PyKED/">https://pr-omethe-us.github.io/PyKED/</a></p>
+<section id="user-s-guide">
+<h2>User’s Guide<a class="headerlink" href="#user-s-guide" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+</div>
+</section>
+<section id="code-api">
+<h2>Code API<a class="headerlink" href="#code-api" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.Apparatus"><code class="docutils literal notranslate"><span class="pre">Apparatus</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.ChemKED"><code class="docutils literal notranslate"><span class="pre">ChemKED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.Composition"><code class="docutils literal notranslate"><span class="pre">Composition</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.DataPoint"><code class="docutils literal notranslate"><span class="pre">DataPoint</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.RCMData"><code class="docutils literal notranslate"><span class="pre">RCMData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.Reference"><code class="docutils literal notranslate"><span class="pre">Reference</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.TimeHistory"><code class="docutils literal notranslate"><span class="pre">TimeHistory</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemked.html#pyked.chemked.VolumeHistory"><code class="docutils literal notranslate"><span class="pre">VolumeHistory</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.KeywordError"><code class="docutils literal notranslate"><span class="pre">KeywordError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.MissingAttributeError"><code class="docutils literal notranslate"><span class="pre">MissingAttributeError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.MissingElementError"><code class="docutils literal notranslate"><span class="pre">MissingElementError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.ParseError"><code class="docutils literal notranslate"><span class="pre">ParseError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.ReSpecTh_to_ChemKED"><code class="docutils literal notranslate"><span class="pre">ReSpecTh_to_ChemKED()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.ck2respth"><code class="docutils literal notranslate"><span class="pre">ck2respth()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.datagroup_properties"><code class="docutils literal notranslate"><span class="pre">datagroup_properties</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_common_properties"><code class="docutils literal notranslate"><span class="pre">get_common_properties()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_datapoints"><code class="docutils literal notranslate"><span class="pre">get_datapoints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_experiment_kind"><code class="docutils literal notranslate"><span class="pre">get_experiment_kind()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_file_metadata"><code class="docutils literal notranslate"><span class="pre">get_file_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_ignition_type"><code class="docutils literal notranslate"><span class="pre">get_ignition_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.get_reference"><code class="docutils literal notranslate"><span class="pre">get_reference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="converters.html#pyked.converters.respth2ck"><code class="docutils literal notranslate"><span class="pre">respth2ck()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="validation.html#pyked.validation.OurValidator"><code class="docutils literal notranslate"><span class="pre">OurValidator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="validation.html#pyked.validation.compare_name"><code class="docutils literal notranslate"><span class="pre">compare_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="validation.html#pyked.validation.units"><code class="docutils literal notranslate"><span class="pre">units</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="orcid.html#pyked.orcid.search_orcid"><code class="docutils literal notranslate"><span class="pre">search_orcid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="install.html" title="next chapter">Installation</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pint.registry &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pint.registry</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">pint.registry</span>
+<span class="sd">~~~~~~~~~~~~~</span>
+
+<span class="sd">Defines the UnitRegistry, a class to contain units and their relations.</span>
+
+<span class="sd">This registry contains all pint capabilities, but you can build your</span>
+<span class="sd">customized registry by picking only the features that you actually</span>
+<span class="sd">need.</span>
+
+<span class="sd">:copyright: 2022 by Pint Authors, see AUTHORS for more details.</span>
+<span class="sd">:license: BSD, see LICENSE for more details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">facets</span><span class="p">,</span> <span class="n">registry_helpers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.compat</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeAlias</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">pi_theorem</span>
+
+<span class="c1"># To build the Quantity and Unit classes</span>
+<span class="c1"># we follow the UnitRegistry bases</span>
+<span class="c1"># but</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Quantity</span><span class="p">(</span>
+    <span class="n">Generic</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">SystemRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">ContextRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">DaskRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">NumpyRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">MeasurementRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">NonMultiplicativeRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">PlainRegistry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Unit</span><span class="p">(</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">SystemRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">ContextRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">DaskRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">NumpyRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">MeasurementRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">NonMultiplicativeRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">PlainRegistry</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GenericUnitRegistry</span><span class="p">(</span>
+    <span class="n">Generic</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericSystemRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericContextRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericDaskRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericNumpyRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericMeasurementRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericNonMultiplicativeRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+    <span class="n">facets</span><span class="o">.</span><span class="n">GenericPlainRegistry</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UnitRegistry</span><span class="p">(</span><span class="n">GenericUnitRegistry</span><span class="p">[</span><span class="n">Quantity</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">MagnitudeT</span><span class="p">],</span> <span class="n">Unit</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The unit registry stores the definitions and relationships between units.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename :</span>
+<span class="sd">        path of the units definition file to load or line-iterable object.</span>
+<span class="sd">        Empty string to load the default definition file. (default)</span>
+<span class="sd">        None to leave the UnitRegistry empty.</span>
+<span class="sd">    force_ndarray : bool</span>
+<span class="sd">        convert any input, scalar or not to a numpy.ndarray.</span>
+<span class="sd">        (Default: False)</span>
+<span class="sd">    force_ndarray_like : bool</span>
+<span class="sd">        convert all inputs other than duck arrays to a numpy.ndarray.</span>
+<span class="sd">        (Default: False)</span>
+<span class="sd">    default_as_delta :</span>
+<span class="sd">        In the context of a multiplication of units, interpret</span>
+<span class="sd">        non-multiplicative units as their *delta* counterparts.</span>
+<span class="sd">        (Default: False)</span>
+<span class="sd">    autoconvert_offset_to_baseunit :</span>
+<span class="sd">        If True converts offset units in quantities are</span>
+<span class="sd">        converted to their plain units in multiplicative</span>
+<span class="sd">        context. If False no conversion happens. (Default: False)</span>
+<span class="sd">    on_redefinition : str</span>
+<span class="sd">        action to take in case a unit is redefined.</span>
+<span class="sd">        &#39;warn&#39;, &#39;raise&#39;, &#39;ignore&#39; (Default: &#39;raise&#39;)</span>
+<span class="sd">    auto_reduce_dimensions :</span>
+<span class="sd">        If True, reduce dimensionality on appropriate operations.</span>
+<span class="sd">        (Default: False)</span>
+<span class="sd">    autoconvert_to_preferred :</span>
+<span class="sd">        If True, converts preferred units on appropriate operations.</span>
+<span class="sd">        (Default: False)</span>
+<span class="sd">    preprocessors :</span>
+<span class="sd">        list of callables which are iteratively ran on any input expression</span>
+<span class="sd">        or unit string or None for no preprocessor.</span>
+<span class="sd">        (Default=None)</span>
+<span class="sd">    fmt_locale :</span>
+<span class="sd">        locale identifier string, used in `format_babel` or None.</span>
+<span class="sd">        (Default=None)</span>
+<span class="sd">    case_sensitive : bool, optional</span>
+<span class="sd">        Control default case sensitivity of unit parsing. (Default: True)</span>
+<span class="sd">    cache_folder : str or pathlib.Path or None, optional</span>
+<span class="sd">        Specify the folder in which cache files are saved and loaded from.</span>
+<span class="sd">        If None, the cache is disabled. (default)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Quantity</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Quantity</span>
+    <span class="n">Unit</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Unit</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">force_ndarray</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">force_ndarray_like</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">default_as_delta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">autoconvert_offset_to_baseunit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_redefinition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">,</span>
+        <span class="n">system</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">auto_reduce_dimensions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">autoconvert_to_preferred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">preprocessors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">fmt_locale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">non_int_type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">case_sensitive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cache_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="n">force_ndarray</span><span class="o">=</span><span class="n">force_ndarray</span><span class="p">,</span>
+            <span class="n">force_ndarray_like</span><span class="o">=</span><span class="n">force_ndarray_like</span><span class="p">,</span>
+            <span class="n">on_redefinition</span><span class="o">=</span><span class="n">on_redefinition</span><span class="p">,</span>
+            <span class="n">default_as_delta</span><span class="o">=</span><span class="n">default_as_delta</span><span class="p">,</span>
+            <span class="n">autoconvert_offset_to_baseunit</span><span class="o">=</span><span class="n">autoconvert_offset_to_baseunit</span><span class="p">,</span>
+            <span class="n">system</span><span class="o">=</span><span class="n">system</span><span class="p">,</span>
+            <span class="n">auto_reduce_dimensions</span><span class="o">=</span><span class="n">auto_reduce_dimensions</span><span class="p">,</span>
+            <span class="n">autoconvert_to_preferred</span><span class="o">=</span><span class="n">autoconvert_to_preferred</span><span class="p">,</span>
+            <span class="n">preprocessors</span><span class="o">=</span><span class="n">preprocessors</span><span class="p">,</span>
+            <span class="n">fmt_locale</span><span class="o">=</span><span class="n">fmt_locale</span><span class="p">,</span>
+            <span class="n">non_int_type</span><span class="o">=</span><span class="n">non_int_type</span><span class="p">,</span>
+            <span class="n">case_sensitive</span><span class="o">=</span><span class="n">case_sensitive</span><span class="p">,</span>
+            <span class="n">cache_folder</span><span class="o">=</span><span class="n">cache_folder</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">pi_theorem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantities</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds dimensionless quantities using the Buckingham π theorem</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        quantities : dict</span>
+<span class="sd">            mapping between variable name and units</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            a list of dimensionless quantities expressed as dicts</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pi_theorem</span><span class="p">(</span><span class="n">quantities</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up handlers for matplotlib&#39;s unit support.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        enable : bool</span>
+<span class="sd">            whether support should be enabled or disabled (Default value = True)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Delays importing matplotlib until it&#39;s actually requested</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_matplotlib_handlers</span>
+
+        <span class="n">setup_matplotlib_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">)</span>
+
+    <span class="n">wraps</span> <span class="o">=</span> <span class="n">registry_helpers</span><span class="o">.</span><span class="n">wraps</span>
+
+    <span class="n">check</span> <span class="o">=</span> <span class="n">registry_helpers</span><span class="o">.</span><span class="n">check</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LazyRegistry</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">facets</span><span class="o">.</span><span class="n">QuantityT</span><span class="p">,</span> <span class="n">facets</span><span class="o">.</span><span class="n">UnitT</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span> <span class="ow">or</span> <span class="p">(),</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;on_redefinition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">UnitRegistry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_after_init</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="s2">&quot;_on_redefinition&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;raise&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;__class__&quot;</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__init</span><span class="p">()</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApplicationRegistry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A wrapper class used to distribute changes to the application registry.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_registry&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registry</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span> <span class="o">=</span> <span class="n">registry</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the wrapped registry&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_registry</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the new registry</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_registry : ApplicationRegistry or LazyRegistry or UnitRegistry</span>
+<span class="sd">            The new registry.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        set_application_registry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_registry</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="n">new_registry</span> <span class="o">=</span> <span class="n">new_registry</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_registry</span><span class="p">,</span> <span class="p">(</span><span class="n">LazyRegistry</span><span class="p">,</span> <span class="n">UnitRegistry</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected UnitRegistry; got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">new_registry</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Changing app registry from </span><span class="si">%r</span><span class="s2"> to </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">,</span> <span class="n">new_registry</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span> <span class="o">=</span> <span class="n">new_registry</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__slots__</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../releases.html">Releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="../../_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

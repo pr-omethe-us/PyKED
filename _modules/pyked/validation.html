@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyked.validation &#8212; PyKED 0.4.2a1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=144dbdd6"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pyked.validation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Validation class for ChemKED schema.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">resources</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">habanero</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cerberus</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchemaError</span><span class="p">,</span> <span class="n">Validator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">schemas</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.orcid</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_orcid</span>
+
+<span class="n">units</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;Unit registry to contain the units used in PyKED&quot;&quot;&quot;</span>
+
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;cm3 = centimeter**3&quot;</span><span class="p">)</span>
+<span class="n">Q_</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">Quantity</span>
+
+<span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">(</span><span class="n">mailto</span><span class="o">=</span><span class="s2">&quot;prometheus@pr.omethe.us&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load the ChemKED schema definition file</span>
+<span class="n">schema_file</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">schemas</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;chemked_schema.yaml&quot;</span>
+<span class="k">with</span> <span class="n">schema_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">schema_list</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+<span class="n">inc_start</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">inc_end</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">inc_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">no_includes</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">l_num</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">schema_list</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;!include&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">no_includes</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="n">SchemaError</span><span class="p">(</span><span class="s2">&quot;All included files must be first in the main schema&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inc_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inc_start</span> <span class="o">=</span> <span class="n">l_num</span>
+
+        <span class="k">if</span> <span class="n">inc_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="n">SchemaError</span><span class="p">(</span><span class="s2">&quot;All included files must be first in the main schema&quot;</span><span class="p">)</span>
+
+        <span class="n">inc_fname</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">schemas</span><span class="p">)</span> <span class="o">/</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;!include&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">inc_fname</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">inc_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;---&quot;</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">inc_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">no_includes</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">inc_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">inc_end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inc_end</span> <span class="o">=</span> <span class="n">l_num</span>
+
+<span class="n">schema_list</span><span class="p">[</span><span class="n">inc_start</span><span class="p">:</span><span class="n">inc_end</span><span class="p">]</span> <span class="o">=</span> <span class="n">inc_list</span>
+<span class="n">schema</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">schema_list</span><span class="p">))</span>
+
+<span class="c1"># These top-level keys in the schema serve as references for lower-level keys.</span>
+<span class="c1"># They are removed to prevent conflicts due to required variables, etc.</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="s2">&quot;author&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value-unit-required&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value-unit-optional&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;composition&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ignition-type&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value-with-uncertainty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value-without-uncertainty&quot;</span><span class="p">,</span>
+<span class="p">]:</span>
+    <span class="k">del</span> <span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+<span class="c1"># SI units for available value-type properties</span>
+<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="s2">&quot;kelvin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;compressed-temperature&quot;</span><span class="p">:</span> <span class="s2">&quot;kelvin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="s2">&quot;pascal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;compressed-pressure&quot;</span><span class="p">:</span> <span class="s2">&quot;pascal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ignition-delay&quot;</span><span class="p">:</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;first-stage-ignition-delay&quot;</span><span class="p">:</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pressure-rise&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0 / second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;compression-time&quot;</span><span class="p">:</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;meter**3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;piston position&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;emission&quot;</span><span class="p">:</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;absorption&quot;</span><span class="p">:</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concentration&quot;</span><span class="p">:</span> <span class="s2">&quot;mole/meter**3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stroke&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;clearance&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;compression-ratio&quot;</span><span class="p">:</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="compare_name">
+<a class="viewcode-back" href="../../validation.html#pyked.validation.compare_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compare_name</span><span class="p">(</span><span class="n">given_name</span><span class="p">,</span> <span class="n">family_name</span><span class="p">,</span> <span class="n">question_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares a name in question to a specified name separated into given and family.</span>
+
+<span class="sd">    The name in question ``question_name`` can be of varying format, including</span>
+<span class="sd">    &quot;Kyle E. Niemeyer&quot;, &quot;Kyle Niemeyer&quot;, &quot;K. E. Niemeyer&quot;, &quot;KE Niemeyer&quot;, and</span>
+<span class="sd">    &quot;K Niemeyer&quot;. Other possibilities include names with hyphens such as</span>
+<span class="sd">    &quot;Chih-Jen Sung&quot;, &quot;C. J. Sung&quot;, &quot;C-J Sung&quot;.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; compare_name(&#39;Kyle&#39;, &#39;Niemeyer&#39;, &#39;Kyle E Niemeyer&#39;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; compare_name(&#39;Chih-Jen&#39;, &#39;Sung&#39;, &#39;C-J Sung&#39;)</span>
+<span class="sd">        True</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        given_name (`str`): Given (or first) name to be checked against.</span>
+<span class="sd">        family_name (`str`): Family (or last) name to be checked against.</span>
+<span class="sd">        question_name (`str`): The whole name in question.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `bool`: The return value. True for successful comparison, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># lowercase everything</span>
+    <span class="n">given_name</span> <span class="o">=</span> <span class="n">given_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">family_name</span> <span class="o">=</span> <span class="n">family_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">question_name</span> <span class="o">=</span> <span class="n">question_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># rearrange names given as &quot;last, first middle&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">question_name</span><span class="p">:</span>
+        <span class="n">name_split</span> <span class="o">=</span> <span class="n">question_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">name_split</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="n">question_name</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_split</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># remove periods</span>
+    <span class="n">question_name</span> <span class="o">=</span> <span class="n">question_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">given_name</span> <span class="o">=</span> <span class="n">given_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">family_name</span> <span class="o">=</span> <span class="n">family_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="c1"># split names by , &lt;space&gt; - .</span>
+    <span class="n">given_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">given_name</span><span class="p">)))</span>
+    <span class="n">num_family_names</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[, .]+&quot;</span><span class="p">,</span> <span class="n">family_name</span><span class="p">))))</span>
+
+    <span class="c1"># split name in question by , &lt;space&gt; - .</span>
+    <span class="n">name_split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[, \-.]+&quot;</span><span class="p">,</span> <span class="n">question_name</span><span class="p">)))</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name_split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">first_name</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">name_split</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">num_family_names</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">):</span>
+        <span class="c1"># both have same number of first and middle names/initials</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">)):</span>
+            <span class="n">first_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_name</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">given_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">given_name</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">):</span>
+        <span class="n">min_names</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">))</span>
+        <span class="n">first_name</span> <span class="o">=</span> <span class="n">first_name</span><span class="p">[:</span><span class="n">min_names</span><span class="p">]</span>
+        <span class="n">given_name</span> <span class="o">=</span> <span class="n">given_name</span><span class="p">[:</span><span class="n">min_names</span><span class="p">]</span>
+
+    <span class="c1"># first initial</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">first_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># first and middle initials combined</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">given_name</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">first_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Hyphenated last name may need to be reconnected</span>
+    <span class="k">if</span> <span class="n">num_family_names</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s2">&quot;-&quot;</span> <span class="ow">in</span> <span class="n">family_name</span><span class="p">:</span>
+        <span class="n">num_hyphen</span> <span class="o">=</span> <span class="n">family_name</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">family_name_compare</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_split</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">num_hyphen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">family_name_compare</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_split</span><span class="p">[</span><span class="o">-</span><span class="n">num_family_names</span><span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">given_name</span> <span class="o">==</span> <span class="n">first_name</span> <span class="ow">and</span> <span class="n">family_name</span> <span class="o">==</span> <span class="n">family_name_compare</span></div>
+
+
+
+<div class="viewcode-block" id="OurValidator">
+<a class="viewcode-back" href="../../validation.html#pyked.validation.OurValidator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OurValidator</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom validator with rules for Quantities and references.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_t_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_t_range</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that the temperature ranges given for thermo data are valid</span>
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_t_range (`bool`): flag from schema indicating T range is to be checked</span>
+<span class="sd">            field (`str`): T_range</span>
+<span class="sd">            values (`list`): List of temperature values indicating low, middle, and high ranges</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
+            <span class="c1"># If no units given, assume Kelvin</span>
+            <span class="n">T_low</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;K&quot;</span><span class="p">)</span>
+            <span class="n">T_mid</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;K&quot;</span><span class="p">)</span>
+            <span class="n">T_hi</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;K&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
+            <span class="n">T_low</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">T_mid</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">T_hi</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="s2">&quot;The temperatures in the range must all be either with units or &quot;</span>
+                <span class="s2">&quot;without units, they cannot be mixed&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">min</span><span class="p">([</span><span class="n">T_low</span><span class="p">,</span> <span class="n">T_mid</span><span class="p">,</span> <span class="n">T_hi</span><span class="p">])</span> <span class="o">!=</span> <span class="n">T_low</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;The first element of the T_range must be the lower limit&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">([</span><span class="n">T_low</span><span class="p">,</span> <span class="n">T_mid</span><span class="p">,</span> <span class="n">T_hi</span><span class="p">])</span> <span class="o">!=</span> <span class="n">T_hi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;The last element of the T_range must be the upper limit&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_unit</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for appropriate units using Pint unit registry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_unit (`bool`): flag from schema indicating units to be checked.</span>
+<span class="sd">            field (`str`): property associated with units in question.</span>
+<span class="sd">            value (`dict`): dictionary of values from file associated with this property.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">quantity</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_history</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that the given time history is properly formatted.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_history (`bool`): flag from schema indicating history to be checked.</span>
+<span class="sd">            field (`str`): property associated with history in question.</span>
+<span class="sd">            value (`dict`): dictionary of values from file associated with this property.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check the type has appropriate units</span>
+        <span class="n">history_type</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">history_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;emission&quot;</span><span class="p">):</span>
+            <span class="n">history_type</span> <span class="o">=</span> <span class="s2">&quot;emission&quot;</span>
+        <span class="k">elif</span> <span class="n">history_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;absorption&quot;</span><span class="p">):</span>
+            <span class="n">history_type</span> <span class="o">=</span> <span class="s2">&quot;absorption&quot;</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;quantity&quot;</span><span class="p">][</span><span class="s2">&quot;units&quot;</span><span class="p">]))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">quantity</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">history_type</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">history_type</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check that time has appropriate units</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][</span><span class="s2">&quot;units&quot;</span><span class="p">]))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check that the values have the right number of columns</span>
+        <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">max_cols</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][</span><span class="s2">&quot;column&quot;</span><span class="p">],</span>
+                <span class="n">value</span><span class="p">[</span><span class="s2">&quot;quantity&quot;</span><span class="p">][</span><span class="s2">&quot;column&quot;</span><span class="p">],</span>
+                <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;column&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_cols</span> <span class="o">&gt;</span> <span class="n">max_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;too many columns in the values&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">n_cols</span> <span class="o">&lt;</span> <span class="n">max_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;not enough columns in the values&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_quantity</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_quantity (`bool`): flag from schema indicating quantity to be checked.</span>
+<span class="sd">            field (`str`): property associated with quantity in question.</span>
+<span class="sd">            value (`list`): list whose first element is a string representing a value with units</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">quantity</span> <span class="o">&lt;=</span> <span class="n">low_lim</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;value must be greater than 0.0 </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_uncertainty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_uncertainty</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units with uncertainty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_uncertainty (`bool`): flag from schema indicating uncertainty to be checked</span>
+<span class="sd">            field (`str`): property associated with the quantity in question.</span>
+<span class="sd">            value (`list`): list with the string of the value of the quantity and a dictionary of</span>
+<span class="sd">                the uncertainty</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># This len check is necessary for reasons that aren&#39;t quite clear to me</span>
+        <span class="c1"># Cerberus calls this validation method even when lists have only one element</span>
+        <span class="c1"># and should therefore be validated only by isvalid_quantity</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;uncertainty-type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">]])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_reference</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks valid reference metadata using DOI (if present).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_reference (`bool`): flag from schema indicating reference to be checked.</span>
+<span class="sd">            field (`str`): &#39;reference&#39;</span>
+<span class="sd">            value (`dict`): dictionary of reference metadata.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;doi&quot;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ref</span> <span class="o">=</span> <span class="n">crossref_api</span><span class="o">.</span><span class="n">works</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;doi&quot;</span><span class="p">])[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">HTTPStatusError</span><span class="p">,</span> <span class="n">habanero</span><span class="o">.</span><span class="n">RequestError</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;DOI not found&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">ConnectError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;network not available, DOI not validated.&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Assume that the reference returned by the DOI lookup always has a container-title</span>
+            <span class="n">ref_container</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;container-title&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># TODO: Add other container types: value.get(&#39;journal&#39;) or value.get(&#39;report&#39;) or ...</span>
+            <span class="c1"># note that there&#39;s a type field in the ref that is journal-article, proceedings-article</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;journal&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">container</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">container</span> <span class="o">!=</span> <span class="n">ref_container</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;journal should be </span><span class="si">{</span><span class="n">ref_container</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Assume that the reference returned by DOI lookup always has a year</span>
+            <span class="n">ref_year</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;published-print&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;published-online&quot;</span><span class="p">)</span>
+            <span class="n">ref_year</span> <span class="o">=</span> <span class="n">ref_year</span><span class="p">[</span><span class="s2">&quot;date-parts&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">!=</span> <span class="n">ref_year</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;year should be </span><span class="si">{</span><span class="n">ref_year</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Volume number might not be in the reference</span>
+            <span class="n">ref_volume</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ref_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                        <span class="n">field</span><span class="p">,</span>
+                        <span class="s2">&quot;Volume was specified in the YAML but is not present in the DOI reference.&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref_volume</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;volume should be </span><span class="si">{</span><span class="n">ref_volume</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Pages might not be in the reference</span>
+            <span class="n">ref_pages</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;page&quot;</span><span class="p">)</span>
+            <span class="n">pages</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pages&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ref_pages</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                        <span class="n">field</span><span class="p">,</span>
+                        <span class="s2">&quot;Pages were specified in the YAML but are not present in &quot;</span>
+                        <span class="s2">&quot;the DOI reference.&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">pages</span> <span class="o">!=</span> <span class="n">ref_pages</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;pages should be </span><span class="si">{</span><span class="n">ref_pages</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># check that all authors present</span>
+            <span class="n">authors</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;authors&quot;</span><span class="p">][:]</span>
+            <span class="n">author_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">authors</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">ref</span><span class="p">[</span><span class="s2">&quot;author&quot;</span><span class="p">]:</span>
+                <span class="c1"># find using family name</span>
+                <span class="n">author_match</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">a</span>
+                        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">authors</span>
+                        <span class="k">if</span> <span class="n">compare_name</span><span class="p">(</span><span class="n">author</span><span class="p">[</span><span class="s2">&quot;given&quot;</span><span class="p">],</span> <span class="n">author</span><span class="p">[</span><span class="s2">&quot;family&quot;</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+                    <span class="p">),</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="c1"># error if missing author in given reference information</span>
+                <span class="k">if</span> <span class="n">author_match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                        <span class="n">field</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">&quot;Missing author: </span><span class="si">{</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;given&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">author</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">author_names</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">author_match</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+
+                    <span class="c1"># validate ORCID if given</span>
+                    <span class="n">orcid</span> <span class="o">=</span> <span class="n">author</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ORCID&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">orcid</span><span class="p">:</span>
+                        <span class="c1"># Crossref may give ORCID as http://orcid.org/####-####-####-####</span>
+                        <span class="c1"># so need to strip the leading URL</span>
+                        <span class="n">orcid</span> <span class="o">=</span> <span class="n">orcid</span><span class="p">[</span><span class="n">orcid</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+
+                        <span class="k">if</span> <span class="s2">&quot;ORCID&quot;</span> <span class="ow">in</span> <span class="n">author_match</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">author_match</span><span class="p">[</span><span class="s2">&quot;ORCID&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">orcid</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                                    <span class="n">field</span><span class="p">,</span>
+                                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">author_match</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> ORCID does not match that in &quot;</span>
+                                    <span class="sa">f</span><span class="s2">&quot;reference. Reference: </span><span class="si">{</span><span class="n">orcid</span><span class="si">}</span><span class="s2">. &quot;</span>
+                                    <span class="sa">f</span><span class="s2">&quot;Given: </span><span class="si">{</span><span class="n">author_match</span><span class="p">[</span><span class="s1">&#39;ORCID&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># ORCID not given, suggest adding it</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ORCID </span><span class="si">{</span><span class="n">orcid</span><span class="si">}</span><span class="s2"> missing for </span><span class="si">{</span><span class="n">author_match</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># check for extra names given</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">author_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Extra author(s) given: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">author_names</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_orcid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_orcid</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid ORCID if given.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_orcid (`bool`): flag from schema indicating ORCID to be checked.</span>
+<span class="sd">            field (`str`): &#39;author&#39;</span>
+<span class="sd">            value (`dict`): dictionary of author metadata.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">isvalid_orcid</span> <span class="ow">and</span> <span class="s2">&quot;ORCID&quot;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">search_orcid</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;ORCID&quot;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">ConnectError</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;network not available, ORCID not validated.&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPStatusError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;ORCID incorrect or invalid for </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="n">family_name</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">][</span><span class="s2">&quot;family-name&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="n">given_name</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">][</span><span class="s2">&quot;given-names&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_name</span><span class="p">(</span><span class="n">given_name</span><span class="p">,</span> <span class="n">family_name</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Name and ORCID do not match. Name supplied: </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Name associated with ORCID: </span><span class="si">{</span><span class="n">given_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">family_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_composition</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid specification of composition.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_composition (bool): flag from schema indicating</span>
+<span class="sd">                composition to be checked.</span>
+<span class="sd">            field (str): &#39;composition&#39;</span>
+<span class="sd">            value (dict): dictionary of composition</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sum_amount</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mass fraction&quot;</span><span class="p">,</span> <span class="s2">&quot;mole fraction&quot;</span><span class="p">]:</span>
+            <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mole percent&quot;</span><span class="p">]:</span>
+            <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">100.0</span>
+            <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="s1">&#39;composition kind must be &quot;mole percent&quot;, &quot;mass fraction&quot;, or &quot;mole fraction&quot;&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;species&quot;</span><span class="p">]:</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sum_amount</span> <span class="o">+=</span> <span class="n">amount</span>
+
+            <span class="c1"># Check that amount within bounds, based on kind specified</span>
+            <span class="k">if</span> <span class="n">amount</span> <span class="o">&lt;</span> <span class="n">low_lim</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;must be greater than </span><span class="si">{</span><span class="n">low_lim</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="n">up_lim</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be less than </span><span class="si">{</span><span class="n">up_lim</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Make sure mole/mass fraction sum to 1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">total_amount</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">s do not sum to </span><span class="si">{</span><span class="n">total_amount</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sum_amount</span><span class="si">:</span><span class="s2">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+        <span class="c1"># TODO: validate InChI, SMILES, or atomic-composition</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">PyKED</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pr-omethe-us&repo=PyKED&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ck-tutorial.html">Creating ChemKED files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema-docs.html">Schema Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pyked-examples.html">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../releases.html">Releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../chemked.html">ChemKED</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../converters.html">Converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../validation.html">Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../orcid.html">ORCID</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/pr-omethe-us/PyKED" class="github">
+        <img src="../../_static/github-banner.svg" alt="Fork me on GitHub" class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
