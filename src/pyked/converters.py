@@ -1,9 +1,9 @@
 """Module with converters from other formats."""
 
 # Standard libraries
-import os
 import xml.etree.ElementTree as etree
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Any
 from warnings import warn
 
@@ -511,7 +511,7 @@ def ReSpecTh_to_ChemKED(filename_xml, file_author="", file_author_orcid="", *, v
     properties["reference"]["detail"] = (
         properties["reference"].get("detail", "")
         + "Converted from ReSpecTh XML file "
-        + os.path.basename(filename_xml)
+        + Path(filename_xml).name
     )
 
     # Ensure ignition delay, and get which kind of experiment
@@ -610,14 +610,11 @@ def respth2ck(argv=None):
 
     # set output filename and path
     if not filename_ck:
-        filename_ck = os.path.join(
-            os.path.dirname(filename_xml),
-            os.path.splitext(os.path.basename(filename_xml))[0] + ".yaml",
-        )
+        filename_ck = Path(filename_xml).with_suffix(".yaml")
 
     with open(filename_ck, "w") as outfile:
         yaml.dump(properties, outfile, default_flow_style=False)
-    print("Converted to " + filename_ck)
+    print(f"Converted to {filename_ck}")
 
 
 def ck2respth(argv=None):
@@ -687,7 +684,10 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
-    if os.path.splitext(args.input)[1] == ".xml" and os.path.splitext(args.output)[1] == ".yaml":
+    in_suffix = Path(args.input).suffix
+    out_suffix = Path(args.output).suffix
+
+    if in_suffix == ".xml" and out_suffix == ".yaml":
         respth2ck(
             [
                 "-i",
@@ -701,14 +701,14 @@ def main(argv=None):
             ]
         )
 
-    elif os.path.splitext(args.input)[1] == ".yaml" and os.path.splitext(args.output)[1] == ".xml":
+    elif in_suffix == ".yaml" and out_suffix == ".xml":
         c = chemked.ChemKED(yaml_file=args.input)
         c.convert_to_ReSpecTh(args.output)
 
-    elif os.path.splitext(args.input)[1] == ".xml" and os.path.splitext(args.output)[1] == ".xml":
+    elif in_suffix == ".xml" and out_suffix == ".xml":
         raise KeywordError("Cannot convert .xml to .xml")
 
-    elif os.path.splitext(args.input)[1] == ".yaml" and os.path.splitext(args.output)[1] == ".yaml":
+    elif in_suffix == ".yaml" and out_suffix == ".yaml":
         raise KeywordError("Cannot convert .yaml to .yaml")
 
     else:

@@ -2,8 +2,7 @@
 Tests for the utils
 """
 
-# Standard libraries
-import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -434,7 +433,7 @@ class TestValidator:
 
     @pytest.fixture(scope="function")
     def properties(self, request):
-        filename = os.path.join("tests", request.param)
+        filename = Path("tests") / request.param
 
         with open(filename) as f:
             return yaml.load(f, Loader=yaml.FullLoader)

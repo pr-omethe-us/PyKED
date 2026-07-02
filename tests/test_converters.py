@@ -2,10 +2,9 @@
 Tests for the converters
 """
 
-# Standard libraries
-import os
 import socket
 import xml.etree.ElementTree as etree
+from pathlib import Path
 from shutil import copy
 from tempfile import TemporaryDirectory
 
@@ -33,6 +32,9 @@ from pyked.converters import (
     main,
     respth2ck,
 )
+from pyked.validation import schema
+
+schema["chemked-version"]["allowed"].append(__version__)
 
 
 class TestErrors:
@@ -1304,7 +1306,7 @@ class TestConvertReSpecTh:
     @pytest.mark.filterwarnings("ignore:Using DOI")
     def test_valid_conversion(self, filename_xml):
         """Test proper conversion of ReSpecTh files."""
-        file_path = os.path.join("tests", filename_xml)
+        file_path = Path("tests") / filename_xml
         file_author = "Kyle Niemeyer"
         file_author_orcid = "0000-0003-4425-7097"
         # Skip all the validation because we know the test files are correct and we're not
@@ -1313,7 +1315,7 @@ class TestConvertReSpecTh:
         c = ChemKED(dict_input=properties, skip_validation=True)
 
         # compare with ChemKED file of same experiment
-        file_path = os.path.join("tests", os.path.splitext(filename_xml)[0] + ".yaml")
+        file_path = Path("tests") / Path(filename_xml).with_suffix(".yaml")
         c_true = ChemKED(yaml_file=file_path, skip_validation=True)
 
         assert c.file_authors[1]["name"] == file_author
@@ -1329,7 +1331,7 @@ class TestConvertReSpecTh:
     @pytest.mark.filterwarnings("ignore:Using DOI")
     def test_error_rcm_pressurerise(self):
         """Test for appropriate error if RCM file has pressure rise."""
-        file_path = os.path.join("tests", "testfile_rcm.xml")
+        file_path = Path("tests") / "testfile_rcm.xml"
 
         # add pressure rise to common properties
         tree = etree.parse(file_path)
@@ -1344,7 +1346,7 @@ class TestConvertReSpecTh:
         # write new file, and try to load
         et = etree.ElementTree(root)
         with TemporaryDirectory() as temp_dir:
-            filename = os.path.join(temp_dir, "test.xml")
+            filename = Path(temp_dir) / "test.xml"
             et.write(filename, encoding="utf-8", xml_declaration=True)
 
             with pytest.raises(KeywordError) as excinfo:
@@ -1354,7 +1356,7 @@ class TestConvertReSpecTh:
     @pytest.mark.filterwarnings("ignore:Using DOI")
     def test_error_st_volumehistory(self):
         """Test for appropriate error if shock tube file has volume history."""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
 
         tree = etree.parse(file_path)
         root = tree.getroot()
@@ -1376,7 +1378,7 @@ class TestConvertReSpecTh:
         # write new file, and try to load
         et = etree.ElementTree(root)
         with TemporaryDirectory() as temp_dir:
-            filename = os.path.join(temp_dir, "test.xml")
+            filename = Path(temp_dir) / "test.xml"
             et.write(filename, encoding="utf-8", xml_declaration=True)
 
             with pytest.raises(KeywordError) as excinfo:
@@ -1386,7 +1388,7 @@ class TestConvertReSpecTh:
     @pytest.mark.filterwarnings("ignore:Using DOI")
     def test_author_orcid_no_name(self):
         """Test that passing an ORCID to the conversion without a name raises an error"""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
         file_author_orcid = "0000-0003-4425-7097"
         # Skip all the validation because we know the test files are correct and we're not
         # testing the validation methods here
@@ -1397,7 +1399,7 @@ class TestConvertReSpecTh:
     @pytest.mark.filterwarnings("ignore:Using DOI")
     def test_file_author_only(self):
         """Test that passing the file author only works properly"""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
         file_author = "Kyle Niemeyer"
         # Skip all the validation because we know the test files are correct and we're not
         # testing the validation methods here
@@ -1414,19 +1416,19 @@ class TestConverterMain:
 
     def test_conversion_main_xml_to_yaml(self):
         """Test detection in converter for xml->yaml"""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
         file_author = "Kyle E Niemeyer"
         file_author_orcid = "0000-0003-4425-7097"
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.yaml")
+            newfile = Path(temp_dir) / "test.yaml"
             with pytest.warns(UserWarning) as record:
                 main(
                     [
                         "-i",
-                        file_path,
+                        str(file_path),
                         "-o",
-                        newfile,
+                        str(newfile),
                         "-fa",
                         file_author,
                         "-fo",
@@ -1437,16 +1439,14 @@ class TestConverterMain:
 
         m = str(record.pop(UserWarning).message)
         assert m == "Using DOI to obtain reference information, rather than preferredKey."
-        true_yaml = os.path.join("tests", "testfile_st.yaml")
+        true_yaml = Path("tests") / "testfile_st.yaml"
         c_true = ChemKED(yaml_file=true_yaml)
 
         assert c.file_authors[0]["name"] == c_true.file_authors[0]["name"]
         assert c.file_authors[1]["name"] == file_author
         assert c.file_authors[1]["ORCID"] == file_author_orcid
 
-        assert (
-            c.reference.detail == f"Converted from ReSpecTh XML file {os.path.basename(file_path)}"
-        )
+        assert c.reference.detail == f"Converted from ReSpecTh XML file {Path(file_path).name}"
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -1455,75 +1455,75 @@ class TestConverterMain:
 
     def test_conversion_main_yaml_to_xml(self):
         """Test detection in converter for yaml->xml"""
-        file_path = os.path.join("tests", "testfile_st.yaml")
+        file_path = Path("tests") / "testfile_st.yaml"
         fa_name = "Kyle Niemeyer"
         fa_orcid = "0000-0003-4425-7097"
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
-            main(["-i", file_path, "-o", newfile, "-fa", fa_name, "-fo", fa_orcid])
+            newfile = Path(temp_dir) / "test.xml"
+            main(["-i", str(file_path), "-o", str(newfile), "-fa", fa_name, "-fo", fa_orcid])
 
-            assert os.path.exists(newfile)
+            assert Path(newfile).exists()
 
     def test_conversion_respth2ck_default_output(self):
         """Test respth2ck converter when used via command-line arguments."""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
 
         with TemporaryDirectory() as temp_dir:
             xml_file = copy(file_path, temp_dir)
             with pytest.warns(UserWarning) as record:
-                respth2ck(["-i", xml_file])
+                respth2ck(["-i", str(xml_file)])
 
-            newfile = os.path.join(os.path.splitext(xml_file)[0] + ".yaml")
-            assert os.path.exists(newfile)
+            newfile = Path(xml_file).with_suffix(".yaml")
+            assert Path(newfile).exists()
 
         m = str(record.pop(UserWarning).message)
         assert m == "Using DOI to obtain reference information, rather than preferredKey."
 
     def test_conversion_respth2ck_with_output(self):
         """Test respth2ck converter when used via command-line arguments."""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.yaml")
+            newfile = Path(temp_dir) / "test.yaml"
             with pytest.warns(UserWarning) as record:
-                respth2ck(["-i", file_path, "-o", newfile])
+                respth2ck(["-i", str(file_path), "-o", str(newfile)])
 
-            assert os.path.exists(newfile)
+            assert Path(newfile).exists()
 
         m = str(record.pop(UserWarning).message)
         assert m == "Using DOI to obtain reference information, rather than preferredKey."
 
     def test_conversion_ck2respth(self):
         """Test ck2respth converter when used via command-line arguments."""
-        file_path = os.path.join("tests", "testfile_st.yaml")
+        file_path = Path("tests") / "testfile_st.yaml"
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
-            ck2respth(["-i", file_path, "-o", newfile])
+            newfile = Path(temp_dir) / "test.xml"
+            ck2respth(["-i", str(file_path), "-o", str(newfile)])
 
-            assert os.path.exists(newfile)
+            assert Path(newfile).exists()
 
     def test_conversion_invalid_xml_xml(self):
         """Test converter main raises errors when two xml files are passed."""
-        file_path = os.path.join("tests", "testfile_st.xml")
+        file_path = Path("tests") / "testfile_st.xml"
 
         with pytest.raises(KeywordError) as excinfo:
-            main(["-i", file_path, "-o", "test.xml"])
+            main(["-i", str(file_path), "-o", "test.xml"])
         assert "Cannot convert .xml to .xml" in str(excinfo.value)
 
     def test_conversion_invalid_yaml_yaml(self):
         """Test converter main raises errors when two yaml files are passed."""
-        file_path = os.path.join("tests", "testfile_st.yaml")
+        file_path = Path("tests") / "testfile_st.yaml"
 
         with pytest.raises(KeywordError) as excinfo:
-            main(["-i", file_path, "-o", "test.yaml"])
+            main(["-i", str(file_path), "-o", "test.yaml"])
         assert "Cannot convert .yaml to .yaml" in str(excinfo.value)
 
     def test_conversion_invalid_file_type(self):
         """Test converter main raises errors when an invalid file extension is passed."""
-        file_path = os.path.join("tests", "dataframe_st.csv")
+        file_path = Path("tests") / "dataframe_st.csv"
 
         with pytest.raises(KeywordError) as excinfo:
-            main(["-i", file_path, "-o", "test.py"])
+            main(["-i", str(file_path), "-o", "test.py"])
         assert "Input/output args need to be .xml/.yaml" in str(excinfo.value)

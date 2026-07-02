@@ -2,15 +2,13 @@
 Test module for chemked.py
 """
 
-# Standard libraries
 import itertools
-import os
 import warnings
 import xml.etree.ElementTree as etree
 from copy import deepcopy
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
-# Third-party libraries
 import numpy as np
 import pytest
 
@@ -31,15 +29,15 @@ class TestChemKED:
     """ """
 
     def test_create_chemked(self):
-        file_path = os.path.join("tests", "testfile_st.yaml")
+        file_path = Path("tests") / "testfile_st.yaml"
         ChemKED(file_path)
 
     def test_skip_validation(self):
-        file_path = os.path.join("tests", "testfile_bad.yaml")
+        file_path = Path("tests") / "testfile_bad.yaml"
         ChemKED(file_path, skip_validation=True)
 
     def test_datapoints(self):
-        file_path = os.path.join("tests", "testfile_st.yaml")
+        file_path = Path("tests") / "testfile_st.yaml"
         c = ChemKED(file_path)
         assert len(c.datapoints) == 5
 
@@ -62,14 +60,14 @@ class TestChemKED:
             ChemKED()
 
     def test_dict_input(self):
-        file_path = os.path.join("tests", "testfile_required.yaml")
+        file_path = Path("tests") / "testfile_required.yaml"
         with open(file_path) as f:
             properties = yaml.safe_load(f)
 
         ChemKED(dict_input=properties)
 
     def test_unallowed_input(self, capfd):
-        file_path = os.path.join("tests", "testfile_required.yaml")
+        file_path = Path("tests") / "testfile_required.yaml"
         with open(file_path) as f:
             properties = yaml.safe_load(f)
 
@@ -85,7 +83,7 @@ class TestChemKED:
         )
 
     def test_missing_input(self, capfd):
-        file_path = os.path.join("tests", "testfile_required.yaml")
+        file_path = Path("tests") / "testfile_required.yaml"
         with open(file_path) as f:
             properties = yaml.safe_load(f)
 
@@ -108,9 +106,9 @@ class TestDataFrameOutput:
         return pd.testing
 
     def test_get_dataframe(self, pd, pdt):
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(yaml_filename).get_dataframe()
-        csv_filename = os.path.join("tests", "dataframe_st.csv")
+        csv_filename = Path("tests") / "dataframe_st.csv"
         converters = {
             "Ignition Delay": Q_,
             "Temperature": Q_,
@@ -123,7 +121,7 @@ class TestDataFrameOutput:
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
     def test_custom_dataframe(self, pd, pdt):
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         cols_to_get = [
             "composition",
             "Reference",
@@ -132,7 +130,7 @@ class TestDataFrameOutput:
             "ignition delay",
         ]
         c = ChemKED(yaml_filename).get_dataframe(cols_to_get)
-        csv_filename = os.path.join("tests", "dataframe_st.csv")
+        csv_filename = Path("tests") / "dataframe_st.csv"
         converters = {
             "Ignition Delay": Q_,
             "Temperature": Q_,
@@ -163,10 +161,10 @@ class TestDataFrameOutput:
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
     def test_custom_dataframe_2(self, pd, pdt):
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         cols_to_get = ["temperature", "ignition delay", "Pressure"]
         c = ChemKED(yaml_filename).get_dataframe(cols_to_get)
-        csv_filename = os.path.join("tests", "dataframe_st.csv")
+        csv_filename = Path("tests") / "dataframe_st.csv"
         converters = {
             "Ignition Delay": Q_,
             "Temperature": Q_,
@@ -180,12 +178,12 @@ class TestDataFrameOutput:
         pdt.assert_frame_equal(c.sort_index(axis=1), df.sort_index(axis=1), check_names=True)
 
     def test_invalid_column(self, pd):
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         with pytest.raises(ValueError):
             ChemKED(yaml_filename).get_dataframe(["bad column"])
 
     def test_many_species(self, pd):
-        yaml_filename = os.path.join("tests", "testfile_many_species.yaml")
+        yaml_filename = Path("tests") / "testfile_many_species.yaml"
         c = ChemKED(yaml_filename).get_dataframe()
         assert c.iloc[0]["New-Species-1"] == Q_(0.0, "dimensionless")
         assert c.iloc[0]["New-Species-2"] == Q_(0.0, "dimensionless")
@@ -199,19 +197,19 @@ class TestWriteFile:
 
     def test_file_exists(self):
         """ """
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(yaml_filename)
         with pytest.raises(OSError):
             c.write_file(yaml_filename)
 
     def test_overwrite(self):
         """ """
-        yaml_filename = os.path.join("tests", "testfile_st.yaml")
+        yaml_filename = Path("tests") / "testfile_st.yaml"
         with open(yaml_filename) as f:
             lines = f.readlines()
 
         with TemporaryDirectory() as temp_dir:
-            newfile_path = os.path.join(temp_dir, "testfile.yaml")
+            newfile_path = Path(temp_dir) / "testfile.yaml"
             with open(newfile_path, "w") as f:
                 f.writelines(lines)
             c = ChemKED(newfile_path)
@@ -236,14 +234,14 @@ class TestWriteFile:
     @pytest.mark.filterwarnings("ignore:Asymmetric uncertainties")
     def test_write_files(self, filename):
         """Test proper writing of ChemKED files."""
-        filename = os.path.join("tests", filename)
+        filename = Path("tests") / filename
         c = ChemKED(filename)
 
         with TemporaryDirectory() as temp_dir:
-            c.write_file(os.path.join(temp_dir, "testfile.yaml"))
+            c.write_file(Path(temp_dir) / "testfile.yaml")
 
             # Now read in the file
-            with open(os.path.join(temp_dir, "testfile.yaml")) as f:
+            with open(Path(temp_dir) / "testfile.yaml") as f:
                 properties = yaml.safe_load(f)
 
         assert properties == c._properties
@@ -256,11 +254,11 @@ class TestConvertToReSpecTh:
     @pytest.mark.parametrize("filename_ck", ["testfile_st.yaml", "testfile_rcm.yaml"])
     def test_conversion_to_respecth(self, filename_ck):
         """Test proper conversion to ReSpecTh XML."""
-        filename = os.path.join("tests", filename_ck)
+        filename = Path("tests") / filename_ck
         c_true = ChemKED(filename)
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c_true.convert_to_ReSpecTh(newfile)
             with pytest.warns(UserWarning) as record:
                 c = ChemKED.from_respecth(newfile)
@@ -270,7 +268,7 @@ class TestConvertToReSpecTh:
 
         assert c.file_authors[0]["name"] == c_true.file_authors[0]["name"]
 
-        assert c.reference.detail == f"Converted from ReSpecTh XML file {os.path.split(newfile)[1]}"
+        assert c.reference.detail == f"Converted from ReSpecTh XML file {Path(newfile).name}"
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -283,7 +281,7 @@ class TestConvertToReSpecTh:
     )
     def test_time_history_conversion_to_respecth(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with time histories."""
-        filename = os.path.join("tests", "testfile_rcm.yaml")
+        filename = Path("tests") / "testfile_rcm.yaml"
         with open(filename) as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
@@ -291,7 +289,7 @@ class TestConvertToReSpecTh:
         c_true = ChemKED(dict_input=properties)
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c_true.convert_to_ReSpecTh(newfile)
             with pytest.warns(UserWarning) as record:
                 c = ChemKED.from_respecth(newfile)
@@ -301,7 +299,7 @@ class TestConvertToReSpecTh:
 
         assert c.file_authors[0]["name"] == c_true.file_authors[0]["name"]
 
-        assert c.reference.detail == f"Converted from ReSpecTh XML file {os.path.split(newfile)[1]}"
+        assert c.reference.detail == f"Converted from ReSpecTh XML file {Path(newfile).name}"
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -318,14 +316,14 @@ class TestConvertToReSpecTh:
     )
     def test_time_history_conversion_to_respecth_unsupported(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with unsupported time histories."""
-        filename = os.path.join("tests", "testfile_rcm.yaml")
+        filename = Path("tests") / "testfile_rcm.yaml"
         with open(filename) as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
         properties["datapoints"][0]["time-histories"][0]["quantity"]["units"] = unit
         c_true = ChemKED(dict_input=properties)
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             with pytest.warns(UserWarning) as record:
                 c_true.convert_to_ReSpecTh(newfile)
             m = str(record.pop(UserWarning).message)
@@ -341,7 +339,7 @@ class TestConvertToReSpecTh:
 
         assert c.file_authors[0]["name"] == c_true.file_authors[0]["name"]
 
-        assert c.reference.detail == f"Converted from ReSpecTh XML file {os.path.split(newfile)[1]}"
+        assert c.reference.detail == f"Converted from ReSpecTh XML file {Path(newfile).name}"
 
         assert c.apparatus.kind == c_true.apparatus.kind
         assert c.experiment_type == c_true.experiment_type
@@ -362,7 +360,7 @@ class TestConvertToReSpecTh:
     )
     def test_conversion_to_respecth_error(self, experiment_type):
         """Test for conversion errors."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         c.experiment_type = experiment_type
@@ -373,7 +371,7 @@ class TestConvertToReSpecTh:
 
     def test_conversion_datapoints_composition_missing_inchi(self):
         """Test for appropriate handling of composition with missing InChI."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         for idx, _dp in enumerate(c.datapoints):
@@ -408,7 +406,7 @@ class TestConvertToReSpecTh:
             }
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c.convert_to_ReSpecTh(newfile)
             tree = etree.parse(newfile)
         root = tree.getroot()
@@ -429,7 +427,7 @@ class TestConvertToReSpecTh:
 
     def test_conversion_datapoints_different_composition(self):
         """Test for appropriate handling of datapoints with different composition."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         c.datapoints[0].composition = {
@@ -463,7 +461,7 @@ class TestConvertToReSpecTh:
         }
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c.convert_to_ReSpecTh(newfile)
 
             tree = etree.parse(newfile)
@@ -483,7 +481,7 @@ class TestConvertToReSpecTh:
 
     def test_conversion_error_datapoints_different_composition_type(self):
         """Test for appropriate erorr of datapoints with different composition type."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
         c.datapoints[0].composition_type = "mass fraction"
 
@@ -495,7 +493,7 @@ class TestConvertToReSpecTh:
 
     def test_conversion_to_respecth_error_volume_history_datapoints(self):
         """Test for error raised if RCM with multiple datapoints with volume history."""
-        filename = os.path.join("tests", "testfile_rcm.yaml")
+        filename = Path("tests") / "testfile_rcm.yaml"
         c = ChemKED(filename)
 
         # Repeat datapoint, such that two with volume histories
@@ -513,14 +511,14 @@ class TestConvertToReSpecTh:
     )
     def test_conversion_to_respecth_ignition_targets(self, ignition_target):
         """Test proper conversion for different ignition targets."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         for dp in c.datapoints:
             dp.ignition_type["target"] = ignition_target
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c.convert_to_ReSpecTh(newfile)
 
             tree = etree.parse(newfile)
@@ -540,14 +538,14 @@ class TestConvertToReSpecTh:
     )
     def test_conversion_to_respecth_ignition_types(self, ignition_type):
         """Test proper conversion for different ignition types."""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         for dp in c.datapoints:
             dp.ignition_type["type"] = ignition_type
 
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             c.convert_to_ReSpecTh(newfile)
 
             tree = etree.parse(newfile)
@@ -562,12 +560,12 @@ class TestConvertToReSpecTh:
 
     def test_conversion_multiple_ignition_targets(self):
         """Test that multiple ignition targets for datapoints fails"""
-        filename = os.path.join("tests", "testfile_st.yaml")
+        filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
         c.datapoints[0].ignition_type["target"] = "temperature"
         with TemporaryDirectory() as temp_dir:
-            newfile = os.path.join(temp_dir, "test.xml")
+            newfile = Path(temp_dir) / "test.xml"
             with pytest.raises(NotImplementedError) as e:
                 c.convert_to_ReSpecTh(newfile)
 
@@ -582,7 +580,7 @@ class TestDataPoint:
     """ """
 
     def load_properties(self, test_file):
-        filename = os.path.join("tests", test_file)
+        filename = Path("tests") / test_file
         with open(filename) as f:
             properties = yaml.safe_load(f)
 
@@ -1208,7 +1206,7 @@ class TestDataPoint:
         """Check that all of the history types are set properly"""
         properties = self.load_properties("testfile_rcm.yaml")
         properties[0]["time-histories"][0]["type"] = history_type
-        filename = os.path.join("tests", "rcm_history.csv")
+        filename = Path("tests") / "rcm_history.csv"
         properties[0]["time-histories"][0]["values"] = {"filename": filename}
         d = DataPoint(properties[0])
 

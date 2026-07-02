@@ -5,7 +5,7 @@ import xml.dom.minidom as minidom
 import xml.etree.ElementTree as etree
 from copy import deepcopy
 from itertools import chain
-from os.path import exists
+from pathlib import Path
 from typing import Any, ClassVar, NamedTuple
 from warnings import warn
 
@@ -387,9 +387,10 @@ class ChemKED:
             >>> dataset.write_file(new_yaml_file)
         """
         # Ensure file isn't already present
-        if exists(filename) and not overwrite:
+        if Path(filename).exists() and not overwrite:
             raise OSError(
-                filename + ' already present. Specify "overwrite=True" to overwrite, or rename.'
+                str(filename)
+                + ' already present. Specify "overwrite=True" to overwrite, or rename.'
             )
 
         with open(filename, "w") as yaml_file:
@@ -653,12 +654,12 @@ class ChemKED:
         et.write(filename, encoding="utf-8", xml_declaration=True)
 
         # now do a "pretty" rewrite
-        xml = minidom.parse(filename)
+        xml = minidom.parse(str(filename))
         xml_string = xml.toprettyxml(indent="    ")
         with open(filename, "w") as f:
             f.write(xml_string)
 
-        print("Converted to " + filename)
+        print("Converted to " + str(filename))
 
 
 class DataPoint:
