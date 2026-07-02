@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.repository == 'pr-omethe-us/PyKED'
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +34,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: pypi
+    if: github.repository == 'pr-omethe-us/PyKED'
     permissions:
       id-token: write
 
