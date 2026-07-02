@@ -42,18 +42,14 @@ dependencies = [
     "pandas>=2.2.0",
 ]
 
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-]
-docs = [
-    "sphinx",
-    "nbsphinx",
-    "ipython",
-]
-lint = [
-    "pre-commit",
+[dependency-groups]
+test = ["pytest", "pytest-cov",]
+lint = ["pre-commit", "ruff",]
+docs = ["sphinx", "nbsphinx", "ipython",]
+all = [
+    {include-group = "test"},
+    {include-group = "lint"},
+    {include-group = "docs"},
 ]
 
 [tool.hatch.version]

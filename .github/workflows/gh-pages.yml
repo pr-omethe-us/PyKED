@@ -23,7 +23,7 @@ jobs:
       - name: Install package and docs dependencies
         run: |
           sudo apt-get install -y pandoc
-          pip install -e ".[docs]"
+          pip install -e . --group docs
 
       - name: Build docs
         run: cd docs && make html SPHINXOPTS="-W"

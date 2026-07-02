@@ -8,10 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Add codemeta file
 - GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14 on Linux, and Python 3.14 on macOS and Windows
-- GitHub Actions workflow for deploying documentation to GitHub Pages
-- GitHub Actions workflow for publishing to PyPI on version tags using Trusted Publishers
-- `pytest-cov` to test dependencies
-- Optional `docs` dependency group (`sphinx`, `nbsphinx`, `ipython`)
+- GitHub Actions workflow for deploying documentation to GitHub Pages, and separate workflow for publishing to PyPI on version tags using Trusted Publishers
+- Updates dependency groups: `pytest-cov` in `test`,  `ruff` in `lint`
+- Adds ruff, mypy, and pre-commit-hooks to `.pre-commit-config.yaml`
 - `httpx2` as a direct dependency for HTTP calls in `orcid.py`
 - pytest `testpaths`, `filterwarnings`, and coverage configuration in `pyproject.toml`
 - `live_api` pytest marker and `tests/test_live_api.py` with contract tests that verify mock data still matches real Crossref and ORCID API responses
@@ -19,22 +18,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `tests/_mock_data.py` centralising shared Crossref and ORCID mock data for use by both `conftest.py` and `test_live_api.py`
 - `mock_orcid_api` and `mock_all_apis` fixtures in `tests/conftest.py`
 - Development and testing documentation in `docs/development.rst` and `CONTRIBUTING.md`
-- ruff, mypy, and pre-commit-hooks to `.pre-commit-config.yaml`
 
 ### Changed
-- All tests that previously called external APIs directly now use `mock_crossref_api`, `mock_orcid_api`, or `mock_all_apis` fixtures; `addopts = "-m 'not live_api'"` in `pyproject.toml` excludes live API tests from the default run
+- All tests that previously called external APIs directly now use mock fixtures; `addopts = "-m 'not live_api'"` in `pyproject.toml` excludes live API tests from the default run
 - switched to Coveralls for code coverage
 - Directly use the Markdown formatting of the README on pypi, rather than converting to reST
 - Composition type is included in the pandas data-frame resulting from `to_dataframe()`
 - Migrated from `setup.py`/`setup.cfg` to `pyproject.toml` with hatchling build backend
+- `pandas` moved from optional `dataframes` extra into main dependencies
 - Moved source to `src/pyked/` layout; tests moved to top-level `tests/` directory
-- `orcid.py` now uses `httpx2` instead of `requests` for HTTP calls; exception handling updated throughout to use `httpx2` exceptions
-- `orcid.py` updated to use ORCID public API v3.0
+- `orcid.py` now uses `httpx2` instead of `requests` for HTTP calls, and updated to use ORCID public API v3.0
 - Updated conda recipe to use `load_file_regex` for version, updated all dependency pins, require Python >= 3.10
-- Updated README badges: removed Travis CI, Appveyor, and Dependency CI badges; added GitHub Actions CI badge; updated Codecov to `main` branch
+- Updated README badges; added GitHub Actions CI badge; updated Codecov to `main` branch
 - Updated `docs/conf.py`: replaced deprecated `pkg_resources` with `importlib.metadata`; replaced deprecated `autodoc_default_flags` with `autodoc_default_options`; updated intersphinx mappings; fixed `language = None` deprecation; removed legacy Travis CI environment check
-- Updated example notebooks: fixed GitHub URLs from `master` branch to `main`, updated file paths from `pyked/tests/` to `tests/`, updated `http://` links to `https://`
-- Updated `ck-tutorial.rst` reference URLs from `http://` to `https://`
+- Updated paths and URLs in example notebooks and `ck-tutorial.rst`
 
 ### Fixed
 - `filter` in `chemked.py` incompatible with Python 3.14; replaced with list comprehension
@@ -44,14 +41,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `pandas.util.testing` (removed in pandas 1.0) replaced with `pandas.testing` in test fixtures
 - Removed `no_internet()` helper and `internet_missing` skip marker from `test_validation.py`; tests now mock APIs instead of skipping when offline
 - Duplicate `compression_time` entry in `DataPoint` docstring causing Sphinx build failure
-- Removed stale "testing line" left in `docs/index.rst` from 2021
 
 ### Removed
-- `setup.py`, `setup.cfg` replaced by `pyproject.toml`
 - `appveyor.yml` replaced by GitHub Actions
 - `requirements.txt` replaced by `pyproject.toml` dependencies
 - `MANIFEST.in` not needed with hatchling build backend
-- `requests` as a direct dependency (replaced by `httpx2`)
 
 ## [0.4.1] - 2018-03-09
 ### Added

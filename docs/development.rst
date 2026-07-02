@@ -9,15 +9,11 @@ contributing to PyKED.
 Installing for development
 --------------------------
 
-Clone the repository and install in editable mode with the test dependencies::
+Clone the repository and install in editable mode with all developer dependencies::
 
     git clone https://github.com/pr-omethe-us/PyKED
     cd PyKED
-    pip install -e ".[test]"
-
-To also install the linting tools::
-
-    pip install -e ".[test,lint]"
+    pip install -e . --group all
 
 Running the tests
 -----------------
