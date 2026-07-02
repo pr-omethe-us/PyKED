@@ -249,7 +249,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent with " + property_units[history_type],
+                f"incompatible units; should be consistent with {property_units[history_type]}",
             )
 
         # Check that time has appropriate units
@@ -259,7 +259,7 @@ class OurValidator(Validator):
         except pint.DimensionalityError:
             self._error(
                 field,
-                "incompatible units; should be consistent with " + property_units["time"],
+                f"incompatible units; should be consistent with {property_units['time']}",
             )
 
         # Check that the values have the right number of columns
@@ -427,20 +427,17 @@ class OurValidator(Validator):
                             if author_match["ORCID"] != orcid:
                                 self._error(
                                     field,
-                                    author_match["name"]
-                                    + " ORCID does "
-                                    + "not match that in reference. Reference: "
-                                    + orcid
-                                    + ". Given: "
-                                    + author_match["ORCID"],
+                                    f"{author_match['name']} ORCID does not match that in "
+                                    f"reference. Reference: {orcid}. "
+                                    f"Given: {author_match['ORCID']}",
                                 )
                         else:
                             # ORCID not given, suggest adding it
-                            warn("ORCID " + orcid + " missing for " + author_match["name"])
+                            warn(f"ORCID {orcid} missing for {author_match['name']}")
 
             # check for extra names given
             if len(author_names) > 0:
-                self._error(field, "Extra author(s) given: " + ", ".join(author_names))
+                self._error(field, f"Extra author(s) given: {', '.join(author_names)}")
 
     def _validate_isvalid_orcid(self, isvalid_orcid, field, value):
         """Checks for valid ORCID if given.
@@ -461,7 +458,7 @@ class OurValidator(Validator):
                 warn("network not available, ORCID not validated.")
                 return
             except httpx.HTTPStatusError:
-                self._error(field, "ORCID incorrect or invalid for " + value["name"])
+                self._error(field, f"ORCID incorrect or invalid for {value['name']}")
                 return
 
             family_name = res["name"]["family-name"]["value"]
@@ -469,10 +466,8 @@ class OurValidator(Validator):
             if not compare_name(given_name, family_name, value["name"]):
                 self._error(
                     field,
-                    "Name and ORCID do not match. Name supplied: "
-                    + value["name"]
-                    + ". Name associated with ORCID: "
-                    + " ".join([given_name, family_name]),
+                    f"Name and ORCID do not match. Name supplied: {value['name']}. "
+                    f"Name associated with ORCID: {given_name} {family_name}",
                 )
 
     def _validate_isvalid_composition(self, isvalid_composition, field, value):
@@ -511,29 +506,19 @@ class OurValidator(Validator):
             if amount < low_lim:
                 self._error(
                     field,
-                    "Species "
-                    + sp["species-name"]
-                    + " "
-                    + value["kind"]
-                    + f" must be greater than {low_lim:.1f}",
+                    f"Species {sp['species-name']} {value['kind']} "
+                    f"must be greater than {low_lim:.1f}",
                 )
             elif amount > up_lim:
                 self._error(
                     field,
-                    "Species "
-                    + sp["species-name"]
-                    + " "
-                    + value["kind"]
-                    + f" must be less than {up_lim:.1f}",
+                    f"Species {sp['species-name']} {value['kind']} must be less than {up_lim:.1f}",
                 )
 
         # Make sure mole/mass fraction sum to 1
         if not np.isclose(total_amount, sum_amount):
             self._error(
                 field,
-                "Species "
-                + value["kind"]
-                + f"s do not sum to {total_amount:.1f}: "
-                + f"{sum_amount:f}",
+                f"Species {value['kind']}s do not sum to {total_amount:.1f}: {sum_amount:f}",
             )
         # TODO: validate InChI, SMILES, or atomic-composition
