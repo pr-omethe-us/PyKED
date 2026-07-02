@@ -4,6 +4,7 @@
 [![DOI](https://zenodo.org/badge/66023863.svg)](https://zenodo.org/badge/latestdoi/66023863)
 [![CI](https://github.com/pr-omethe-us/PyKED/actions/workflows/ci.yml/badge.svg)](https://github.com/pr-omethe-us/PyKED/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/pr-omethe-us/PyKED/badge.svg?branch=main)](https://coveralls.io/github/pr-omethe-us/PyKED)
+[![PyPI](https://img.shields.io/pypi/v/pyked.svg)](https://pypi.org/project/pyked/)
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-green.svg)](http://contributor-covenant.org/version/1/4/)
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 

@@ -2,7 +2,7 @@
 
 ## Development Leads
 
-* Kyle Niemeyer <kyle.niemeyer@gmail.com>
+* Kyle Niemeyer <kyleniemeyer@fastmail.com>
 * Bryan Weber <bryan.w.weber@gmail.com>
 
 ## Contributors

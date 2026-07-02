@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-07-02
 ### Added
 - Add codemeta file
 - GitHub Actions CI workflow testing on Python 3.10, 3.11, 3.12, 3.13, and 3.14 on Linux, and Python 3.14 on macOS and Windows
@@ -174,7 +176,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.2.1...v0.3.0
