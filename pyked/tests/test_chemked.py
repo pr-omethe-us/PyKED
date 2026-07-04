@@ -84,7 +84,8 @@ class TestChemKED(object):
         out, err = capfd.readouterr()
         assert "experiment-type has an illegal value. Allowed values are [" in out
         assert "'ignition delay'" in out
-        assert "'rate coefficient'" in out
+        assert "'laminar burning velocity measurement'" in out
+        assert "'speciation measurement'" in out
         assert "and are case sensitive." in out
 
     def test_missing_input(self, capfd):
@@ -341,7 +342,7 @@ class TestConvertToReSpecTh(object):
     @pytest.mark.parametrize('experiment_type', [
         'Laminar flame speed measurement', 'Species profile measurement',
         'Outlet concentration measurement', 'Burner stabilized flame speciation measurement',
-        'Jet-stirred reactor measurement', 'Reaction rate coefficient measurement'
+        'Jet-stirred reactor measurement'
         ])
     def test_conversion_to_respecth_error(self, experiment_type):
         """Test for conversion errors.

@@ -8,6 +8,7 @@ from typing import Any
 from warnings import warn
 
 import habanero
+import httpx as habanero_httpx
 import httpx2 as httpx
 import pint
 
@@ -108,7 +109,12 @@ def get_reference(root):
     if ref_doi is not None:
         try:
             ref = crossref_api.works(ids=ref_doi)["message"]
-        except (httpx.HTTPStatusError, habanero.RequestError, httpx.ConnectError):
+        except (
+            habanero_httpx.ConnectError,
+            httpx.HTTPStatusError,
+            habanero.RequestError,
+            httpx.ConnectError,
+        ):
             if ref_key is None:
                 raise KeywordError("DOI not found and preferredKey attribute not set") from None
             else:

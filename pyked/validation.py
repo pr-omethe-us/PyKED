@@ -98,7 +98,6 @@ for key in ['author', 'value-unit-required', 'value-unit-optional',
             'evaluated-standard-deviation-list-optional',
             'laminar-burning-velocity-measurement-schema',
             'speciation-measurement-schema',
-            'rate-coefficient-schema',
             'ignition-delay-schema',
             'time-history',
             ]:
@@ -131,7 +130,6 @@ property_units = {
     'residence-time': 'second',
     'reactor-volume': 'meter**3',
     'volumetric-flow-in-reference-state': 'meter**3 / second',
-    'rate-coefficient': None,  # units vary by reaction order; skip dimensional check
     # Non-IDT experiment type properties
     'environment-temperature': 'kelvin',
     'global-heat-exchange-coefficient': 'watt / meter**2 / kelvin',
@@ -387,7 +385,7 @@ class OurValidator(Validator):
         expected_units = property_units.get(field)
 
         if expected_units is None:
-            # No dimensional check (e.g. rate-coefficient: units vary by reaction order)
+            # No dimensional check configured for this property.
             if quantity.magnitude <= 0:
                 self._error(field, 'value must be greater than 0.0')
             return

@@ -77,10 +77,11 @@ class TestChemKED:
             ChemKED(dict_input=properties)
 
         out, _err = capfd.readouterr()
-        assert out == (
-            "experiment-type has an illegal value. Allowed values are ['ignition "
-            "delay'] and are case sensitive.\n"
-        )
+        assert "experiment-type has an illegal value. Allowed values are [" in out
+        assert "'ignition delay'" in out
+        assert "'laminar burning velocity measurement'" in out
+        assert "'speciation measurement'" in out
+        assert "and are case sensitive." in out
 
     def test_missing_input(self, capfd):
         file_path = Path("tests") / "testfile_required.yaml"
@@ -355,7 +356,6 @@ class TestConvertToReSpecTh:
             "Outlet concentration measurement",
             "Burner stabilized flame speciation measurement",
             "Jet-stirred reactor measurement",
-            "Reaction rate coefficient measurement",
         ],
     )
     def test_conversion_to_respecth_error(self, experiment_type):

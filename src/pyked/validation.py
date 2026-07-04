@@ -5,6 +5,7 @@ from importlib import resources
 from warnings import warn
 
 import habanero
+import httpx as habanero_httpx
 import httpx2 as httpx
 import numpy as np
 import pint
@@ -18,6 +19,28 @@ units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
 
 units.define("cm3 = centimeter**3")
+units.define("m3 = meter**3")
+units.define("mm3 = millimeter**3")
+units.define("Torr = 133.322368 pascal")
+units.define("m2 = meter**2")
+units.define("cm6 = centimeter**6")
+units.define("molecule = 1 / 6.02214076e23 mol")
+
+
+def _normalize_unit_str(val_str):
+    """Normalize implicit multiplication and negative exponents for Pint."""
+    val_str = str(val_str)
+    parts = val_str.split(" ", 1)
+    if len(parts) == 1:
+        return val_str
+
+    num, unit_str = parts
+    unit_str = re.sub(r"(?<=\w)_(?=\w)", " ", unit_str)
+    unit_str = re.sub(r"([a-zA-Z]+)(-\d+)", r"\1**\2", unit_str)
+    unit_str = re.sub(r"(?<=\w) +(?=\w)", " * ", unit_str)
+    return f"{num} {unit_str}"
+
+
 Q_ = units.Quantity
 
 crossref_api = habanero.Crossref(mailto="prometheus@pr.omethe.us")
@@ -68,8 +91,19 @@ for key in [
     "ignition-type",
     "value-with-uncertainty",
     "value-without-uncertainty",
+    "value-metadata-only",
+    "time-shift",
+    "uncertainty-entry",
+    "uncertainty-list-optional",
+    "evaluated-standard-deviation-entry",
+    "evaluated-standard-deviation-list-optional",
+    "laminar-burning-velocity-measurement-schema",
+    "speciation-measurement-schema",
+    "ignition-delay-schema",
+    "time-history",
 ]:
-    del schema[key]
+    if key in schema:
+        del schema[key]
 
 # SI units for available value-type properties
 property_units = {
@@ -90,6 +124,20 @@ property_units = {
     "stroke": "meter",
     "clearance": "meter",
     "compression-ratio": "dimensionless",
+    "equivalence-ratio": "dimensionless",
+    "laminar-burning-velocity": "meter / second",
+    "distance": "meter",
+    "flow-rate": "kilogram / meter**2 / second",
+    "residence-time": "second",
+    "reactor-volume": "meter**3",
+    "volumetric-flow-in-reference-state": "meter**3 / second",
+    "environment-temperature": "kelvin",
+    "global-heat-exchange-coefficient": "watt / meter**2 / kelvin",
+    "exchange-area": "meter**2",
+    "reactor-length": "meter",
+    "reactor-diameter": "meter",
+    "pressure-in-reference-state": "pascal",
+    "temperature-in-reference-state": "kelvin",
 }
 
 
@@ -277,6 +325,34 @@ class OurValidator(Validator):
         elif n_cols < max_cols:
             self._error(field, "not enough columns in the values")
 
+    def _validate_isvalid_speciation(self, isvalid_speciation, field, value):
+        """Checks that a speciation datapoint's profile rows are well formed.
+
+        Each concentration profile row must carry one value per declared
+        independent variable, followed by the measured amount, with an
+        optional trailing uncertainty.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        n_independent = len(value.get("independent-variables", []))
+        if n_independent < 1:
+            self._error(field, "at least one independent-variable is required")
+            return
+
+        for profile in value.get("concentration-profiles", []):
+            species = profile.get("species-name", "?")
+            for row in profile.get("values", []):
+                if len(row) not in (n_independent + 1, n_independent + 2):
+                    self._error(
+                        field,
+                        "concentration-profiles row for "
+                        f"{species} must have {n_independent + 1} or "
+                        f"{n_independent + 2} columns ({n_independent} "
+                        "independent-variable(s) + amount [+ uncertainty]); "
+                        f"got {len(row)}",
+                    )
+
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
 
@@ -288,19 +364,30 @@ class OurValidator(Validator):
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
-        quantity = Q_(value[0])
-        low_lim = 0.0 * units(property_units[field])
+        if isinstance(value[0], dict):
+            return
+
+        quantity = Q_(_normalize_unit_str(value[0]))
+        expected_units = property_units.get(field)
+
+        if expected_units is None:
+            # No dimensional check configured for this property.
+            if quantity.magnitude <= 0:
+                self._error(field, "value must be greater than 0.0")
+            return
+
+        low_lim = 0.0 * units(expected_units)
 
         try:
             if quantity <= low_lim:
                 self._error(
                     field,
-                    f"value must be greater than 0.0 {property_units[field]}",
+                    f"value must be greater than 0.0 {expected_units}",
                 )
         except pint.DimensionalityError:
             self._error(
                 field,
-                f"incompatible units; should be consistent with {property_units[field]}",
+                f"incompatible units; should be consistent with {expected_units}",
             )
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
@@ -320,15 +407,50 @@ class OurValidator(Validator):
         # This len check is necessary for reasons that aren't quite clear to me
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
-        if len(value) > 1 and value[1]["uncertainty-type"] != "relative":
-            if value[1].get("uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["uncertainty"]])
+        if len(value) > 1:
+            uncertainty_dict = value[1]
 
-            if value[1].get("upper-uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["upper-uncertainty"]])
+            uncertainty_keys = {
+                "uncertainty-type",
+                "uncertainty",
+                "upper-uncertainty",
+                "lower-uncertainty",
+                "uncertainty-sourcetype",
+            }
+            evaluated_sd_keys = {
+                "evaluated-standard-deviation",
+                "evaluated-standard-deviation-type",
+                "evaluated-standard-deviation-sourcetype",
+                "evaluated-standard-deviation-method",
+            }
+            if not (uncertainty_dict.keys() & uncertainty_keys) and not (
+                uncertainty_dict.keys() & evaluated_sd_keys
+            ):
+                self._error(
+                    field,
+                    "uncertainty dict must contain at least one uncertainty field "
+                    "(uncertainty-type, uncertainty, upper-uncertainty, "
+                    "lower-uncertainty) or evaluated-standard-deviation field; "
+                    f"got: {dict(uncertainty_dict) or 'empty dict'}",
+                )
+                return
 
-            if value[1].get("lower-uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["lower-uncertainty"]])
+            uncertainty_type = uncertainty_dict.get("uncertainty-type")
+            if uncertainty_type and uncertainty_type != "relative":
+                if uncertainty_dict.get("uncertainty") is not None:
+                    self._validate_isvalid_quantity(
+                        True, field, [uncertainty_dict["uncertainty"]]
+                    )
+
+                if uncertainty_dict.get("upper-uncertainty") is not None:
+                    self._validate_isvalid_quantity(
+                        True, field, [uncertainty_dict["upper-uncertainty"]]
+                    )
+
+                if uncertainty_dict.get("lower-uncertainty") is not None:
+                    self._validate_isvalid_quantity(
+                        True, field, [uncertainty_dict["lower-uncertainty"]]
+                    )
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
@@ -348,7 +470,7 @@ class OurValidator(Validator):
             except (httpx.HTTPStatusError, habanero.RequestError):
                 self._error(field, "DOI not found")
                 return
-            except httpx.ConnectError:
+            except (habanero_httpx.ConnectError, httpx.ConnectError):
                 warn("network not available, DOI not validated.")
                 return
 

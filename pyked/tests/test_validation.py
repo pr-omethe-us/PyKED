@@ -438,6 +438,15 @@ class TestValidator(object):
         history['values'] = [[0, 1], [1, 2]]
         return history
 
+    @staticmethod
+    def validate_time_history(time_history):
+        """Validate a time history without needing a complete datapoint.
+        """
+        th_schema = {'time-histories': {'type': 'list', 'schema': {
+            'type': 'dict', 'isvalid_history': True}}}
+        tv = OurValidator(th_schema)
+        return tv.validate({'time-histories': [time_history]})
+
     @pytest.mark.parametrize("quantity, unit", [('volume', 'meter**3'), ('time', 'second')])
     def test_dimensionality_error_unit(self, quantity, unit):
         """Ensure that dimensionality errors in units are validation errors
@@ -455,7 +464,7 @@ class TestValidator(object):
     def test_time_history(self, time_history):
         """Test that the time history validation is working
         """
-        assert v.validate({'datapoints': [{'time-histories': [time_history]}]}, update=True)
+        assert self.validate_time_history(time_history)
 
     @pytest.mark.parametrize('time_history',
                              [('pressure', 'candela*ampere'), ('volume', 'candela*ampere'),
@@ -467,13 +476,7 @@ class TestValidator(object):
     def test_time_history_bad_units(self, time_history):
         """Test that giving bad units to a time history results in a validation error
         """
-        # Use a minimal schema targeting time-histories directly; the full
-        # schema's anyof + update=True allows branches without time-histories
-        # to silently accept the unknown key.
-        th_schema = {'time-histories': {'type': 'list', 'schema': {
-            'type': 'dict', 'isvalid_history': True}}}
-        tv = OurValidator(th_schema)
-        assert not tv.validate({'time-histories': [time_history]})
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_bad_time_units(self):
         """Test that giving bad units to the time in a time history results in a validation error
@@ -481,10 +484,7 @@ class TestValidator(object):
         time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
         time_history['time'] = {'units': 'candela*ampere', 'column': 0}
         time_history['values'] = [[0, 1], [1, 2]]
-        th_schema = {'time-histories': {'type': 'list', 'schema': {
-            'type': 'dict', 'isvalid_history': True}}}
-        tv = OurValidator(th_schema)
-        assert not tv.validate({'time-histories': [time_history]})
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_not_enough_columns(self):
         """Test that not having enough columns in the value array results in a validation error
@@ -492,10 +492,7 @@ class TestValidator(object):
         time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
         time_history['time'] = {'units': 'second', 'column': 0}
         time_history['values'] = [[0], [1]]
-        th_schema = {'time-histories': {'type': 'list', 'schema': {
-            'type': 'dict', 'isvalid_history': True}}}
-        tv = OurValidator(th_schema)
-        assert not tv.validate({'time-histories': [time_history]})
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_too_many_columns(self):
         """Test that having too many columns in the value array results in a validation error
@@ -503,10 +500,7 @@ class TestValidator(object):
         time_history = {'type': 'pressure', 'quantity': {'units': 'bar', 'column': 1}}
         time_history['time'] = {'units': 'second', 'column': 0}
         time_history['values'] = [[0, 1, 2], [1, 2, 3]]
-        th_schema = {'time-histories': {'type': 'list', 'schema': {
-            'type': 'dict', 'isvalid_history': True}}}
-        tv = OurValidator(th_schema)
-        assert not tv.validate({'time-histories': [time_history]})
+        assert not self.validate_time_history(time_history)
 
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error
@@ -517,6 +511,8 @@ class TestValidator(object):
 
     @pytest.mark.parametrize("valid_type", [
         'ignition delay',
+        'laminar burning velocity measurement',
+        'speciation measurement',
     ])
     def test_valid_experiment_types(self, valid_type):
         """Ensure that all the valid experiment types are validated

@@ -84,7 +84,6 @@ section are required, although some of the sub-keys are optional.
         * ``jet stirred reactor measurement``
         * ``outlet concentration measurement``
         * ``burner stabilized flame speciation measurement``
-        * ``rate coefficient``
 
 .. _reference-reference:
 
@@ -634,40 +633,6 @@ speciation measurement``.
 
 * ``flow-rate``: sequence, optional
     The flow rate through the burner. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-.. _rate-coefficient-keys:
-
-Rate Coefficient Keys
----------------------
-
-This section details the schema for a rate coefficient determination datapoint, selected when
-:ref:`experiment-type <reference-experiment-type>` is ``rate coefficient``. Rate coefficient
-experiments measure :math:`k(T)` for a specific reaction; pressure and composition are commonly
-absent.
-
-* ``temperature``: sequence, required
-    The temperature at which the rate coefficient is reported, with dimensions of temperature.
-    Must conform to :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``pressure``: sequence, optional
-    The pressure at which the rate coefficient is reported, with dimensions of mass per length
-    per time squared. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-* ``rate-coefficient``: sequence, optional
-    The measured rate coefficient. Units depend on the reaction order (e.g., ``cm3/mol/s`` for
-    second order). Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-* ``branching-ratio``: sequence, optional
-    The branching ratio associated with the measurement, dimensionless. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-* ``composition``: mapping, optional
-    The composition of the mixture, if applicable. Must conform to
-    :ref:`composition <common-composition>`.
-
-* ``equivalence-ratio``: sequence, optional
-    The equivalence ratio of the experiment, dimensionless. Must conform to
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
 .. _schema-only-keys:

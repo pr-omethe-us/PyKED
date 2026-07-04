@@ -27,6 +27,10 @@ uncertainty-entry: &uncertainty-entry
         - relative
     sourcetype:
       type: string
+      allowed:
+        - estimated
+        - reported
+        - calculated
     uncertainty: *value-unit-optional
     upper-uncertainty: *value-unit-optional
     lower-uncertainty: *value-unit-optional
@@ -56,6 +60,10 @@ evaluated-standard-deviation-entry: &evaluated-standard-deviation-entry
       type: string
     sourcetype:
       type: string
+      allowed:
+        - estimated
+        - reported
+        - calculated
     value: *value-unit-optional
     species-name:
       type: string

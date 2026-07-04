@@ -657,7 +657,6 @@ class DataPoint(object):
         'environment-temperature', 'global-heat-exchange-coefficient', 'exchange-area',
         'reactor-length', 'reactor-diameter',
         'pressure-in-reference-state', 'temperature-in-reference-state',
-        'rate-coefficient',
     ]
 
     rcm_data_props = [

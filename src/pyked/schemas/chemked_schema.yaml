@@ -9,7 +9,6 @@
 !include ignition_delay_schema.yaml
 !include laminar_burning_velocity_measurement_schema.yaml
 !include speciation_measurement_schema.yaml
-!include rate_coefficient_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -79,7 +78,6 @@ datapoints:
     - *ignition-delay-schema
     - *laminar-burning-velocity-measurement-schema
     - *speciation-measurement-schema
-    - *rate-coefficient-schema
 reference:
   required: true
   type: dict
@@ -128,7 +126,6 @@ experiment-type:
     - ignition delay
     - laminar burning velocity measurement
     - speciation measurement
-    - rate coefficient
   required: true
   type: string
 file-authors:
@@ -143,10 +140,5 @@ comments:
   type: list
   schema:
     type: string
-# Optional fields for rate coefficient (kdetermination) experiments
-reaction:
-  type: string
 method:
-  type: string
-bulk-gas:
   type: string
