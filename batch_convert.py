@@ -492,7 +492,16 @@ def parse_experiment_kind(root):
         'concentration time profile measurement': 'flow reactor',
         'jet stirred reactor measurement': 'jet stirred reactor',
         'outlet concentration measurement': 'flow reactor',
-        'burner stabilized flame speciation measurement': 'flame',
+        'burner stabilized flame speciation measurement': 'burner stabilized flame',
+    }
+    _respecth_flame_mode_to_kind = {
+        'CTF': 'counterflow flame',
+        'FCM': 'bunsen burner',
+        'HFM': 'heat flux burner',
+        'Heat Flux Burner': 'heat flux burner',
+        'LFF': 'burner stabilized flame',
+        'OPF': 'outwardly propagating spherical flame',
+        'SFF': 'burner stabilized flame',
     }
     apparatus = {'kind': '', 'institution': '', 'facility': ''}
     kind_el = root.find('apparatus/kind')
@@ -500,19 +509,14 @@ def parse_experiment_kind(root):
         apparatus['kind'] = kind_el.text.strip()
     if not apparatus['kind'] and exp_type in _default_apparatus_kind:
         apparatus['kind'] = _default_apparatus_kind[exp_type]
-    _mode_aliases = {
-        'reflected': 'reflected shock',
-        'incident': 'incident shock',
-    }
-    modes = root.findall('apparatus/mode')
-    if modes:
-        mode_list = []
-        for m in modes:
-            if m.text:
-                raw = m.text.strip()
-                mode_list.append(_mode_aliases.get(raw, raw))
-        if mode_list:
-            apparatus['mode'] = mode_list
+    for mode_el in root.findall('apparatus/mode'):
+        if mode_el.text:
+            mode = mode_el.text.strip().rstrip('?')
+            if mode in _respecth_flame_mode_to_kind:
+                apparatus['kind'] = _respecth_flame_mode_to_kind[mode]
+                break
+    if apparatus['kind'] == 'flame' and exp_type in _default_apparatus_kind:
+        apparatus['kind'] = _default_apparatus_kind[exp_type]
 
     return exp_type, apparatus
 

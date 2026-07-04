@@ -63,7 +63,7 @@ section are required, although some of the sub-keys are optional.
     This mapping provides information about the apparatus used to conduct the experiments. Fields:
 
     - ``kind``: string, required
-        Must be one of ``shock tube``, ``rapid compression machine``, ``stirred reactor``, ``jet stirred reactor``, ``flow reactor``, ``flame``, ``outwardly propagating spherical flame``, ``heat flux burner``, or ``flame cone method``. Values are case-sensitive.
+        Must be one of ``shock tube``, ``rapid compression machine``, ``stirred reactor``, ``jet stirred reactor``, ``tubular reactor``, ``flow reactor``, ``burner stabilized flame``, ``counterflow flame``, ``heat flux burner``, ``bunsen burner``, or ``outwardly propagating spherical flame``. Values are case-sensitive.
 
     - ``institution``: string, optional
         The institution where the experimental apparatus is located
@@ -71,18 +71,6 @@ section are required, although some of the sub-keys are optional.
     - ``facility``: string, optional
         A unique name or identifier for the apparatus, if the institution has several that are
         similar
-    - ``mode``: sequence, optional
-        A sequence of strings describing the mode(s) of operation of the apparatus, if applicable.
-        Multiple modes may be specified to capture different facets of the configuration (e.g., flow
-        regime and burner geometry for a flame experiment). Each element must be one of the
-        following case-sensitive values:
-
-            * Shock tube modes: ``reflected shock``, ``incident shock``, ``reflected shock wave``, ``incident shock wave``
-            * Flow regime: ``laminar``, ``turbulent``
-            * Flame/burner configurations: ``burner stabilized``, ``burner-stabilized``,
-              ``constant volume combustion chamber``, ``premixed``, ``unstretched``, ``spherical``, ``cylindrical``, ``slot burner``, ``modified Bunsen burner``, ``counterflow``, ``twin flat``, ``adiabatic``
-            * Flame method abbreviations: ``OPF``, ``HFM``, ``CTF``, ``SFF``, ``FCM``, ``LFF``, ``Heat Flux Burner``
-            * Stretch extrapolation methods: ``extrapolation method to zero stretch: LS``, ``extrapolation method to zero stretch: NQ``, ``extrapolation method to zero stretch: LC``
 
 .. _reference-experiment-type:
 
