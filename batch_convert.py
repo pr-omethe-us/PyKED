@@ -97,7 +97,6 @@ SCALAR_DG_PROPS = {
     'laminar burning velocity', 'distance', 'flow rate',
     'residence time', 'volumetric flow rate in reference state',
     'volume', 'time', 'environment temperature',
-    'rate coefficient', 'branching ratio',
 }
 
 # Properties valid as scalar value+unit in commonProperties
@@ -1450,7 +1449,7 @@ def parse_bsfsm_datapoints(dg, dg_defs, common):
 
 
 # ---------------------------------------------------------------------------
-# Reaction parsing (kdetermination files)
+# Reaction parsing
 # ---------------------------------------------------------------------------
 
 def parse_reactions(root):
@@ -1494,34 +1493,6 @@ def parse_reactions(root):
     return reactions
 
 
-# ---------------------------------------------------------------------------
-# kdetermination datapoint parser
-# ---------------------------------------------------------------------------
-
-def parse_kdet_datapoints(dg, dg_defs, common):
-    """Rate coefficient / branching ratio: temperature, rate-coefficient/branching-ratio,
-    optional pressure per point."""
-    datapoints = []
-    for dp_el in dg.findall('dataPoint'):
-        dp = {}
-        for val_el in dp_el:
-            pid = val_el.tag
-            if pid not in dg_defs:
-                continue
-            pdef = dg_defs[pid]
-            name = pdef['name']
-            if name in ('uncertainty', 'evaluated standard deviation'):
-                continue
-            if name in SCALAR_DG_PROPS:
-                dp[prop_name_to_key(name)] = _scalar_value(val_el.text, pdef['units'])
-        unc = build_uncertainty_entries(dg_defs, dp_el, dp)
-        if unc:
-            dp['uncertainty'] = unc
-        datapoints.append(dp)
-    return datapoints
-
-
-# ---------------------------------------------------------------------------
 # tdetermination datapoint parser
 # ---------------------------------------------------------------------------
 
@@ -1564,7 +1535,7 @@ PARSERS = {
 def convert_file(xml_path, original_filename=None):
     """Convert a single ReSpecTh XML file → ChemKED property dict (or None).
 
-    Supports <experiment>, <kdetermination>, and <tdetermination> root elements.
+    Supports <experiment> and <tdetermination> root elements.
 
     Parameters
     ----------
@@ -1583,8 +1554,6 @@ def convert_file(xml_path, original_filename=None):
         except UnsupportedUnitsError as e:
             log.info(f'Skipping {os.path.basename(xml_path)}: {e}')
             return None
-    elif root.tag == 'kdetermination':
-        return _convert_kdetermination(root, xml_path, original_filename)
     elif root.tag == 'tdetermination':
         return _convert_tdetermination(root, xml_path, original_filename)
     else:
@@ -1746,127 +1715,6 @@ def _convert_file_inner(root, xml_path, original_filename=None):
                             break
 
     # Clean up common properties — remove temporary keys
-    common.pop('uncertainty', None)
-    common.pop('evaluated-standard-deviation', None)
-    common.pop('_pending_esd', None)
-    common.pop('_pending_unc', None)
-    common.pop('_partial_cp_composition', None)
-
-    return props
-
-
-# ---------------------------------------------------------------------------
-# kdetermination conversion
-# ---------------------------------------------------------------------------
-
-def _convert_kdetermination(root, xml_path, original_filename=None):
-    """Convert a <kdetermination> XML file to a ChemKED-style property dict."""
-    xml_filename = original_filename or os.path.basename(xml_path)
-
-    props = parse_file_metadata(root)
-    props['reference'] = parse_reference(root, xml_filename)
-    props['file-type'] = 'kdetermination'
-    props['experiment-type'] = 'rate coefficient'
-
-    # Parse reactions — schema expects 'reaction' (string) and 'bulk-gas' (string)
-    reactions = parse_reactions(root)
-    if reactions:
-        primary = reactions[0]
-        if primary.get('preferred-key'):
-            props['reaction'] = primary['preferred-key']
-        if primary.get('bulk-gas'):
-            props['bulk-gas'] = primary['bulk-gas']
-
-    # Method and apparatus
-    method = (root.findtext('method') or '').strip()
-    if method:
-        props['method'] = method
-    # Map method text to apparatus kind
-    _method_to_apparatus = {
-        'shock tube': 'shock tube',
-        'shock wave': 'shock tube',
-        'flow tube': 'flow reactor',
-        'flow reactor': 'flow reactor',
-        'static reactor': 'flow reactor',
-        'stirred reactor': 'stirred reactor',
-        'flame': 'flame',
-    }
-    apparatus_kind = _method_to_apparatus.get(method.lower(), 'shock tube')
-    props['apparatus'] = {'kind': apparatus_kind}
-
-    comments = []
-    for c_el in root.findall('comment'):
-        if c_el.text and c_el.text.strip():
-            comments.append(c_el.text.strip())
-    if comments:
-        props['comments'] = comments
-
-    # Common properties (parsed the same way as experiments)
-    common = parse_common_properties(root, 'rate coefficient')
-    props['common-properties'] = common
-
-    # Parse dataGroup
-    all_dgs = root.findall('dataGroup')
-    if not all_dgs:
-        raise ValueError('No dataGroup found')
-
-    dg = all_dgs[0]
-    dg_defs = parse_datagroup_props(dg)
-
-    props['datapoints'] = parse_kdet_datapoints(dg, dg_defs, common)
-
-    if not props.get('datapoints'):
-        raise ValueError('No datapoints parsed')
-
-    # Apply common properties to each datapoint
-    for dp in props['datapoints']:
-        for key, val in common.items():
-            if key not in dp:
-                dp[key] = val
-
-    # Post-merge inline remaining uncertainties (same as experiment)
-    _UNC_KEYS = ('uncertainty', 'upper-uncertainty', 'lower-uncertainty')
-
-    def _extract_unc_from_entry(entry):
-        for bk in _UNC_KEYS:
-            if bk in entry:
-                raw = entry[bk]
-                val_str = raw[0] if isinstance(raw, list) else str(raw)
-                parts = val_str.split(' ', 1)
-                return bk, parts[0], (parts[1] if len(parts) > 1 else '')
-        return None, '', ''
-
-    for dp in props['datapoints']:
-        for entry in dp.pop('uncertainty', []):
-            ref = entry.get('reference', '')
-            target_key = _ref_to_property_key(ref)
-            sourcetype = entry.get('sourcetype', '')
-            if target_key and target_key in dp:
-                unc_kind = entry.get('kind', '')
-                bound_key, val_str, unc_units = _extract_unc_from_entry(entry)
-                if bound_key is None:
-                    continue
-                unc_dict = {'uncertainty-type': unc_kind}
-                unc_dict[bound_key] = _format_unc_value(val_str, unc_units, unc_kind)
-                if sourcetype:
-                    unc_dict['uncertainty-sourcetype'] = sourcetype
-                prop_val = dp[target_key]
-                if isinstance(prop_val, list) and len(prop_val) >= 1:
-                    if len(prop_val) == 2 and isinstance(prop_val[1], dict):
-                        dp[target_key] = [prop_val[0], _merge_inline_uncertainty(prop_val[1], unc_dict)]
-                    else:
-                        dp[target_key] = [prop_val[0], unc_dict]
-
-        for esd_entry in dp.pop('_pending_esd', []):
-            reference = esd_entry['reference']
-            target_key = _ref_to_property_key(reference)
-            if target_key and target_key in dp:
-                esd_fields = _build_inline_esd(
-                    esd_entry['kind'], esd_entry['value'], esd_entry['units'],
-                    esd_entry.get('sourcetype'), esd_entry.get('method')
-                )
-                _attach_metadata_to_property(dp, target_key, esd_fields)
-
     common.pop('uncertainty', None)
     common.pop('evaluated-standard-deviation', None)
     common.pop('_pending_esd', None)
