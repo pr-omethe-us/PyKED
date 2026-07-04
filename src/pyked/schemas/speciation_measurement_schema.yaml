@@ -105,7 +105,7 @@ speciation-measurement-schema: &speciation-measurement-schema
               type: list
               anyof:
                 - *value-metadata-only
-
+      # This is a list of auxiliary profiles (temperature, pressure, volume, velocity) that are measured along with the species profiles. These are optional and can be used for additional analysis or validation of the speciation measurements.
       auxiliary-profiles:
         type: list
         schema:
