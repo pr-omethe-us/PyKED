@@ -64,6 +64,7 @@ value-without-uncertainty: &value-without-uncertainty
 # Used in common-properties when uncertainty metadata is shared
 # but the property value varies per datapoint.
 value-metadata-only: &value-metadata-only
+  isvalid_uncertainty: true
   items:
     - type: dict
       schema:

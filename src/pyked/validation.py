@@ -386,6 +386,29 @@ class OurValidator(Validator):
                 f"incompatible units; should be consistent with {expected_units}",
             )
 
+    def _check_uncertainty_metadata(self, field, metadata):
+        """Checks that uncertainty metadata includes a value, not only labels."""
+        uncertainty_value_keys = {
+            "uncertainty",
+            "upper-uncertainty",
+            "lower-uncertainty",
+        }
+        has_uncertainty_value = any(
+            metadata.get(key) is not None for key in uncertainty_value_keys
+        )
+        has_evaluated_sd_value = metadata.get("evaluated-standard-deviation") is not None
+
+        if has_uncertainty_value or has_evaluated_sd_value:
+            return True
+
+        self._error(
+            field,
+            "uncertainty metadata must contain at least one uncertainty value "
+            "(uncertainty, upper-uncertainty, lower-uncertainty) or an "
+            f"evaluated-standard-deviation value; got: {dict(metadata) or 'empty dict'}",
+        )
+        return False
+
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
         """Checks for valid given value and appropriate units with uncertainty.
 
@@ -403,32 +426,15 @@ class OurValidator(Validator):
         # This len check is necessary for reasons that aren't quite clear to me
         # Cerberus calls this validation method even when lists have only one element
         # and should therefore be validated only by isvalid_quantity
-        if len(value) > 1:
+        if len(value) == 1 and isinstance(value[0], dict):
+            uncertainty_dict = value[0]
+        elif len(value) > 1:
             uncertainty_dict = value[1]
+        else:
+            uncertainty_dict = None
 
-            uncertainty_keys = {
-                "uncertainty-type",
-                "uncertainty",
-                "upper-uncertainty",
-                "lower-uncertainty",
-                "uncertainty-sourcetype",
-            }
-            evaluated_sd_keys = {
-                "evaluated-standard-deviation",
-                "evaluated-standard-deviation-type",
-                "evaluated-standard-deviation-sourcetype",
-                "evaluated-standard-deviation-method",
-            }
-            if not (uncertainty_dict.keys() & uncertainty_keys) and not (
-                uncertainty_dict.keys() & evaluated_sd_keys
-            ):
-                self._error(
-                    field,
-                    "uncertainty dict must contain at least one uncertainty field "
-                    "(uncertainty-type, uncertainty, upper-uncertainty, "
-                    "lower-uncertainty) or evaluated-standard-deviation field; "
-                    f"got: {dict(uncertainty_dict) or 'empty dict'}",
-                )
+        if uncertainty_dict is not None:
+            if not self._check_uncertainty_metadata(field, uncertainty_dict):
                 return
 
             uncertainty_type = uncertainty_dict.get("uncertainty-type")
