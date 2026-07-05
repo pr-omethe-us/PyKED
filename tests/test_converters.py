@@ -1,4 +1,4 @@
-""" "
+"""
 Tests for the converters
 """
 
@@ -7,7 +7,9 @@ import xml.etree.ElementTree as etree
 from pathlib import Path
 from shutil import copy
 from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock
 
+import httpx as habanero_httpx
 import numpy.random
 import pytest
 from numpy.testing import assert_allclose
@@ -330,6 +332,29 @@ class TestGetReference:
         with pytest.raises(KeywordError) as excinfo:
             ref = get_reference(root)
         assert "DOI not found and preferredKey attribute not set" in str(excinfo.value)
+
+    def test_standard_httpx_doi_error_falls_back_to_preferredkey(self, monkeypatch):
+        """Ensure standard httpx DOI lookup errors fall back to preferredKey."""
+
+        def raise_standard_httpx_error(ids):
+            raise habanero_httpx.HTTPStatusError(
+                "404 Not Found",
+                request=MagicMock(spec=habanero_httpx.Request),
+                response=MagicMock(spec=habanero_httpx.Response),
+            )
+
+        monkeypatch.setattr("pyked.converters.crossref_api.works", raise_standard_httpx_error)
+
+        root = etree.Element("experiment")
+        ref = etree.SubElement(root, "bibliographyLink")
+        ref.set("doi", "10.1000/invalid.doi")
+        ref.set("preferredKey", "Fallback reference")
+
+        with pytest.warns(UserWarning) as record:
+            reference = get_reference(root)
+
+        assert "lookup failed" in str(record.pop(UserWarning).message)
+        assert reference["detail"] == "Fallback reference."
 
     def test_doi_missing_preferredkey(self):
         """Ensure error if missing ``preferredKey`` and not found DOI."""

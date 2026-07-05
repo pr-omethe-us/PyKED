@@ -359,7 +359,7 @@ class TestValidator(object):
         filename = pkg_resources.resource_filename(__name__, file_path)
 
         with open(filename, 'r') as f:
-            properties = yaml.load(f)
+            properties = yaml.safe_load(f)
 
         # Normalize equivalence-ratio: wrap scalar values in a list
         # to match the schema expectation (type: list), same as
