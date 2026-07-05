@@ -111,6 +111,7 @@ def get_reference(root):
             ref = crossref_api.works(ids=ref_doi)["message"]
         except (
             habanero_httpx.ConnectError,
+            habanero_httpx.HTTPStatusError,
             httpx.HTTPStatusError,
             habanero.RequestError,
             httpx.ConnectError,

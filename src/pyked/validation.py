@@ -469,7 +469,7 @@ class OurValidator(Validator):
         if "doi" in value:
             try:
                 ref = crossref_api.works(ids=value["doi"])["message"]
-            except (httpx.HTTPStatusError, habanero.RequestError):
+            except (habanero_httpx.HTTPStatusError, httpx.HTTPStatusError, habanero.RequestError):
                 self._error(field, "DOI not found")
                 return
             except (habanero_httpx.ConnectError, httpx.ConnectError):

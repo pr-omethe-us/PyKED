@@ -3,7 +3,9 @@ Tests for the utils
 """
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
+import httpx as habanero_httpx
 import pytest
 import yaml
 
@@ -105,6 +107,21 @@ class TestValidator:
 
     def test_invalid_DOI(self, mock_crossref_api):
         """Test for proper response to incorrect/invalid DOI."""
+        v.validate({"reference": {"doi": "10.1000/invalid.doi"}}, update=True)
+        assert v.errors["reference"][0] == "DOI not found"
+
+    def test_invalid_doi_standard_httpx_error(self, monkeypatch):
+        """Ensure standard httpx DOI lookup errors are handled."""
+
+        def raise_standard_httpx_error(ids):
+            raise habanero_httpx.HTTPStatusError(
+                "404 Not Found",
+                request=MagicMock(spec=habanero_httpx.Request),
+                response=MagicMock(spec=habanero_httpx.Response),
+            )
+
+        monkeypatch.setattr("pyked.validation.crossref_api.works", raise_standard_httpx_error)
+
         v.validate({"reference": {"doi": "10.1000/invalid.doi"}}, update=True)
         assert v.errors["reference"][0] == "DOI not found"
 
