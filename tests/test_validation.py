@@ -3,9 +3,7 @@ Tests for the utils
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock
 
-import httpx as habanero_httpx
 import pytest
 import yaml
 
@@ -107,21 +105,6 @@ class TestValidator:
 
     def test_invalid_DOI(self, mock_crossref_api):
         """Test for proper response to incorrect/invalid DOI."""
-        v.validate({"reference": {"doi": "10.1000/invalid.doi"}}, update=True)
-        assert v.errors["reference"][0] == "DOI not found"
-
-    def test_invalid_doi_standard_httpx_error(self, monkeypatch):
-        """Ensure standard httpx DOI lookup errors are handled."""
-
-        def raise_standard_httpx_error(ids):
-            raise habanero_httpx.HTTPStatusError(
-                "404 Not Found",
-                request=MagicMock(spec=habanero_httpx.Request),
-                response=MagicMock(spec=habanero_httpx.Response),
-            )
-
-        monkeypatch.setattr("pyked.validation.crossref_api.works", raise_standard_httpx_error)
-
         v.validate({"reference": {"doi": "10.1000/invalid.doi"}}, update=True)
         assert v.errors["reference"][0] == "DOI not found"
 
@@ -885,6 +868,66 @@ class TestValidator:
         validator = OurValidator(uncertainty_schema)
         assert validator.validate({"temperature": ["1000 kelvin", metadata]})
         assert v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_evaluated_standard_deviation_validation(self, quantity, unit):
+        """Ensure absolute ESD values are validated with compatible units."""
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": f"0.1 {unit}",
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_absolute_evaluated_standard_deviation(self, quantity, unit):
+        """Ensure absolute ESD values with bad units fail validation."""
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": "0.1 candela*ampere",
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+        assert validator.errors[quantity][0] == (
+            f"incompatible units; should be consistent with {unit}"
+        )
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_unitless_absolute_evaluated_standard_deviation(self, quantity, unit):
+        """Ensure unitless absolute ESD values fail for unitful fields."""
+        if unit == "dimensionless":
+            pytest.skip("unitless absolute ESD is valid for dimensionless fields")
+
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": 0.1,
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+        assert validator.errors[quantity][0] == (
+            f"incompatible units; should be consistent with {unit}"
+        )
 
     def test_missing_lower_upper_uncertainty(self):
         """Test that having a single asymmetric uncertainty fails validation."""

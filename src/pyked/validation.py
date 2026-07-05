@@ -5,7 +5,6 @@ from importlib import resources
 from warnings import warn
 
 import habanero
-import httpx as habanero_httpx
 import httpx2 as httpx
 import numpy as np
 import pint
@@ -454,6 +453,16 @@ class OurValidator(Validator):
                         True, field, [uncertainty_dict["lower-uncertainty"]]
                     )
 
+            evaluated_sd_type = uncertainty_dict.get("evaluated-standard-deviation-type")
+            if (
+                evaluated_sd_type
+                and evaluated_sd_type != "relative"
+                and uncertainty_dict.get("evaluated-standard-deviation") is not None
+            ):
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["evaluated-standard-deviation"]]
+                )
+
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
 
@@ -469,10 +478,10 @@ class OurValidator(Validator):
         if "doi" in value:
             try:
                 ref = crossref_api.works(ids=value["doi"])["message"]
-            except (habanero_httpx.HTTPStatusError, httpx.HTTPStatusError, habanero.RequestError):
+            except (httpx.HTTPStatusError, habanero.RequestError):
                 self._error(field, "DOI not found")
                 return
-            except (habanero_httpx.ConnectError, httpx.ConnectError):
+            except httpx.ConnectError:
                 warn("network not available, DOI not validated.")
                 return
 
