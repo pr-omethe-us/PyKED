@@ -804,6 +804,44 @@ class TestValidator:
             }
         )
 
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            {"uncertainty-type": "relative"},
+            {"uncertainty-sourcetype": "reported"},
+            {"evaluated-standard-deviation-type": "relative"},
+            {"evaluated-standard-deviation-sourcetype": "reported"},
+            {"evaluated-standard-deviation-method": "statistical scatter"},
+        ],
+    )
+    def test_uncertainty_metadata_requires_value(self, metadata):
+        """Ensure uncertainty/ESD labels alone do not validate as uncertainty metadata."""
+        uncertainty_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert not validator.validate({"temperature": ["1000 kelvin", metadata]})
+        assert "uncertainty metadata must contain" in validator.errors["temperature"][0]
+
+        assert not v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
+        composition = {
+            "kind": "mole fraction",
+            "species": [{"species-name": "A", "amount": [1.0, metadata]}],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    def test_evaluated_standard_deviation_metadata_value(self):
+        """Ensure ESD metadata validates when the ESD value is present."""
+        metadata = {
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+            "evaluated-standard-deviation-sourcetype": "reported",
+            "evaluated-standard-deviation-method": "statistical scatter",
+        }
+        uncertainty_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert validator.validate({"temperature": ["1000 kelvin", metadata]})
+        assert v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
     def test_missing_lower_upper_uncertainty(self):
         """Test that having a single asymmetric uncertainty fails validation."""
         result = v.validate(

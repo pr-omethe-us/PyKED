@@ -80,10 +80,7 @@ section are required, although some of the sub-keys are optional.
 
         * ``ignition delay``
         * ``laminar burning velocity measurement``
-        * ``concentration time profile measurement``
-        * ``jet stirred reactor measurement``
-        * ``outlet concentration measurement``
-        * ``burner stabilized flame speciation measurement``
+        * ``speciation measurement``
 
 .. _reference-reference:
 
@@ -460,28 +457,24 @@ when :ref:`experiment-type <reference-experiment-type>` is ``laminar burning vel
     The equivalence ratio of the experiment, dimensionless. Must conform to
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-.. _jet-stirred-reactor-keys:
+.. _speciation-measurement-keys:
 
-Jet Stirred Reactor Measurement Keys
-------------------------------------
+Speciation Measurement Keys
+---------------------------
 
-This section details the schema for a jet stirred reactor measurement datapoint, selected when
-:ref:`experiment-type <reference-experiment-type>` is ``jet stirred reactor measurement``.
-
-* ``temperature``: sequence, required
-    Reactor temperature, with dimensions of temperature. Must conform to
-    :ref:`value-unit-required <schema-value-unit-required>`.
+This section details the schema for a speciation measurement datapoint, selected when
+:ref:`experiment-type <reference-experiment-type>` is ``speciation measurement``.
 
 * ``pressure``: sequence, required
-    Reactor pressure, with dimensions of mass per length per time squared. Must conform to
-    :ref:`value-unit-required <schema-value-unit-required>`.
+    The pressure of the experiment, with dimensions of mass per length per time squared. Must
+    conform to :ref:`value-unit-required <schema-value-unit-required>`.
 
-* ``composition``: mapping, required
-    The composition of the inlet mixture. Must conform to
-    :ref:`composition <common-composition>`.
+* ``temperature``: sequence, optional
+    The inlet, initial, or local temperature, with dimensions of temperature. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-* ``measured-composition``: mapping, required
-    The composition measured at the reactor outlet. Must conform to
+* ``composition``: mapping, optional
+    The inlet or initial composition. Must conform to
     :ref:`composition <common-composition>`.
 
 * ``equivalence-ratio``: sequence, optional
@@ -489,75 +482,78 @@ This section details the schema for a jet stirred reactor measurement datapoint,
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
 * ``environment-temperature``: sequence, optional
-    Temperature of the environment surrounding the reactor, with dimensions of temperature.
-    Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-.. _outlet-concentration-keys:
-
-Outlet Concentration Measurement Keys
--------------------------------------
-
-This section details the schema for an outlet concentration measurement datapoint (e.g., flow
-reactor), selected when :ref:`experiment-type <reference-experiment-type>` is ``outlet
-concentration measurement``.
-
-* ``temperature``: sequence, required
-    Reactor temperature, with dimensions of temperature. Must conform to
-    :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``pressure``: sequence, required
-    Reactor pressure, with dimensions of mass per length per time squared. Must conform to
-    :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``composition``: mapping, required
-    The composition of the inlet mixture. Must conform to
-    :ref:`composition <common-composition>`.
-
-* ``measured-composition``: mapping, required
-    The composition measured at the reactor outlet. Must conform to
-    :ref:`composition <common-composition>`.
-
-* ``equivalence-ratio``: sequence, optional
-    The equivalence ratio of the experiment, dimensionless. Must conform to
+    Temperature of the environment surrounding the reactor or burner. Must conform to
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
 * ``residence-time``: sequence, optional
     Residence time in the reactor, with dimensions of time. Must conform to
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-* ``volumetric-flow-in-reference-state``: sequence, optional
-    Volumetric flow rate through the reactor expressed in a defined reference state, with
-    dimensions of length cubed per time. Must conform to
+* ``reactor-volume``: sequence, optional
+    Reactor volume, with dimensions of length cubed. Must conform to
     :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-.. _concentration-time-profile-keys:
+* ``reactor-length``: sequence, optional
+    Reactor length, with dimensions of length. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-Concentration Time Profile Measurement Keys
--------------------------------------------
+* ``reactor-diameter``: sequence, optional
+    Reactor diameter, with dimensions of length. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-This section details the schema for a concentration time profile measurement datapoint (e.g.,
-shock tube or flow reactor species profiles), selected when
-:ref:`experiment-type <reference-experiment-type>` is ``concentration time profile
-measurement``.
+* ``flow-rate``: sequence, optional
+    Flow rate through the reactor or burner. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-* ``temperature``: sequence, required
-    The temperature of the experiment, with dimensions of temperature. Must conform to
-    :ref:`value-unit-required <schema-value-unit-required>`.
+* ``volumetric-flow-in-reference-state``: sequence, optional
+    Volumetric flow rate expressed in a defined reference state, with dimensions of length cubed
+    per time. Must conform to :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-* ``pressure``: sequence, required
-    The pressure of the experiment, with dimensions of mass per length per time squared. Must
-    conform to :ref:`value-unit-required <schema-value-unit-required>`.
+* ``pressure-in-reference-state``: sequence, optional
+    Reference-state pressure for a volumetric flow measurement. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
 
-* ``composition``: mapping, required
-    The initial composition of the mixture. Must conform to
-    :ref:`composition <common-composition>`.
+* ``temperature-in-reference-state``: sequence, optional
+    Reference-state temperature for a volumetric flow measurement. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
+
+* ``global-heat-exchange-coefficient``: sequence, optional
+    Global heat exchange coefficient, with dimensions of heat flux per temperature. Must conform
+    to :ref:`value-unit-optional <schema-value-unit-optional>`.
+
+* ``exchange-area``: sequence, optional
+    Heat exchange area, with dimensions of area. Must conform to
+    :ref:`value-unit-optional <schema-value-unit-optional>`.
+
+* ``independent-variables``: sequence, required
+    A sequence of mappings describing the independent variable columns. Each element has the
+    following fields:
+
+    - ``name``: string, required
+        Must be one of ``temperature``, ``residence-time``, ``distance``, ``time``,
+        ``equivalence-ratio``, ``initial-composition``, or ``pressure``.
+
+    - ``units``: string, required
+        Units for the independent variable values.
+
+    - ``primary``: boolean, optional
+        Indicates the primary swept variable.
+
+    - ``species-name``: string, optional
+        Identifies the swept inlet species when ``name`` is ``initial-composition``.
+
+    - ``InChI``: string, optional
+        The InChI string for the swept inlet species.
+
+    - ``SMILES``: string, optional
+        The SMILES string for the swept inlet species.
 
 * ``concentration-profiles``: sequence, required
-    A sequence of mappings, each describing the time history of a single species'
-    concentration. Each element has the following fields:
+    A sequence of mappings, each describing measured values for a single species. Each element
+    has the following fields:
 
     - ``species-name``: string, required
-        The name of the species.
+        The name of the measured species.
 
     - ``InChI``: string, optional
         The InChI string for the species.
@@ -566,74 +562,21 @@ measurement``.
         The SMILES string for the species.
 
     - ``quantity``: mapping, required
-        A mapping describing the recorded concentration column. Fields:
-
-        * ``units``: string, required
-            The units of the concentration (e.g., ``mol/cm3``, ``mole fraction``).
-
-    - ``time``: mapping, required
-        A mapping describing the time column. Fields:
-
-        * ``units``: string, required
-            The units of the time, with dimensions of time.
+        A mapping with a required ``units`` string describing the measured quantity.
 
     - ``values``: sequence, required
-        A sequence of at least two rows. Each row is either ``[time, concentration]`` (two
-        floats) or ``[time, concentration, uncertainty]`` (three floats).
+        A sequence of at least two rows. Each row contains one value for each
+        ``independent-variables`` entry, followed by the measured amount, and optionally an
+        uncertainty value.
 
-* ``equivalence-ratio``: sequence, optional
-    The equivalence ratio of the experiment, dimensionless. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`.
+    - ``uncertainty``: sequence, optional
+        Metadata describing uncertainty for the profile values. Must conform to
+        :ref:`value-metadata-only <schema-value-metadata-only>`.
 
-* ``time-shift``: mapping, optional
-    Defines the ``t = 0`` reference used for the profile. Fields:
-
-    - ``target``: string, required
-        The species or quantity used to define the time-zero reference.
-
-    - ``type``: string, required
-        Must be ``half decrease`` or ``relative decrease``.
-
-    - ``amount``: sequence, optional
-        A numerical threshold associated with ``type`` (e.g., the fractional decrease). Must
-        conform to :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-.. _burner-stabilized-flame-keys:
-
-Burner Stabilized Flame Speciation Measurement Keys
----------------------------------------------------
-
-This section details the schema for a burner stabilized flame speciation measurement datapoint,
-selected when :ref:`experiment-type <reference-experiment-type>` is ``burner stabilized flame
-speciation measurement``.
-
-* ``temperature``: sequence, required
-    The temperature at the measurement location, with dimensions of temperature. Must conform
-    to :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``pressure``: sequence, required
-    The pressure of the experiment, with dimensions of mass per length per time squared. Must
-    conform to :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``distance``: sequence, required
-    The distance from the burner surface at which the sample was taken, with dimensions of
-    length. Must conform to :ref:`value-unit-required <schema-value-unit-required>`.
-
-* ``composition``: mapping, required
-    The composition of the inlet (unburnt) mixture. Must conform to
-    :ref:`composition <common-composition>`.
-
-* ``measured-composition``: mapping, required
-    The composition measured at ``distance`` from the burner. Must conform to
-    :ref:`composition <common-composition>`.
-
-* ``equivalence-ratio``: sequence, optional
-    The equivalence ratio of the experiment, dimensionless. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`.
-
-* ``flow-rate``: sequence, optional
-    The flow rate through the burner. Must conform to
-    :ref:`value-unit-optional <schema-value-unit-optional>`.
+* ``auxiliary-profiles``: sequence, optional
+    A sequence of auxiliary measured profiles, such as temperature, pressure, volume, or
+    velocity. Each profile includes an ``independent`` mapping, a ``quantity`` mapping, and
+    ``values`` rows.
 
 .. _schema-only-keys:
 
@@ -666,8 +609,13 @@ should not be used in actual ChemKED files. These keys are documented in this se
         dimensions for the particular quantity under consideration.
 
     - 1: mapping, optional
-        The second element of the sequence is a mapping containing any combination of the
-        following uncertainty and evaluated-standard-deviation fields:
+        The second element of the sequence is a mapping containing uncertainty and/or
+        evaluated-standard-deviation metadata. Metadata labels such as ``uncertainty-type``,
+        ``uncertainty-sourcetype``, ``evaluated-standard-deviation-type``,
+        ``evaluated-standard-deviation-sourcetype``, and
+        ``evaluated-standard-deviation-method`` must be accompanied by an actual
+        ``uncertainty``, ``upper-uncertainty``/``lower-uncertainty``, or
+        ``evaluated-standard-deviation`` value.
 
         - Uncertainty fields:
 
@@ -692,7 +640,8 @@ should not be used in actual ChemKED files. These keys are documented in this se
 
             * ``uncertainty-sourcetype``: string, optional
                 A label describing how the ``uncertainty`` value was obtained. Typical values
-                include ``reported``, ``estimated``, ``calculated``, and ``digitized``.
+                include ``reported``, ``estimated``, ``calculated``, and ``digitized``. Must be
+                accompanied by an uncertainty value.
 
         The mapping may also include the
         :ref:`evaluated-standard-deviation <schema-evaluated-standard-deviation>` fields, which
@@ -712,16 +661,19 @@ should not be used in actual ChemKED files. These keys are documented in this se
         must include units whose dimensions match the value.
 
     * ``evaluated-standard-deviation-type``: string, optional
-        Must be ``absolute`` or ``relative``.
+        Must be ``absolute`` or ``relative``. Must be accompanied by an
+        ``evaluated-standard-deviation`` value.
 
     * ``evaluated-standard-deviation-sourcetype``: string, optional
         A label describing how the evaluated standard deviation was obtained. Typical values
-        include ``reported``, ``estimated``, ``calculated``, and ``digitized``.
+        include ``reported``, ``estimated``, ``calculated``, and ``digitized``. Must be
+        accompanied by an ``evaluated-standard-deviation`` value.
 
     * ``evaluated-standard-deviation-method``: string, optional
         The method used to compute the evaluated standard deviation. Typical values include
         ``generic uncertainty``, ``combined from scatter and reported uncertainty``, and
-        ``statistical scatter``.
+        ``statistical scatter``. Must be accompanied by an ``evaluated-standard-deviation``
+        value.
 
 .. _schema-value-without-uncertainty:
 
@@ -737,13 +689,15 @@ should not be used in actual ChemKED files. These keys are documented in this se
 
 * ``value-metadata-only``: sequence
     A metadata-only entry containing uncertainty and/or evaluated-standard-deviation fields but
-    no value. Used in ``common-properties`` when the uncertainty metadata is shared across
-    datapoints but the property value varies per datapoint. Sequence elements:
+    no measured value. Used in ``common-properties`` when the uncertainty metadata is shared
+    across datapoints but the property value varies per datapoint. The metadata mapping must
+    include an actual ``uncertainty``, ``upper-uncertainty``/``lower-uncertainty``, or
+    ``evaluated-standard-deviation`` value. Sequence elements:
 
     - 0: mapping, required
-        A mapping containing any combination of the uncertainty and evaluated-standard-deviation
-        fields listed in :ref:`value-with-uncertainty <schema-value-with-uncertainty>` (element
-        ``1``). No value element is included.
+        A mapping containing uncertainty and/or evaluated-standard-deviation fields listed in
+        :ref:`value-with-uncertainty <schema-value-with-uncertainty>` (element ``1``). No
+        measured value element is included.
 
 .. _schema-value-unit-required:
 
