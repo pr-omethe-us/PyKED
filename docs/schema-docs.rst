@@ -661,8 +661,10 @@ should not be used in actual ChemKED files. These keys are documented in this se
     without the uncertainty fields:
 
     * ``evaluated-standard-deviation``: string or float, optional
-        The evaluated standard deviation value. If given as a string with ``absolute`` type,
-        must include units whose dimensions match the value.
+        The evaluated standard deviation value. If ``evaluated-standard-deviation-type`` is
+        ``absolute`` for a unitful quantity, the value must include units whose dimensions match
+        the quantity being described. Relative values and dimensionless absolute values may be
+        plain floats.
 
     * ``evaluated-standard-deviation-type``: string, optional
         Must be ``absolute`` or ``relative``. Must be accompanied by an

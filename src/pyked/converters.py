@@ -8,7 +8,6 @@ from typing import Any
 from warnings import warn
 
 import habanero
-import httpx as habanero_httpx
 import httpx2 as httpx
 import pint
 
@@ -110,8 +109,6 @@ def get_reference(root):
         try:
             ref = crossref_api.works(ids=ref_doi)["message"]
         except (
-            habanero_httpx.ConnectError,
-            habanero_httpx.HTTPStatusError,
             httpx.HTTPStatusError,
             habanero.RequestError,
             httpx.ConnectError,
