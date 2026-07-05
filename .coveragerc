@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = pyked
+source = src/pyked
 
 [report]
 exclude_lines =
@@ -10,6 +10,5 @@ exclude_lines =
     if __name__ == .__main__.:
 ignore_errors = True
 omit =
-    pyked/tests/*
     setup.py
-    pyked/_version.py
+    src/pyked/_version.py
