@@ -829,14 +829,24 @@ class DataPoint:
         quant = Q_(properties[0])
         if len(properties) > 1:
             unc = properties[1]
-            uncertainty = unc.get("uncertainty", False)
-            upper_uncertainty = unc.get("upper-uncertainty", False)
-            lower_uncertainty = unc.get("lower-uncertainty", False)
+            uncertainty = unc.get("uncertainty")
+            upper_uncertainty = unc.get("upper-uncertainty")
+            lower_uncertainty = unc.get("lower-uncertainty")
             uncertainty_type = unc.get("uncertainty-type")
+
+            if uncertainty_type is None:
+                if (
+                    uncertainty is not None
+                    or upper_uncertainty is not None
+                    or lower_uncertainty is not None
+                ):
+                    raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+                return quant
+
             if uncertainty_type == "relative":
-                if uncertainty:
+                if uncertainty is not None:
                     quant = quant.plus_minus(float(uncertainty), relative=True)
-                elif upper_uncertainty and lower_uncertainty:
+                elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
                         "Asymmetric uncertainties are not supported. The "
                         "maximum of lower-uncertainty and upper-uncertainty "
@@ -850,10 +860,10 @@ class DataPoint:
                         '"lower-uncertainty" need to be specified.'
                     )
             elif uncertainty_type == "absolute":
-                if uncertainty:
+                if uncertainty is not None:
                     uncertainty = Q_(uncertainty)
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                elif upper_uncertainty and lower_uncertainty:
+                elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
                         "Asymmetric uncertainties are not supported. The "
                         "maximum of lower-uncertainty and upper-uncertainty "

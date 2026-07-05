@@ -940,6 +940,26 @@ class TestDataPoint:
                 DataPoint(properties[1])
             properties[1]["composition"]["species"][2]["amount"][1][prop] = save
 
+    def test_evaluated_standard_deviation_metadata_without_uncertainty(self):
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        metadata = {
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+        }
+        datapoint = properties["datapoints"][0]
+        datapoint["temperature"].append(deepcopy(metadata))
+        datapoint["equivalence-ratio"].append(deepcopy(metadata))
+        datapoint["composition"]["species"][0]["amount"].append(deepcopy(metadata))
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.temperature, Q_(1164.48, "kelvin"))
+        assert datapoint.equivalence_ratio == 0.4
+        assert np.isclose(datapoint.composition["H2"].amount, Q_(0.00444))
+
     def test_volume_history(self):
         """Test that volume history works properly.
 
