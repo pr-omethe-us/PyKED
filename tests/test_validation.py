@@ -755,6 +755,33 @@ class TestValidator:
         assert "Species B mass fraction must be greater than 0.0" in errors
         assert "Species mass fractions do not sum to 1.0: 1.100000" in errors
 
+    @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
+    def test_concentration_composition_kind(self, kind):
+        """Ensure concentration-style composition kinds are allowed."""
+        composition = {
+            "kind": kind,
+            "species": [
+                {"species-name": "A", "amount": [1.2]},
+                {"species-name": "B", "amount": [0.3]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
+    def test_concentration_composition_nonnegative(self, kind):
+        """Ensure concentration-style composition amounts cannot be negative."""
+        composition = {
+            "kind": kind,
+            "species": [
+                {"species-name": "A", "amount": [-0.1]},
+                {"species-name": "B", "amount": [1.1]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+        errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
+        assert f"Species A {kind} must be greater than 0.0" in errors
+        assert not any("do not sum" in error for error in errors)
+
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_relative_uncertainty_validation(self, quantity, unit):
         """Ensure that quantites with relative uncertainty are validated properly."""
@@ -1072,7 +1099,10 @@ class TestValidator:
         species = [{"amount": [1.0]}]
         dp = {"datapoints": [{"composition": {"kind": "bad value", "species": species}}]}
         v.validate(dp, update=True)
-        error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
+        error_str = (
+            'composition kind must be "mole percent", "mass fraction", "mole fraction", '
+            '"mol/cm3", "mol/m3", "mol/L", or "mol/dm3"'
+        )
         assert (
             v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0] == error_str
         )

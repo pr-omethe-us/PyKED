@@ -229,7 +229,11 @@ particular experiment type.
     This mapping provides the specification of the initial composition of the mixture. Fields:
 
     - ``kind``: string, required
-        The ``kind`` can be ``mole fraction``, ``mass fraction``, or ``mole percent``
+        The ``kind`` can be ``mole fraction``, ``mass fraction``, ``mole percent``,
+        ``mol/cm3``, ``mol/m3``, ``mol/L``, or ``mol/dm3``. Fraction kinds must be
+        nonnegative, no greater than 1, and sum to 1. ``mole percent`` values must be
+        nonnegative, no greater than 100, and sum to 100. Concentration-style kinds must be
+        nonnegative and are not required to sum to a fixed total.
 
     - ``species``: sequence, required
         The elements of this sequence specify the species and their amounts in the mixture. Each

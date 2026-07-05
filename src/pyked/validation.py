@@ -606,19 +606,29 @@ class OurValidator(Validator):
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
+        composition_kind = value["kind"]
+        fraction_kinds = ["mass fraction", "mole fraction"]
+        percent_kinds = ["mole percent"]
+        concentration_kinds = ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"]
+
         sum_amount = 0.0
-        if value["kind"] in ["mass fraction", "mole fraction"]:
+        total_amount = None
+        if composition_kind in fraction_kinds:
             low_lim = 0.0
             up_lim = 1.0
             total_amount = 1.0
-        elif value["kind"] in ["mole percent"]:
+        elif composition_kind in percent_kinds:
             low_lim = 0.0
             up_lim = 100.0
             total_amount = 100.0
+        elif composition_kind in concentration_kinds:
+            low_lim = 0.0
+            up_lim = None
         else:
             self._error(
                 field,
-                'composition kind must be "mole percent", "mass fraction", or "mole fraction"',
+                'composition kind must be "mole percent", "mass fraction", "mole fraction", '
+                '"mol/cm3", "mol/m3", "mol/L", or "mol/dm3"',
             )
             return False
 
@@ -630,19 +640,20 @@ class OurValidator(Validator):
             if amount < low_lim:
                 self._error(
                     field,
-                    f"Species {sp['species-name']} {value['kind']} "
+                    f"Species {sp['species-name']} {composition_kind} "
                     f"must be greater than {low_lim:.1f}",
                 )
-            elif amount > up_lim:
+            elif up_lim is not None and amount > up_lim:
                 self._error(
                     field,
-                    f"Species {sp['species-name']} {value['kind']} must be less than {up_lim:.1f}",
+                    f"Species {sp['species-name']} {composition_kind} "
+                    f"must be less than {up_lim:.1f}",
                 )
 
         # Make sure mole/mass fraction sum to 1
-        if not np.isclose(total_amount, sum_amount):
+        if total_amount is not None and not np.isclose(total_amount, sum_amount):
             self._error(
                 field,
-                f"Species {value['kind']}s do not sum to {total_amount:.1f}: {sum_amount:f}",
+                f"Species {composition_kind}s do not sum to {total_amount:.1f}: {sum_amount:f}",
             )
         # TODO: validate InChI, SMILES, or atomic-composition
