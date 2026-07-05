@@ -94,3 +94,5 @@ ENV/
 .DS_Store
 
 PR_DESCRIPTION.md
+
+# Local conversion scripts
