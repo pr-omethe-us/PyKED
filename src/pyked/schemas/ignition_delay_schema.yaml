@@ -17,8 +17,6 @@ ignition-type: &ignition-type
         - CO2
         - N2O
         - CH4
-        - OHEX
-        - CHEX
         - CO
         - H2O
         - C2
@@ -27,9 +25,6 @@ ignition-type: &ignition-type
         - CH3
         - O2
         - soot
-        - CO;O
-        - "[O]*[CO]"
-        - NEOC5H11
     type:
       allowed:
         - d/dt max

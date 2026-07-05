@@ -303,8 +303,8 @@ for the :ref:`datapoints <meta-datapoints>` schema.
     - ``target``: string, required
         Describes the target measurement (species or physical quantity) used to define ignition.
         Must be one of: ``temperature``, ``pressure``, ``OH``, ``OH*``, ``CH``, ``CH*``, ``NH3``,
-        ``CO2``, ``N2O``, ``CH4``, ``OHEX``, ``CHEX``, ``CO``, ``H2O``, ``C2``, ``O``,
-        ``CH3OH``, ``CH3``, ``O2``, ``soot``, ``CO;O``, ``[O]*[CO]``, or ``NEOC5H11``.
+        ``CO2``, ``N2O``, ``CH4``, ``CO``, ``H2O``, ``C2``, ``O``,
+        ``CH3OH``, ``CH3``, ``O2``, ``soot``.
 
     - ``type``: string, required
         Describes the type of ignition delay measurement. Can be one of:
