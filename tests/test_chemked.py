@@ -51,6 +51,7 @@ class TestChemKED:
             assert d.pressure_rise is None
             assert d.volume_history is None
             assert d.rcm_data is None
+            assert d.equivalence_ratio == 0.4
             assert d.ignition_type["type"] == "d/dt max"
             assert d.ignition_type["target"] == "pressure"
 

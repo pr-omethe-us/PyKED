@@ -758,7 +758,9 @@ class DataPoint:
 
         self.composition = composition
 
-        self.equivalence_ratio = properties.get("equivalence-ratio")
+        self.equivalence_ratio = self.process_equivalence_ratio(
+            properties.get("equivalence-ratio")
+        )
         self.ignition_type = deepcopy(properties.get("ignition-type"))
 
         if "time-histories" in properties and "volume-history" in properties:
@@ -868,6 +870,20 @@ class DataPoint:
                 raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
 
         return quant
+
+    def process_equivalence_ratio(self, properties):
+        """Process equivalence ratio while preserving the historic scalar API."""
+        if properties is None:
+            return None
+
+        if isinstance(properties, list):
+            if len(properties) == 0 or isinstance(properties[0], dict):
+                return None
+            quant = self.process_quantity(properties)
+        else:
+            quant = Q_(properties)
+
+        return quant.to("dimensionless").magnitude
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.
