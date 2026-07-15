@@ -122,6 +122,13 @@ key, and reused in many different data points within a single ChemKED file. All 
 ``common-properties`` section are optional, although some of their values may be required in a
 particular experiment type.
 
+Sharing common values across datapoints is done with YAML anchors and aliases: define the value
+once in ``common-properties`` with an anchor and reference it from each datapoint. In addition,
+when a ChemKED file is loaded, a metadata-only ``common-properties`` entry (see
+:ref:`value-metadata-only <schema-value-metadata-only>`) is combined with the corresponding
+per-datapoint value in every datapoint whose value has no metadata of its own. Metadata
+specified in a datapoint always takes precedence over the common properties.
+
 .. _common-pressure-rise:
 
 * ``pressure-rise``: sequence, optional
@@ -660,15 +667,15 @@ should not be used in actual ChemKED files. These keys are documented in this se
     composition :ref:`amount <common-composition>` metadata mapping, and may be used with or
     without the uncertainty fields:
 
-    * ``evaluated-standard-deviation``: string or float, optional
+    * ``evaluated-standard-deviation``: string or float, requires ``evaluated-standard-deviation-type``
         The evaluated standard deviation value. If ``evaluated-standard-deviation-type`` is
         ``absolute`` for a unitful quantity, the value must include units whose dimensions match
         the quantity being described. Relative values and dimensionless absolute values may be
         plain floats.
 
     * ``evaluated-standard-deviation-type``: string, optional
-        Must be ``absolute`` or ``relative``. Must be accompanied by an
-        ``evaluated-standard-deviation`` value.
+        Must be ``absolute`` or ``relative``. Required whenever an
+        ``evaluated-standard-deviation`` value is given, and must be accompanied by one.
 
     * ``evaluated-standard-deviation-sourcetype``: string, optional
         A label describing how the evaluated standard deviation was obtained. Typical values

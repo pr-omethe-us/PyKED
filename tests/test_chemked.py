@@ -960,6 +960,133 @@ class TestDataPoint:
         assert datapoint.equivalence_ratio == 0.4
         assert np.isclose(datapoint.composition["H2"].amount, Q_(0.00444))
 
+    def test_uncertainty_type_with_esd_only_metadata(self):
+        """uncertainty-type alongside an ESD value but no uncertainty value must not crash."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        metadata = {
+            "uncertainty-type": "relative",
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+        }
+        properties["datapoints"][0]["temperature"].append(metadata)
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.temperature, Q_(1164.48, "kelvin"))
+        assert not hasattr(datapoint.temperature, "error")
+
+    def test_evaluated_standard_deviation_is_stored(self):
+        """ESD metadata is stored on the DataPoint and on composition amounts."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        datapoint = properties["datapoints"][0]
+        datapoint["temperature"].append(
+            {
+                "evaluated-standard-deviation": "10.0 kelvin",
+                "evaluated-standard-deviation-type": "absolute",
+                "evaluated-standard-deviation-sourcetype": "reported",
+            }
+        )
+        datapoint["ignition-delay"].append(
+            {
+                "evaluated-standard-deviation": 0.15,
+                "evaluated-standard-deviation-type": "relative",
+                "evaluated-standard-deviation-method": "statistical scatter",
+            }
+        )
+        datapoint["composition"]["species"][0]["amount"].append(
+            {
+                "evaluated-standard-deviation": 0.0002,
+                "evaluated-standard-deviation-type": "absolute",
+            }
+        )
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+
+        esd = datapoint.evaluated_standard_deviation["temperature"]
+        assert esd.value == Q_("10.0 kelvin")
+        assert esd.type == "absolute"
+        assert esd.sourcetype == "reported"
+
+        esd = datapoint.evaluated_standard_deviation["ignition_delay"]
+        assert esd.value == 0.15
+        assert esd.type == "relative"
+        assert esd.method == "statistical scatter"
+
+        assert datapoint.composition["H2"].amount_esd.value == Q_(0.0002)
+        assert datapoint.composition["O2"].amount_esd is None
+        assert "pressure" not in datapoint.evaluated_standard_deviation
+
+    def test_common_properties_metadata_merged_into_datapoints(self):
+        """Metadata-only common-properties entries apply to each datapoint's values."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        properties["common-properties"]["temperature"] = [
+            {
+                "uncertainty-type": "relative",
+                "uncertainty": 0.02,
+                "evaluated-standard-deviation": 0.1,
+                "evaluated-standard-deviation-type": "relative",
+            }
+        ]
+        # Common entries that carry a value are not copied into datapoints;
+        # sharing values is done with YAML anchors instead
+        properties["common-properties"]["pressure-rise"] = ["0.10 1/ms"]
+
+        chemked = ChemKED(dict_input=properties)
+        for datapoint in chemked.datapoints:
+            assert np.isclose(datapoint.temperature.rel, 0.02)
+            esd = datapoint.evaluated_standard_deviation["temperature"]
+            assert esd.value == 0.1
+            assert esd.type == "relative"
+            assert datapoint.pressure_rise is None
+
+        # The original input must not be modified by the merge
+        assert len(properties["datapoints"][0]["temperature"]) == 1
+
+    def test_metadata_only_optional_quantities_load_as_none(self):
+        """Metadata-only entries on optional fields are schema-valid and load as None."""
+        filename = Path("tests") / "testfile_rcm.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        metadata = {
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+        }
+        datapoint = properties["datapoints"][0]
+        datapoint["pressure-rise"] = [deepcopy(metadata)]
+        datapoint["equivalence-ratio"] = [deepcopy(metadata)]
+        datapoint["rcm-data"]["stroke"] = [deepcopy(metadata)]
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert datapoint.pressure_rise is None
+        assert datapoint.equivalence_ratio is None
+        assert datapoint.rcm_data.stroke is None
+        assert datapoint.rcm_data.compression_time == Q_(38.0, "ms")
+
+    def test_process_quantity_metadata_only_raises_clear_error(self):
+        """process_quantity rejects metadata-only lists with a clear message."""
+        properties = self.load_properties("testfile_rcm.yaml")
+        datapoint = DataPoint(properties[0])
+        metadata_only = [
+            {
+                "evaluated-standard-deviation": 0.1,
+                "evaluated-standard-deviation-type": "relative",
+            }
+        ]
+        with pytest.raises(ValueError, match="Metadata-only entries"):
+            datapoint.process_quantity(metadata_only)
+
     def test_volume_history(self):
         """Test that volume history works properly.
 

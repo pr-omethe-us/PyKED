@@ -71,7 +71,9 @@ In the reference section, information about the experimental facility and the ar
 is published is collected. This information typically includes:
 
     * the type of experiment (ignition delay, laminar burning velocity, etc.)
-    * the type and location of the experimental apparatus (rapid compression machine or shock tube)
+    * the type and location of the experimental apparatus (e.g., shock tube, rapid compression
+      machine, jet stirred reactor, flow reactor, or one of the other kinds listed in the
+      :ref:`apparatus schema <reference-apparatus>`)
     * the article authors and the journal, DOI, volume, and issue where the data was published
     * a note about where in the paper the data was collected from, if multiple data sets are
       presented in the same work

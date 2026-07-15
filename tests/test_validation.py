@@ -869,6 +869,29 @@ class TestValidator:
         assert validator.validate({"temperature": ["1000 kelvin", metadata]})
         assert v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
 
+    def test_evaluated_standard_deviation_requires_type(self):
+        """Ensure an ESD value without evaluated-standard-deviation-type is rejected."""
+        metadata = {"evaluated-standard-deviation": 0.1}
+        assert not v.validate(
+            {"common-properties": {"temperature": ["1000 kelvin", metadata]}}, update=True
+        )
+        assert not v.validate(
+            {"common-properties": {"temperature": [metadata]}}, update=True
+        )
+
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {
+                    "species-name": "A",
+                    "amount": [1.0, {"evaluated-standard-deviation": 0.01}],
+                }
+            ],
+        }
+        assert not v.validate(
+            {"common-properties": {"composition": composition}}, update=True
+        )
+
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_absolute_evaluated_standard_deviation_validation(self, quantity, unit):
         """Ensure absolute ESD values are validated with compatible units."""
