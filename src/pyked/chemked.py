@@ -94,6 +94,22 @@ class Apparatus(NamedTuple):
     """(`str`) The particular experimental facility at the location"""
 
 
+class EvaluatedStandardDeviation(NamedTuple):
+    """Evaluated standard deviation metadata attached to a quantity"""
+
+    value: pint.Quantity | float
+    """(`~pint.Quantity` or `float`) The evaluated standard deviation. Absolute values are
+    stored as a `~pint.Quantity` with the units given in the file; relative values are stored
+    as a plain `float` fraction"""
+    type: str | None
+    """(`str`) Whether the value is ``absolute`` or ``relative``"""
+    sourcetype: str | None
+    """(`str`) How the value was obtained, e.g. ``reported``, ``estimated``, ``calculated``,
+    or ``digitized``"""
+    method: str | None
+    """(`str`) The method used to compute the value, e.g. ``statistical scatter``"""
+
+
 class Composition(NamedTuple):
     """Detail of the initial composition of the mixture for the experiment"""
 
@@ -107,6 +123,9 @@ class Composition(NamedTuple):
     """(`dict`) The atomic composition of the species"""
     amount: pint.Quantity
     """(`~pint.Quantity`) The amount of this species"""
+    amount_esd: EvaluatedStandardDeviation | None = None
+    """(`EvaluatedStandardDeviation`) The evaluated standard deviation of the amount,
+    if specified"""
 
 
 class ChemKED:
@@ -156,9 +175,10 @@ class ChemKED:
         if not skip_validation:
             self.validate_yaml(self._properties)
 
+        common = self._properties.get("common-properties", {})
         self.datapoints = []
         for point in self._properties["datapoints"]:
-            self.datapoints.append(DataPoint(point))
+            self.datapoints.append(DataPoint(self._apply_common_properties(point, common)))
 
         self.reference = Reference(
             volume=self._properties["reference"].get("volume"),
@@ -183,6 +203,33 @@ class ChemKED:
             "file-version",
         ]:
             setattr(self, prop.replace("-", "_"), self._properties[prop])
+
+    @staticmethod
+    def _apply_common_properties(point, common):
+        """Apply metadata-only ``common-properties`` entries to a datapoint.
+
+        A metadata-only common entry (shared uncertainty or
+        evaluated-standard-deviation metadata) is appended to the
+        corresponding per-datapoint value when that value has no metadata of
+        its own; metadata given in the datapoint itself takes precedence.
+        Common entries that carry a value are not copied into datapoints:
+        following the original PyKED design, sharing values is done with YAML
+        anchors in the file. The input dictionaries are not modified.
+        """
+        merged = None
+        for key, common_value in common.items():
+            entry = point.get(key)
+            if (
+                DataPoint._is_metadata_only(common_value)
+                and isinstance(entry, list)
+                and len(entry) == 1
+                and not isinstance(entry[0], dict)
+            ):
+                if merged is None:
+                    merged = deepcopy(point)
+                merged[key].append(deepcopy(common_value[0]))
+
+        return point if merged is None else merged
 
     @classmethod
     def from_respecth(cls, filename_xml, file_author="", file_author_orcid=""):
@@ -700,6 +747,9 @@ class DataPoint:
             reactor during an experiment.
         absorption_history (`~collections.namedtuple`, optional): The absorption history of the
             reactor during an experiment.
+        evaluated_standard_deviation (`dict`): Mapping of property name (with underscores,
+            e.g. ``ignition_delay``) to the `EvaluatedStandardDeviation` given in the file
+            for that property, for properties that specify one.
     """
 
     value_unit_props: ClassVar[list[str]] = [
@@ -720,8 +770,12 @@ class DataPoint:
     ]
 
     def __init__(self, properties):
+        self.evaluated_standard_deviation: dict[str, EvaluatedStandardDeviation] = {}
+
         for prop in self.value_unit_props:
             if prop in properties:
+                self._store_evaluated_standard_deviation(prop, properties[prop])
+            if prop in properties and not self._is_metadata_only(properties[prop]):
                 quant = self.process_quantity(properties[prop])
                 setattr(self, prop.replace("-", "_"), quant)
             else:
@@ -732,6 +786,10 @@ class DataPoint:
             rcm_props = {}
             for prop in self.rcm_data_props:
                 if prop in orig_rcm_data:
+                    self._store_evaluated_standard_deviation(prop, orig_rcm_data[prop])
+                if prop in orig_rcm_data and not self._is_metadata_only(
+                    orig_rcm_data[prop]
+                ):
                     quant = self.process_quantity(orig_rcm_data[prop])
                     rcm_props[prop.replace("-", "_")] = quant
                 else:
@@ -754,10 +812,15 @@ class DataPoint:
                 SMILES=SMILES,
                 atomic_composition=atomic_composition,
                 amount=amount,
+                amount_esd=self.process_evaluated_standard_deviation(species["amount"]),
             )
 
         self.composition = composition
 
+        if "equivalence-ratio" in properties:
+            self._store_evaluated_standard_deviation(
+                "equivalence-ratio", properties["equivalence-ratio"]
+            )
         self.equivalence_ratio = self.process_equivalence_ratio(
             properties.get("equivalence-ratio")
         )
@@ -824,8 +887,72 @@ class DataPoint:
             if not hasattr(self, f"{h}_history"):
                 setattr(self, f"{h}_history", None)
 
+    @staticmethod
+    def _is_metadata_only(properties):
+        """Check for a metadata-only quantity, i.e. a list without a leading value.
+
+        The ``value-metadata-only`` schema rule allows uncertainty metadata to be
+        given without an associated value, so such entries carry no quantity that
+        could be parsed.
+        """
+        return (
+            isinstance(properties, list)
+            and len(properties) > 0
+            and isinstance(properties[0], dict)
+        )
+
+    def process_evaluated_standard_deviation(self, properties):
+        """Extract evaluated-standard-deviation metadata from a quantity list.
+
+        Arguments:
+            properties (`list`): List in the value-unit format, whose metadata
+                mapping (if any) may contain evaluated-standard-deviation fields.
+
+        Returns:
+            `EvaluatedStandardDeviation` or `None`: The evaluated standard
+            deviation, or `None` when the metadata does not include one.
+        """
+        if not isinstance(properties, list):
+            return None
+
+        if self._is_metadata_only(properties):
+            metadata = properties[0]
+        elif len(properties) > 1 and isinstance(properties[1], dict):
+            metadata = properties[1]
+        else:
+            return None
+
+        esd = metadata.get("evaluated-standard-deviation")
+        if esd is None:
+            return None
+
+        esd_type = metadata.get("evaluated-standard-deviation-type")
+        if esd_type == "absolute":
+            value = Q_(esd)
+        else:
+            value = float(Q_(esd).magnitude)
+
+        return EvaluatedStandardDeviation(
+            value=value,
+            type=esd_type,
+            sourcetype=metadata.get("evaluated-standard-deviation-sourcetype"),
+            method=metadata.get("evaluated-standard-deviation-method"),
+        )
+
+    def _store_evaluated_standard_deviation(self, prop, properties):
+        """Store the evaluated standard deviation of a property, if one is given."""
+        esd = self.process_evaluated_standard_deviation(properties)
+        if esd is not None:
+            self.evaluated_standard_deviation[prop.replace("-", "_")] = esd
+
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it"""
+        if self._is_metadata_only(properties):
+            raise ValueError(
+                "The first element of a quantity must be a value with units, but an "
+                f"uncertainty metadata mapping was found: {properties[0]!r}. "
+                "Metadata-only entries do not contain a value that can be parsed."
+            )
         quant = Q_(properties[0])
         if len(properties) > 1:
             unc = properties[1]
@@ -834,14 +961,27 @@ class DataPoint:
             lower_uncertainty = unc.get("lower-uncertainty")
             uncertainty_type = unc.get("uncertainty-type")
 
+            has_uncertainty_value = (
+                uncertainty is not None
+                or upper_uncertainty is not None
+                or lower_uncertainty is not None
+            )
+
             if uncertainty_type is None:
-                if (
-                    uncertainty is not None
-                    or upper_uncertainty is not None
-                    or lower_uncertainty is not None
-                ):
+                if has_uncertainty_value:
                     raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
                 return quant
+
+            if not has_uncertainty_value:
+                if unc.get("evaluated-standard-deviation") is not None:
+                    # Only evaluated-standard-deviation metadata accompanies the
+                    # uncertainty-type label; there is no uncertainty to attach
+                    # to the quantity.
+                    return quant
+                raise ValueError(
+                    'Either "uncertainty" or "upper-uncertainty" and '
+                    '"lower-uncertainty" need to be specified.'
+                )
 
             if uncertainty_type == "relative":
                 if uncertainty is not None:
@@ -887,7 +1027,7 @@ class DataPoint:
             return None
 
         if isinstance(properties, list):
-            if len(properties) == 0 or isinstance(properties[0], dict):
+            if len(properties) == 0 or self._is_metadata_only(properties):
                 return None
             quant = self.process_quantity(properties)
         else:

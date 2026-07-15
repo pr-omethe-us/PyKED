@@ -118,6 +118,8 @@ composition: &composition
                         type: string
                       evaluated-standard-deviation:
                         type: float
+                        dependencies:
+                          - evaluated-standard-deviation-type
                       evaluated-standard-deviation-type:
                         type: string
                         allowed:

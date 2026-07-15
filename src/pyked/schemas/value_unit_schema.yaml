@@ -45,6 +45,8 @@ value-with-uncertainty: &value-with-uncertainty
           anyof_type:
             - string
             - float
+          dependencies:
+            - evaluated-standard-deviation-type
         evaluated-standard-deviation-type:
           type: string
           allowed:
@@ -106,6 +108,8 @@ value-metadata-only: &value-metadata-only
           anyof_type:
             - string
             - float
+          dependencies:
+            - evaluated-standard-deviation-type
         evaluated-standard-deviation-type:
           type: string
           allowed:
