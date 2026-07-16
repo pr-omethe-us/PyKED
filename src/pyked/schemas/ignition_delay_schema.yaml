@@ -140,7 +140,9 @@ ignition-delay-schema: &ignition-delay-schema
           clearance: *value-unit-optional
           compression-ratio: *value-unit-optional
       temperature: *value-unit-required
-      composition: *composition
+      composition:
+        <<: *composition
+        required: true
       equivalence-ratio: *value-unit-optional
       time-histories:
         type: list

@@ -9,5 +9,7 @@ laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measureme
       temperature: *value-unit-required
       pressure-rise: *value-unit-optional
       equivalence-ratio: *value-unit-optional
-      composition: *composition
+      composition:
+        <<: *composition
+        required: true
       laminar-burning-velocity: *value-unit-required

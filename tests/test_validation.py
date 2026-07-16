@@ -1190,6 +1190,15 @@ class TestValidator:
             v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0] == error_str
         )
 
+    @pytest.mark.parametrize("properties", ["testfile_st.yaml"], indirect=["properties"])
+    def test_composition_required(self, properties, mock_all_apis):
+        """A datapoint missing composition must fail validation, not crash at load."""
+        for datapoint in properties["datapoints"]:
+            datapoint.pop("composition", None)
+        assert not v.validate(properties)
+        errors = str(v.errors["datapoints"])
+        assert "composition" in errors and "required field" in errors
+
     @pytest.mark.parametrize("properties", ["testfile_st_thermo.yaml"], indirect=["properties"])
     def test_composition_thermo(self, properties, mock_all_apis):
         """Test to make sure that correct thermo fields validate correctly"""

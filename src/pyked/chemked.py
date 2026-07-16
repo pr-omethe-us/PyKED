@@ -15,7 +15,7 @@ import pint
 from .converters import ReSpecTh_to_ChemKED, datagroup_properties
 
 # Local imports
-from .validation import Q_, OurValidator, schema, yaml
+from .validation import Q_, OurValidator, _normalize_unit_str, schema, yaml
 
 
 class VolumeHistory(NamedTuple):
@@ -732,6 +732,8 @@ class DataPoint:
             for an RCM experiment.
         first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the
             experiment.
+        laminar_burning_velocity (pint.Quantity, optional): The laminar burning velocity of the
+            experiment.
         ignition_type (`dict`): Dictionary with the ignition target and type.
         volume_history (`~collections.namedtuple`, optional): The volume history of the reactor
             during an RCM experiment.
@@ -758,6 +760,7 @@ class DataPoint:
         "temperature",
         "pressure",
         "pressure-rise",
+        "laminar-burning-velocity",
     ]
 
     rcm_data_props: ClassVar[list[str]] = [
@@ -928,9 +931,9 @@ class DataPoint:
 
         esd_type = metadata.get("evaluated-standard-deviation-type")
         if esd_type == "absolute":
-            value = Q_(esd)
+            value = Q_(_normalize_unit_str(esd))
         else:
-            value = float(Q_(esd).magnitude)
+            value = float(Q_(_normalize_unit_str(esd)).magnitude)
 
         return EvaluatedStandardDeviation(
             value=value,
@@ -953,7 +956,7 @@ class DataPoint:
                 f"uncertainty metadata mapping was found: {properties[0]!r}. "
                 "Metadata-only entries do not contain a value that can be parsed."
             )
-        quant = Q_(properties[0])
+        quant = Q_(_normalize_unit_str(properties[0]))
         if len(properties) > 1:
             unc = properties[1]
             uncertainty = unc.get("uncertainty")
@@ -1001,7 +1004,7 @@ class DataPoint:
                     )
             elif uncertainty_type == "absolute":
                 if uncertainty is not None:
-                    uncertainty = Q_(uncertainty)
+                    uncertainty = Q_(_normalize_unit_str(uncertainty))
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
@@ -1009,7 +1012,10 @@ class DataPoint:
                         "maximum of lower-uncertainty and upper-uncertainty "
                         "has been used as the symmetric uncertainty."
                     )
-                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                    uncertainty = max(
+                        Q_(_normalize_unit_str(upper_uncertainty)),
+                        Q_(_normalize_unit_str(lower_uncertainty)),
+                    )
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 else:
                     raise ValueError(
@@ -1031,7 +1037,7 @@ class DataPoint:
                 return None
             quant = self.process_quantity(properties)
         else:
-            quant = Q_(properties)
+            quant = Q_(_normalize_unit_str(properties))
 
         return quant.to("dimensionless").magnitude
 
