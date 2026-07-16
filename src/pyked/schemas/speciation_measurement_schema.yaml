@@ -25,7 +25,9 @@ speciation-measurement-schema: &speciation-measurement-schema
     schema:
       pressure: *value-unit-required
       temperature: *value-unit-optional                 # inlet/initial
-      composition: *composition                          # inlet / initial composition
+      composition:                                       # inlet / initial composition
+        <<: *composition
+        required: true
       equivalence-ratio: *value-unit-optional
       environment-temperature: *value-unit-optional
       residence-time: *value-unit-optional

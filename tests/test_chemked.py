@@ -1023,6 +1023,50 @@ class TestDataPoint:
         assert datapoint.composition["O2"].amount_esd is None
         assert "pressure" not in datapoint.evaluated_standard_deviation
 
+    def test_unit_normalization_matches_validation(self):
+        """Unit strings accepted by validation must also parse at load time."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        properties["datapoints"][0]["pressure"] = [
+            "220000 kg m-1 s-2",
+            {
+                "uncertainty-type": "absolute",
+                "uncertainty": "1000 kg m-1 s-2",
+                "evaluated-standard-deviation": "2000 kg m-1 s-2",
+                "evaluated-standard-deviation-type": "absolute",
+            },
+        ]
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.pressure.value.to("pascal").magnitude, 220000)
+        assert np.isclose(datapoint.pressure.error.to("pascal").magnitude, 1000)
+        esd = datapoint.evaluated_standard_deviation["pressure"]
+        assert np.isclose(esd.value.to("pascal").magnitude, 2000)
+
+    def test_unit_normalization_asymmetric_uncertainty(self):
+        """Asymmetric absolute uncertainties must normalize like the main value."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename) as f:
+            properties = yaml.safe_load(f)
+
+        properties["datapoints"][0]["pressure"] = [
+            "220000 kg m-1 s-2",
+            {
+                "uncertainty-type": "absolute",
+                "upper-uncertainty": "2000 kg m-1 s-2",
+                "lower-uncertainty": "1000 kg m-1 s-2",
+            },
+        ]
+
+        with pytest.warns(UserWarning):
+            chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.pressure.value.to("pascal").magnitude, 220000)
+        assert np.isclose(datapoint.pressure.error.to("pascal").magnitude, 2000)
+
     def test_common_properties_metadata_merged_into_datapoints(self):
         """Metadata-only common-properties entries apply to each datapoint's values."""
         filename = Path("tests") / "testfile_st.yaml"
