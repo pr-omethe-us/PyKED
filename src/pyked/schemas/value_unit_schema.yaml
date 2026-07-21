@@ -5,7 +5,8 @@ value-with-uncertainty: &value-with-uncertainty
     - anyof_type:
       - string
       - float
-    - type: dict
+    - &uncertainty-metadata
+      type: dict
       schema:
         uncertainty-type:
           type: string
@@ -62,63 +63,6 @@ value-without-uncertainty: &value-without-uncertainty
     - anyof_type:
       - string
       - float
-# Metadata-only: just uncertainty/ESD info without a value.
-# Used in common-properties when uncertainty metadata is shared
-# but the property value varies per datapoint.
-value-metadata-only: &value-metadata-only
-  isvalid_uncertainty: true
-  items:
-    - type: dict
-      schema:
-        uncertainty-type:
-          type: string
-          allowed:
-            - absolute
-            - relative
-        uncertainty:
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - upper-uncertainty
-            - lower-uncertainty
-          dependencies:
-            - uncertainty-type
-        upper-uncertainty:
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - lower-uncertainty
-            - uncertainty-type
-        lower-uncertainty:
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - upper-uncertainty
-            - uncertainty-type
-        uncertainty-sourcetype:
-          type: string
-        evaluated-standard-deviation:
-          anyof_type:
-            - string
-            - float
-          dependencies:
-            - evaluated-standard-deviation-type
-        evaluated-standard-deviation-type:
-          type: string
-          allowed:
-            - absolute
-            - relative
-        evaluated-standard-deviation-sourcetype:
-          type: string
-        evaluated-standard-deviation-method:
-          type: string
 value-unit-required: &value-unit-required
   type: list
   required: true
@@ -130,4 +74,3 @@ value-unit-optional: &value-unit-optional
   anyof:
     - *value-with-uncertainty
     - *value-without-uncertainty
-    - *value-metadata-only

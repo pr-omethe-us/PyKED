@@ -175,10 +175,9 @@ class ChemKED:
         if not skip_validation:
             self.validate_yaml(self._properties)
 
-        common = self._properties.get("common-properties", {})
         self.datapoints = []
         for point in self._properties["datapoints"]:
-            self.datapoints.append(DataPoint(self._apply_common_properties(point, common)))
+            self.datapoints.append(DataPoint(point))
 
         self.reference = Reference(
             volume=self._properties["reference"].get("volume"),
@@ -203,33 +202,6 @@ class ChemKED:
             "file-version",
         ]:
             setattr(self, prop.replace("-", "_"), self._properties[prop])
-
-    @staticmethod
-    def _apply_common_properties(point, common):
-        """Apply metadata-only ``common-properties`` entries to a datapoint.
-
-        A metadata-only common entry (shared uncertainty or
-        evaluated-standard-deviation metadata) is appended to the
-        corresponding per-datapoint value when that value has no metadata of
-        its own; metadata given in the datapoint itself takes precedence.
-        Common entries that carry a value are not copied into datapoints:
-        following the original PyKED design, sharing values is done with YAML
-        anchors in the file. The input dictionaries are not modified.
-        """
-        merged = None
-        for key, common_value in common.items():
-            entry = point.get(key)
-            if (
-                DataPoint._is_metadata_only(common_value)
-                and isinstance(entry, list)
-                and len(entry) == 1
-                and not isinstance(entry[0], dict)
-            ):
-                if merged is None:
-                    merged = deepcopy(point)
-                merged[key].append(deepcopy(common_value[0]))
-
-        return point if merged is None else merged
 
     @classmethod
     def from_respecth(cls, filename_xml, file_author="", file_author_orcid=""):
@@ -778,7 +750,7 @@ class DataPoint:
         for prop in self.value_unit_props:
             if prop in properties:
                 self._store_evaluated_standard_deviation(prop, properties[prop])
-            if prop in properties and not self._is_metadata_only(properties[prop]):
+            if prop in properties:
                 quant = self.process_quantity(properties[prop])
                 setattr(self, prop.replace("-", "_"), quant)
             else:
@@ -790,9 +762,7 @@ class DataPoint:
             for prop in self.rcm_data_props:
                 if prop in orig_rcm_data:
                     self._store_evaluated_standard_deviation(prop, orig_rcm_data[prop])
-                if prop in orig_rcm_data and not self._is_metadata_only(
-                    orig_rcm_data[prop]
-                ):
+                if prop in orig_rcm_data:
                     quant = self.process_quantity(orig_rcm_data[prop])
                     rcm_props[prop.replace("-", "_")] = quant
                 else:
@@ -890,20 +860,6 @@ class DataPoint:
             if not hasattr(self, f"{h}_history"):
                 setattr(self, f"{h}_history", None)
 
-    @staticmethod
-    def _is_metadata_only(properties):
-        """Check for a metadata-only quantity, i.e. a list without a leading value.
-
-        The ``value-metadata-only`` schema rule allows uncertainty metadata to be
-        given without an associated value, so such entries carry no quantity that
-        could be parsed.
-        """
-        return (
-            isinstance(properties, list)
-            and len(properties) > 0
-            and isinstance(properties[0], dict)
-        )
-
     def process_evaluated_standard_deviation(self, properties):
         """Extract evaluated-standard-deviation metadata from a quantity list.
 
@@ -918,9 +874,7 @@ class DataPoint:
         if not isinstance(properties, list):
             return None
 
-        if self._is_metadata_only(properties):
-            metadata = properties[0]
-        elif len(properties) > 1 and isinstance(properties[1], dict):
+        if len(properties) > 1 and isinstance(properties[1], dict):
             metadata = properties[1]
         else:
             return None
@@ -950,12 +904,6 @@ class DataPoint:
 
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it"""
-        if self._is_metadata_only(properties):
-            raise ValueError(
-                "The first element of a quantity must be a value with units, but an "
-                f"uncertainty metadata mapping was found: {properties[0]!r}. "
-                "Metadata-only entries do not contain a value that can be parsed."
-            )
         quant = Q_(_normalize_unit_str(properties[0]))
         if len(properties) > 1:
             unc = properties[1]
@@ -1033,7 +981,7 @@ class DataPoint:
             return None
 
         if isinstance(properties, list):
-            if len(properties) == 0 or self._is_metadata_only(properties):
+            if len(properties) == 0:
                 return None
             quant = self.process_quantity(properties)
         else:

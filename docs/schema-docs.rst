@@ -123,11 +123,10 @@ key, and reused in many different data points within a single ChemKED file. All 
 particular experiment type.
 
 Sharing common values across datapoints is done with YAML anchors and aliases: define the value
-once in ``common-properties`` with an anchor and reference it from each datapoint. In addition,
-when a ChemKED file is loaded, a metadata-only ``common-properties`` entry (see
-:ref:`value-metadata-only <schema-value-metadata-only>`) is combined with the corresponding
-per-datapoint value in every datapoint whose value has no metadata of its own. Metadata
-specified in a datapoint always takes precedence over the common properties.
+once in ``common-properties`` with an anchor and reference it from each datapoint. Uncertainty
+and evaluated-standard-deviation metadata for a measured property must be attached to that
+property's value in each datapoint; metadata without the corresponding property value is not
+allowed in ``common-properties``.
 
 .. _common-pressure-rise:
 
@@ -581,8 +580,10 @@ This section details the schema for a speciation measurement datapoint, selected
         uncertainty value.
 
     - ``uncertainty``: sequence, optional
-        Metadata describing uncertainty for the profile values. Must conform to
-        :ref:`value-metadata-only <schema-value-metadata-only>`.
+        Profile-level uncertainty or evaluated-standard-deviation information. The measured
+        species values are stored separately in ``values``. The sequence contains one mapping
+        with the uncertainty and/or evaluated-standard-deviation fields described under
+        :ref:`value-with-uncertainty <schema-value-with-uncertainty>`.
 
 * ``auxiliary-profiles``: sequence, optional
     A sequence of auxiliary measured profiles, such as temperature, pressure, volume, or
@@ -698,20 +699,6 @@ should not be used in actual ChemKED files. These keys are documented in this se
         string, e.g., ``"1.0 atm"``) or a bare float. The units are validated to have appropriate
         dimensions for the particular quantity under consideration.
 
-.. _schema-value-metadata-only:
-
-* ``value-metadata-only``: sequence
-    A metadata-only entry containing uncertainty and/or evaluated-standard-deviation fields but
-    no measured value. Used in ``common-properties`` when the uncertainty metadata is shared
-    across datapoints but the property value varies per datapoint. The metadata mapping must
-    include an actual ``uncertainty``, ``upper-uncertainty``/``lower-uncertainty``, or
-    ``evaluated-standard-deviation`` value. Sequence elements:
-
-    - 0: mapping, required
-        A mapping containing uncertainty and/or evaluated-standard-deviation fields listed in
-        :ref:`value-with-uncertainty <schema-value-with-uncertainty>` (element ``1``). No
-        measured value element is included.
-
 .. _schema-value-unit-required:
 
 * ``value-unit-required``: sequence, required
@@ -723,10 +710,9 @@ should not be used in actual ChemKED files. These keys are documented in this se
 
 * ``value-unit-optional``: sequence, optional
     A sequence conforming to one of
-    :ref:`value-with-uncertainty <schema-value-with-uncertainty>`,
-    :ref:`value-without-uncertainty <schema-value-without-uncertainty>`, or
-    :ref:`value-metadata-only <schema-value-metadata-only>`. May or may not be included in the
-    ChemKED file.
+    :ref:`value-with-uncertainty <schema-value-with-uncertainty>`
+    or :ref:`value-without-uncertainty <schema-value-without-uncertainty>`. May or may not be
+    included in the ChemKED file.
 
 .. _ignition-time-history:
 
