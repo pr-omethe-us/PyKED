@@ -867,16 +867,53 @@ class TestValidator:
         uncertainty_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
         validator = OurValidator(uncertainty_schema)
         assert validator.validate({"temperature": ["1000 kelvin", metadata]})
-        assert v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+        assert not v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
+    def test_common_property_uncertainty_requires_property_value(self):
+        """Common-property uncertainty metadata cannot appear without its property value."""
+        metadata = {"uncertainty-type": "relative", "uncertainty": 0.1}
+        assert not v.validate(
+            {"common-properties": {"temperature": [metadata]}}, update=True
+        )
+        assert v.validate(
+            {"common-properties": {"temperature": ["1000 kelvin", metadata]}},
+            update=True,
+        )
+
+    def test_profile_uncertainty_does_not_require_inline_measured_value(self):
+        """A profile may store shared uncertainty separately from its measured-values table."""
+        datapoint = {
+            "pressure": ["1 atm"],
+            "composition": {
+                "kind": "mole fraction",
+                "species": [
+                    {
+                        "species-name": "H2",
+                        "InChI": "1S/H2/h1H",
+                        "amount": [1.0],
+                    }
+                ],
+            },
+            "independent-variables": [{"name": "time", "units": "s"}],
+            "concentration-profiles": [
+                {
+                    "species-name": "H2",
+                    "InChI": "1S/H2/h1H",
+                    "quantity": {"units": "mole fraction"},
+                    "values": [[0.0, 0.1], [1.0, 0.2]],
+                    "uncertainty": [
+                        {"uncertainty-type": "relative", "uncertainty": 0.05}
+                    ],
+                }
+            ],
+        }
+        assert v.validate({"datapoints": [datapoint]}, update=True)
 
     def test_evaluated_standard_deviation_requires_type(self):
         """Ensure an ESD value without evaluated-standard-deviation-type is rejected."""
         metadata = {"evaluated-standard-deviation": 0.1}
         assert not v.validate(
             {"common-properties": {"temperature": ["1000 kelvin", metadata]}}, update=True
-        )
-        assert not v.validate(
-            {"common-properties": {"temperature": [metadata]}}, update=True
         )
 
         composition = {

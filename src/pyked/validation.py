@@ -90,7 +90,6 @@ for key in [
     "ignition-type",
     "value-with-uncertainty",
     "value-without-uncertainty",
-    "value-metadata-only",
     "time-shift",
     "laminar-burning-velocity-measurement-schema",
     "speciation-measurement-schema",
@@ -408,6 +407,49 @@ class OurValidator(Validator):
         )
         return False
 
+    def _check_uncertainty_metadata_values(self, field, uncertainty_dict):
+        """Validate the values contained in an uncertainty metadata mapping."""
+        if not self._check_uncertainty_metadata(field, uncertainty_dict):
+            return
+
+        uncertainty_type = uncertainty_dict.get("uncertainty-type")
+        if uncertainty_type and uncertainty_type != "relative":
+            if uncertainty_dict.get("uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["uncertainty"]]
+                )
+
+            if uncertainty_dict.get("upper-uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["upper-uncertainty"]]
+                )
+
+            if uncertainty_dict.get("lower-uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["lower-uncertainty"]]
+                )
+
+        evaluated_sd_type = uncertainty_dict.get("evaluated-standard-deviation-type")
+        if (
+            evaluated_sd_type
+            and evaluated_sd_type != "relative"
+            and uncertainty_dict.get("evaluated-standard-deviation") is not None
+        ):
+            self._validate_isvalid_quantity(
+                True, field, [uncertainty_dict["evaluated-standard-deviation"]]
+            )
+
+    def _validate_isvalid_profile_uncertainty(
+        self, isvalid_profile_uncertainty, field, value
+    ):
+        """Validate uncertainty metadata associated with a concentration profile.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        if value and isinstance(value[0], dict):
+            self._check_uncertainty_metadata_values(field, value[0])
+
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
         """Checks for valid given value and appropriate units with uncertainty.
 
@@ -422,46 +464,8 @@ class OurValidator(Validator):
         """
         self._validate_isvalid_quantity(True, field, value)
 
-        # This len check is necessary for reasons that aren't quite clear to me
-        # Cerberus calls this validation method even when lists have only one element
-        # and should therefore be validated only by isvalid_quantity
-        if len(value) == 1 and isinstance(value[0], dict):
-            uncertainty_dict = value[0]
-        elif len(value) > 1:
-            uncertainty_dict = value[1]
-        else:
-            uncertainty_dict = None
-
-        if uncertainty_dict is not None:
-            if not self._check_uncertainty_metadata(field, uncertainty_dict):
-                return
-
-            uncertainty_type = uncertainty_dict.get("uncertainty-type")
-            if uncertainty_type and uncertainty_type != "relative":
-                if uncertainty_dict.get("uncertainty") is not None:
-                    self._validate_isvalid_quantity(
-                        True, field, [uncertainty_dict["uncertainty"]]
-                    )
-
-                if uncertainty_dict.get("upper-uncertainty") is not None:
-                    self._validate_isvalid_quantity(
-                        True, field, [uncertainty_dict["upper-uncertainty"]]
-                    )
-
-                if uncertainty_dict.get("lower-uncertainty") is not None:
-                    self._validate_isvalid_quantity(
-                        True, field, [uncertainty_dict["lower-uncertainty"]]
-                    )
-
-            evaluated_sd_type = uncertainty_dict.get("evaluated-standard-deviation-type")
-            if (
-                evaluated_sd_type
-                and evaluated_sd_type != "relative"
-                and uncertainty_dict.get("evaluated-standard-deviation") is not None
-            ):
-                self._validate_isvalid_quantity(
-                    True, field, [uncertainty_dict["evaluated-standard-deviation"]]
-                )
+        if len(value) > 1:
+            self._check_uncertainty_metadata_values(field, value[1])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
