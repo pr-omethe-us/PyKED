@@ -18,6 +18,28 @@ units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
 
 units.define("cm3 = centimeter**3")
+units.define("m3 = meter**3")
+units.define("mm3 = millimeter**3")
+units.define("Torr = 133.322368 pascal")
+units.define("m2 = meter**2")
+units.define("cm6 = centimeter**6")
+units.define("molecule = 1 / 6.02214076e23 mol")
+
+
+def _normalize_unit_str(val_str):
+    """Normalize implicit multiplication and negative exponents for Pint."""
+    val_str = str(val_str)
+    parts = val_str.split(" ", 1)
+    if len(parts) == 1:
+        return val_str
+
+    num, unit_str = parts
+    unit_str = re.sub(r"(?<=\w)_(?=\w)", " ", unit_str)
+    unit_str = re.sub(r"([a-zA-Z]+)(-\d+)", r"\1**\2", unit_str)
+    unit_str = re.sub(r"(?<=\w) +(?=\w)", " * ", unit_str)
+    return f"{num} {unit_str}"
+
+
 Q_ = units.Quantity
 
 crossref_api = habanero.Crossref(mailto="prometheus@pr.omethe.us")
@@ -68,8 +90,14 @@ for key in [
     "ignition-type",
     "value-with-uncertainty",
     "value-without-uncertainty",
+    "time-shift",
+    "laminar-burning-velocity-measurement-schema",
+    "speciation-measurement-schema",
+    "ignition-delay-schema",
+    "time-history",
 ]:
-    del schema[key]
+    if key in schema:
+        del schema[key]
 
 # SI units for available value-type properties
 property_units = {
@@ -90,6 +118,20 @@ property_units = {
     "stroke": "meter",
     "clearance": "meter",
     "compression-ratio": "dimensionless",
+    "equivalence-ratio": "dimensionless",
+    "laminar-burning-velocity": "meter / second",
+    "distance": "meter",
+    "flow-rate": "kilogram / meter**2 / second",
+    "residence-time": "second",
+    "reactor-volume": "meter**3",
+    "volumetric-flow-in-reference-state": "meter**3 / second",
+    "environment-temperature": "kelvin",
+    "global-heat-exchange-coefficient": "watt / meter**2 / kelvin",
+    "exchange-area": "meter**2",
+    "reactor-length": "meter",
+    "reactor-diameter": "meter",
+    "pressure-in-reference-state": "pascal",
+    "temperature-in-reference-state": "kelvin",
 }
 
 
@@ -277,6 +319,34 @@ class OurValidator(Validator):
         elif n_cols < max_cols:
             self._error(field, "not enough columns in the values")
 
+    def _validate_isvalid_speciation(self, isvalid_speciation, field, value):
+        """Checks that a speciation datapoint's profile rows are well formed.
+
+        Each concentration profile row must carry one value per declared
+        independent variable, followed by the measured amount, with an
+        optional trailing uncertainty.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        n_independent = len(value.get("independent-variables", []))
+        if n_independent < 1:
+            self._error(field, "at least one independent-variable is required")
+            return
+
+        for profile in value.get("concentration-profiles", []):
+            species = profile.get("species-name", "?")
+            for row in profile.get("values", []):
+                if len(row) not in (n_independent + 1, n_independent + 2):
+                    self._error(
+                        field,
+                        "concentration-profiles row for "
+                        f"{species} must have {n_independent + 1} or "
+                        f"{n_independent + 2} columns ({n_independent} "
+                        "independent-variable(s) + amount [+ uncertainty]); "
+                        f"got {len(row)}",
+                    )
+
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
         """Checks for valid given value and appropriate units.
 
@@ -288,20 +358,97 @@ class OurValidator(Validator):
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
-        quantity = Q_(value[0])
-        low_lim = 0.0 * units(property_units[field])
+        if isinstance(value[0], dict):
+            return
+
+        quantity = Q_(_normalize_unit_str(value[0]))
+        expected_units = property_units.get(field)
+
+        if expected_units is None:
+            # No dimensional check configured for this property.
+            if quantity.magnitude <= 0:
+                self._error(field, "value must be greater than 0.0")
+            return
+
+        low_lim = 0.0 * units(expected_units)
 
         try:
             if quantity <= low_lim:
                 self._error(
                     field,
-                    f"value must be greater than 0.0 {property_units[field]}",
+                    f"value must be greater than 0.0 {expected_units}",
                 )
         except pint.DimensionalityError:
             self._error(
                 field,
-                f"incompatible units; should be consistent with {property_units[field]}",
+                f"incompatible units; should be consistent with {expected_units}",
             )
+
+    def _check_uncertainty_metadata(self, field, metadata):
+        """Checks that uncertainty metadata includes a value, not only labels."""
+        uncertainty_value_keys = {
+            "uncertainty",
+            "upper-uncertainty",
+            "lower-uncertainty",
+        }
+        has_uncertainty_value = any(
+            metadata.get(key) is not None for key in uncertainty_value_keys
+        )
+        has_evaluated_sd_value = metadata.get("evaluated-standard-deviation") is not None
+
+        if has_uncertainty_value or has_evaluated_sd_value:
+            return True
+
+        self._error(
+            field,
+            "uncertainty metadata must contain at least one uncertainty value "
+            "(uncertainty, upper-uncertainty, lower-uncertainty) or an "
+            f"evaluated-standard-deviation value; got: {dict(metadata) or 'empty dict'}",
+        )
+        return False
+
+    def _check_uncertainty_metadata_values(self, field, uncertainty_dict):
+        """Validate the values contained in an uncertainty metadata mapping."""
+        if not self._check_uncertainty_metadata(field, uncertainty_dict):
+            return
+
+        uncertainty_type = uncertainty_dict.get("uncertainty-type")
+        if uncertainty_type and uncertainty_type != "relative":
+            if uncertainty_dict.get("uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["uncertainty"]]
+                )
+
+            if uncertainty_dict.get("upper-uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["upper-uncertainty"]]
+                )
+
+            if uncertainty_dict.get("lower-uncertainty") is not None:
+                self._validate_isvalid_quantity(
+                    True, field, [uncertainty_dict["lower-uncertainty"]]
+                )
+
+        evaluated_sd_type = uncertainty_dict.get("evaluated-standard-deviation-type")
+        if (
+            evaluated_sd_type
+            and evaluated_sd_type != "relative"
+            and uncertainty_dict.get("evaluated-standard-deviation") is not None
+        ):
+            self._validate_isvalid_quantity(
+                True, field, [uncertainty_dict["evaluated-standard-deviation"]]
+            )
+
+    def _validate_isvalid_profile_uncertainty(
+        self, isvalid_profile_uncertainty, field, value
+    ):
+        """Validate uncertainty metadata associated with a concentration profile.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        if value and isinstance(value[0], dict):
+            self._check_uncertainty_metadata_values(field, value[0])
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
         """Checks for valid given value and appropriate units with uncertainty.
@@ -317,18 +464,8 @@ class OurValidator(Validator):
         """
         self._validate_isvalid_quantity(True, field, value)
 
-        # This len check is necessary for reasons that aren't quite clear to me
-        # Cerberus calls this validation method even when lists have only one element
-        # and should therefore be validated only by isvalid_quantity
-        if len(value) > 1 and value[1]["uncertainty-type"] != "relative":
-            if value[1].get("uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["uncertainty"]])
-
-            if value[1].get("upper-uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["upper-uncertainty"]])
-
-            if value[1].get("lower-uncertainty") is not None:
-                self._validate_isvalid_quantity(True, field, [value[1]["lower-uncertainty"]])
+        if len(value) > 1:
+            self._check_uncertainty_metadata_values(field, value[1])
 
     def _validate_isvalid_reference(self, isvalid_reference, field, value):
         """Checks valid reference metadata using DOI (if present).
@@ -482,19 +619,29 @@ class OurValidator(Validator):
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
+        composition_kind = value["kind"]
+        fraction_kinds = ["mass fraction", "mole fraction"]
+        percent_kinds = ["mole percent"]
+        concentration_kinds = ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"]
+
         sum_amount = 0.0
-        if value["kind"] in ["mass fraction", "mole fraction"]:
+        total_amount = None
+        if composition_kind in fraction_kinds:
             low_lim = 0.0
             up_lim = 1.0
             total_amount = 1.0
-        elif value["kind"] in ["mole percent"]:
+        elif composition_kind in percent_kinds:
             low_lim = 0.0
             up_lim = 100.0
             total_amount = 100.0
+        elif composition_kind in concentration_kinds:
+            low_lim = 0.0
+            up_lim = None
         else:
             self._error(
                 field,
-                'composition kind must be "mole percent", "mass fraction", or "mole fraction"',
+                'composition kind must be "mole percent", "mass fraction", "mole fraction", '
+                '"mol/cm3", "mol/m3", "mol/L", or "mol/dm3"',
             )
             return False
 
@@ -506,19 +653,20 @@ class OurValidator(Validator):
             if amount < low_lim:
                 self._error(
                     field,
-                    f"Species {sp['species-name']} {value['kind']} "
+                    f"Species {sp['species-name']} {composition_kind} "
                     f"must be greater than {low_lim:.1f}",
                 )
-            elif amount > up_lim:
+            elif up_lim is not None and amount > up_lim:
                 self._error(
                     field,
-                    f"Species {sp['species-name']} {value['kind']} must be less than {up_lim:.1f}",
+                    f"Species {sp['species-name']} {composition_kind} "
+                    f"must be less than {up_lim:.1f}",
                 )
 
         # Make sure mole/mass fraction sum to 1
-        if not np.isclose(total_amount, sum_amount):
+        if total_amount is not None and not np.isclose(total_amount, sum_amount):
             self._error(
                 field,
-                f"Species {value['kind']}s do not sum to {total_amount:.1f}: {sum_amount:f}",
+                f"Species {composition_kind}s do not sum to {total_amount:.1f}: {sum_amount:f}",
             )
         # TODO: validate InChI, SMILES, or atomic-composition

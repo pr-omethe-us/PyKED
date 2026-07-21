@@ -5,7 +5,7 @@ composition: &composition
   schema:
     kind:
       type: string
-      allowed: ['mass fraction', 'mole fraction', 'mole percent']
+      allowed: ['mass fraction', 'mole fraction', 'mole percent', 'mol/cm3', 'mol/m3', 'mol/L', 'mol/dm3']
     species:
       type: list
       required: true
@@ -56,20 +56,17 @@ composition: &composition
                 type: string
           InChI:
             type: string
-            required: true
             excludes:
               - atomic-composition
               - SMILES
           SMILES:
             type: string
-            required: true
             excludes:
               - atomic-composition
               - InChI
           atomic-composition:
             type: list
             minlength: 1
-            required: true
             excludes:
               - InChI
               - SMILES
@@ -85,32 +82,50 @@ composition: &composition
           amount:
             required: true
             type: list
-            oneof:
+            anyof:
               - items:
                 - type: float
-              - items:
-                - type: float
-                - type: dict
-                  schema:
-                    uncertainty-type:
-                      required: true
-                      type: string
-                      allowed:
-                        - absolute
-                        - relative
-                    uncertainty:
-                      required: true
-                      type: float
-                      excludes:
-                        - upper-uncertainty
-                        - lower-uncertainty
-                    upper-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: lower-uncertainty
-                    lower-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: upper-uncertainty
+              - isvalid_uncertainty: true
+                items:
+                  - type: float
+                  - type: dict
+                    schema:
+                      uncertainty-type:
+                        type: string
+                        allowed:
+                          - absolute
+                          - relative
+                      uncertainty:
+                        type: float
+                        excludes:
+                          - upper-uncertainty
+                          - lower-uncertainty
+                        dependencies:
+                          - uncertainty-type
+                      upper-uncertainty:
+                        type: float
+                        excludes: uncertainty
+                        dependencies:
+                          - lower-uncertainty
+                          - uncertainty-type
+                      lower-uncertainty:
+                        type: float
+                        excludes: uncertainty
+                        dependencies:
+                          - upper-uncertainty
+                          - uncertainty-type
+                      uncertainty-sourcetype:
+                        type: string
+                      evaluated-standard-deviation:
+                        type: float
+                        dependencies:
+                          - evaluated-standard-deviation-type
+                      evaluated-standard-deviation-type:
+                        type: string
+                        allowed:
+                          - absolute
+                          - relative
+                      evaluated-standard-deviation-sourcetype:
+                        type: string
+                      evaluated-standard-deviation-method:
+                        type: string

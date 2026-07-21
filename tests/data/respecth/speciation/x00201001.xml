@@ -1,0 +1,79 @@
+<experiment>
+    <fileAuthor>Andras Gy. Szanthoffer, Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary</fileAuthor>
+    <fileDOI>10.24388/x00201001</fileDOI>
+    <fileVersion>
+        <major>2</major>
+        <minor>0</minor>
+    </fileVersion>
+    <ReSpecThVersion>
+        <major>2</major>
+        <minor>5</minor>
+    </ReSpecThVersion>
+    <firstPublicationDate>2024-08-05</firstPublicationDate>
+    <lastModificationDate>2024-08-05</lastModificationDate>
+    <bibliographyLink>
+        <description>Philippe Dagaut, Franck Lecomte, Jacob Mieritz, Peter Glarborg, J. Chem. Kinet. 35 (2003) 564-575.</description>
+        <referenceDOI>10.1002/kin.10154</referenceDOI>
+        <location>Main article. Figure 2. (b)</location>
+        <details>
+            <author>Dagaut, Philippe and Lecomte, Franck and Mieritz, Jacob and Glarborg, Peter</author>
+            <journal>International Journal of Chemical Kinetics</journal>
+            <number>11</number>
+            <pages>564–575</pages>
+            <title>Experimental and kinetic modeling study of the effect of NO and SO2 on the oxidation of CO–H2 mixtures</title>
+            <type>Journal Article</type>
+            <volume>35</volume>
+            <year>2003</year>
+        </details>
+    </bibliographyLink>
+    <experimentType>jet stirred reactor measurement</experimentType>
+    <apparatus>
+        <kind>jet stirred reactor</kind>
+    </apparatus>
+    <commonProperties>
+        <property name="initial composition"           sourcetype="reported"  >
+            <component><speciesLink preferredKey="H2"  CAS="1333-74-0"   InChI="1S/H2/h1H"   SMILES="[HH]"       chemName="hydrogen"        /><amount units="ppm"           >6500</amount></component>
+            <component><speciesLink preferredKey="CO"  CAS="630-08-0"    InChI="1S/CO/c1-2"  SMILES="[C-]#[O+]"  chemName="carbon monoxide" /><amount units="ppm"           >6500</amount></component>
+            <component><speciesLink preferredKey="O2"  CAS="7782-44-7"   InChI="1S/O2/c1-2"  SMILES="O=O"        chemName="oxygen"          /><amount units="ppm"           >6500</amount></component>
+            <component><speciesLink preferredKey="N2"  CAS="7727-37-9"   InChI="1S/N2/c1-2"  SMILES="N#N"        chemName="nitrogen"        /><amount units="mole fraction" >0.97955</amount></component>
+            <component><speciesLink preferredKey="NO"  CAS="10102-43-9"  InChI="1S/NO/c1-2"  SMILES="[N]=O"      chemName="nitric oxide"    /><amount units="ppm"           >950</amount></component>
+        </property>
+        <property name="pressure"                      label="p"    sourcetype="reported"   units="atm"           ><value>1</value></property>
+        <property name="residence time"                label="tau"  sourcetype="reported"   units="ms"            ><value>120</value></property>
+        <property name="volume"                        label="V"    sourcetype="estimated"  units="cm3"           ><value>31.6</value></property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="unitless"       reference="composition"  kind="relative"  method="combined from scatter and reported uncertainty" >
+            <speciesLink preferredKey="H2"   CAS="1333-74-0"   InChI="1S/H2/h1H"      SMILES="[HH]"       chemName="hydrogen"        />
+            <value>0.154379678</value>
+        </property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="unitless"       reference="composition"  kind="relative"  method="combined from scatter and reported uncertainty" >
+            <speciesLink preferredKey="CO"   CAS="630-08-0"    InChI="1S/CO/c1-2"     SMILES="[C-]#[O+]"  chemName="carbon monoxide" />
+            <value>0.120038197</value>
+        </property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="unitless"       reference="composition"  kind="relative"  method="combined from scatter and reported uncertainty" >
+            <speciesLink preferredKey="CO2"  CAS="124-38-9"    InChI="1S/CO2/c2-1-3"  SMILES="C(=O)=O"    chemName="carbon dioxide"  />
+            <value>0.068645268</value>
+        </property>
+    </commonProperties>
+    <dataGroup id="dg1">
+        <property name="temperature"  id="x1"   label="T"      sourcetype="digitized"  units="K"             />
+        <property name="composition"  id="x2"   label="[H2]"   sourcetype="digitized"  units="mole fraction" >
+            <speciesLink preferredKey="H2"   CAS="1333-74-0"  InChI="1S/H2/h1H"      SMILES="[HH]"       chemName="hydrogen"        />
+        </property>
+        <property name="composition"  id="x3"   label="[CO]"   sourcetype="digitized"  units="mole fraction" >
+            <speciesLink preferredKey="CO"   CAS="630-08-0"   InChI="1S/CO/c1-2"     SMILES="[C-]#[O+]"  chemName="carbon monoxide" />
+        </property>
+        <property name="composition"  id="x4"   label="[CO2]"  sourcetype="digitized"  units="mole fraction" >
+            <speciesLink preferredKey="CO2"  CAS="124-38-9"   InChI="1S/CO2/c2-1-3"  SMILES="C(=O)=O"    chemName="carbon dioxide"  />
+        </property>
+
+        <dataPoint><x1>849</x1><x2>0.00722</x2><x3>0.00675</x3><x4>8.94E-05</x4></dataPoint>
+        <dataPoint><x1>899</x1><x2>0.00356</x2><x3>0.0052</x3><x4>0.00132</x4></dataPoint>
+        <dataPoint><x1>950</x1><x2>0.00209</x2><x3>0.00449</x3><x4>0.00221</x4></dataPoint>
+        <dataPoint><x1>999</x1><x2>9.06E-04</x2><x3>0.0032</x3><x4>0.00334</x4></dataPoint>
+        <dataPoint><x1>1049</x1><x2>5.25E-04</x2><x3>0.0025</x3><x4>0.004</x4></dataPoint>
+        <dataPoint><x1>1100</x1><x2>2.82E-04</x2><x3>0.00184</x3><x4>0.00463</x4></dataPoint>
+        <dataPoint><x1>1199</x1><x2>2.45E-04</x2><x3>9.89E-04</x3><x4>0.0055</x4></dataPoint>
+        <dataPoint><x1>1299</x1><x2>2.08E-04</x2><x3>6.29E-04</x3><x4>0.00591</x4></dataPoint>
+        <dataPoint><x1>1399</x1><x2>3.57E-04</x2><x3>5.83E-04</x3><x4>0.0059</x4></dataPoint>
+    </dataGroup>
+</experiment>

@@ -1,0 +1,159 @@
+# Schema for speciation measurement datapoints.
+
+# t = 0 reference for a time-resolved profile (moved here from the old CTP schema;
+# only meaningful when independent-variable.name == time)
+time-shift: &time-shift
+  type: dict
+  schema:
+    target:
+      required: true
+      type: string
+    type:
+      required: true
+      type: string
+      allowed:
+        - half decrease
+        - relative decrease
+    amount: *value-unit-optional
+
+speciation-measurement-schema: &speciation-measurement-schema
+  type: list
+  minlength: 1
+  schema:
+    type: dict
+    isvalid_speciation: true   # row length == len(independent-variables) + amount [+ uncertainty]
+    schema:
+      pressure: *value-unit-required
+      temperature: *value-unit-optional                 # inlet/initial
+      composition:                                       # inlet / initial composition
+        <<: *composition
+        required: true
+      equivalence-ratio: *value-unit-optional
+      environment-temperature: *value-unit-optional
+      residence-time: *value-unit-optional
+      reactor-volume: *value-unit-optional
+      reactor-length: *value-unit-optional               # flow reactors
+      reactor-diameter: *value-unit-optional             # flow reactors
+      flow-rate: *value-unit-optional
+      volumetric-flow-in-reference-state: *value-unit-optional
+      pressure-in-reference-state: *value-unit-optional
+      temperature-in-reference-state: *value-unit-optional
+      global-heat-exchange-coefficient: *value-unit-optional   # jet stirred reactors
+      exchange-area: *value-unit-optional                      # jet stirred reactors
+
+      independent-variables:
+        required: true
+        type: list
+        minlength: 1
+        schema:
+          type: dict
+          schema:
+            name:
+              required: true
+              type: string
+              allowed:
+                - temperature          # JSR / flow-reactor T-sweep; flame imposed T
+                - residence-time       # flow-reactor / JSR residence-time (axis or co-variate)
+                - distance             # axial sampling in a flow reactor; height in a flame
+                - time                 # shock-tube / flow-reactor time profile
+                - equivalence-ratio    # JSR / flow-reactor composition sweep (by phi)
+                - initial-composition  # JSR / flow-reactor inlet-mole-fraction sweep
+                - pressure
+            units:
+              required: true
+              type: string
+            primary:                   # flag the swept axis (for plotting/comparison)
+              type: boolean
+            # identifies the swept inlet species when name == initial-composition
+            species-name:
+              type: string
+            InChI:
+              type: string
+            SMILES:
+              type: string
+
+      # --- species profiles ---
+      concentration-profiles:
+        type: list
+        required: true
+        minlength: 1
+        schema:
+          type: dict
+          schema:
+            species-name:
+              required: true
+              type: string
+            InChI:
+              type: string
+            SMILES:
+              type: string
+            quantity:
+              required: true
+              type: dict
+              schema:
+                units:
+                  required: true
+                  type: string
+            values:
+              required: true
+              type: list
+              minlength: 2
+              schema:
+                type: list
+                minlength: 2                # >= one independent column + the amount
+                schema:
+                  type: float
+            uncertainty:
+              type: list
+              isvalid_profile_uncertainty: true
+              items:
+                - *uncertainty-metadata
+      # This is a list of auxiliary profiles (temperature, pressure, volume, velocity) that are measured along with the species profiles. These are optional and can be used for additional analysis or validation of the speciation measurements.
+      auxiliary-profiles:
+        type: list
+        schema:
+          type: dict
+          schema:
+            type:
+              required: true
+              type: string
+              allowed:
+                - temperature
+                - pressure
+                - volume
+                - velocity
+            independent:
+              required: true
+              type: dict
+              schema:
+                name:
+                  required: true
+                  type: string
+                  allowed:
+                    - distance
+                    - time
+                units:
+                  required: true
+                  type: string
+            quantity:
+              required: true
+              type: dict
+              schema:
+                units:
+                  required: true
+                  type: string
+            values:
+              required: true
+              type: list
+              minlength: 2
+              schema:
+                type: list
+                oneof_items:
+                  - - type: float          # [independent, value]
+                    - type: float
+                  - - type: float          # [independent, value, uncertainty]
+                    - type: float
+                    - type: float
+
+      # --- t = 0 reference, only meaningful when a time axis is present ---
+      time-shift: *time-shift

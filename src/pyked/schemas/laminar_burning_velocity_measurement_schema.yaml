@@ -1,0 +1,15 @@
+# Schema for laminar burning velocity measurement datapoints
+laminar-burning-velocity-measurement-schema: &laminar-burning-velocity-measurement-schema
+  type: list
+  minlength: 1
+  schema:
+    type: dict
+    schema:
+      pressure: *value-unit-required
+      temperature: *value-unit-required
+      pressure-rise: *value-unit-optional
+      equivalence-ratio: *value-unit-optional
+      composition:
+        <<: *composition
+        required: true
+      laminar-burning-velocity: *value-unit-required

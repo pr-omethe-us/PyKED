@@ -97,7 +97,7 @@ select = ["E4", "E7", "E9", "F", "I", "NPY", "PD"]
 known-first-party = ["pyked"]
 
 [tool.coverage.run]
-source = ["pyked"]
+source = ["src/pyked"]
 branch = true
 
 [tool.coverage.report]

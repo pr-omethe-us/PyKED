@@ -15,7 +15,7 @@ import pint
 from .converters import ReSpecTh_to_ChemKED, datagroup_properties
 
 # Local imports
-from .validation import Q_, OurValidator, schema, yaml
+from .validation import Q_, OurValidator, _normalize_unit_str, schema, yaml
 
 
 class VolumeHistory(NamedTuple):
@@ -94,6 +94,22 @@ class Apparatus(NamedTuple):
     """(`str`) The particular experimental facility at the location"""
 
 
+class EvaluatedStandardDeviation(NamedTuple):
+    """Evaluated standard deviation metadata attached to a quantity"""
+
+    value: pint.Quantity | float
+    """(`~pint.Quantity` or `float`) The evaluated standard deviation. Absolute values are
+    stored as a `~pint.Quantity` with the units given in the file; relative values are stored
+    as a plain `float` fraction"""
+    type: str | None
+    """(`str`) Whether the value is ``absolute`` or ``relative``"""
+    sourcetype: str | None
+    """(`str`) How the value was obtained, e.g. ``reported``, ``estimated``, ``calculated``,
+    or ``digitized``"""
+    method: str | None
+    """(`str`) The method used to compute the value, e.g. ``statistical scatter``"""
+
+
 class Composition(NamedTuple):
     """Detail of the initial composition of the mixture for the experiment"""
 
@@ -107,6 +123,9 @@ class Composition(NamedTuple):
     """(`dict`) The atomic composition of the species"""
     amount: pint.Quantity
     """(`~pint.Quantity`) The amount of this species"""
+    amount_esd: EvaluatedStandardDeviation | None = None
+    """(`EvaluatedStandardDeviation`) The evaluated standard deviation of the amount,
+    if specified"""
 
 
 class ChemKED:
@@ -685,6 +704,8 @@ class DataPoint:
             for an RCM experiment.
         first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the
             experiment.
+        laminar_burning_velocity (pint.Quantity, optional): The laminar burning velocity of the
+            experiment.
         ignition_type (`dict`): Dictionary with the ignition target and type.
         volume_history (`~collections.namedtuple`, optional): The volume history of the reactor
             during an RCM experiment.
@@ -700,6 +721,9 @@ class DataPoint:
             reactor during an experiment.
         absorption_history (`~collections.namedtuple`, optional): The absorption history of the
             reactor during an experiment.
+        evaluated_standard_deviation (`dict`): Mapping of property name (with underscores,
+            e.g. ``ignition_delay``) to the `EvaluatedStandardDeviation` given in the file
+            for that property, for properties that specify one.
     """
 
     value_unit_props: ClassVar[list[str]] = [
@@ -708,6 +732,7 @@ class DataPoint:
         "temperature",
         "pressure",
         "pressure-rise",
+        "laminar-burning-velocity",
     ]
 
     rcm_data_props: ClassVar[list[str]] = [
@@ -720,7 +745,11 @@ class DataPoint:
     ]
 
     def __init__(self, properties):
+        self.evaluated_standard_deviation: dict[str, EvaluatedStandardDeviation] = {}
+
         for prop in self.value_unit_props:
+            if prop in properties:
+                self._store_evaluated_standard_deviation(prop, properties[prop])
             if prop in properties:
                 quant = self.process_quantity(properties[prop])
                 setattr(self, prop.replace("-", "_"), quant)
@@ -731,6 +760,8 @@ class DataPoint:
             orig_rcm_data = properties["rcm-data"]
             rcm_props = {}
             for prop in self.rcm_data_props:
+                if prop in orig_rcm_data:
+                    self._store_evaluated_standard_deviation(prop, orig_rcm_data[prop])
                 if prop in orig_rcm_data:
                     quant = self.process_quantity(orig_rcm_data[prop])
                     rcm_props[prop.replace("-", "_")] = quant
@@ -754,11 +785,18 @@ class DataPoint:
                 SMILES=SMILES,
                 atomic_composition=atomic_composition,
                 amount=amount,
+                amount_esd=self.process_evaluated_standard_deviation(species["amount"]),
             )
 
         self.composition = composition
 
-        self.equivalence_ratio = properties.get("equivalence-ratio")
+        if "equivalence-ratio" in properties:
+            self._store_evaluated_standard_deviation(
+                "equivalence-ratio", properties["equivalence-ratio"]
+            )
+        self.equivalence_ratio = self.process_equivalence_ratio(
+            properties.get("equivalence-ratio")
+        )
         self.ignition_type = deepcopy(properties.get("ignition-type"))
 
         if "time-histories" in properties and "volume-history" in properties:
@@ -822,19 +860,84 @@ class DataPoint:
             if not hasattr(self, f"{h}_history"):
                 setattr(self, f"{h}_history", None)
 
+    def process_evaluated_standard_deviation(self, properties):
+        """Extract evaluated-standard-deviation metadata from a quantity list.
+
+        Arguments:
+            properties (`list`): List in the value-unit format, whose metadata
+                mapping (if any) may contain evaluated-standard-deviation fields.
+
+        Returns:
+            `EvaluatedStandardDeviation` or `None`: The evaluated standard
+            deviation, or `None` when the metadata does not include one.
+        """
+        if not isinstance(properties, list):
+            return None
+
+        if len(properties) > 1 and isinstance(properties[1], dict):
+            metadata = properties[1]
+        else:
+            return None
+
+        esd = metadata.get("evaluated-standard-deviation")
+        if esd is None:
+            return None
+
+        esd_type = metadata.get("evaluated-standard-deviation-type")
+        if esd_type == "absolute":
+            value = Q_(_normalize_unit_str(esd))
+        else:
+            value = float(Q_(_normalize_unit_str(esd)).magnitude)
+
+        return EvaluatedStandardDeviation(
+            value=value,
+            type=esd_type,
+            sourcetype=metadata.get("evaluated-standard-deviation-sourcetype"),
+            method=metadata.get("evaluated-standard-deviation-method"),
+        )
+
+    def _store_evaluated_standard_deviation(self, prop, properties):
+        """Store the evaluated standard deviation of a property, if one is given."""
+        esd = self.process_evaluated_standard_deviation(properties)
+        if esd is not None:
+            self.evaluated_standard_deviation[prop.replace("-", "_")] = esd
+
     def process_quantity(self, properties):
         """Process the uncertainty information from a given quantity and return it"""
-        quant = Q_(properties[0])
+        quant = Q_(_normalize_unit_str(properties[0]))
         if len(properties) > 1:
             unc = properties[1]
-            uncertainty = unc.get("uncertainty", False)
-            upper_uncertainty = unc.get("upper-uncertainty", False)
-            lower_uncertainty = unc.get("lower-uncertainty", False)
+            uncertainty = unc.get("uncertainty")
+            upper_uncertainty = unc.get("upper-uncertainty")
+            lower_uncertainty = unc.get("lower-uncertainty")
             uncertainty_type = unc.get("uncertainty-type")
+
+            has_uncertainty_value = (
+                uncertainty is not None
+                or upper_uncertainty is not None
+                or lower_uncertainty is not None
+            )
+
+            if uncertainty_type is None:
+                if has_uncertainty_value:
+                    raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
+                return quant
+
+            if not has_uncertainty_value:
+                if unc.get("evaluated-standard-deviation") is not None:
+                    # Only evaluated-standard-deviation metadata accompanies the
+                    # uncertainty-type label; there is no uncertainty to attach
+                    # to the quantity.
+                    return quant
+                raise ValueError(
+                    'Either "uncertainty" or "upper-uncertainty" and '
+                    '"lower-uncertainty" need to be specified.'
+                )
+
             if uncertainty_type == "relative":
-                if uncertainty:
+                if uncertainty is not None:
                     quant = quant.plus_minus(float(uncertainty), relative=True)
-                elif upper_uncertainty and lower_uncertainty:
+                elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
                         "Asymmetric uncertainties are not supported. The "
                         "maximum of lower-uncertainty and upper-uncertainty "
@@ -848,16 +951,19 @@ class DataPoint:
                         '"lower-uncertainty" need to be specified.'
                     )
             elif uncertainty_type == "absolute":
-                if uncertainty:
-                    uncertainty = Q_(uncertainty)
+                if uncertainty is not None:
+                    uncertainty = Q_(_normalize_unit_str(uncertainty))
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
-                elif upper_uncertainty and lower_uncertainty:
+                elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
                         "Asymmetric uncertainties are not supported. The "
                         "maximum of lower-uncertainty and upper-uncertainty "
                         "has been used as the symmetric uncertainty."
                     )
-                    uncertainty = max(Q_(upper_uncertainty), Q_(lower_uncertainty))
+                    uncertainty = max(
+                        Q_(_normalize_unit_str(upper_uncertainty)),
+                        Q_(_normalize_unit_str(lower_uncertainty)),
+                    )
                     quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
                 else:
                     raise ValueError(
@@ -868,6 +974,20 @@ class DataPoint:
                 raise ValueError('uncertainty-type must be one of "absolute" or "relative"')
 
         return quant
+
+    def process_equivalence_ratio(self, properties):
+        """Process equivalence ratio while preserving the historic scalar API."""
+        if properties is None:
+            return None
+
+        if isinstance(properties, list):
+            if len(properties) == 0:
+                return None
+            quant = self.process_quantity(properties)
+        else:
+            quant = Q_(_normalize_unit_str(properties))
+
+        return quant.to("dimensionless").magnitude
 
     def get_cantera_composition_string(self, species_conversion=None):
         """Get the composition in a string format suitable for input to Cantera.

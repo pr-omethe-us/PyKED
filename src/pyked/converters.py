@@ -108,7 +108,11 @@ def get_reference(root):
     if ref_doi is not None:
         try:
             ref = crossref_api.works(ids=ref_doi)["message"]
-        except (httpx.HTTPStatusError, habanero.RequestError, httpx.ConnectError):
+        except (
+            httpx.HTTPStatusError,
+            habanero.RequestError,
+            httpx.ConnectError,
+        ):
             if ref_key is None:
                 raise KeywordError("DOI not found and preferredKey attribute not set") from None
             else:

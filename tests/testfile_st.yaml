@@ -50,7 +50,8 @@ datapoints:
     pressure: *pres
     composition: *comp
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
   - temperature:
       - 1164.97 kelvin
     ignition-delay:
@@ -58,7 +59,8 @@ datapoints:
     pressure: *pres
     composition: *comp
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
   - temperature:
       - 1264.2 kelvin
     ignition-delay:
@@ -66,7 +68,8 @@ datapoints:
     pressure: *pres
     composition: *comp
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
   - temperature:
       - 1332.57 kelvin
     ignition-delay:
@@ -74,7 +77,8 @@ datapoints:
     pressure: *pres
     composition: *comp
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
   - temperature:
       - 1519.18 kelvin
     ignition-delay:
@@ -82,5 +86,6 @@ datapoints:
     pressure: *pres
     composition: *comp
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
 ...
