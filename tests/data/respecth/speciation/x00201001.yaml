@@ -1,0 +1,124 @@
+---
+file-authors:
+  - name: Andras Gy. Szanthoffer, Chemical Kinetics Laboratory, Institute of Chemistry,
+      ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1002/kin.10154
+  authors:
+    - name: Philippe Dagaut
+    - name: Franck Lecomte
+    - name: Jacob Mieritz
+    - name: Peter Glarborg
+  journal: International Journal of Chemical Kinetics
+  year: 2003
+  volume: 35
+  pages: 564-575
+  detail: Converted from ReSpecTh XML file x00201001.xml
+experiment-type: speciation measurement
+apparatus:
+  kind: jet stirred reactor
+  institution: ''
+  facility: ''
+common-properties:
+  composition: &id001
+    kind: mole fraction
+    species:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.0065
+      - species-name: CO
+        InChI: 1S/CO/c1-2
+        amount:
+          - 0.0065
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        amount:
+          - 0.0065
+      - species-name: N2
+        InChI: 1S/N2/c1-2
+        amount:
+          - 0.97955
+      - species-name: 'NO'
+        InChI: 1S/NO/c1-2
+        amount:
+          - 0.00095
+  pressure: &id002
+    - 1 atm
+  residence-time: &id003
+    - 120 ms
+  reactor-volume: &id004
+    - 31.6 cm3
+datapoints:
+  - composition: *id001
+    pressure: *id002
+    residence-time: *id003
+    reactor-volume: *id004
+    independent-variables:
+      - name: temperature
+        units: K
+        primary: true
+    concentration-profiles:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        quantity:
+          units: mole fraction
+        values:
+          - [849.0, 0.00722]
+          - [899.0, 0.00356]
+          - [950.0, 0.00209]
+          - [999.0, 0.000906]
+          - [1049.0, 0.000525]
+          - [1100.0, 0.000282]
+          - [1199.0, 0.000245]
+          - [1299.0, 0.000208]
+          - [1399.0, 0.000357]
+        uncertainty:
+          - evaluated-standard-deviation: 0.154379678
+            evaluated-standard-deviation-type: relative
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: combined from scatter and reported
+              uncertainty
+      - species-name: CO
+        InChI: 1S/CO/c1-2
+        quantity:
+          units: mole fraction
+        values:
+          - [849.0, 0.00675]
+          - [899.0, 0.0052]
+          - [950.0, 0.00449]
+          - [999.0, 0.0032]
+          - [1049.0, 0.0025]
+          - [1100.0, 0.00184]
+          - [1199.0, 0.000989]
+          - [1299.0, 0.000629]
+          - [1399.0, 0.000583]
+        uncertainty:
+          - evaluated-standard-deviation: 0.120038197
+            evaluated-standard-deviation-type: relative
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: combined from scatter and reported
+              uncertainty
+      - species-name: CO2
+        InChI: 1S/CO2/c2-1-3
+        quantity:
+          units: mole fraction
+        values:
+          - [849.0, 8.94e-05]
+          - [899.0, 0.00132]
+          - [950.0, 0.00221]
+          - [999.0, 0.00334]
+          - [1049.0, 0.004]
+          - [1100.0, 0.00463]
+          - [1199.0, 0.0055]
+          - [1299.0, 0.00591]
+          - [1399.0, 0.0059]
+        uncertainty:
+          - evaluated-standard-deviation: 0.068645268
+            evaluated-standard-deviation-type: relative
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: combined from scatter and reported
+              uncertainty
+...

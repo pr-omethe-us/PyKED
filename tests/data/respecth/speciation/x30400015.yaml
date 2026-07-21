@@ -1,0 +1,71 @@
+---
+file-authors:
+  - name: Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1016/s0010-2180(99)00106-6
+  authors:
+    - name: Gerhard Löffler
+    - name: Verina J. Wargadalam
+    - name: Franz Winter
+    - name: Hermann Hofbauer
+  journal: Combustion and Flame
+  year: 2000
+  volume: 120
+  pages: 427-438
+  detail: Converted from ReSpecTh XML file x30400015.xml
+experiment-type: speciation measurement
+apparatus:
+  kind: flow reactor
+  institution: ''
+  facility: ''
+common-properties:
+  pressure: &id001
+    - 1 atm
+  composition: &id002
+    kind: mole fraction
+    species:
+      - species-name: N2O
+        InChI: 1S/N2O/c1-2-3
+        amount:
+          - 0.000188
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.0004
+      - species-name: N2
+        InChI: 1S/N2/c1-2
+        amount:
+          - 0.999412
+datapoints:
+  - pressure: *id001
+    composition: *id002
+    independent-variables:
+      - name: residence-time
+        units: s
+        primary: true
+      - name: temperature
+        units: K
+        primary: false
+    concentration-profiles:
+      - species-name: N2O
+        InChI: 1S/N2O/c1-2-3
+        quantity:
+          units: mole fraction
+        values:
+          - [0.355, 873.0, 0.000188]
+          - [0.336, 923.0, 0.000188]
+          - [0.319, 973.0, 0.000188]
+          - [0.303, 1023.0, 0.000179]
+          - [0.289, 1074.0, 0.0001]
+          - [0.276, 1123.0, 4.5e-05]
+          - [0.264, 1173.0, 2.0e-05]
+          - [0.253, 1223.0, 7.0e-06]
+          - [0.243, 1273.0, 1.0e-06]
+        uncertainty:
+          - evaluated-standard-deviation: 9.0e-06
+            evaluated-standard-deviation-type: absolute
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: statistical scatter
+...

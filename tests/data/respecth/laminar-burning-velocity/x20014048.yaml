@@ -1,0 +1,142 @@
+---
+file-authors:
+  - name: Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1016/j.combustflame.2021.111564
+  authors:
+    - name: Sampath Adusumilli
+    - name: Jerry Seitzman
+  journal: Combustion and Flame
+  year: 2021
+  volume: 233
+  pages: '111564'
+  detail: Converted from ReSpecTh XML file x20014048.xml
+experiment-type: laminar burning velocity measurement
+apparatus:
+  kind: outwardly propagating spherical flame
+  institution: ''
+  facility: ''
+common-properties:
+  temperature: &id001
+    - 650 K
+  pressure: &id002
+    - 1 atm
+datapoints:
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: C2H4
+          InChI: 1S/C2H4/c1-2/h1-2H2
+          amount:
+            - 0.029126214
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.145631068
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.825242718
+    laminar-burning-velocity:
+      - 59.48 cm/s
+      - evaluated-standard-deviation: '0.039'
+        evaluated-standard-deviation-type: relative
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: C2H4
+          InChI: 1S/C2H4/c1-2/h1-2H2
+          amount:
+            - 0.038461538
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.144230769
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.817307692
+    laminar-burning-velocity:
+      - 91.48 cm/s
+      - evaluated-standard-deviation: '0.039'
+        evaluated-standard-deviation-type: relative
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: C2H4
+          InChI: 1S/C2H4/c1-2/h1-2H2
+          amount:
+            - 0.047619048
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.142857143
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.80952381
+    laminar-burning-velocity:
+      - 123.13 cm/s
+      - evaluated-standard-deviation: '0.039'
+        evaluated-standard-deviation-type: relative
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: C2H4
+          InChI: 1S/C2H4/c1-2/h1-2H2
+          amount:
+            - 0.056603774
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.141509434
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.801886792
+    laminar-burning-velocity:
+      - 130.09 cm/s
+      - evaluated-standard-deviation: '0.039'
+        evaluated-standard-deviation-type: relative
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: C2H4
+          InChI: 1S/C2H4/c1-2/h1-2H2
+          amount:
+            - 0.065420561
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.140186916
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.794392523
+    laminar-burning-velocity:
+      - 105.39 cm/s
+      - evaluated-standard-deviation: '0.039'
+        evaluated-standard-deviation-type: relative
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+...
