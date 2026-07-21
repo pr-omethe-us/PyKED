@@ -1,0 +1,61 @@
+<experiment>
+    <fileAuthor>Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary</fileAuthor>
+    <fileDOI>10.24388/x30400015</fileDOI>
+    <fileVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </fileVersion>
+    <ReSpecThVersion>
+        <major>2</major>
+        <minor>3</minor>
+    </ReSpecThVersion>
+    <firstPublicationDate>2019-06-21</firstPublicationDate>
+    <lastModificationDate>2020-11-13</lastModificationDate>
+    <bibliographyLink>
+        <description>G. Loeffler et. al., Combust. Flame 120 (2000) 427-438, Figure 4.</description>
+        <referenceDOI>10.1016/s0010-2180(99)00106-6</referenceDOI>
+        <location>Main article</location>
+        <figure>Figure 4.</figure>
+        <details>
+            <author>L{\"{o}}ffler, G and Wargadalam, V J and Winter, F and Hofbauer, H</author>
+            <journal>Combust Flame</journal>
+            <pages>427--438</pages>
+            <title>Decomposition of Nitrous Oxide at Medium Temperatures</title>
+            <volume>120</volume>
+            <year>2000</year>
+        </details>
+    </bibliographyLink>
+    <experimentType>outlet concentration measurement</experimentType>
+    <apparatus>
+        <kind>flow reactor</kind>
+    </apparatus>
+    <commonProperties>
+        <property name="pressure"                      label="p"  sourcetype="reported"   units="atm"           ><value>1</value></property>
+        <property name="initial composition"           sourcetype="reported"  >
+            <component><speciesLink preferredKey="N2O"  CAS="10024-97-2"  InChI="1S/N2O/c1-2-3"  SMILES="N#[N+][O-]"  chemName="nitrous oxide" /><amount units="ppm"           >188</amount></component>
+            <component><speciesLink preferredKey="H2"   CAS="1333-74-0"   InChI="1S/H2/h1H"      SMILES="[HH]"        chemName="hydrogen"      /><amount units="ppm"           >400</amount></component>
+            <component><speciesLink preferredKey="N2"   CAS="7727-37-9"   InChI="1S/N2/c1-2"     SMILES="N#N"         chemName="nitrogen"      /><amount units="mole fraction" >0.999412</amount></component>
+        </property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="ppm"            reference="composition"  kind="absolute"  method="statistical scatter" >
+            <speciesLink preferredKey="N2O"  CAS="10024-97-2"  InChI="1S/N2O/c1-2-3"  SMILES="N#[N+][O-]"  chemName="nitrous oxide" />
+            <value>9.0</value>
+        </property>
+    </commonProperties>
+    <dataGroup id="dg1" label="dg1">
+        <property name="residence time"  id="x1"   label="t"      sourcetype="calculated"  units="s"   />
+        <property name="temperature"     id="x2"   label="T"      sourcetype="digitized"   units="K"   />
+        <property name="composition"     id="x3"   label="[N2O]"  sourcetype="digitized"   units="ppm" >
+            <speciesLink preferredKey="N2O"  CAS="10024-97-2"  InChI="1S/N2O/c1-2-3"  SMILES="N#[N+][O-]"  chemName="nitrous oxide" />
+        </property>
+
+        <dataPoint><x1>0.355</x1> <x2>873</x2><x3>188</x3></dataPoint>
+        <dataPoint><x1>0.336</x1> <x2>923</x2><x3>188</x3></dataPoint>
+        <dataPoint><x1>0.319</x1> <x2>973</x2><x3>188</x3></dataPoint>
+        <dataPoint><x1>0.303</x1><x2>1023</x2><x3>179</x3></dataPoint>
+        <dataPoint><x1>0.289</x1><x2>1074</x2><x3>100</x3></dataPoint>
+        <dataPoint><x1>0.276</x1><x2>1123</x2> <x3>45</x3></dataPoint>
+        <dataPoint><x1>0.264</x1><x2>1173</x2> <x3>20</x3></dataPoint>
+        <dataPoint><x1>0.253</x1><x2>1223</x2>  <x3>7</x3></dataPoint>
+        <dataPoint><x1>0.243</x1><x2>1273</x2>  <x3>1</x3></dataPoint>
+    </dataGroup>
+</experiment>

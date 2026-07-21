@@ -1,0 +1,61 @@
+<experiment>
+    <fileAuthor>Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary</fileAuthor>
+    <fileDOI>10.24388/x30000017</fileDOI>
+    <fileVersion>
+        <major>2</major>
+        <minor>0</minor>
+    </fileVersion>
+    <ReSpecThVersion>
+        <major>2</major>
+        <minor>3</minor>
+    </ReSpecThVersion>
+    <firstPublicationDate>2013-11-25</firstPublicationDate>
+    <lastModificationDate>2020-11-18</lastModificationDate>
+    <bibliographyLink>
+        <description>Mueller, M.A., Kim, T.J., Yetter, R.A., Dryer, F.L., Int. J. Chem. Kinet., (31), 113-125, 1999.</description>
+        <referenceDOI>10.1002/(SICI)1097-4601(1999)31:2%3C113::AID-KIN5%3E3.0.CO;2-0</referenceDOI>
+        <location>Main article</location>
+        <table>Appendix</table>
+        <figure>Fig. 10b, open circle</figure>
+        <details>
+            <author>Mueller, M A and Kim, T J and Yetter, R A and Dryer, F L</author>
+            <journal>Int J Chem Kinet</journal>
+            <number>2</number>
+            <pages>113--125</pages>
+            <title>Flow Reactor Studies and Kinetic Modeling of the H$_{2}$/O$_{2}$ Reaction</title>
+            <volume>31</volume>
+            <year>1999</year>
+        </details>
+    </bibliographyLink>
+    <experimentType>concentration time profile measurement</experimentType>
+    <apparatus>
+        <kind>flow reactor</kind>
+    </apparatus>
+    <commonProperties>
+        <property name="temperature"                   label="T"  sourcetype="reported"   units="K"             ><value>935</value></property>
+        <property name="pressure"                      label="P"  sourcetype="reported"   units="atm"           ><value>2.55</value></property>
+        <property name="initial composition"           sourcetype="reported"  >
+            <component><speciesLink preferredKey="H2"  CAS="1333-74-0"  InChI="1S/H2/h1H"   SMILES="[HH]"  chemName="hydrogen" /><amount units="mole fraction" >0.0101</amount></component>
+            <component><speciesLink preferredKey="O2"  CAS="7782-44-7"  InChI="1S/O2/c1-2"  SMILES="O=O"   chemName="oxygen"   /><amount units="mole fraction" >0.0052</amount></component>
+            <component><speciesLink preferredKey="N2"  CAS="7727-37-9"  InChI="1S/N2/c1-2"  SMILES="N#N"   chemName="nitrogen" /><amount units="mole fraction" >0.9847</amount></component>
+        </property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="mole fraction"  reference="composition"  kind="absolute"  method="statistical scatter" >
+            <speciesLink preferredKey="H2"  CAS="1333-74-0"  InChI="1S/H2/h1H"   SMILES="[HH]"  chemName="hydrogen" />
+            <value>0.00051</value>
+        </property>
+    </commonProperties>
+    <dataGroup id="dg1">
+        <property name="time"         id="x1"   label="t"     sourcetype="digitized"  units="s"             />
+        <property name="composition"  id="x2"   label="[H2]"  sourcetype="digitized"  units="mole fraction" >
+            <speciesLink preferredKey="H2"  CAS="1333-74-0"  InChI="1S/H2/h1H"  SMILES="[HH]"  chemName="hydrogen" />
+        </property>
+
+        <dataPoint><x1>0.000000e-000</x1><x2>1.010000e-002</x2></dataPoint>
+        <dataPoint><x1>1.404000e-002</x1><x2>1.008260e-002</x2></dataPoint>
+        <dataPoint><x1>1.938000e-002</x1><x2>9.774900e-003</x2></dataPoint>
+        <dataPoint><x1>2.622000e-002</x1><x2>6.480000e-005</x2></dataPoint>
+        <dataPoint><x1>3.488000e-002</x1><x2>2.520000e-005</x2></dataPoint>
+        <dataPoint><x1>4.580000e-002</x1><x2>2.620000e-005</x2></dataPoint>
+    </dataGroup>
+    <timeshift target="H2" type="half decrease"/>
+</experiment>

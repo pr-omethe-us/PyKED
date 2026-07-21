@@ -1,0 +1,71 @@
+---
+file-authors:
+  - name: Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1002/(SICI)1097-4601(1999)31:2%3C113::AID-KIN5%3E3.0.CO;2-0
+  authors:
+    - name: M. A. Mueller
+    - name: T. J. Kim
+    - name: R. A. Yetter
+    - name: F. L. Dryer
+  journal: International Journal of Chemical Kinetics
+  year: 1999
+  volume: 31
+  pages: 113-125
+  detail: Converted from ReSpecTh XML file x30000017.xml
+experiment-type: speciation measurement
+apparatus:
+  kind: flow reactor
+  institution: ''
+  facility: ''
+common-properties:
+  temperature: &id001
+    - 935 K
+  pressure: &id002
+    - 2.55 atm
+  composition: &id003
+    kind: mole fraction
+    species:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.0101
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        amount:
+          - 0.0052
+      - species-name: N2
+        InChI: 1S/N2/c1-2
+        amount:
+          - 0.9847
+datapoints:
+  - temperature: *id001
+    pressure: *id002
+    composition: *id003
+    independent-variables:
+      - name: time
+        units: s
+        primary: true
+    concentration-profiles:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        quantity:
+          units: mole fraction
+        values:
+          - [0.0, 0.0101]
+          - [0.01404, 0.0100826]
+          - [0.01938, 0.0097749]
+          - [0.02622, 6.48e-05]
+          - [0.03488, 2.52e-05]
+          - [0.0458, 2.62e-05]
+        uncertainty:
+          - evaluated-standard-deviation: 0.00051
+            evaluated-standard-deviation-type: absolute
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: statistical scatter
+    time-shift:
+      target: H2
+      type: half decrease
+...
