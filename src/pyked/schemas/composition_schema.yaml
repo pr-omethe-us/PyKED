@@ -56,12 +56,16 @@ composition: &composition
                 type: string
           InChI:
             type: string
+            empty: false
+            isvalid_inchi: true
             required: true
             excludes:
               - atomic-composition
               - SMILES
           SMILES:
             type: string
+            empty: false
+            isvalid_smiles: true
             required: true
             excludes:
               - atomic-composition
