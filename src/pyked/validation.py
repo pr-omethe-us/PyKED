@@ -13,6 +13,7 @@ from cerberus import SchemaError, Validator
 
 from . import schemas
 from .orcid import search_orcid
+from .species_validation import valid_inchi, valid_smiles
 
 units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
@@ -470,6 +471,24 @@ class OurValidator(Validator):
                     f"Name associated with ORCID: {given_name} {family_name}",
                 )
 
+    def _validate_isvalid_inchi(self, isvalid_inchi, field, value):
+        """Check that an InChI can be parsed.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        if isvalid_inchi and not valid_inchi(value):
+            self._error(field, "Invalid InChI string")
+
+    def _validate_isvalid_smiles(self, isvalid_smiles, field, value):
+        """Check that a SMILES string can be parsed and sanitized.
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        if isvalid_smiles and not valid_smiles(value):
+            self._error(field, "Invalid SMILES string")
+
     def _validate_isvalid_composition(self, isvalid_composition, field, value):
         """Checks for valid specification of composition.
 
@@ -521,4 +540,3 @@ class OurValidator(Validator):
                 field,
                 f"Species {value['kind']}s do not sum to {total_amount:.1f}: {sum_amount:f}",
             )
-        # TODO: validate InChI, SMILES, or atomic-composition
