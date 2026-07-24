@@ -6,7 +6,7 @@ These verify that the mock data in conftest.py still matches real API responses.
 
 import pytest
 
-from pyked.orcid import search_orcid
+from pyked.identifier import search_orcid
 from pyked.validation import crossref_api
 from tests._mock_data import CROSSREF_RESPONSES as _CROSSREF_RESPONSES
 from tests._mock_data import ORCID_RESPONSES as _ORCID_RESPONSES

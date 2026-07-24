@@ -150,10 +150,13 @@ particular experiment type.
             The name of the species
 
         * ``InChI``: string, required, excludes ``SMILES``, ``atomic-composition``
-            The InChI string for the species
+            The InChI string for the species. PyKED validates the identifier offline by parsing it
+            with RDKit. Both a complete identifier beginning with ``InChI=`` and the historical
+            ChemKED prefixless form (for example, ``1S/H2/h1H``) are accepted.
 
         * ``SMILES``: string, required, excludes ``InChI``, ``atomic-composition``
-            The SMILES string for the species
+            The SMILES string for the species. PyKED validates the identifier offline by parsing
+            and sanitizing it with RDKit.
 
         * ``atomic-composition``: sequence, required, excludes ``InChI``, ``SMILES``
             A sequence of mappings representing the atoms that make up the species. Useful for

@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Offline validation of species InChI and SMILES strings using RDKit, including support for both
+  complete and historical prefixless InChIs
 
 ## [0.5.0] - 2026-07-02
 ### Added
