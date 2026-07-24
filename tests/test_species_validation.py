@@ -2,7 +2,7 @@
 
 import pytest
 
-from pyked.species_validation import normalize_inchi, valid_inchi, valid_smiles
+from pyked.identifier import normalize_inchi, valid_inchi, valid_smiles
 from pyked.validation import OurValidator, schema
 
 

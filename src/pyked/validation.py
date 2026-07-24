@@ -12,8 +12,7 @@ import yaml
 from cerberus import SchemaError, Validator
 
 from . import schemas
-from .orcid import search_orcid
-from .species_validation import valid_inchi, valid_smiles
+from .identifier import search_orcid, valid_inchi, valid_smiles
 
 units = pint.UnitRegistry()
 """Unit registry to contain the units used in PyKED"""
