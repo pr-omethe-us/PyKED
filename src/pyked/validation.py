@@ -65,7 +65,7 @@ for l_num, line in enumerate(schema_list):
             raise SchemaError("All included files must be first in the main schema")
 
         inc_fname = resources.files(schemas) / line.split("!include")[1].strip()
-        with inc_fname.open("r") as f:
+        with inc_fname.open("r", encoding="utf-8") as f:
             inc_list.extend(f.readlines())
     else:
         if not line.strip() or line.startswith("#") or line.startswith("---"):
@@ -434,7 +434,10 @@ class OurValidator(Validator):
         if isinstance(value[0], dict):
             return
 
-        quantity = Q_(_normalize_unit_str(value[0]))
+        quantity = self._parse_quantity(field, value[0])
+        if quantity is None:
+            return
+
         expected_units = property_units.get(field)
 
         if expected_units is None:
@@ -455,6 +458,49 @@ class OurValidator(Validator):
             self._error(
                 field,
                 f"incompatible units; should be consistent with {expected_units}",
+            )
+
+    def _parse_quantity(self, field, value):
+        """Read a value into a Pint quantity, reporting an error if it cannot be read.
+
+        Args:
+            field (`str`): property the value belongs to, used in the error message
+            value (`str` or `float`): the value as written in the file
+
+        Returns:
+            `~pint.Quantity`, or `None` if the value could not be read
+        """
+        try:
+            return Q_(_normalize_unit_str(value))
+        except Exception:  # noqa: BLE001 - Pint raises several unrelated types for bad input
+            self._error(field, f"{value!r} is not a value with units that can be understood")
+            return None
+
+    def _check_uncertainty_value(self, field, key, value, kind):
+        """Check one uncertainty value against the kind of uncertainty it declares.
+
+        A relative uncertainty is a fraction of the quantity it describes, so it carries no units.
+        An absolute one is in the units of that quantity, and is checked against them.
+
+        Args:
+            field (`str`): property the uncertainty describes
+            key (`str`): which uncertainty key is being checked, used in the error message
+            value (`str` or `float`): the uncertainty value
+            kind (`str`): ``relative`` or ``absolute``
+        """
+        if kind != "relative":
+            self._validate_isvalid_quantity(True, field, [value])
+            return
+
+        quantity = self._parse_quantity(field, value)
+        if quantity is None:
+            return
+
+        if not quantity.dimensionless:
+            self._error(
+                field,
+                f"a relative {key} is a fraction of the {field} value, so it must be "
+                f"dimensionless; got {value!r}",
             )
 
     def _check_uncertainty_metadata(self, field, metadata):
@@ -486,30 +532,18 @@ class OurValidator(Validator):
             return
 
         uncertainty_type = uncertainty_dict.get("uncertainty-type")
-        if uncertainty_type and uncertainty_type != "relative":
-            if uncertainty_dict.get("uncertainty") is not None:
-                self._validate_isvalid_quantity(
-                    True, field, [uncertainty_dict["uncertainty"]]
+        for key in ["uncertainty", "upper-uncertainty", "lower-uncertainty"]:
+            if uncertainty_dict.get(key) is not None:
+                self._check_uncertainty_value(
+                    field, key, uncertainty_dict[key], uncertainty_type
                 )
 
-            if uncertainty_dict.get("upper-uncertainty") is not None:
-                self._validate_isvalid_quantity(
-                    True, field, [uncertainty_dict["upper-uncertainty"]]
-                )
-
-            if uncertainty_dict.get("lower-uncertainty") is not None:
-                self._validate_isvalid_quantity(
-                    True, field, [uncertainty_dict["lower-uncertainty"]]
-                )
-
-        evaluated_sd_type = uncertainty_dict.get("evaluated-standard-deviation-type")
-        if (
-            evaluated_sd_type
-            and evaluated_sd_type != "relative"
-            and uncertainty_dict.get("evaluated-standard-deviation") is not None
-        ):
-            self._validate_isvalid_quantity(
-                True, field, [uncertainty_dict["evaluated-standard-deviation"]]
+        if uncertainty_dict.get("evaluated-standard-deviation") is not None:
+            self._check_uncertainty_value(
+                field,
+                "evaluated-standard-deviation",
+                uncertainty_dict["evaluated-standard-deviation"],
+                uncertainty_dict.get("evaluated-standard-deviation-type"),
             )
 
     def _validate_isvalid_profile_uncertainty(

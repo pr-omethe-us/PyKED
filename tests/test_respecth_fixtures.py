@@ -58,7 +58,7 @@ def load_pair(group, stem):
     fixture_dir = DATA_DIR / group
     xml_path = fixture_dir / f"{stem}.xml"
     yaml_path = fixture_dir / f"{stem}.yaml"
-    with yaml_path.open() as stream:
+    with yaml_path.open(encoding="utf-8") as stream:
         document = yaml.safe_load(stream)
     return etree.parse(xml_path).getroot(), document
 

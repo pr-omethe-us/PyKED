@@ -59,14 +59,14 @@ class TestChemKED:
 
     def test_dict_input(self):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         ChemKED(dict_input=properties)
 
     def test_unallowed_input(self, capfd):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties["experiment-type"] = "Ignition Delay"  # should be 'ignition delay'
@@ -83,7 +83,7 @@ class TestChemKED:
 
     def test_missing_input(self, capfd):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties.pop("apparatus")
@@ -204,12 +204,12 @@ class TestWriteFile:
     def test_overwrite(self):
         """ """
         yaml_filename = Path("tests") / "testfile_st.yaml"
-        with open(yaml_filename) as f:
+        with open(yaml_filename, encoding="utf-8") as f:
             lines = f.readlines()
 
         with TemporaryDirectory() as temp_dir:
             newfile_path = Path(temp_dir) / "testfile.yaml"
-            with open(newfile_path, "w") as f:
+            with open(newfile_path, "w", encoding="utf-8") as f:
                 f.writelines(lines)
             c = ChemKED(newfile_path)
 
@@ -240,7 +240,7 @@ class TestWriteFile:
             c.write_file(Path(temp_dir) / "testfile.yaml")
 
             # Now read in the file
-            with open(Path(temp_dir) / "testfile.yaml") as f:
+            with open(Path(temp_dir) / "testfile.yaml", encoding="utf-8") as f:
                 properties = yaml.safe_load(f)
 
         assert properties == c._properties
@@ -281,7 +281,7 @@ class TestConvertToReSpecTh:
     def test_time_history_conversion_to_respecth(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with time histories."""
         filename = Path("tests") / "testfile_rcm.yaml"
-        with open(filename) as yaml_file:
+        with open(filename, encoding="utf-8") as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
         properties["datapoints"][0]["time-histories"][0]["quantity"]["units"] = unit
@@ -316,7 +316,7 @@ class TestConvertToReSpecTh:
     def test_time_history_conversion_to_respecth_unsupported(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with unsupported time histories."""
         filename = Path("tests") / "testfile_rcm.yaml"
-        with open(filename) as yaml_file:
+        with open(filename, encoding="utf-8") as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
         properties["datapoints"][0]["time-histories"][0]["quantity"]["units"] = unit
@@ -576,7 +576,7 @@ class TestDataPoint:
 
     def load_properties(self, test_file):
         filename = Path("tests") / test_file
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         v = OurValidator(schema)
@@ -936,7 +936,7 @@ class TestDataPoint:
 
     def test_evaluated_standard_deviation_metadata_without_uncertainty(self):
         filename = Path("tests") / "testfile_st.yaml"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         metadata = {
@@ -957,7 +957,7 @@ class TestDataPoint:
     def test_uncertainty_type_with_esd_only_metadata(self):
         """uncertainty-type alongside an ESD value but no uncertainty value must not crash."""
         filename = Path("tests") / "testfile_st.yaml"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         metadata = {
@@ -975,7 +975,7 @@ class TestDataPoint:
     def test_evaluated_standard_deviation_is_stored(self):
         """ESD metadata is stored on the DataPoint and on composition amounts."""
         filename = Path("tests") / "testfile_st.yaml"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         datapoint = properties["datapoints"][0]
@@ -1020,7 +1020,7 @@ class TestDataPoint:
     def test_unit_normalization_matches_validation(self):
         """Unit strings accepted by validation must also parse at load time."""
         filename = Path("tests") / "testfile_st.yaml"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties["datapoints"][0]["pressure"] = [
@@ -1043,7 +1043,7 @@ class TestDataPoint:
     def test_unit_normalization_asymmetric_uncertainty(self):
         """Asymmetric absolute uncertainties must normalize like the main value."""
         filename = Path("tests") / "testfile_st.yaml"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties["datapoints"][0]["pressure"] = [
