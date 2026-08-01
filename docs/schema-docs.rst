@@ -27,7 +27,9 @@ this section are required in every ChemKED file.
 .. _meta-chemked-version:
 
 * ``chemked-version``: string, required
-    A string with the version of the ChemKED schema that this file targets.
+    A string with the version of the ChemKED schema that this file targets. Must be one of the
+    versions listed under ``chemked-version`` in ``chemked_schema.yaml``. Files written by the
+    converters carry the version of the PyKED release that produced them.
 
 .. _meta-datapoints:
 
@@ -47,6 +49,19 @@ this section are required in every ChemKED file.
     The author(s) of the ChemKED file, which may be different from the authors of the referenced
     work. Elements of the sequence must be mappings that conform to the
     :ref:`author <schema-author>` schema.
+
+.. _meta-comments:
+
+* ``comments``: sequence, optional
+    Free-text notes about the file as a whole, one string per element. Converting a ReSpecTh file
+    brings across each of its ``comment`` elements, which typically record how a quantity was
+    derived or what the file author was unsure of.
+
+.. _meta-method:
+
+* ``method``: string, optional
+    Free text describing how the data were obtained or processed, when that does not belong to any
+    single datapoint.
 
 .. _reference-keys:
 
