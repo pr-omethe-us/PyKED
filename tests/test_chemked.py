@@ -12,14 +12,11 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
-from pyked._version import __version__
 from pyked.chemked import ChemKED, Composition, DataPoint
 from pyked.converters import get_common_properties, get_datapoints
 
 # Local imports
 from pyked.validation import Q_, OurValidator, schema, yaml
-
-schema["chemked-version"]["allowed"].append(__version__)
 
 warnings.simplefilter("always")
 
@@ -352,15 +349,12 @@ class TestConvertToReSpecTh:
     @pytest.mark.parametrize(
         "experiment_type",
         [
-            "Laminar flame speed measurement",
-            "Species profile measurement",
-            "Outlet concentration measurement",
-            "Burner stabilized flame speciation measurement",
-            "Jet-stirred reactor measurement",
+            "laminar burning velocity measurement",
+            "speciation measurement",
         ],
     )
     def test_conversion_to_respecth_error(self, experiment_type):
-        """Test for conversion errors."""
+        """Only ignition delay can be written back out to ReSpecTh."""
         filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 

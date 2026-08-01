@@ -22,19 +22,29 @@ from pyked.converters import (
     MissingElementError,
     ParseError,
     ReSpecTh_to_ChemKED,
+    apparatus_kinds,
+    apparatus_kinds_by_experiment,
+    attach_value_metadata,
     ck2respth,
+    experiment_types,
+    flame_modes,
     get_common_properties,
     get_datapoints,
     get_experiment_kind,
     get_file_metadata,
     get_ignition_type,
+    get_lbv_datapoints,
     get_reference,
+    get_speciation_datapoints,
+    get_value_metadata,
+    ignition_target_values,
+    ignition_type_values,
     main,
+    normalize_units,
     respth2ck,
 )
 from pyked.validation import schema
-
-schema["chemked-version"]["allowed"].append(__version__)
+from pyked.validation import units as unit_registry
 
 
 class TestErrors:
@@ -385,17 +395,41 @@ class TestGetExperiment:
         assert ref["apparatus"]["kind"] == apparatus
 
     @pytest.mark.parametrize(
-        "experiment_type",
+        "respecth_type, chemked_type",
         [
-            "Laminar flame speed measurement",
-            "Outlet concentration measurement",
-            "Concentration time profile measurement",
-            "Jet stirred reactor measurement",
-            "Burner stabilized flame speciation measurement",
+            # ReSpecTh 1.x capitalizes the type, 2.x does not
+            ("Ignition delay measurement", "ignition delay"),
+            ("ignition delay measurement", "ignition delay"),
+            ("laminar burning velocity measurement", "laminar burning velocity measurement"),
+            ("Laminar flame speed measurement", "laminar burning velocity measurement"),
+            # ReSpecTh keeps four speciation types that ChemKED represents as one
+            ("concentration time profile measurement", "speciation measurement"),
+            ("outlet concentration measurement", "speciation measurement"),
+            ("jet stirred reactor measurement", "speciation measurement"),
+            ("burner stabilized flame speciation measurement", "speciation measurement"),
         ],
     )
+    def test_experiment_type_mapping(self, respecth_type, chemked_type):
+        """Every ReSpecTh experiment type maps onto a ChemKED experiment-type."""
+        root = etree.Element("experiment")
+        exp = etree.SubElement(root, "experimentType")
+        exp.text = respecth_type
+        app = etree.SubElement(root, "apparatus")
+        kind = etree.SubElement(app, "kind")
+        kind.text = "shock tube"
+
+        assert get_experiment_kind(root)["experiment-type"] == chemked_type
+
+    def test_experiment_types_match_schema(self):
+        """Everything the converter emits must be an allowed experiment-type."""
+        assert set(experiment_types.values()) <= set(schema["experiment-type"]["allowed"])
+
+    @pytest.mark.parametrize(
+        "experiment_type",
+        ["Direct rate coefficient measurement", "Unknown measurement"],
+    )
     def test_invalid_experiment_types(self, experiment_type):
-        """Ensure unsupported types raise correct errors."""
+        """Ensure types outside the ChemKED schema raise correct errors."""
         root = etree.Element("experiment")
         exp = etree.SubElement(root, "experimentType")
         exp.text = experiment_type
@@ -405,11 +439,122 @@ class TestGetExperiment:
         assert experiment_type + " not (yet) supported" in str(excinfo.value)
 
     @pytest.mark.parametrize(
+        "respecth_kind, chemked_kind",
+        [
+            ("shock tube", "shock tube"),
+            ("rapid compression machine", "rapid compression machine"),
+            # ReSpecTh appends the vessel material, which ChemKED has no field for
+            ("flow reactor", "flow reactor"),
+            ("flow reactor (quartz)", "flow reactor"),
+            ("jet stirred reactor", "jet stirred reactor"),
+            ("heat flux burner", "heat flux burner"),
+            ("flame cone method", "bunsen burner"),
+            ("outwardly propagating spherical flame", "outwardly propagating spherical flame"),
+        ],
+    )
+    def test_apparatus_kind_mapping(self, respecth_kind, chemked_kind):
+        """ReSpecTh apparatus kinds map onto the ChemKED vocabulary."""
+        root = etree.Element("experiment")
+        exp = etree.SubElement(root, "experimentType")
+        exp.text = "ignition delay measurement"
+        app = etree.SubElement(root, "apparatus")
+        kind = etree.SubElement(app, "kind")
+        kind.text = respecth_kind
+
+        assert get_experiment_kind(root)["apparatus"]["kind"] == chemked_kind
+
+    @pytest.mark.parametrize(
+        "respecth_kind",
+        ["stirred reactor", "stirred reactor (quartz)", "stirred reactor (fused silica)"],
+    )
+    def test_stirred_reactor_needs_the_experiment_type(self, respecth_kind):
+        """"Stirred reactor" says the mixture is stirred, not which reactor it is.
+
+        Only the experiment type says the reactor is jet stirred, so the kind is mapped when it
+        agrees and refused when there is nothing to corroborate it.
+        """
+        root = etree.Element("experiment")
+        exp = etree.SubElement(root, "experimentType")
+        exp.text = "jet stirred reactor measurement"
+        app = etree.SubElement(root, "apparatus")
+        kind = etree.SubElement(app, "kind")
+        kind.text = respecth_kind
+
+        assert get_experiment_kind(root)["apparatus"]["kind"] == "jet stirred reactor"
+
+        exp.text = "outlet concentration measurement"
+        with pytest.raises(NotImplementedError) as excinfo:
+            get_experiment_kind(root)
+        assert "does not identify a ChemKED apparatus kind" in str(excinfo.value)
+
+    @pytest.mark.parametrize(
+        "modes, chemked_kind",
+        [
+            (["premixed", "laminar", "OPF"], "outwardly propagating spherical flame"),
+            (["premixed", "laminar", "HFM"], "heat flux burner"),
+            (["premixed", "laminar", "CTF"], "counterflow twin flame"),
+            (["premixed", "laminar", "FCM"], "bunsen burner"),
+            (["burner-stabilized"], "burner stabilized flame"),
+            (["constant volume combustion chamber", "premixed"], "outwardly propagating spherical flame"),
+        ],
+    )
+    def test_generic_flame_apparatus_uses_mode(self, modes, chemked_kind):
+        """A generic flame apparatus is identified from its modes."""
+        root = etree.Element("experiment")
+        exp = etree.SubElement(root, "experimentType")
+        exp.text = "laminar burning velocity measurement"
+        app = etree.SubElement(root, "apparatus")
+        kind = etree.SubElement(app, "kind")
+        kind.text = "flame"
+        for mode in modes:
+            etree.SubElement(app, "mode").text = mode
+
+        assert get_experiment_kind(root)["apparatus"]["kind"] == chemked_kind
+
+    @pytest.mark.parametrize(
+        "modes",
+        [
+            # These describe the mixture or the flow, not the burner
+            ["premixed", "laminar"],
+            ["premixed"],
+            # ReSpecTh marks a mode it is unsure of with a question mark
+            ["premixed", "laminar", "FCM?"],
+        ],
+    )
+    def test_undecidable_flame_apparatus(self, modes):
+        """A generic flame apparatus with no identifying mode has to be curated by hand."""
+        root = etree.Element("experiment")
+        exp = etree.SubElement(root, "experimentType")
+        exp.text = "laminar burning velocity measurement"
+        app = etree.SubElement(root, "apparatus")
+        kind = etree.SubElement(app, "kind")
+        kind.text = "flame"
+        for mode in modes:
+            etree.SubElement(app, "mode").text = mode
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            get_experiment_kind(root)
+        assert "does not identify a ChemKED apparatus kind" in str(excinfo.value)
+
+        # The caller can supply the kind that only the article states
+        assert (
+            get_experiment_kind(root, apparatus_kind="heat flux burner")["apparatus"]["kind"]
+            == "heat flux burner"
+        )
+
+    def test_apparatus_kinds_match_schema(self):
+        """Everything the converter emits must be an allowed apparatus kind."""
+        allowed = set(schema["apparatus"]["schema"]["kind"]["allowed"])
+        assert set(apparatus_kinds.values()) <= allowed
+        assert set(flame_modes.values()) <= allowed
+        assert set(apparatus_kinds_by_experiment.values()) <= allowed
+
+    @pytest.mark.parametrize(
         "apparatus",
-        ["perfectly stirred reactor", "internal combustion engine", "flow reactor"],
+        ["internal combustion engine", "single cylinder engine"],
     )
     def test_invalid_apparatus_types(self, apparatus):
-        """Ensure unsupported apparatus types raise correct errors."""
+        """Ensure apparatus kinds outside the ChemKED schema raise correct errors."""
         root = etree.Element("experiment")
         exp = etree.SubElement(root, "experimentType")
         exp.text = "Ignition delay measurement"
@@ -419,7 +564,7 @@ class TestGetExperiment:
 
         with pytest.raises(NotImplementedError) as excinfo:
             get_experiment_kind(root)
-        assert apparatus + " experiment not (yet) supported" in str(excinfo.value)
+        assert "does not identify a ChemKED apparatus kind" in str(excinfo.value)
 
     def test_missing_apparatus_kind(self):
         """Ensure proper error raised if missing apparatus kind."""
@@ -701,11 +846,22 @@ class TestIgnitionType:
     """ """
 
     @pytest.mark.parametrize(
-        "ignition_target", ["P", "T", "OH", "OH*", "CH*", "CH", "OHEX", "CHEX"]
+        "ignition_target", ["P", "T", "OH", "OH*", "CH*", "CH", "OHEX", "CHEX", "CO2", "CH3OH"]
     )
     @pytest.mark.parametrize(
         "ignition_type",
-        ["max", "d/dt max", "1/2 max", "min", "baseline max intercept from d/dt"],
+        [
+            "max",
+            "d/dt max",
+            "1/2 max",
+            "min",
+            "baseline max intercept from d/dt",
+            "baseline min intercept from d/dt",
+            "concentration",
+            "relative concentration",
+            "d/dt second max",
+            "relative increase",
+        ],
     )
     def test_valid_ignition_types(self, ignition_target, ignition_type):
         """Check for proper parsing of valid ignition types."""
@@ -715,6 +871,49 @@ class TestIgnitionType:
         ignition.set("type", ignition_type)
 
         ignition = get_ignition_type(root)
+
+    @pytest.mark.parametrize(
+        "respecth_name, chemked_name",
+        [
+            ("P", "pressure"),
+            ("T", "temperature"),
+            ("OHEX", "OH*"),
+            ("CHEX", "CH*"),
+            ("p;", "pressure"),
+            ("CH4", "CH4"),
+        ],
+    )
+    def test_ignition_target_names(self, respecth_name, chemked_name):
+        """ReSpecTh abbreviations are mapped, and species names keep their case."""
+        root = etree.Element("experiment")
+        ignition = etree.SubElement(root, "ignitionType")
+        ignition.set("target", respecth_name)
+        ignition.set("type", "max")
+
+        assert get_ignition_type(root)["target"] == chemked_name
+
+    @pytest.mark.parametrize(
+        "respecth_name, chemked_name",
+        [
+            ("baseline max intercept from d/dt", "d/dt max extrapolated"),
+            ("baseline min intercept from d/dt", "d/dt min extrapolated"),
+            ("d/dt max", "d/dt max"),
+        ],
+    )
+    def test_ignition_type_names(self, respecth_name, chemked_name):
+        """ReSpecTh spells the extrapolated types differently from ChemKED."""
+        root = etree.Element("experiment")
+        ignition = etree.SubElement(root, "ignitionType")
+        ignition.set("target", "P")
+        ignition.set("type", respecth_name)
+
+        assert get_ignition_type(root)["type"] == chemked_name
+
+    def test_ignition_vocabulary_matches_schema(self):
+        """The converter's ignition vocabulary must not drift from the schema's."""
+        ignition_schema = schema["datapoints"]["anyof"][0]["schema"]["schema"]["ignition-type"]
+        assert set(ignition_target_values) == set(ignition_schema["schema"]["target"]["allowed"])
+        assert set(ignition_type_values) == set(ignition_schema["schema"]["type"]["allowed"])
 
     def test_missing_attributes(self):
         """Check for error upon missing attributes"""
@@ -739,7 +938,7 @@ class TestIgnitionType:
 
     @pytest.mark.parametrize(
         "ignition_type",
-        ["baseline min intercept from d/dt", "concentration", "relative concentration"],
+        ["baseline mean intercept from d/dt", "inflection", "d/dt third max"],
     )
     def test_unsupported_ignition_types(self, ignition_type):
         """Check error returned for unsupported/invalid ignition types."""
@@ -752,7 +951,7 @@ class TestIgnitionType:
             ignition = get_ignition_type(root)
         assert "Error: " + ignition_type + " not valid ignition type" in str(excinfo.value)
 
-    @pytest.mark.parametrize("ignition_target", ["O2", "CO", "density"])
+    @pytest.mark.parametrize("ignition_target", ["density", "[O]*[CO]", "velocity"])
     def test_unsupported_ignition_targets(self, ignition_target):
         """Check error returned for unsupported/invalid ignition targets."""
         root = etree.Element("experiment")
@@ -762,9 +961,7 @@ class TestIgnitionType:
 
         with pytest.raises(KeywordError) as excinfo:
             ignition = get_ignition_type(root)
-        assert "Error: " + ignition_target.upper() + " not valid ignition target" in str(
-            excinfo.value
-        )
+        assert "Error: " + ignition_target + " not valid ignition target" in str(excinfo.value)
 
     def test_multiple_targets(self):
         """Check for error with multiple ignition targets."""
@@ -1296,6 +1493,740 @@ class TestGetDatapoints:
         assert ("Error: composition units mole fraction not consistent with mass fraction") in str(
             excinfo.value
         )
+
+
+class TestUnits:
+    """ReSpecTh unit strings have to reach Pint in a form it can parse."""
+
+    @pytest.mark.parametrize(
+        "respecth_units, pint_units",
+        [
+            ("cm/s", "cm/s"),
+            ("K", "K"),
+            # ReSpecTh writes reciprocal units with a bare negative exponent
+            ("ms-1", "ms**-1"),
+            ("kg m-2 s-1", "kg * m**-2 * s**-1"),
+            ("Torr", "torr"),
+            ("unitless", "dimensionless"),
+            ("[-]", "dimensionless"),
+        ],
+    )
+    def test_normalize_units(self, respecth_units, pint_units):
+        """Ensure ReSpecTh unit spellings are translated for Pint."""
+        assert normalize_units(respecth_units) == pint_units
+
+    @pytest.mark.parametrize("respecth_units", ["ms-1", "kg m-2 s-1", "cm/s", "unitless"])
+    def test_normalized_units_are_parseable(self, respecth_units):
+        """Every normalized unit string must actually parse."""
+        assert unit_registry(normalize_units(respecth_units)) is not None
+
+    def test_reciprocal_units_in_common_property(self):
+        """A pressure rise in ms-1 must convert rather than raise a Pint error.
+
+        Pint reads the ReSpecTh spelling "ms-1" as a subtraction, so parsing it outside a guarded
+        block used to escape as a DimensionalityError instead of a KeywordError.
+        """
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(properties, "property")
+        prop.set("name", "pressure rise")
+        prop.set("units", "ms-1")
+        etree.SubElement(prop, "value").text = "0.10"
+
+        assert get_common_properties(root)["pressure-rise"] == ["0.10 ms**-1"]
+
+    def test_unparseable_units_raise_keyword_error(self):
+        """Units Pint cannot parse are reported as a keyword error, not a Pint error."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(properties, "property")
+        prop.set("name", "temperature")
+        prop.set("units", "degrees Fahrenheit-ish")
+        etree.SubElement(prop, "value").text = "1000"
+
+        with pytest.raises(KeywordError) as excinfo:
+            get_common_properties(root)
+        assert "units incompatible for property temperature" in str(excinfo.value)
+
+
+class TestReSpecThVersion2:
+    """ReSpecTh 2.x states the reference and the properties differently from 1.x."""
+
+    def build_reference(self, **details):
+        root = etree.Element("experiment")
+        biblio = etree.SubElement(root, "bibliographyLink")
+        etree.SubElement(biblio, "description").text = "S. Adusumilli, Combust. Flame 233 (2021)."
+        etree.SubElement(biblio, "referenceDOI").text = "10.1016/j.combustflame.2021.111564"
+        elem = etree.SubElement(biblio, "details")
+        for name, text in details.items():
+            etree.SubElement(elem, name).text = text
+        return root
+
+    def test_reference_from_details(self):
+        """The reference is read from the file, with no DOI lookup."""
+        root = self.build_reference(
+            author="Adusumilli, Sampath and Seitzman, Jerry",
+            journal="Combustion and Flame",
+            volume="233",
+            pages="111564",
+            year="2021",
+        )
+
+        reference = get_reference(root)
+        assert reference["doi"] == "10.1016/j.combustflame.2021.111564"
+        assert reference["journal"] == "Combustion and Flame"
+        assert reference["year"] == 2021
+        assert reference["volume"] == 233
+        # ReSpecTh writes authors family name first
+        assert reference["authors"] == [
+            {"name": "Sampath Adusumilli"},
+            {"name": "Jerry Seitzman"},
+        ]
+
+    @pytest.mark.parametrize("respecth_pages", ["13--22", "13–22", "13-22"])
+    def test_page_ranges_are_normalized(self, respecth_pages):
+        """ReSpecTh writes page ranges with en dashes or doubled hyphens."""
+        root = self.build_reference(author="Doe, Jane", year="2021", pages=respecth_pages)
+        assert get_reference(root)["pages"] == "13-22"
+
+    def test_details_without_year_falls_back(self, mock_crossref_api):
+        """Details that cannot make a valid reference fall back to the DOI lookup."""
+        root = self.build_reference(author="Doe, Jane")
+        # The stubbed lookup answers for this DOI
+        biblio = root.find("bibliographyLink")
+        biblio.find("referenceDOI").text = "10.1016/j.cpc.2017.02.004"
+
+        assert get_reference(root)["journal"] == "Computer Physics Communications"
+
+    @pytest.mark.parametrize(
+        "name, field, value, units",
+        [
+            ("residence time", "residence-time", "120", "ms"),
+            ("volume", "reactor-volume", "31.6", "cm3"),
+            ("flow rate", "flow-rate", "0.3148", "kg m-2 s-1"),
+            ("equivalence ratio", "equivalence-ratio", "0.7", "unitless"),
+            ("reactor length", "reactor-length", "10", "cm"),
+            ("environment temperature", "environment-temperature", "298", "K"),
+        ],
+    )
+    def test_common_property_vocabulary(self, name, field, value, units):
+        """ReSpecTh 2.x uses common properties beyond the four dataGroup quantities."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(properties, "property")
+        prop.set("name", name)
+        prop.set("units", units)
+        etree.SubElement(prop, "value").text = value
+
+        assert get_common_properties(root)[field] == [
+            " ".join([value, normalize_units(units)])
+        ]
+
+    def test_misspelled_composition_units(self):
+        """Part of the corpus misspells mole fraction as "mole faction"."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        composition = etree.SubElement(properties, "property")
+        composition.set("name", "initial composition")
+        component = etree.SubElement(composition, "component")
+        species = etree.SubElement(component, "speciesLink")
+        species.set("preferredKey", "H2")
+        species.set("InChI", "1S/H2/h1H")
+        amount = etree.SubElement(component, "amount")
+        amount.set("units", "mole faction")
+        amount.text = "1.0"
+
+        with pytest.warns(UserWarning, match="mole faction"):
+            common = get_common_properties(root)
+        assert common["composition"]["kind"] == "mole fraction"
+
+    def test_mixed_mole_percent_and_fraction(self):
+        """Mole percent and mole fraction convert exactly, so a mixture is reconciled."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        composition = etree.SubElement(properties, "property")
+        composition.set("name", "initial composition")
+        for name, inchi, amount_units, amount_text in [
+            ("H2", "1S/H2/h1H", "mole percent", "10.0"),
+            ("Ar", "1S/Ar", "mole fraction", "0.9"),
+        ]:
+            component = etree.SubElement(composition, "component")
+            species = etree.SubElement(component, "speciesLink")
+            species.set("preferredKey", name)
+            species.set("InChI", inchi)
+            amount = etree.SubElement(component, "amount")
+            amount.set("units", amount_units)
+            amount.text = amount_text
+
+        with pytest.warns(UserWarning, match="mixes mole fraction and mole percent"):
+            common = get_common_properties(root)
+
+        assert common["composition"]["kind"] == "mole fraction"
+        assert common["composition"]["species"][0]["amount"] == [0.1]
+        assert common["composition"]["species"][1]["amount"] == [0.9]
+
+
+class TestValueMetadata:
+    """ReSpecTh states uncertainties as properties that point at another quantity."""
+
+    def build_metadata(self, name, reference, kind, value, units=None, species=None, **attrib):
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(properties, "property")
+        prop.set("name", name)
+        prop.set("reference", reference)
+        prop.set("kind", kind)
+        if units is not None:
+            prop.set("units", units)
+        for key, item in attrib.items():
+            prop.set(key, item)
+        if species is not None:
+            etree.SubElement(prop, "speciesLink").set("preferredKey", species)
+        etree.SubElement(prop, "value").text = value
+        return root
+
+    def test_metadata_is_not_a_common_property(self):
+        """An uncertainty describes another quantity, so it is not a property of its own."""
+        root = self.build_metadata(
+            "evaluated standard deviation", "laminar burning velocity", "relative", "0.039"
+        )
+        assert get_common_properties(root) == {}
+        assert len(get_value_metadata(root)) == 1
+
+    def test_missing_reference(self):
+        """An uncertainty with nothing to point at is an error."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(properties, "property")
+        prop.set("name", "uncertainty")
+        prop.set("kind", "absolute")
+        etree.SubElement(prop, "value").text = "1.0"
+
+        with pytest.raises(MissingAttributeError) as excinfo:
+            get_value_metadata(root)
+        assert "required attribute reference of uncertainty is missing" in str(excinfo.value)
+
+    def test_relative_esd_attaches_to_every_datapoint(self):
+        """A file-wide relative deviation belongs to the value in each datapoint."""
+        root = self.build_metadata(
+            "evaluated standard deviation",
+            "laminar burning velocity",
+            "relative",
+            "0.039",
+            units="unitless",
+            sourcetype="estimated",
+            method="statistical scatter",
+        )
+        properties = {
+            "common-properties": {},
+            "datapoints": [
+                {"laminar-burning-velocity": ["59.48 cm/s"]},
+                {"laminar-burning-velocity": ["91.48 cm/s"]},
+            ],
+        }
+
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        for datapoint in properties["datapoints"]:
+            metadata = datapoint["laminar-burning-velocity"][1]
+            assert metadata["evaluated-standard-deviation"] == "0.039"
+            assert metadata["evaluated-standard-deviation-type"] == "relative"
+            assert metadata["evaluated-standard-deviation-sourcetype"] == "estimated"
+            assert metadata["evaluated-standard-deviation-method"] == "statistical scatter"
+
+    def test_absolute_uncertainty_keeps_units(self):
+        """An absolute uncertainty is stored with the units it was given in."""
+        root = self.build_metadata(
+            "uncertainty", "ignition delay", "absolute", "12.0", units="us", bound="plusminus"
+        )
+        properties = {"common-properties": {}, "datapoints": [{"ignition-delay": ["120 us"]}]}
+
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        metadata = properties["datapoints"][0]["ignition-delay"][1]
+        assert metadata["uncertainty"] == "12.0 us"
+        assert metadata["uncertainty-type"] == "absolute"
+
+    def test_initial_composition_reference(self):
+        """An uncertainty about the mixture belongs to that species' amount."""
+        root = self.build_metadata(
+            "uncertainty", "initial composition", "relative", "0.04", units="unitless", species="NH3"
+        )
+        properties = {
+            "common-properties": {
+                "composition": {
+                    "kind": "mole fraction",
+                    "species": [
+                        {"species-name": "NH3", "amount": [0.00076]},
+                        {"species-name": "N2", "amount": [0.99924]},
+                    ],
+                }
+            },
+            "datapoints": [{}],
+        }
+
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        species = properties["common-properties"]["composition"]["species"]
+        # A composition amount is a bare number, so its uncertainty is stored as one too
+        assert species[0]["amount"][1] == {
+            "uncertainty-type": "relative",
+            "uncertainty": 0.04,
+        }
+        # The other species was not given an uncertainty
+        assert len(species[1]["amount"]) == 1
+
+    @pytest.mark.parametrize("reference", ["Sl", "x1"])
+    def test_reference_by_label_or_id(self, reference):
+        """Part of the corpus points at a column by its label or its id, not by name."""
+        root = self.build_metadata("uncertainty", reference, "absolute", "1.83", units="cm/s")
+        datagroup = etree.SubElement(root, "dataGroup")
+        datagroup.set("id", "dg1")
+        prop = etree.SubElement(datagroup, "property")
+        prop.set("name", "laminar burning velocity")
+        prop.set("id", "x1")
+        prop.set("label", "Sl")
+        prop.set("units", "cm/s")
+
+        properties = {
+            "common-properties": {},
+            "datapoints": [{"laminar-burning-velocity": ["16.89 cm/s"]}],
+        }
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        metadata = properties["datapoints"][0]["laminar-burning-velocity"][1]
+        assert metadata["uncertainty"] == "1.83 cm/s"
+
+    def test_uncertainty_and_esd_on_one_value(self):
+        """The two kinds of uncertainty describe a value together, not exclusively."""
+        root = etree.Element("experiment")
+        properties_elem = etree.SubElement(root, "commonProperties")
+        for name, kind, value, method in [
+            ("uncertainty", "absolute", "1.83", None),
+            ("evaluated standard deviation", "absolute", "2.0", "generic uncertainty"),
+        ]:
+            prop = etree.SubElement(properties_elem, "property")
+            prop.set("name", name)
+            prop.set("reference", "laminar burning velocity")
+            prop.set("kind", kind)
+            prop.set("units", "cm/s")
+            if method is not None:
+                prop.set("method", method)
+            etree.SubElement(prop, "value").text = value
+
+        properties = {
+            "common-properties": {},
+            "datapoints": [{"laminar-burning-velocity": ["16.89 cm/s"]}],
+        }
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        metadata = properties["datapoints"][0]["laminar-burning-velocity"][1]
+        assert metadata["uncertainty"] == "1.83 cm/s"
+        assert metadata["evaluated-standard-deviation"] == "2.0 cm/s"
+        assert metadata["evaluated-standard-deviation-method"] == "generic uncertainty"
+
+    def test_metadata_attaches_to_common_property(self):
+        """A deviation about a shared value is stored with that shared value."""
+        root = self.build_metadata("uncertainty", "temperature", "absolute", "5", units="K")
+        properties = {"common-properties": {"temperature": ["1000 K"]}, "datapoints": [{}]}
+
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        assert properties["common-properties"]["temperature"][1]["uncertainty"] == "5 K"
+
+    def test_metadata_with_no_target_is_dropped(self):
+        """An uncertainty about a quantity the file never states cannot be kept."""
+        root = self.build_metadata("uncertainty", "pressure rise", "absolute", "5", units="ms-1")
+        properties = {"common-properties": {}, "datapoints": [{"temperature": ["1000 K"]}]}
+
+        with pytest.warns(UserWarning, match="Dropping uncertainty that refers to pressure rise"):
+            attach_value_metadata(properties, get_value_metadata(root))
+
+    def test_invalid_kind(self):
+        """ReSpecTh states whether a deviation is absolute or relative."""
+        root = self.build_metadata("uncertainty", "temperature", "sort of big", "5", units="K")
+        properties = {"common-properties": {"temperature": ["1000 K"]}, "datapoints": [{}]}
+
+        with pytest.raises(KeywordError) as excinfo:
+            attach_value_metadata(properties, get_value_metadata(root))
+        assert "sort of big not a valid kind for uncertainty" in str(excinfo.value)
+
+
+class TestLBVDatapoints:
+    """Laminar burning velocity files give one datapoint per dataPoint row."""
+
+    def build_root(self, columns, rows):
+        root = etree.Element("experiment")
+        datagroup = etree.SubElement(root, "dataGroup")
+        datagroup.set("id", "dg1")
+        for column in columns:
+            prop = etree.SubElement(datagroup, "property")
+            for key, value in column.items():
+                if key == "species":
+                    link = etree.SubElement(prop, "speciesLink")
+                    link.set("preferredKey", value)
+                    link.set("InChI", "1S/" + value)
+                else:
+                    prop.set(key, value)
+        for row in rows:
+            datapoint = etree.SubElement(datagroup, "dataPoint")
+            for tag, text in row.items():
+                etree.SubElement(datapoint, tag).text = text
+        return root
+
+    def test_lbv_datapoints(self):
+        """Each row becomes a datapoint with its own composition."""
+        root = self.build_root(
+            [
+                {"name": "laminar burning velocity", "id": "x1", "units": "cm/s"},
+                {"name": "equivalence ratio", "id": "x2", "units": "unitless"},
+                {"name": "composition", "id": "x3", "units": "mole fraction", "species": "H2"},
+                {"name": "composition", "id": "x4", "units": "mole fraction", "species": "O2"},
+            ],
+            [
+                {"x1": "59.48", "x2": "0.7", "x3": "0.3", "x4": "0.7"},
+                {"x1": "91.48", "x2": "1.0", "x3": "0.4", "x4": "0.6"},
+            ],
+        )
+
+        datapoints = get_lbv_datapoints(root)
+
+        assert len(datapoints) == 2
+        assert datapoints[0]["laminar-burning-velocity"] == ["59.48 cm/s"]
+        assert datapoints[0]["equivalence-ratio"] == ["0.7 dimensionless"]
+        assert datapoints[0]["composition"]["kind"] == "mole fraction"
+        assert datapoints[1]["composition"]["species"][0]["amount"] == [0.4]
+
+    def test_pointwise_uncertainty_columns(self):
+        """A column of uncertainties belongs to the value it describes, row by row."""
+        root = self.build_root(
+            [
+                {"name": "laminar burning velocity", "id": "x1", "units": "cm/s"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                {
+                    "name": "uncertainty",
+                    "id": "x3",
+                    "units": "cm/s",
+                    "reference": "laminar burning velocity",
+                    "kind": "absolute",
+                    "bound": "plusminus",
+                    "sourcetype": "reported",
+                },
+                {
+                    "name": "evaluated standard deviation",
+                    "id": "x4",
+                    "units": "cm/s",
+                    "reference": "laminar burning velocity",
+                    "kind": "absolute",
+                    "method": "statistical scatter",
+                },
+            ],
+            [{"x1": "20.16", "x2": "1.0", "x3": "0.97", "x4": "0.558"}],
+        )
+
+        metadata = get_lbv_datapoints(root)[0]["laminar-burning-velocity"][1]
+
+        assert metadata["uncertainty"] == "0.97 cm/s"
+        assert metadata["uncertainty-sourcetype"] == "reported"
+        assert metadata["evaluated-standard-deviation"] == "0.558 cm/s"
+        assert metadata["evaluated-standard-deviation-method"] == "statistical scatter"
+
+    def test_invalid_column(self):
+        """A column that is not a laminar burning velocity quantity is an error."""
+        root = self.build_root(
+            [{"name": "compression time", "id": "x1", "units": "ms"}], [{"x1": "1.0"}]
+        )
+
+        with pytest.raises(KeyError) as excinfo:
+            get_lbv_datapoints(root)
+        assert "compression time not valid dataPoint property" in str(excinfo.value)
+
+
+class TestSpeciationDatapoints:
+    """Speciation files give one datapoint per dataGroup, holding profiles."""
+
+    def build_root(self, columns, rows):
+        return TestLBVDatapoints.build_root(self, columns, rows)
+
+    def test_temperature_sweep(self):
+        """The first column is the swept axis and species columns become profiles."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                {"name": "composition", "id": "x3", "units": "ppm", "species": "CO"},
+            ],
+            [
+                {"x1": "849", "x2": "0.00722", "x3": "100"},
+                {"x1": "899", "x2": "0.00356", "x3": "200"},
+            ],
+        )
+
+        with pytest.warns(UserWarning, match="molar ppm"):
+            datapoints = get_speciation_datapoints(root)
+
+        assert len(datapoints) == 1
+        assert datapoints[0]["independent-variables"] == [
+            {"name": "temperature", "units": "K", "primary": True}
+        ]
+        profiles = datapoints[0]["concentration-profiles"]
+        assert profiles[0]["species-name"] == "H2"
+        assert profiles[0]["values"] == [[849.0, 0.00722], [899.0, 0.00356]]
+        # ppm is converted, so the profile is in mole fraction
+        assert profiles[1]["quantity"] == {"units": "mole fraction"}
+        assert profiles[1]["values"][0] == pytest.approx([849.0, 1.0e-4])
+        assert profiles[1]["values"][1] == pytest.approx([899.0, 2.0e-4])
+
+    def test_auxiliary_profile(self):
+        """A measured quantity that is not a species becomes an auxiliary profile."""
+        root = self.build_root(
+            [
+                {"name": "distance", "id": "x1", "units": "mm"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "N2"},
+                {"name": "temperature", "id": "x3", "units": "K"},
+            ],
+            [
+                {"x1": "0.674", "x2": "0.1", "x3": "1662"},
+                {"x1": "1.058", "x2": "0.2", "x3": "1659"},
+            ],
+        )
+
+        auxiliary = get_speciation_datapoints(root)[0]["auxiliary-profiles"]
+
+        assert auxiliary[0]["type"] == "temperature"
+        assert auxiliary[0]["independent"] == {"name": "distance", "units": "mm"}
+        assert auxiliary[0]["values"] == [[0.674, 1662.0], [1.058, 1659.0]]
+
+    def test_auxiliary_profile_against_residence_time(self):
+        """A residence time is a time coordinate, so an auxiliary profile can use it."""
+        root = self.build_root(
+            [
+                {"name": "residence time", "id": "x1", "units": "ms"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "N2"},
+                {"name": "temperature", "id": "x3", "units": "K"},
+            ],
+            [
+                {"x1": "100", "x2": "0.1", "x3": "1000"},
+                {"x1": "200", "x2": "0.2", "x3": "1010"},
+            ],
+        )
+
+        datapoint = get_speciation_datapoints(root)[0]
+
+        assert datapoint["independent-variables"][0]["name"] == "residence-time"
+        # auxiliary-profiles.independent.name is a coordinate, and allows time
+        assert datapoint["auxiliary-profiles"][0]["independent"] == {
+            "name": "time",
+            "units": "ms",
+        }
+        assert datapoint["auxiliary-profiles"][0]["values"] == [[100.0, 1000.0], [200.0, 1010.0]]
+
+    def test_covariates_of_a_sweep(self):
+        """Quantities that vary with the swept axis are co-variates, not profiles.
+
+        A shock-tube outlet-concentration file gives one experiment per row, each with its own
+        temperature, residence time and pressure, so none of them is a profile of another.
+        """
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "CO"},
+                {"name": "residence time", "id": "x3", "units": "s"},
+                {"name": "pressure", "id": "x4", "units": "atm"},
+            ],
+            [
+                {"x1": "995", "x2": "0.0004079", "x3": "0.00184", "x4": "21.8"},
+                {"x1": "1037", "x2": "0.0004047", "x3": "0.00163", "x4": "22.3"},
+            ],
+        )
+
+        datapoint = get_speciation_datapoints(root)[0]
+
+        assert [item["name"] for item in datapoint["independent-variables"]] == [
+            "temperature",
+            "residence-time",
+            "pressure",
+        ]
+        assert [item["primary"] for item in datapoint["independent-variables"]] == [
+            True,
+            False,
+            False,
+        ]
+        assert "auxiliary-profiles" not in datapoint
+        # Every row carries one value per independent variable, then the amount
+        assert datapoint["concentration-profiles"][0]["values"][0] == [
+            995.0,
+            0.00184,
+            21.8,
+            0.0004079,
+        ]
+
+    def test_profile_of_a_quantity_that_is_not_an_axis(self):
+        """A volume profile needs a coordinate to be measured against."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "N2"},
+                {"name": "volume", "id": "x3", "units": "cm3"},
+            ],
+            [
+                {"x1": "1000", "x2": "0.1", "x3": "1.0"},
+                {"x1": "1100", "x2": "0.2", "x3": "1.5"},
+            ],
+        )
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            get_speciation_datapoints(root)
+        assert "only as a single value or as a profile against distance or time" in str(
+            excinfo.value
+        )
+
+    def test_constant_column_is_a_condition(self):
+        """A column with one repeated value states a condition, not a profile."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "N2"},
+                {"name": "environment temperature", "id": "x3", "units": "K"},
+            ],
+            [
+                {"x1": "849", "x2": "0.1", "x3": "298"},
+                {"x1": "899", "x2": "0.2", "x3": "298"},
+            ],
+        )
+
+        datapoint = get_speciation_datapoints(root)[0]
+        assert datapoint["environment-temperature"] == ["298 K"]
+        assert "auxiliary-profiles" not in datapoint
+
+    def test_concentration_column_is_a_species(self):
+        """ReSpecTh names a species column "concentration" when it holds a concentration."""
+        root = self.build_root(
+            [
+                {"name": "time", "id": "x1", "units": "s"},
+                {"name": "concentration", "id": "x2", "units": "mol/cm3", "species": "OH"},
+            ],
+            [{"x1": "0.0", "x2": "1e-9"}, {"x1": "0.1", "x2": "2e-9"}],
+        )
+
+        profile = get_speciation_datapoints(root)[0]["concentration-profiles"][0]
+        assert profile["species-name"] == "OH"
+        assert profile["quantity"] == {"units": "mol/cm3"}
+
+    def test_pointwise_and_constant_uncertainty_columns(self):
+        """A varying uncertainty goes in the row, a constant one describes the profile."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                {
+                    "name": "evaluated standard deviation",
+                    "id": "x3",
+                    "units": "mole fraction",
+                    "reference": "composition",
+                    "kind": "absolute",
+                    "species": "H2",
+                },
+                {
+                    "name": "uncertainty",
+                    "id": "x4",
+                    "units": "unitless",
+                    "reference": "composition",
+                    "kind": "relative",
+                    "species": "H2",
+                },
+            ],
+            [
+                {"x1": "849", "x2": "0.1", "x3": "0.01", "x4": "0.05"},
+                {"x1": "899", "x2": "0.2", "x3": "0.02", "x4": "0.05"},
+            ],
+        )
+
+        profile = get_speciation_datapoints(root)[0]["concentration-profiles"][0]
+
+        # The evaluated standard deviation varies, so it is the trailing column of each row
+        assert profile["values"] == [[849.0, 0.1, 0.01], [899.0, 0.2, 0.02]]
+        # The relative uncertainty is the same for every point, so it describes the profile
+        assert profile["uncertainty"][0]["uncertainty"] == 0.05
+        assert profile["uncertainty"][0]["uncertainty-type"] == "relative"
+
+    def test_two_varying_uncertainty_columns(self):
+        """A profile row holds only one uncertainty, so two varying columns cannot fit."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                {
+                    "name": "evaluated standard deviation",
+                    "id": "x3",
+                    "units": "mole fraction",
+                    "reference": "composition",
+                    "kind": "absolute",
+                    "species": "H2",
+                },
+                {
+                    "name": "uncertainty",
+                    "id": "x4",
+                    "units": "mole fraction",
+                    "reference": "composition",
+                    "kind": "absolute",
+                    "species": "H2",
+                },
+            ],
+            [
+                {"x1": "849", "x2": "0.1", "x3": "0.01", "x4": "0.03"},
+                {"x1": "899", "x2": "0.2", "x3": "0.02", "x4": "0.04"},
+            ],
+        )
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            get_speciation_datapoints(root)
+        assert "more than one uncertainty column that varies" in str(excinfo.value)
+
+    def test_multiple_datagroups(self):
+        """Each dataGroup is a separate set of conditions, so a separate datapoint."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+            ],
+            [{"x1": "849", "x2": "0.1"}, {"x1": "899", "x2": "0.2"}],
+        )
+        second = etree.SubElement(root, "dataGroup")
+        second.set("id", "dg2")
+        prop = etree.SubElement(second, "property")
+        prop.set("name", "distance")
+        prop.set("id", "y1")
+        prop.set("units", "cm")
+        prop = etree.SubElement(second, "property")
+        prop.set("name", "composition")
+        prop.set("id", "y2")
+        prop.set("units", "mole fraction")
+        etree.SubElement(prop, "speciesLink").set("preferredKey", "OH")
+        for distance, amount in [("1.0", "0.01"), ("2.0", "0.02")]:
+            datapoint = etree.SubElement(second, "dataPoint")
+            etree.SubElement(datapoint, "y1").text = distance
+            etree.SubElement(datapoint, "y2").text = amount
+
+        datapoints = get_speciation_datapoints(root)
+
+        assert len(datapoints) == 2
+        assert datapoints[0]["independent-variables"][0]["name"] == "temperature"
+        assert datapoints[1]["independent-variables"][0]["name"] == "distance"
+
+    def test_datagroup_without_species(self):
+        """A dataGroup with no species column is not a speciation datapoint."""
+        root = self.build_root(
+            [
+                {"name": "distance", "id": "x1", "units": "cm"},
+                {"name": "temperature", "id": "x2", "units": "K"},
+            ],
+            [{"x1": "1.0", "x2": "1600"}, {"x1": "2.0", "x2": "1500"}],
+        )
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            get_speciation_datapoints(root)
+        assert "without composition columns cannot be a speciation datapoint" in str(excinfo.value)
 
 
 @pytest.mark.usefixtures("mock_crossref_api")

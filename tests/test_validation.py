@@ -10,9 +10,16 @@ import yaml
 from pyked._version import __version__
 from pyked.validation import OurValidator, compare_name, property_units, schema
 
-schema["chemked-version"]["allowed"].append(__version__)
-
 v = OurValidator(schema)
+
+
+def test_current_version_is_allowed():
+    """The version the converters stamp into new files has to be an allowed one.
+
+    `get_file_metadata` writes ``__version__`` as the ``chemked-version`` of a converted file, so
+    a release that is missing from the schema makes every conversion fail validation.
+    """
+    assert __version__ in schema["chemked-version"]["allowed"]
 
 
 class TestCompareName:
@@ -618,6 +625,34 @@ class TestValidator:
         # update=True means to ignore required keys that are left out for testing
         assert v.validate({"experiment-type": valid_type}, update=True)
 
+    def test_invalid_apparatus_kind(self):
+        """Ensure that an apparatus kind outside the schema is an error"""
+        # update=True means to ignore required keys that are left out for testing
+        v.validate({"apparatus": {"kind": "internal combustion engine"}}, update=True)
+        assert (
+            v.errors["apparatus"][0]["kind"][0]
+            == "unallowed value internal combustion engine"
+        )
+
+    @pytest.mark.parametrize(
+        "valid_kind",
+        [
+            "shock tube",
+            "rapid compression machine",
+            "jet stirred reactor",
+            "flow reactor",
+            "burner stabilized flame",
+            "counterflow twin flame",
+            "heat flux burner",
+            "bunsen burner",
+            "outwardly propagating spherical flame",
+        ],
+    )
+    def test_valid_apparatus_kinds(self, valid_kind):
+        """Ensure that all the valid apparatus kinds are validated"""
+        # update=True means to ignore required keys that are left out for testing
+        assert v.validate({"apparatus": {"kind": valid_kind}}, update=True)
+
     @pytest.mark.parametrize(
         "valid_type",
         [
@@ -754,6 +789,32 @@ class TestValidator:
         assert "Species A mass fraction must be less than 1.0" in errors
         assert "Species B mass fraction must be greater than 0.0" in errors
         assert "Species mass fractions do not sum to 1.0: 1.100000" in errors
+
+    @pytest.mark.parametrize("total", [1.0, 0.9999, 1.0001, 0.9995, 1.0005])
+    def test_composition_sum_within_tolerance(self, total):
+        """Compositions reported to a few digits sum close to 1.0 rather than onto it."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "A", "amount": [total - 0.5]},
+                {"species-name": "B", "amount": [0.5]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    @pytest.mark.parametrize("total", [0.99, 1.01, 0.9])
+    def test_composition_sum_outside_tolerance(self, total):
+        """A composition that misses 1.0 by more than round-off is still an error."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "A", "amount": [total - 0.5]},
+                {"species-name": "B", "amount": [0.5]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+        errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
+        assert any("do not sum to 1.0" in error for error in errors)
 
     @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
     def test_concentration_composition_kind(self, kind):

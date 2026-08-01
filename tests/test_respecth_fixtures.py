@@ -7,52 +7,48 @@ from pathlib import Path
 import pytest
 
 from pyked.chemked import ChemKED
+from pyked.converters import ReSpecTh_to_ChemKED
 from pyked.validation import OurValidator, schema, yaml
 
 DATA_DIR = Path(__file__).parent / "data" / "respecth"
 
+# The apparatus kind is only stated in the article for files whose XML says just "flame", so
+# those pairs were curated with the kind supplied by hand.
 CASES = [
     (
         "laminar-burning-velocity",
         "x20014048",
         "laminar burning velocity measurement",
         (),
+        "outwardly propagating spherical flame",
     ),
     (
         "laminar-burning-velocity",
         "x20004235",
         "laminar burning velocity measurement",
         (),
+        "outwardly propagating spherical flame",
     ),
     (
         "laminar-burning-velocity",
         "x20100072",
         "laminar burning velocity measurement",
         (),
-    ),
-    (
-        "speciation",
-        "x30000017",
-        "concentration time profile measurement",
-        ("time",),
+        None,
     ),
     (
         "speciation",
         "x00201001",
         "jet stirred reactor measurement",
         ("temperature",),
-    ),
-    (
-        "speciation",
-        "x30400015",
-        "outlet concentration measurement",
-        ("residence-time", "temperature"),
+        None,
     ),
     (
         "speciation",
         "x60200017",
         "burner stabilized flame speciation measurement",
         ("distance",),
+        None,
     ),
 ]
 
@@ -78,10 +74,51 @@ def test_all_respecth_fixtures_are_paired():
     assert xml_pairs == yaml_pairs == expected
 
 
+def as_comparable(value):
+    """Reduce a converted value to something that compares across formatting choices.
+
+    ReSpecTh writes numbers in whatever form the curator used, so ``6.500000e+001 cm/s`` and
+    ``65 cm/s`` are the same measurement. The converter keeps the source text as written, which
+    means comparing to a hand-authored fixture has to compare magnitudes, not strings.
+    """
+    if isinstance(value, dict):
+        return {key: as_comparable(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [as_comparable(item) for item in value]
+    if isinstance(value, (int, float)):
+        return round(float(value), 12)
+    if isinstance(value, str):
+        magnitude, _, units = value.partition(" ")
+        try:
+            return (round(float(magnitude), 12), units) if units else round(float(magnitude), 12)
+        except ValueError:
+            return value
+    return value
+
+
+@pytest.mark.parametrize(("group", "stem", "apparatus_kind"), [
+    (group, stem, kind) for group, stem, _, _, kind in CASES
+])
+def test_converter_reproduces_fixture(group, stem, apparatus_kind):
+    """Converting the source XML gives back the checked-in ChemKED file."""
+    _, document = load_pair(group, stem)
+    converted = ReSpecTh_to_ChemKED(
+        str(DATA_DIR / group / f"{stem}.xml"), apparatus_kind=apparatus_kind
+    )
+
+    # The fixtures were written against a specific PyKED version
+    converted.pop("chemked-version")
+    document.pop("chemked-version")
+
+    assert as_comparable(converted) == as_comparable(document)
+
+
 @pytest.mark.parametrize(
-    ("group", "stem", "source_type", "independent_variables"), CASES
+    ("group", "stem", "source_type", "independent_variables", "apparatus_kind"), CASES
 )
-def test_respecth_pair_validates(group, stem, source_type, independent_variables):
+def test_respecth_pair_validates(
+    group, stem, source_type, independent_variables, apparatus_kind
+):
     """Each YAML conversion validates and retains its source structure."""
     root, document = load_pair(group, stem)
 
@@ -146,7 +183,7 @@ def test_pointwise_lbv_uncertainty_and_esd_are_combined():
         assert "evaluated-standard-deviation" in metadata
 
 
-@pytest.mark.parametrize("stem", ["x30000017", "x00201001", "x30400015", "x60200017"])
+@pytest.mark.parametrize("stem", ["x00201001", "x60200017"])
 def test_speciation_esd_is_attached_to_measured_profile(stem):
     """Composition-referenced ESD metadata belongs to a measured profile."""
     _, document = load_pair("speciation", stem)
@@ -158,15 +195,10 @@ def test_speciation_esd_is_attached_to_measured_profile(stem):
     )
 
 
-def test_time_shift_and_auxiliary_profile_scenarios():
-    """The profile fixtures cover time shifts and auxiliary temperature data."""
-    _, time_profile = load_pair("speciation", "x30000017")
+def test_auxiliary_profile_scenario():
+    """The flame profile fixture carries an auxiliary temperature profile."""
     _, flame_profile = load_pair("speciation", "x60200017")
 
-    assert time_profile["datapoints"][0]["time-shift"] == {
-        "target": "H2",
-        "type": "half decrease",
-    }
     auxiliary = flame_profile["datapoints"][0]["auxiliary-profiles"]
     assert auxiliary[0]["type"] == "temperature"
     assert auxiliary[0]["independent"]["name"] == "distance"

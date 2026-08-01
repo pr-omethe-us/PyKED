@@ -5,6 +5,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- ReSpecTh 2.x support in `ReSpecTh_to_ChemKED`: the reference is read from the `bibliographyLink` child elements (`referenceDOI`, `details`) with no DOI lookup, falling back to the 1.x `doi` and `preferredKey` attributes
+- Conversion of laminar burning velocity and speciation measurements, alongside ignition delay. ReSpecTh's four speciation experiment types all map to ChemKED `speciation measurement`
+- Mapping tables in `converters.py` for ReSpecTh experiment types, apparatus kinds and modes, common property names, speciation independent variables, and ignition targets and types
+- `apparatus_kind` argument to `ReSpecTh_to_ChemKED` and `-ak/--apparatus-kind` to `respth2ck`, for files whose apparatus ReSpecTh records only as the generic `flame`
+- `uncertainty` and `evaluated standard deviation` properties and dataGroup columns are converted and attached to the quantity they describe, whether that is a datapoint value, a common property, a species amount, or a concentration profile
+- ReSpecTh `comment` elements are converted to ChemKED `comments`
+- `isvalid_experiment` validation rule cross-checking `experiment-type` against the datapoint contents and the apparatus kind, which the `anyof` datapoints schema cannot do on its own
+- Round-trip tests asserting the converter reproduces each checked-in ReSpecTh/ChemKED fixture pair
+- `resolve_reference` maps an uncertainty that points at a column by its `label` or `id`, and one that references `initial composition`, onto the quantity it describes; both were silently dropped before
+- `0.5.0` added to the allowed `chemked-version` values, and a test asserting the current `__version__` is always among them, since `get_file_metadata` stamps it into every converted file
+
+### Changed
+- The `tubular reactor` apparatus kind is renamed `flow reactor`, the name ReSpecTh, the ChemKED database, and the speciation literature all use. `tubular reactor` is still accepted as converter input and maps to `flow reactor`
+- The mole and mass fraction sum check uses a relative tolerance of 1e-3 (`composition_sum_tolerance`) rather than the NumPy default of 1e-5, so compositions reported to a few digits are not rejected for round-off
+- An auxiliary profile against a `residence-time` axis is recorded with the axis name `time`, which `auxiliary-profiles.independent.name` allows, since a residence time is a time coordinate
+
+### Fixed
+- Unit strings that ReSpecTh writes with bare negative exponents, such as `ms-1` and `kg m-2 s-1`, are normalized for Pint instead of escaping as a `DimensionalityError` from outside the guarded block
+- `get_ignition_type` accepted only 5 of the 10 ignition types and 6 of the 18 ignition targets the schema allows; the vocabulary is now in step with `ignition_delay_schema.yaml` and is checked by a test
+- `experimentType` is matched case-insensitively, so the lowercase spelling used throughout ReSpecTh 2.x is recognized
+- `ignitionType` is only required for ignition delay files
+- `composition_schema.yaml` now references the shared `uncertainty-metadata` definition instead of a hand-copied duplicate that had drifted to `type: float`, so a species amount accepts the same uncertainty forms as every other quantity. The definition is hoisted to its own top-level anchor in `value_unit_schema.yaml`
+- Composition units accept concentrations (`mol/cm3`, `mol/m3`, `mol/dm3`, `mol/L`), the misspelling `mole faction` found in part of the ReSpecTh corpus, and a mixture of mole percent and mole fraction, which is reconciled onto mole fraction
 
 ## [0.5.0] - 2026-07-02
 ### Added
