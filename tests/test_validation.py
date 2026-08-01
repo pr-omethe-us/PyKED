@@ -442,7 +442,7 @@ class TestValidator:
     def properties(self, request):
         filename = Path("tests") / request.param
 
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.FullLoader)
 
     @pytest.mark.parametrize(
@@ -1161,6 +1161,56 @@ class TestValidator:
             }
         )
         assert v.errors[quantity][0] == f"incompatible units; should be consistent with {unit}"
+
+    # A quantity that is itself dimensionless is skipped: a fraction of it is in its units
+    @pytest.mark.parametrize(
+        "quantity, unit",
+        [(q, u) for q, u in property_units.items() if u != "dimensionless"],
+    )
+    @pytest.mark.parametrize(
+        "key, type_key",
+        [
+            ("uncertainty", "uncertainty-type"),
+            ("evaluated-standard-deviation", "evaluated-standard-deviation-type"),
+        ],
+    )
+    def test_relative_uncertainty_must_be_dimensionless(self, quantity, unit, key, type_key):
+        """A relative uncertainty is a fraction, so it cannot carry the units of the quantity."""
+        quant_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: [f"999 {unit}", {type_key: "relative", key: f"0.1 {unit}"}]})
+        assert v.errors[quantity][0] == (
+            f"a relative {key} is a fraction of the {quantity} value, so it must be "
+            f"dimensionless; got '0.1 {unit}'"
+        )
+
+    @pytest.mark.parametrize("value", ["0.1", 0.1, "0.1 dimensionless", "5 percent"])
+    def test_relative_uncertainty_without_units(self, value):
+        """A fraction validates whether it is written as a number or as a dimensionless one."""
+        quant_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        assert v.validate(
+            {"temperature": ["999 K", {"uncertainty-type": "relative", "uncertainty": value}]}
+        ), v.errors
+
+    @pytest.mark.parametrize(
+        "kind, value",
+        [
+            ("relative", "not a number"),
+            ("absolute", "not a number"),
+            ("absolute", "5 zorkmids"),
+        ],
+    )
+    def test_unreadable_uncertainty_is_an_error(self, kind, value):
+        """An uncertainty Pint cannot read is reported, rather than raised out of the validator."""
+        quant_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        assert not v.validate(
+            {"temperature": ["999 K", {"uncertainty-type": kind, "uncertainty": value}]}
+        )
+        assert v.errors["temperature"][0] == (
+            f"'{value}' is not a value with units that can be understood"
+        )
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_asym_uncertainty(self, quantity, unit):

@@ -165,7 +165,7 @@ class ChemKED:
 
     def __init__(self, yaml_file=None, dict_input=None, *, skip_validation=False):
         if yaml_file is not None:
-            with open(yaml_file) as f:
+            with open(yaml_file, encoding="utf-8") as f:
                 self._properties = yaml.safe_load(f)
         elif dict_input is not None:
             self._properties = dict_input
@@ -412,7 +412,7 @@ class ChemKED:
                 + ' already present. Specify "overwrite=True" to overwrite, or rename.'
             )
 
-        with open(filename, "w") as yaml_file:
+        with open(filename, "w", encoding="utf-8") as yaml_file:
             yaml.dump(self._properties, yaml_file)
 
     def convert_to_ReSpecTh(self, filename):
@@ -675,7 +675,7 @@ class ChemKED:
         # now do a "pretty" rewrite
         xml = minidom.parse(str(filename))
         xml_string = xml.toprettyxml(indent="    ")
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(xml_string)
 
         print("Converted to " + str(filename))

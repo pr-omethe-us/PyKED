@@ -1644,7 +1644,7 @@ def respth2ck(argv=None):
     if not filename_ck:
         filename_ck = Path(filename_xml).with_suffix(".yaml")
 
-    with open(filename_ck, "w") as outfile:
+    with open(filename_ck, "w", encoding="utf-8") as outfile:
         yaml.dump(properties, outfile, default_flow_style=False)
     print(f"Converted to {filename_ck}")
 

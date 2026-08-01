@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - An auxiliary profile against a `residence-time` axis is recorded with the axis name `time`, which `auxiliary-profiles.independent.name` allows, since a residence time is a time coordinate
 
 ### Fixed
+- Every text file is now opened with an explicit UTF-8 encoding. Reading or writing a ChemKED or ReSpecTh file whose author names contain non-ASCII characters previously depended on the platform's preferred encoding, and failed on Windows. `convert_to_ReSpecTh` could also rewrite its pretty-printed XML in the platform encoding while declaring UTF-8 in the file. The ruff rule `PLW1514` now enforces this
+- Relative uncertainties and relative evaluated standard deviations are now checked to be dimensionless. They previously bypassed unit validation entirely, so `uncertainty-type: relative` with `uncertainty: 0.1 kelvin` validated and was then misread at load time
+- An uncertainty value Pint cannot parse is reported as a validation error instead of raising `UndefinedUnitError` out of the validator
 - Unit strings that ReSpecTh writes with bare negative exponents, such as `ms-1` and `kg m-2 s-1`, are normalized for Pint instead of escaping as a `DimensionalityError` from outside the guarded block
 - `get_ignition_type` accepted only 5 of the 10 ignition types and 6 of the 18 ignition targets the schema allows; the vocabulary is now in step with `ignition_delay_schema.yaml` and is checked by a test
 - `experimentType` is matched case-insensitively, so the lowercase spelling used throughout ReSpecTh 2.x is recognized
