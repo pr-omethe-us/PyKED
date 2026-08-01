@@ -63,7 +63,7 @@ section are required, although some of the sub-keys are optional.
     This mapping provides information about the apparatus used to conduct the experiments. Fields:
 
     - ``kind``: string, required
-        Must be one of ``shock tube``, ``rapid compression machine``, ``stirred reactor``, ``jet stirred reactor``, ``tubular reactor``, ``flow reactor``, ``burner stabilized flame``, ``counterflow flame``, ``heat flux burner``, ``bunsen burner``, or ``outwardly propagating spherical flame``. Values are case-sensitive.
+        Must be one of ``shock tube``, ``rapid compression machine``, ``jet stirred reactor``, ``flow reactor``, ``burner stabilized flame``, ``counterflow twin flame``, ``heat flux burner``, ``bunsen burner``, or ``outwardly propagating spherical flame``. Values are case-sensitive.
 
     - ``institution``: string, optional
         The institution where the experimental apparatus is located
@@ -81,6 +81,18 @@ section are required, although some of the sub-keys are optional.
         * ``ignition delay``
         * ``laminar burning velocity measurement``
         * ``speciation measurement``
+
+    The type is cross-checked against the rest of the file, because the datapoint schemas alone
+    cannot tell one kind of datapoint from another. Every datapoint must carry the quantity its
+    experiment type measures (``ignition-delay``, ``laminar-burning-velocity``, or
+    ``concentration-profiles``), and the :ref:`apparatus <reference-apparatus>` kind must be one
+    the measurement can be made on:
+
+        * ``ignition delay``: ``shock tube``, ``rapid compression machine``
+        * ``laminar burning velocity measurement``: ``counterflow twin flame``,
+          ``heat flux burner``, ``bunsen burner``, ``outwardly propagating spherical flame``
+        * ``speciation measurement``: ``jet stirred reactor``, ``flow reactor``,
+          ``burner stabilized flame``, ``shock tube``
 
 .. _reference-reference:
 
@@ -171,7 +183,7 @@ allowed in ``common-properties``.
 .. _common-residence-time:
 
 * ``residence-time``: sequence, optional
-    The residence time in a flow/jet-stirred reactor experiment, with dimensions of time. Must
+    The residence time in a flow or jet-stirred reactor experiment, with dimensions of time. Must
     conform to :ref:`value-unit-optional <schema-value-unit-optional>`
 
 .. _common-reactor-volume:
@@ -240,6 +252,9 @@ allowed in ``common-properties``.
         nonnegative, no greater than 1, and sum to 1. ``mole percent`` values must be
         nonnegative, no greater than 100, and sum to 100. Concentration-style kinds must be
         nonnegative and are not required to sum to a fixed total.
+
+        The sum is checked to a relative tolerance of 1e-3, so a composition reported to a few
+        digits, summing to 0.9999 for instance, is accepted.
 
     - ``species``: sequence, required
         The elements of this sequence specify the species and their amounts in the mixture. Each

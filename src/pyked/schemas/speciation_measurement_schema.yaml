@@ -1,6 +1,6 @@
 # Schema for speciation measurement datapoints.
 
-# t = 0 reference for a time-resolved profile (moved here from the old CTP schema;
+# t = 0 reference for a time-resolved profile.
 # only meaningful when independent-variable.name == time)
 time-shift: &time-shift
   type: dict

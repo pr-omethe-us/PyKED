@@ -87,45 +87,7 @@ composition: &composition
                 - type: float
               - isvalid_uncertainty: true
                 items:
+                  # The amount itself is a number, with the units given by the composition kind
                   - type: float
-                  - type: dict
-                    schema:
-                      uncertainty-type:
-                        type: string
-                        allowed:
-                          - absolute
-                          - relative
-                      uncertainty:
-                        type: float
-                        excludes:
-                          - upper-uncertainty
-                          - lower-uncertainty
-                        dependencies:
-                          - uncertainty-type
-                      upper-uncertainty:
-                        type: float
-                        excludes: uncertainty
-                        dependencies:
-                          - lower-uncertainty
-                          - uncertainty-type
-                      lower-uncertainty:
-                        type: float
-                        excludes: uncertainty
-                        dependencies:
-                          - upper-uncertainty
-                          - uncertainty-type
-                      uncertainty-sourcetype:
-                        type: string
-                      evaluated-standard-deviation:
-                        type: float
-                        dependencies:
-                          - evaluated-standard-deviation-type
-                      evaluated-standard-deviation-type:
-                        type: string
-                        allowed:
-                          - absolute
-                          - relative
-                      evaluated-standard-deviation-sourcetype:
-                        type: string
-                      evaluated-standard-deviation-method:
-                        type: string
+                  # The uncertainty about it is described exactly as for any other quantity
+                  - *uncertainty-metadata

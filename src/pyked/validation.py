@@ -88,6 +88,7 @@ for key in [
     "value-unit-optional",
     "composition",
     "ignition-type",
+    "uncertainty-metadata",
     "value-with-uncertainty",
     "value-without-uncertainty",
     "time-shift",
@@ -98,6 +99,39 @@ for key in [
 ]:
     if key in schema:
         del schema[key]
+
+# Relative tolerance on the sum of a mole or mass fraction composition. Compositions in the
+# literature are reported to a fixed number of digits, so their sums land near 1.0 rather than on
+# it, and a tolerance tighter than the reported precision rejects otherwise sound data.
+composition_sum_tolerance = 1.0e-3
+
+# The quantity that identifies each kind of datapoint, and the apparatus each can be measured on.
+# The datapoints schema is an anyof, so without these an experiment-type could be paired with
+# datapoints of another kind, or with an apparatus that cannot make that measurement.
+experiment_datapoint_keys = {
+    "ignition delay": "ignition-delay",
+    "laminar burning velocity measurement": "laminar-burning-velocity",
+    "speciation measurement": "concentration-profiles",
+}
+
+experiment_apparatus_kinds = {
+    "ignition delay": [
+        "shock tube",
+        "rapid compression machine",
+    ],
+    "laminar burning velocity measurement": [
+        "counterflow twin flame",
+        "heat flux burner",
+        "bunsen burner",
+        "outwardly propagating spherical flame",
+    ],
+    "speciation measurement": [
+        "jet stirred reactor",
+        "flow reactor",
+        "burner stabilized flame",
+        "shock tube",
+    ],
+}
 
 # SI units for available value-type properties
 property_units = {
@@ -215,6 +249,45 @@ def compare_name(given_name, family_name, question_name):
 
 class OurValidator(Validator):
     """Custom validator with rules for Quantities and references."""
+
+    def _validate_isvalid_experiment(self, isvalid_experiment, field, value):
+        """Checks that the datapoints and the apparatus match the stated experiment type.
+
+        The datapoints schema accepts any of the three kinds of datapoint, so on its own it cannot
+        tell that, say, ignition delay datapoints were filed under a speciation measurement.
+
+        Args:
+            isvalid_experiment (`bool`): flag from schema indicating the check is to be done
+            field (`str`): 'datapoints'
+            value (`list`): the datapoints
+
+        The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+        """
+        experiment_type = self.document.get("experiment-type")
+        if experiment_type not in experiment_datapoint_keys:
+            # An unallowed experiment-type is reported by the allowed rule instead
+            return
+
+        required_key = experiment_datapoint_keys[experiment_type]
+        for idx, datapoint in enumerate(value):
+            if not isinstance(datapoint, dict):
+                continue
+            if required_key not in datapoint:
+                self._error(
+                    field,
+                    f"datapoint {idx} has no {required_key}, which every "
+                    f"{experiment_type} datapoint requires",
+                )
+
+        apparatus = self.document.get("apparatus")
+        allowed_kinds = experiment_apparatus_kinds[experiment_type]
+        if isinstance(apparatus, dict) and apparatus.get("kind") not in [None, *allowed_kinds]:
+            self._error(
+                field,
+                f"a {experiment_type} cannot be measured in a {apparatus['kind']}; "
+                f"allowed kinds are {allowed_kinds}",
+            )
 
     def _validate_isvalid_t_range(self, isvalid_t_range, field, values):
         """Checks that the temperature ranges given for thermo data are valid
@@ -663,8 +736,10 @@ class OurValidator(Validator):
                     f"must be less than {up_lim:.1f}",
                 )
 
-        # Make sure mole/mass fraction sum to 1
-        if total_amount is not None and not np.isclose(total_amount, sum_amount):
+        # Make sure mole/mass fraction sum to 1, allowing for the round-off in published tables
+        if total_amount is not None and not np.isclose(
+            total_amount, sum_amount, rtol=composition_sum_tolerance
+        ):
             self._error(
                 field,
                 f"Species {composition_kind}s do not sum to {total_amount:.1f}: {sum_amount:f}",
