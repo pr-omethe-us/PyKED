@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - An auxiliary profile against a `residence-time` axis is recorded with the axis name `time`, which `auxiliary-profiles.independent.name` allows, since a residence time is a time coordinate
 
 ### Fixed
+- A composition amount of exactly zero, meaning a species measured as absent, is accepted when it carries uncertainty metadata. It was accepted without metadata and rejected with it, and `isvalid_composition` already allowed it. Only a negative value is an error for a property with no configured units
+- The unsupported-composition-units error lists the units the converter actually accepts, built from `composition_units` rather than hand-written, so it cannot fall behind the table again
 - Every text file is now opened with an explicit UTF-8 encoding. Reading or writing a ChemKED or ReSpecTh file whose author names contain non-ASCII characters previously depended on the platform's preferred encoding, and failed on Windows. `convert_to_ReSpecTh` could also rewrite its pretty-printed XML in the platform encoding while declaring UTF-8 in the file. The ruff rule `PLW1514` now enforces this
 - Relative uncertainties and relative evaluated standard deviations are now checked to be dimensionless. They previously bypassed unit validation entirely, so `uncertainty-type: relative` with `uncertainty: 0.1 kelvin` validated and was then misread at load time
 - An uncertainty value Pint cannot parse is reported as a validation error instead of raising `UndefinedUnitError` out of the validator

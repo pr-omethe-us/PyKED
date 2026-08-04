@@ -441,9 +441,12 @@ class OurValidator(Validator):
         expected_units = property_units.get(field)
 
         if expected_units is None:
-            # No dimensional check configured for this property.
-            if quantity.magnitude <= 0:
-                self._error(field, "value must be greater than 0.0")
+            # No dimensional check is configured for this property. Zero is meaningful for the
+            # properties that land here, a composition amount above all, since a species can be
+            # measured as absent, so only a negative value is an error. `isvalid_composition`
+            # takes the same view of an amount.
+            if quantity.magnitude < 0:
+                self._error(field, "value must not be negative")
             return
 
         low_lim = 0.0 * units(expected_units)
