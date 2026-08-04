@@ -816,6 +816,36 @@ class TestValidator:
         errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
         assert any("do not sum to 1.0" in error for error in errors)
 
+    @pytest.mark.parametrize(
+        "amount",
+        [[0.0], [0.0, {"uncertainty-type": "relative", "uncertainty": 0.05}]],
+    )
+    def test_species_measured_as_absent(self, amount):
+        """A species can be measured at zero, whether or not it carries an uncertainty."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "H2", "amount": amount},
+                {"species-name": "N2", "amount": [1.0]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True), v.errors
+
+    @pytest.mark.parametrize(
+        "amount",
+        [[-0.1], [-0.1, {"uncertainty-type": "relative", "uncertainty": 0.05}]],
+    )
+    def test_negative_species_amount(self, amount):
+        """A negative amount is an error however it is written."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "H2", "amount": amount},
+                {"species-name": "N2", "amount": [1.1]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
     @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
     def test_concentration_composition_kind(self, kind):
         """Ensure concentration-style composition kinds are allowed."""

@@ -26,9 +26,12 @@ from pyked.converters import (
     apparatus_kinds_by_experiment,
     attach_value_metadata,
     ck2respth,
+    composition_unit_typos,
+    composition_units,
     experiment_types,
     flame_modes,
     get_common_properties,
+    get_composition_amount,
     get_datapoints,
     get_experiment_kind,
     get_file_metadata,
@@ -836,10 +839,11 @@ class TestCommonProperties:
         with pytest.raises(KeywordError) as excinfo:
             get_common_properties(root)
 
-        assert (
-            "Composition units need to be one of: mole fraction, "
-            "mass fraction, mole percent, percent, ppm, or ppb."
-        ) in str(excinfo.value)
+        # The message lists whatever the converter actually accepts
+        assert "Composition units need to be one of: " in str(excinfo.value)
+        for supported in ["mole fraction", "mole percent", "ppm", "mol/cm3"]:
+            assert supported in str(excinfo.value)
+        assert "mole faction" not in str(excinfo.value)
 
 
 class TestIgnitionType:
@@ -1446,10 +1450,9 @@ class TestGetDatapoints:
 
         with pytest.raises(KeywordError) as excinfo:
             get_datapoints(root)
-        assert (
-            "Error: composition units need to be one of: mole fraction, "
-            "mass fraction, mole percent, percent, ppm, or ppb."
-        ) in str(excinfo.value)
+        assert "composition units need to be one of: " in str(excinfo.value)
+        for supported in ["mole fraction", "mole percent", "ppm", "mol/cm3"]:
+            assert supported in str(excinfo.value)
 
     def test_datapoints_inconsistent_composition_error(self):
         """Test error raised for datapoint with inconsistent composition type."""
@@ -1621,6 +1624,19 @@ class TestReSpecThVersion2:
         assert get_common_properties(root)[field] == [
             " ".join([value, normalize_units(units)])
         ]
+
+    def test_composition_units_error_lists_what_is_accepted(self):
+        """The error message is built from the table, so it cannot fall behind it."""
+        with pytest.raises(KeywordError) as excinfo:
+            get_composition_amount("furlongs", "1")
+
+        message = str(excinfo.value)
+        for units in composition_units:
+            if units in composition_unit_typos:
+                # A tolerated misspelling is accepted but not advertised
+                assert units not in message
+            else:
+                assert units in message
 
     def test_misspelled_composition_units(self):
         """Part of the corpus misspells mole fraction as "mole faction"."""

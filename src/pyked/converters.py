@@ -216,6 +216,12 @@ composition_units = {
 }
 """`dict`: ReSpecTh composition units mapped to (ChemKED kind, scale factor, warning)"""
 
+composition_unit_typos = ["mole faction"]
+"""`list`: Misspelled composition units in the ReSpecTh corpus, accepted with a warning
+
+Kept out of the error message, since they are tolerated rather than recommended.
+"""
+
 dimensionless_units = ["unitless", "[-]", "dimensionless", "-", ""]
 """`list`: Ways ReSpecTh spells a dimensionless quantity"""
 
@@ -582,9 +588,11 @@ def get_composition_amount(units, value, capitalize=False):
         `KeywordError`: If the composition units are not supported
     """
     if units not in composition_units:
+        supported = [unit for unit in composition_units if unit not in composition_unit_typos]
         message = (
-            "omposition units need to be one of: mole fraction, "
-            "mass fraction, mole percent, percent, ppm, or ppb."
+            "omposition units need to be one of: "
+            + ", ".join(supported[:-1])
+            + f", or {supported[-1]}."
         )
         raise KeywordError(("C" if capitalize else "c") + message)
 
