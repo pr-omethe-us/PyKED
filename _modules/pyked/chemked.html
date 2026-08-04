@@ -49,7 +49,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReSpecTh_to_ChemKED</span><span class="p">,</span> <span class="n">datagroup_properties</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q_</span><span class="p">,</span> <span class="n">OurValidator</span><span class="p">,</span> <span class="n">_normalize_unit_str</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">yaml</span>
 
 
 <div class="viewcode-block" id="VolumeHistory">
@@ -143,6 +143,25 @@
 
 
 
+<div class="viewcode-block" id="EvaluatedStandardDeviation">
+<a class="viewcode-back" href="../../chemked.html#pyked.chemked.EvaluatedStandardDeviation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EvaluatedStandardDeviation</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluated standard deviation metadata attached to a quantity&quot;&quot;&quot;</span>
+
+    <span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`~pint.Quantity` or `float`) The evaluated standard deviation. Absolute values are</span>
+<span class="sd">    stored as a `~pint.Quantity` with the units given in the file; relative values are stored</span>
+<span class="sd">    as a plain `float` fraction&quot;&quot;&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`str`) Whether the value is ``absolute`` or ``relative``&quot;&quot;&quot;</span>
+    <span class="n">sourcetype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`str`) How the value was obtained, e.g. ``reported``, ``estimated``, ``calculated``,</span>
+<span class="sd">    or ``digitized``&quot;&quot;&quot;</span>
+    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`str`) The method used to compute the value, e.g. ``statistical scatter``&quot;&quot;&quot;</span></div>
+
+
+
 <div class="viewcode-block" id="Composition">
 <a class="viewcode-back" href="../../chemked.html#pyked.chemked.Composition">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Composition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
@@ -157,7 +176,10 @@
     <span class="n">atomic_composition</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;(`dict`) The atomic composition of the species&quot;&quot;&quot;</span>
     <span class="n">amount</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`~pint.Quantity`) The amount of this species&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`~pint.Quantity`) The amount of this species&quot;&quot;&quot;</span>
+    <span class="n">amount_esd</span><span class="p">:</span> <span class="n">EvaluatedStandardDeviation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(`EvaluatedStandardDeviation`) The evaluated standard deviation of the amount,</span>
+<span class="sd">    if specified&quot;&quot;&quot;</span></div>
 
 
 
@@ -200,7 +222,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yaml_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dict_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">skip_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">yaml_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">dict_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">dict_input</span>
@@ -458,7 +480,7 @@
                 <span class="o">+</span> <span class="s1">&#39; already present. Specify &quot;overwrite=True&quot; to overwrite, or rename.&#39;</span>
             <span class="p">)</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
             <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span> <span class="n">yaml_file</span><span class="p">)</span></div>
 
 
@@ -724,7 +746,7 @@
         <span class="c1"># now do a &quot;pretty&quot; rewrite</span>
         <span class="n">xml</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
         <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converted to &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
@@ -757,6 +779,8 @@
 <span class="sd">            for an RCM experiment.</span>
 <span class="sd">        first_stage_ignition_delay (pint.Quantity, optional): The first stage ignition delay of the</span>
 <span class="sd">            experiment.</span>
+<span class="sd">        laminar_burning_velocity (pint.Quantity, optional): The laminar burning velocity of the</span>
+<span class="sd">            experiment.</span>
 <span class="sd">        ignition_type (`dict`): Dictionary with the ignition target and type.</span>
 <span class="sd">        volume_history (`~collections.namedtuple`, optional): The volume history of the reactor</span>
 <span class="sd">            during an RCM experiment.</span>
@@ -772,6 +796,9 @@
 <span class="sd">            reactor during an experiment.</span>
 <span class="sd">        absorption_history (`~collections.namedtuple`, optional): The absorption history of the</span>
 <span class="sd">            reactor during an experiment.</span>
+<span class="sd">        evaluated_standard_deviation (`dict`): Mapping of property name (with underscores,</span>
+<span class="sd">            e.g. ``ignition_delay``) to the `EvaluatedStandardDeviation` given in the file</span>
+<span class="sd">            for that property, for properties that specify one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">value_unit_props</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
@@ -780,6 +807,7 @@
         <span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pressure&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pressure-rise&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;laminar-burning-velocity&quot;</span><span class="p">,</span>
     <span class="p">]</span>
 
     <span class="n">rcm_data_props</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
@@ -792,7 +820,11 @@
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluated_standard_deviation</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">EvaluatedStandardDeviation</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_unit_props</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_store_evaluated_standard_deviation</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
                 <span class="n">quant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">),</span> <span class="n">quant</span><span class="p">)</span>
@@ -803,6 +835,8 @@
             <span class="n">orig_rcm_data</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;rcm-data&quot;</span><span class="p">]</span>
             <span class="n">rcm_props</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcm_data_props</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">orig_rcm_data</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_store_evaluated_standard_deviation</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">orig_rcm_data</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">orig_rcm_data</span><span class="p">:</span>
                     <span class="n">quant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">orig_rcm_data</span><span class="p">[</span><span class="n">prop</span><span class="p">])</span>
                     <span class="n">rcm_props</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">quant</span>
@@ -826,11 +860,18 @@
                 <span class="n">SMILES</span><span class="o">=</span><span class="n">SMILES</span><span class="p">,</span>
                 <span class="n">atomic_composition</span><span class="o">=</span><span class="n">atomic_composition</span><span class="p">,</span>
                 <span class="n">amount</span><span class="o">=</span><span class="n">amount</span><span class="p">,</span>
+                <span class="n">amount_esd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">process_evaluated_standard_deviation</span><span class="p">(</span><span class="n">species</span><span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]),</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">composition</span> <span class="o">=</span> <span class="n">composition</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">equivalence_ratio</span> <span class="o">=</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;equivalence-ratio&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;equivalence-ratio&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_store_evaluated_standard_deviation</span><span class="p">(</span>
+                <span class="s2">&quot;equivalence-ratio&quot;</span><span class="p">,</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;equivalence-ratio&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equivalence_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_equivalence_ratio</span><span class="p">(</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;equivalence-ratio&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ignition_type</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ignition-type&quot;</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="s2">&quot;time-histories&quot;</span> <span class="ow">in</span> <span class="n">properties</span> <span class="ow">and</span> <span class="s2">&quot;volume-history&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
@@ -894,21 +935,89 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">_history&quot;</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">_history&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
+<div class="viewcode-block" id="DataPoint.process_evaluated_standard_deviation">
+<a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.process_evaluated_standard_deviation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_evaluated_standard_deviation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract evaluated-standard-deviation metadata from a quantity list.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            properties (`list`): List in the value-unit format, whose metadata</span>
+<span class="sd">                mapping (if any) may contain evaluated-standard-deviation fields.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `EvaluatedStandardDeviation` or `None`: The evaluated standard</span>
+<span class="sd">            deviation, or `None` when the metadata does not include one.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">esd</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">esd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">esd_type</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation-type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">esd_type</span> <span class="o">==</span> <span class="s2">&quot;absolute&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">esd</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">esd</span><span class="p">))</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">EvaluatedStandardDeviation</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">esd_type</span><span class="p">,</span>
+            <span class="n">sourcetype</span><span class="o">=</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation-sourcetype&quot;</span><span class="p">),</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation-method&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_store_evaluated_standard_deviation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the evaluated standard deviation of a property, if one is given.&quot;&quot;&quot;</span>
+        <span class="n">esd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_evaluated_standard_deviation</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">esd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">evaluated_standard_deviation</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">esd</span>
+
 <div class="viewcode-block" id="DataPoint.process_quantity">
 <a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.process_quantity">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the uncertainty information from a given quantity and return it&quot;&quot;&quot;</span>
-        <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">unc</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">)</span>
+            <span class="n">upper_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">)</span>
+            <span class="n">lower_uncertainty</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">)</span>
             <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty-type&quot;</span><span class="p">)</span>
+
+            <span class="n">has_uncertainty_value</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">or</span> <span class="n">upper_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">or</span> <span class="n">lower_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">has_uncertainty_value</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">quant</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">has_uncertainty_value</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">unc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Only evaluated-standard-deviation metadata accompanies the</span>
+                    <span class="c1"># uncertainty-type label; there is no uncertainty to attach</span>
+                    <span class="c1"># to the quantity.</span>
+                    <span class="k">return</span> <span class="n">quant</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Either &quot;uncertainty&quot; or &quot;upper-uncertainty&quot; and &#39;</span>
+                    <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span>
+                <span class="p">)</span>
+
             <span class="k">if</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">),</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">warn</span><span class="p">(</span>
                         <span class="s2">&quot;Asymmetric uncertainties are not supported. The &quot;</span>
                         <span class="s2">&quot;maximum of lower-uncertainty and upper-uncertainty &quot;</span>
@@ -922,16 +1031,19 @@
                         <span class="s1">&#39;&quot;lower-uncertainty&quot; need to be specified.&#39;</span>
                     <span class="p">)</span>
             <span class="k">elif</span> <span class="n">uncertainty_type</span> <span class="o">==</span> <span class="s2">&quot;absolute&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">uncertainty</span><span class="p">:</span>
-                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">))</span>
                     <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">upper_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower_uncertainty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">warn</span><span class="p">(</span>
                         <span class="s2">&quot;Asymmetric uncertainties are not supported. The &quot;</span>
                         <span class="s2">&quot;maximum of lower-uncertainty and upper-uncertainty &quot;</span>
                         <span class="s2">&quot;has been used as the symmetric uncertainty.&quot;</span>
                     <span class="p">)</span>
-                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Q_</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">),</span> <span class="n">Q_</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">))</span>
+                    <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                        <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">upper_uncertainty</span><span class="p">)),</span>
+                        <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">lower_uncertainty</span><span class="p">)),</span>
+                    <span class="p">)</span>
                     <span class="n">quant</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">plus_minus</span><span class="p">(</span><span class="n">uncertainty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">quant</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -942,6 +1054,23 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uncertainty-type must be one of &quot;absolute&quot; or &quot;relative&quot;&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">quant</span></div>
+
+
+<div class="viewcode-block" id="DataPoint.process_equivalence_ratio">
+<a class="viewcode-back" href="../../chemked.html#pyked.chemked.DataPoint.process_equivalence_ratio">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_equivalence_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process equivalence ratio while preserving the historic scalar API.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">quant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_quantity</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quant</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">properties</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">quant</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;dimensionless&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span></div>
 
 
 <div class="viewcode-block" id="DataPoint.get_cantera_composition_string">

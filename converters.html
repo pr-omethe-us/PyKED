@@ -63,7 +63,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.ReSpecTh_to_ChemKED">
-<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ReSpecTh_to_ChemKED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename_xml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author_orcid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ReSpecTh_to_ChemKED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ReSpecTh_to_ChemKED" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ReSpecTh_to_ChemKED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename_xml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_author_orcid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apparatus_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ReSpecTh_to_ChemKED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ReSpecTh_to_ChemKED" title="Link to this definition">¶</a></dt>
 <dd><p>Convert ReSpecTh XML file to ChemKED-compliant dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -74,7 +74,97 @@
 <li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional, keyword-only) – Set to <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a> to validate the resulting
 property dictionary with <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemKED</span></code>. Set to <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a> if the file is being loaded and will
 be validated at some other point before use.</p></li>
+<li><p><strong>apparatus_kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional, keyword-only) – ChemKED apparatus kind to use instead of
+the one derived from the file. ReSpecTh often records only the generic <code class="docutils literal notranslate"><span class="pre">flame</span></code>
+apparatus, in which case the specific burner is known from the article rather than
+from the file.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.apparatus_kinds">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">apparatus_kinds</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'bunsen</span> <span class="pre">burner':</span> <span class="pre">'bunsen</span> <span class="pre">burner',</span> <span class="pre">'burner</span> <span class="pre">stabilized</span> <span class="pre">flame':</span> <span class="pre">'burner</span> <span class="pre">stabilized</span> <span class="pre">flame',</span> <span class="pre">'counterflow</span> <span class="pre">twin</span> <span class="pre">flame':</span> <span class="pre">'counterflow</span> <span class="pre">twin</span> <span class="pre">flame',</span> <span class="pre">'flame</span> <span class="pre">cone</span> <span class="pre">method':</span> <span class="pre">'bunsen</span> <span class="pre">burner',</span> <span class="pre">'flow</span> <span class="pre">reactor':</span> <span class="pre">'flow</span> <span class="pre">reactor',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">burner':</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">burner',</span> <span class="pre">'jet</span> <span class="pre">stirred</span> <span class="pre">reactor':</span> <span class="pre">'jet</span> <span class="pre">stirred</span> <span class="pre">reactor',</span> <span class="pre">'outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame':</span> <span class="pre">'outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame',</span> <span class="pre">'rapid</span> <span class="pre">compression</span> <span class="pre">machine':</span> <span class="pre">'rapid</span> <span class="pre">compression</span> <span class="pre">machine',</span> <span class="pre">'shock</span> <span class="pre">tube':</span> <span class="pre">'shock</span> <span class="pre">tube'}</span></span><a class="headerlink" href="#pyked.converters.apparatus_kinds" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">apparatus/kind</span></code> mapped to ChemKED <code class="docutils literal notranslate"><span class="pre">apparatus.kind</span></code></p>
+<p>Only names that identify the apparatus on their own. The vessel material that ReSpecTh appends in
+parentheses, as in <code class="docutils literal notranslate"><span class="pre">flow</span> <span class="pre">reactor</span> <span class="pre">(quartz)</span></code>, is stripped before lookup because ChemKED has no
+field for it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.apparatus_kinds_by_experiment">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">apparatus_kinds_by_experiment</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{('stirred</span> <span class="pre">reactor',</span> <span class="pre">'jet</span> <span class="pre">stirred</span> <span class="pre">reactor</span> <span class="pre">measurement'):</span> <span class="pre">'jet</span> <span class="pre">stirred</span> <span class="pre">reactor'}</span></span><a class="headerlink" href="#pyked.converters.apparatus_kinds_by_experiment" title="Link to this definition">¶</a></dt>
+<dd><p>(ReSpecTh <code class="docutils literal notranslate"><span class="pre">apparatus/kind</span></code>, <code class="docutils literal notranslate"><span class="pre">experimentType</span></code>) mapped to ChemKED <code class="docutils literal notranslate"><span class="pre">apparatus.kind</span></code></p>
+<p>For kinds that name how a reactor is operated rather than which apparatus it is, and so can only
+be mapped when the experiment type corroborates them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.attach_value_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">attach_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#attach_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.attach_value_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Attach uncertainty metadata to the quantities it describes.</p>
+<p>ReSpecTh states uncertainties as standalone properties that point at another quantity, so each
+one is attached to that quantity wherever it ended up: on every datapoint, on the shared
+common property, or on a species profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Partially built ChemKED dictionary, with datapoints</p></li>
+<li><p><strong>metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – Descriptors from <a class="reference internal" href="#pyked.converters.get_value_metadata" title="pyked.converters.get_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value_metadata</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.auxiliary_axes">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">auxiliary_axes</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'distance':</span> <span class="pre">'distance',</span> <span class="pre">'residence-time':</span> <span class="pre">'time',</span> <span class="pre">'time':</span> <span class="pre">'time'}</span></span><a class="headerlink" href="#pyked.converters.auxiliary_axes" title="Link to this definition">¶</a></dt>
+<dd><p>Speciation axis name mapped to the axis name of an auxiliary profile against it</p>
+<p><code class="docutils literal notranslate"><span class="pre">auxiliary-profiles.independent.name</span></code> is a coordinate along the reactor or flame rather than the
+full set of names <code class="docutils literal notranslate"><span class="pre">independent-variables</span></code> allows, and a residence time is a time coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.auxiliary_profile_types">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">auxiliary_profile_types</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['temperature',</span> <span class="pre">'pressure',</span> <span class="pre">'volume',</span> <span class="pre">'velocity']</span></span><a class="headerlink" href="#pyked.converters.auxiliary_profile_types" title="Link to this definition">¶</a></dt>
+<dd><p>Quantities that a speciation datapoint can carry as an auxiliary profile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.check_units">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">check_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#check_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.check_units" title="Link to this definition">¶</a></dt>
+<dd><p>Ensure ReSpecTh units are dimensionally consistent with the ChemKED field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – ReSpecTh property name, used in the error message</p></li>
+<li><p><strong>field</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – ChemKED field name, used to look up the expected units</p></li>
+<li><p><strong>unit_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Units as written in the ReSpecTh file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the units cannot be parsed or are incompatible with the field</p>
 </dd>
 </dl>
 </dd></dl>
@@ -83,6 +173,40 @@ be validated at some other point before use.</p></li>
 <dt class="sig sig-object py" id="pyked.converters.ck2respth">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ck2respth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#ck2respth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.ck2respth" title="Link to this definition">¶</a></dt>
 <dd><p>Command-line entry point for converting a ChemKED YAML file to a ReSpecTh XML file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.common_property_fields">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">common_property_fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'environment</span> <span class="pre">temperature':</span> <span class="pre">'environment-temperature',</span> <span class="pre">'equivalence</span> <span class="pre">ratio':</span> <span class="pre">'equivalence-ratio',</span> <span class="pre">'exchange</span> <span class="pre">area':</span> <span class="pre">'exchange-area',</span> <span class="pre">'flow</span> <span class="pre">rate':</span> <span class="pre">'flow-rate',</span> <span class="pre">'global</span> <span class="pre">heat</span> <span class="pre">exchange</span> <span class="pre">coefficient':</span> <span class="pre">'global-heat-exchange-coefficient',</span> <span class="pre">'ignition</span> <span class="pre">delay':</span> <span class="pre">'ignition-delay',</span> <span class="pre">'laminar</span> <span class="pre">burning</span> <span class="pre">velocity':</span> <span class="pre">'laminar-burning-velocity',</span> <span class="pre">'pressure':</span> <span class="pre">'pressure',</span> <span class="pre">'pressure</span> <span class="pre">in</span> <span class="pre">reference</span> <span class="pre">state':</span> <span class="pre">'pressure-in-reference-state',</span> <span class="pre">'pressure</span> <span class="pre">rise':</span> <span class="pre">'pressure-rise',</span> <span class="pre">'reactor</span> <span class="pre">diameter':</span> <span class="pre">'reactor-diameter',</span> <span class="pre">'reactor</span> <span class="pre">length':</span> <span class="pre">'reactor-length',</span> <span class="pre">'residence</span> <span class="pre">time':</span> <span class="pre">'residence-time',</span> <span class="pre">'temperature':</span> <span class="pre">'temperature',</span> <span class="pre">'temperature</span> <span class="pre">in</span> <span class="pre">reference</span> <span class="pre">state':</span> <span class="pre">'temperature-in-reference-state',</span> <span class="pre">'volume':</span> <span class="pre">'reactor-volume',</span> <span class="pre">'volumetric</span> <span class="pre">flow</span> <span class="pre">rate</span> <span class="pre">in</span> <span class="pre">reference</span> <span class="pre">state':</span> <span class="pre">'volumetric-flow-in-reference-state'}</span></span><a class="headerlink" href="#pyked.converters.common_property_fields" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">commonProperties</span></code> property name mapped to ChemKED field name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.composition_unit_typos">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">composition_unit_typos</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mole</span> <span class="pre">faction']</span></span><a class="headerlink" href="#pyked.converters.composition_unit_typos" title="Link to this definition">¶</a></dt>
+<dd><p>Misspelled composition units in the ReSpecTh corpus, accepted with a warning</p>
+<p>Kept out of the error message, since they are tolerated rather than recommended.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.composition_units">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">composition_units</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'mass</span> <span class="pre">fraction':</span> <span class="pre">('mass</span> <span class="pre">fraction',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mol/L':</span> <span class="pre">('mol/L',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mol/cm3':</span> <span class="pre">('mol/cm3',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mol/dm3':</span> <span class="pre">('mol/dm3',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mol/m3':</span> <span class="pre">('mol/m3',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mole</span> <span class="pre">faction':</span> <span class="pre">('mole</span> <span class="pre">fraction',</span> <span class="pre">1.0,</span> <span class="pre">'Assuming</span> <span class="pre">misspelled</span> <span class="pre">composition</span> <span class="pre">units</span> <span class="pre">&quot;mole</span> <span class="pre">faction&quot;</span> <span class="pre">mean</span> <span class="pre">mole</span> <span class="pre">fraction'),</span> <span class="pre">'mole</span> <span class="pre">fraction':</span> <span class="pre">('mole</span> <span class="pre">fraction',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'mole</span> <span class="pre">percent':</span> <span class="pre">('mole</span> <span class="pre">percent',</span> <span class="pre">1.0,</span> <span class="pre">None),</span> <span class="pre">'percent':</span> <span class="pre">('mole</span> <span class="pre">percent',</span> <span class="pre">1.0,</span> <span class="pre">'Assuming</span> <span class="pre">percent</span> <span class="pre">in</span> <span class="pre">composition</span> <span class="pre">means</span> <span class="pre">mole</span> <span class="pre">percent'),</span> <span class="pre">'ppb':</span> <span class="pre">('mole</span> <span class="pre">fraction',</span> <span class="pre">1e-09,</span> <span class="pre">'Assuming</span> <span class="pre">molar</span> <span class="pre">ppb</span> <span class="pre">in</span> <span class="pre">composition</span> <span class="pre">and</span> <span class="pre">converting</span> <span class="pre">to</span> <span class="pre">mole</span> <span class="pre">fraction'),</span> <span class="pre">'ppm':</span> <span class="pre">('mole</span> <span class="pre">fraction',</span> <span class="pre">1e-06,</span> <span class="pre">'Assuming</span> <span class="pre">molar</span> <span class="pre">ppm</span> <span class="pre">in</span> <span class="pre">composition</span> <span class="pre">and</span> <span class="pre">converting</span> <span class="pre">to</span> <span class="pre">mole</span> <span class="pre">fraction')}</span></span><a class="headerlink" href="#pyked.converters.composition_units" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh composition units mapped to (ChemKED kind, scale factor, warning)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -96,10 +220,106 @@ be validated at some other point before use.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.dimensionless_units">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">dimensionless_units</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['unitless',</span> <span class="pre">'[-]',</span> <span class="pre">'dimensionless',</span> <span class="pre">'-',</span> <span class="pre">'']</span></span><a class="headerlink" href="#pyked.converters.dimensionless_units" title="Link to this definition">¶</a></dt>
+<dd><p>Ways ReSpecTh spells a dimensionless quantity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.experiment_types">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">experiment_types</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'burner</span> <span class="pre">stabilized</span> <span class="pre">flame</span> <span class="pre">speciation</span> <span class="pre">measurement':</span> <span class="pre">'speciation</span> <span class="pre">measurement',</span> <span class="pre">'concentration</span> <span class="pre">time</span> <span class="pre">profile</span> <span class="pre">measurement':</span> <span class="pre">'speciation</span> <span class="pre">measurement',</span> <span class="pre">'ignition</span> <span class="pre">delay</span> <span class="pre">measurement':</span> <span class="pre">'ignition</span> <span class="pre">delay',</span> <span class="pre">'jet</span> <span class="pre">stirred</span> <span class="pre">reactor</span> <span class="pre">measurement':</span> <span class="pre">'speciation</span> <span class="pre">measurement',</span> <span class="pre">'laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement':</span> <span class="pre">'laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement',</span> <span class="pre">'laminar</span> <span class="pre">flame</span> <span class="pre">speed</span> <span class="pre">measurement':</span> <span class="pre">'laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement',</span> <span class="pre">'outlet</span> <span class="pre">concentration</span> <span class="pre">measurement':</span> <span class="pre">'speciation</span> <span class="pre">measurement'}</span></span><a class="headerlink" href="#pyked.converters.experiment_types" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">experimentType</span></code> mapped to ChemKED <code class="docutils literal notranslate"><span class="pre">experiment-type</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.flame_modes">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">flame_modes</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'burner</span> <span class="pre">stabilized':</span> <span class="pre">'burner</span> <span class="pre">stabilized</span> <span class="pre">flame',</span> <span class="pre">'burner-stabilized':</span> <span class="pre">'burner</span> <span class="pre">stabilized</span> <span class="pre">flame',</span> <span class="pre">'constant</span> <span class="pre">volume</span> <span class="pre">combustion</span> <span class="pre">chamber':</span> <span class="pre">'outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame',</span> <span class="pre">'counterflow':</span> <span class="pre">'counterflow</span> <span class="pre">twin</span> <span class="pre">flame',</span> <span class="pre">'ctf':</span> <span class="pre">'counterflow</span> <span class="pre">twin</span> <span class="pre">flame',</span> <span class="pre">'fcm':</span> <span class="pre">'bunsen</span> <span class="pre">burner',</span> <span class="pre">'flame</span> <span class="pre">cone</span> <span class="pre">method':</span> <span class="pre">'bunsen</span> <span class="pre">burner',</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">burner':</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">burner',</span> <span class="pre">'hfm':</span> <span class="pre">'heat</span> <span class="pre">flux</span> <span class="pre">burner',</span> <span class="pre">'opf':</span> <span class="pre">'outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame',</span> <span class="pre">'spherical':</span> <span class="pre">'outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame',</span> <span class="pre">'twin</span> <span class="pre">flat':</span> <span class="pre">'counterflow</span> <span class="pre">twin</span> <span class="pre">flame'}</span></span><a class="headerlink" href="#pyked.converters.flame_modes" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">apparatus/mode</span></code> mapped to ChemKED <code class="docutils literal notranslate"><span class="pre">apparatus.kind</span></code></p>
+<p>Only consulted when <code class="docutils literal notranslate"><span class="pre">apparatus/kind</span></code> is the generic <code class="docutils literal notranslate"><span class="pre">flame</span></code>. Modes that only describe the
+mixture or flow, such as <code class="docutils literal notranslate"><span class="pre">premixed</span></code> and <code class="docutils literal notranslate"><span class="pre">laminar</span></code>, are absent on purpose: they do not identify
+a burner, so a file carrying nothing else cannot be converted without curation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.format_value_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">format_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numeric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#format_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.format_value_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Turn one ReSpecTh uncertainty descriptor into ChemKED metadata keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Descriptor from <a class="reference internal" href="#pyked.converters.get_value_metadata" title="pyked.converters.get_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value_metadata</span></code></a> or a dataGroup metadata column</p></li>
+<li><p><strong>factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – Scale factor to apply, used when the described quantity is a
+composition whose units were converted, e.g. ppm to mole fraction</p></li>
+<li><p><strong>numeric</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – Store the value as a number rather than as the text of the
+file. Composition amounts and profile values are plain numbers with the units stated
+elsewhere, so an uncertainty about one of them is a number too.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ChemKED uncertainty or evaluated standard deviation metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the <code class="docutils literal notranslate"><span class="pre">kind</span></code> attribute is neither absolute nor relative</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_apparatus_kind">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_apparatus_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_apparatus_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_apparatus_kind" title="Link to this definition">¶</a></dt>
+<dd><p>Map the ReSpecTh apparatus onto a ChemKED apparatus kind.</p>
+<p>ReSpecTh often gives the generic kind <code class="docutils literal notranslate"><span class="pre">flame</span></code> and leaves the configuration to one or more
+<code class="docutils literal notranslate"><span class="pre">mode</span></code> elements, so both are consulted. Modes that ReSpecTh flags as uncertain with a
+trailing question mark are ignored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p></li>
+<li><p><strong>experiment_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – The ReSpecTh <code class="docutils literal notranslate"><span class="pre">experimentType</span></code>, which names the
+apparatus a second time for kinds that do not identify it on their own</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ChemKED <code class="docutils literal notranslate"><span class="pre">apparatus.kind</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyked.converters.MissingElementError" title="pyked.converters.MissingElementError"><strong>MissingElementError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">apparatus/kind</span></code> is absent or empty</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If the apparatus cannot be identified from the file alone</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.get_common_properties">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_common_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_common_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_common_properties" title="Link to this definition">¶</a></dt>
 <dd><p>Read common properties from root of ReSpecTh XML file.</p>
+<p>Uncertainty and evaluated standard deviation properties are skipped here because they are
+metadata about another quantity rather than quantities in their own right; <a class="reference internal" href="#pyked.converters.get_value_metadata" title="pyked.converters.get_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value_metadata</span></code></a>
+collects them so they can be attached to whatever they describe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
@@ -109,6 +329,108 @@ be validated at some other point before use.</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>properties (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_composition">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capitalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_composition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_composition" title="Link to this definition">¶</a></dt>
+<dd><p>Read a ReSpecTh <code class="docutils literal notranslate"><span class="pre">initial</span> <span class="pre">composition</span></code> property into a ChemKED composition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>elem</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – The <code class="docutils literal notranslate"><span class="pre">initial</span> <span class="pre">composition</span></code> property element</p></li>
+<li><p><strong>capitalize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – Capitalize the units error message</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ChemKED composition with <code class="docutils literal notranslate"><span class="pre">species</span></code> and <code class="docutils literal notranslate"><span class="pre">kind</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the composition units are unsupported or inconsistent</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_composition_amount">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_composition_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capitalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_composition_amount"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_composition_amount" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a ReSpecTh composition amount to a ChemKED amount and kind.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Composition units as written in the ReSpecTh file</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Amount as written in the ReSpecTh file</p></li>
+<li><p><strong>capitalize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – Capitalize the units error message, matching the wording
+used for common properties</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The amount as a <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> and the ChemKED composition kind</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the composition units are not supported</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_datagroup_columns">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_datagroup_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataGroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_datagroup_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_datagroup_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Describe the columns of a ReSpecTh dataGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataGroup</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – A <code class="docutils literal notranslate"><span class="pre">dataGroup</span></code> element</p></li>
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>, optional) – Root of the file, used to resolve an
+uncertainty that points at a column by its label or id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> per column, in file order, with the ReSpecTh name, units, id, the
+species it refers to if any, and the uncertainty attributes if it is a metadata column</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyked.converters.MissingElementError" title="pyked.converters.MissingElementError"><strong>MissingElementError</strong></a> – If the dataGroup declares no properties</p></li>
+<li><p><a class="reference internal" href="#pyked.converters.MissingAttributeError" title="pyked.converters.MissingAttributeError"><strong>MissingAttributeError</strong></a> – If a metadata column has no <code class="docutils literal notranslate"><span class="pre">reference</span></code> or <code class="docutils literal notranslate"><span class="pre">kind</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_datagroup_rows">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_datagroup_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataGroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_datagroup_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_datagroup_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Read the dataPoint rows of a ReSpecTh dataGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataGroup</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – A <code class="docutils literal notranslate"><span class="pre">dataGroup</span></code> element</p></li>
+<li><p><strong>columns</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – Column descriptors from <a class="reference internal" href="#pyked.converters.get_datagroup_columns" title="pyked.converters.get_datagroup_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_datagroup_columns</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> per dataPoint, mapping column id to the text of the value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyked.converters.MissingElementError" title="pyked.converters.MissingElementError"><strong>MissingElementError</strong></a> – If the dataGroup has no dataPoints</p></li>
+<li><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If a value refers to a column the dataGroup does not declare</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -132,11 +454,15 @@ be validated at some other point before use.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.get_experiment_kind">
-<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_experiment_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_experiment_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_experiment_kind" title="Link to this definition">¶</a></dt>
-<dd><p>Read common properties from root of ReSpecTh XML file.</p>
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_experiment_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apparatus_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_experiment_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_experiment_kind" title="Link to this definition">¶</a></dt>
+<dd><p>Read the experiment type and apparatus from the root of a ReSpecTh XML file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p></li>
+<li><p><strong>apparatus_kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – ChemKED apparatus kind to use instead of the one
+derived from the file, for files whose apparatus is only known from the article</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary with experiment type and apparatus information.</p>
@@ -182,6 +508,28 @@ be validated at some other point before use.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_lbv_datapoints">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_lbv_datapoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_lbv_datapoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_lbv_datapoints" title="Link to this definition">¶</a></dt>
+<dd><p>Parse laminar burning velocity datapoints from a ReSpecTh file.</p>
+<p>Every dataPoint in the first dataGroup becomes one ChemKED datapoint, with the composition
+columns gathered into that datapoint’s composition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ChemKED datapoints</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If a column is not a valid property for this experiment type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.get_reference">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_reference" title="Link to this definition">¶</a></dt>
 <dd><p>Read reference info from root of ReSpecTh XML file.</p>
@@ -199,15 +547,253 @@ be validated at some other point before use.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_reference_details">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_reference_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_reference_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_reference_details" title="Link to this definition">¶</a></dt>
+<dd><p>Read bibliographic details written directly in a ReSpecTh 2.x <code class="docutils literal notranslate"><span class="pre">bibliographyLink</span></code>.</p>
+<p>ReSpecTh 2.x records the reference in child elements rather than the <code class="docutils literal notranslate"><span class="pre">doi</span></code> and
+<code class="docutils literal notranslate"><span class="pre">preferredKey</span></code> attributes used by 1.x, so the citation can be built without a DOI lookup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>elem</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – The <code class="docutils literal notranslate"><span class="pre">bibliographyLink</span></code> element</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reference information, empty if the element carries no usable <code class="docutils literal notranslate"><span class="pre">details</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_speciation_datapoints">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_speciation_datapoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_speciation_datapoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_speciation_datapoints" title="Link to this definition">¶</a></dt>
+<dd><p>Parse speciation datapoints from a ReSpecTh file.</p>
+<p>Each dataGroup becomes one ChemKED datapoint: the first column that is not a species is the
+swept axis, the species columns become concentration profiles, and any remaining measured
+quantity becomes an auxiliary profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ChemKED datapoints</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If a column is not a valid property for this experiment type</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If the file cannot be represented by the ChemKED speciation schema</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_value_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_value_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Read uncertainty and evaluated standard deviation common properties.</p>
+<p>ReSpecTh states these as properties in their own right, tied by the <code class="docutils literal notranslate"><span class="pre">reference</span></code> attribute
+(and a <code class="docutils literal notranslate"><span class="pre">speciesLink</span></code> when the reference is a composition) to the quantity they describe.
+ChemKED instead stores them alongside that quantity, so they are collected separately here
+and attached by <a class="reference internal" href="#pyked.converters.attach_value_metadata" title="pyked.converters.attach_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attach_value_metadata</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> per uncertainty or evaluated standard deviation property</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If a property is missing the <code class="docutils literal notranslate"><span class="pre">reference</span></code> or <code class="docutils literal notranslate"><span class="pre">kind</span></code> attribute</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.ignition_target_values">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ignition_target_values</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['temperature',</span> <span class="pre">'pressure',</span> <span class="pre">'OH',</span> <span class="pre">'OH*',</span> <span class="pre">'CH',</span> <span class="pre">'CH*',</span> <span class="pre">'NH3',</span> <span class="pre">'CO2',</span> <span class="pre">'N2O',</span> <span class="pre">'CH4',</span> <span class="pre">'CO',</span> <span class="pre">'H2O',</span> <span class="pre">'C2',</span> <span class="pre">'O',</span> <span class="pre">'CH3OH',</span> <span class="pre">'CH3',</span> <span class="pre">'O2',</span> <span class="pre">'soot']</span></span><a class="headerlink" href="#pyked.converters.ignition_target_values" title="Link to this definition">¶</a></dt>
+<dd><p>Ignition targets the ChemKED schema allows</p>
+<p>Kept in step with <code class="docutils literal notranslate"><span class="pre">ignition-type.target</span></code> in <code class="docutils literal notranslate"><span class="pre">ignition_delay_schema.yaml</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.ignition_targets">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ignition_targets</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'CHEX':</span> <span class="pre">'CH*',</span> <span class="pre">'OHEX':</span> <span class="pre">'OH*',</span> <span class="pre">'P':</span> <span class="pre">'pressure',</span> <span class="pre">'T':</span> <span class="pre">'temperature'}</span></span><a class="headerlink" href="#pyked.converters.ignition_targets" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">ignitionType</span></code> target abbreviations mapped to ChemKED target names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.ignition_type_values">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ignition_type_values</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['d/dt</span> <span class="pre">max',</span> <span class="pre">'max',</span> <span class="pre">'1/2</span> <span class="pre">max',</span> <span class="pre">'min',</span> <span class="pre">'d/dt</span> <span class="pre">max</span> <span class="pre">extrapolated',</span> <span class="pre">'d/dt</span> <span class="pre">min</span> <span class="pre">extrapolated',</span> <span class="pre">'relative</span> <span class="pre">concentration',</span> <span class="pre">'d/dt</span> <span class="pre">second</span> <span class="pre">max',</span> <span class="pre">'concentration',</span> <span class="pre">'relative</span> <span class="pre">increase']</span></span><a class="headerlink" href="#pyked.converters.ignition_type_values" title="Link to this definition">¶</a></dt>
+<dd><p>Ignition types the ChemKED schema allows</p>
+<p>Kept in step with <code class="docutils literal notranslate"><span class="pre">ignition-type.type</span></code> in <code class="docutils literal notranslate"><span class="pre">ignition_delay_schema.yaml</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.ignition_types">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">ignition_types</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'baseline</span> <span class="pre">max</span> <span class="pre">intercept</span> <span class="pre">from</span> <span class="pre">d/dt':</span> <span class="pre">'d/dt</span> <span class="pre">max</span> <span class="pre">extrapolated',</span> <span class="pre">'baseline</span> <span class="pre">min</span> <span class="pre">intercept</span> <span class="pre">from</span> <span class="pre">d/dt':</span> <span class="pre">'d/dt</span> <span class="pre">min</span> <span class="pre">extrapolated'}</span></span><a class="headerlink" href="#pyked.converters.ignition_types" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh <code class="docutils literal notranslate"><span class="pre">ignitionType</span></code> type names mapped to ChemKED type names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.independent_variables">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">independent_variables</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'distance':</span> <span class="pre">'distance',</span> <span class="pre">'equivalence</span> <span class="pre">ratio':</span> <span class="pre">'equivalence-ratio',</span> <span class="pre">'initial</span> <span class="pre">composition':</span> <span class="pre">'initial-composition',</span> <span class="pre">'pressure':</span> <span class="pre">'pressure',</span> <span class="pre">'residence</span> <span class="pre">time':</span> <span class="pre">'residence-time',</span> <span class="pre">'temperature':</span> <span class="pre">'temperature',</span> <span class="pre">'time':</span> <span class="pre">'time'}</span></span><a class="headerlink" href="#pyked.converters.independent_variables" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh dataGroup property name mapped to a speciation independent-variable name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.main">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.main" title="Link to this definition">¶</a></dt>
 <dd><p>General function for converting between ReSpecTh and ChemKED files based on extension.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.merge_value_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">merge_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#merge_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.merge_value_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Add uncertainty metadata to a ChemKED value list, in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – ChemKED value list, either <code class="docutils literal notranslate"><span class="pre">[value]</span></code> or <code class="docutils literal notranslate"><span class="pre">[value,</span> <span class="pre">metadata]</span></code></p></li>
+<li><p><strong>metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Metadata keys from <a class="reference internal" href="#pyked.converters.format_value_metadata" title="pyked.converters.format_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_value_metadata</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.normalize_units">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">normalize_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#normalize_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.normalize_units" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a ReSpecTh unit string into one Pint can parse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>unit_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Unit string as written in the ReSpecTh file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Equivalent unit string in Pint syntax</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.reconcile_composition_kind">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">reconcile_composition_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#reconcile_composition_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.reconcile_composition_kind" title="Link to this definition">¶</a></dt>
+<dd><p>Settle on one composition kind for a set of species amounts.</p>
+<p>ReSpecTh files sometimes state one species in mole percent and another in mole fraction. That
+pair converts exactly, so the amounts are put on a mole fraction basis; any other mixture is
+an error because ChemKED stores a single kind per composition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – ChemKED species dictionaries, modified in place</p></li>
+<li><p><strong>kinds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – The composition kind read for each species, in the same order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The single ChemKED composition kind</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the kinds cannot be reconciled</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.resolve_reference">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">resolve_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#resolve_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.resolve_reference" title="Link to this definition">¶</a></dt>
+<dd><p>Work out which quantity a ReSpecTh uncertainty refers to.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">reference</span></code> attribute usually names a property, but part of the corpus points at a
+column by its <code class="docutils literal notranslate"><span class="pre">label</span></code> or its <code class="docutils literal notranslate"><span class="pre">id</span></code> instead, as in <code class="docutils literal notranslate"><span class="pre">reference=&quot;Sl&quot;</span></code> for the column
+labelled <code class="docutils literal notranslate"><span class="pre">Sl</span></code> or <code class="docutils literal notranslate"><span class="pre">reference=&quot;x1&quot;</span></code> for the first column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p></li>
+<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – The <code class="docutils literal notranslate"><span class="pre">reference</span></code> attribute as written</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The property name referred to, and the species it belongs to if the referenced
+property names one, otherwise <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.respth2ck">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">respth2ck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#respth2ck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.respth2ck" title="Link to this definition">¶</a></dt>
 <dd><p>Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.unit_aliases">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">unit_aliases</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Torr':</span> <span class="pre">'torr'}</span></span><a class="headerlink" href="#pyked.converters.unit_aliases" title="Link to this definition">¶</a></dt>
+<dd><p>ReSpecTh unit strings that Pint spells differently</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.value_with_units">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">value_with_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#value_with_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.value_with_units" title="Link to this definition">¶</a></dt>
+<dd><p>Build a ChemKED value-with-units string from ReSpecTh text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Value as written in the ReSpecTh file</p></li>
+<li><p><strong>unit_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Units as written in the ReSpecTh file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value and units joined in a form the ChemKED schema accepts</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -261,16 +847,49 @@ be validated at some other point before use.</p></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.MissingElementError"><code class="docutils literal notranslate"><span class="pre">MissingElementError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ParseError"><code class="docutils literal notranslate"><span class="pre">ParseError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ReSpecTh_to_ChemKED"><code class="docutils literal notranslate"><span class="pre">ReSpecTh_to_ChemKED()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.apparatus_kinds"><code class="docutils literal notranslate"><span class="pre">apparatus_kinds</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.apparatus_kinds_by_experiment"><code class="docutils literal notranslate"><span class="pre">apparatus_kinds_by_experiment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.attach_value_metadata"><code class="docutils literal notranslate"><span class="pre">attach_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.auxiliary_axes"><code class="docutils literal notranslate"><span class="pre">auxiliary_axes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.auxiliary_profile_types"><code class="docutils literal notranslate"><span class="pre">auxiliary_profile_types</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.check_units"><code class="docutils literal notranslate"><span class="pre">check_units()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ck2respth"><code class="docutils literal notranslate"><span class="pre">ck2respth()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.common_property_fields"><code class="docutils literal notranslate"><span class="pre">common_property_fields</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.composition_unit_typos"><code class="docutils literal notranslate"><span class="pre">composition_unit_typos</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.composition_units"><code class="docutils literal notranslate"><span class="pre">composition_units</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.datagroup_properties"><code class="docutils literal notranslate"><span class="pre">datagroup_properties</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.dimensionless_units"><code class="docutils literal notranslate"><span class="pre">dimensionless_units</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.experiment_types"><code class="docutils literal notranslate"><span class="pre">experiment_types</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.flame_modes"><code class="docutils literal notranslate"><span class="pre">flame_modes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.format_value_metadata"><code class="docutils literal notranslate"><span class="pre">format_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_apparatus_kind"><code class="docutils literal notranslate"><span class="pre">get_apparatus_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_common_properties"><code class="docutils literal notranslate"><span class="pre">get_common_properties()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_composition"><code class="docutils literal notranslate"><span class="pre">get_composition()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_composition_amount"><code class="docutils literal notranslate"><span class="pre">get_composition_amount()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_datagroup_columns"><code class="docutils literal notranslate"><span class="pre">get_datagroup_columns()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_datagroup_rows"><code class="docutils literal notranslate"><span class="pre">get_datagroup_rows()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_datapoints"><code class="docutils literal notranslate"><span class="pre">get_datapoints()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_experiment_kind"><code class="docutils literal notranslate"><span class="pre">get_experiment_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_file_metadata"><code class="docutils literal notranslate"><span class="pre">get_file_metadata()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_ignition_type"><code class="docutils literal notranslate"><span class="pre">get_ignition_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_lbv_datapoints"><code class="docutils literal notranslate"><span class="pre">get_lbv_datapoints()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_reference"><code class="docutils literal notranslate"><span class="pre">get_reference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_reference_details"><code class="docutils literal notranslate"><span class="pre">get_reference_details()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_speciation_datapoints"><code class="docutils literal notranslate"><span class="pre">get_speciation_datapoints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_value_metadata"><code class="docutils literal notranslate"><span class="pre">get_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_target_values"><code class="docutils literal notranslate"><span class="pre">ignition_target_values</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_targets"><code class="docutils literal notranslate"><span class="pre">ignition_targets</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_type_values"><code class="docutils literal notranslate"><span class="pre">ignition_type_values</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_types"><code class="docutils literal notranslate"><span class="pre">ignition_types</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.independent_variables"><code class="docutils literal notranslate"><span class="pre">independent_variables</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.merge_value_metadata"><code class="docutils literal notranslate"><span class="pre">merge_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.normalize_units"><code class="docutils literal notranslate"><span class="pre">normalize_units()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.reconcile_composition_kind"><code class="docutils literal notranslate"><span class="pre">reconcile_composition_kind()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.resolve_reference"><code class="docutils literal notranslate"><span class="pre">resolve_reference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.respth2ck"><code class="docutils literal notranslate"><span class="pre">respth2ck()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.unit_aliases"><code class="docutils literal notranslate"><span class="pre">unit_aliases</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.value_with_units"><code class="docutils literal notranslate"><span class="pre">value_with_units()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>

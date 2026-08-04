@@ -52,6 +52,28 @@
 <span class="sd">&quot;&quot;&quot;Unit registry to contain the units used in PyKED&quot;&quot;&quot;</span>
 
 <span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;cm3 = centimeter**3&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;m3 = meter**3&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;mm3 = millimeter**3&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;Torr = 133.322368 pascal&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;m2 = meter**2&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;cm6 = centimeter**6&quot;</span><span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">&quot;molecule = 1 / 6.02214076e23 mol&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_unit_str</span><span class="p">(</span><span class="n">val_str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize implicit multiplication and negative exponents for Pint.&quot;&quot;&quot;</span>
+    <span class="n">val_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">val_str</span>
+
+    <span class="n">num</span><span class="p">,</span> <span class="n">unit_str</span> <span class="o">=</span> <span class="n">parts</span>
+    <span class="n">unit_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?&lt;=\w)_(?=\w)&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">unit_str</span><span class="p">)</span>
+    <span class="n">unit_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([a-zA-Z]+)(-\d+)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\1**\2&quot;</span><span class="p">,</span> <span class="n">unit_str</span><span class="p">)</span>
+    <span class="n">unit_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?&lt;=\w) +(?=\w)&quot;</span><span class="p">,</span> <span class="s2">&quot; * &quot;</span><span class="p">,</span> <span class="n">unit_str</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit_str</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
 <span class="n">Q_</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">Quantity</span>
 
 <span class="n">crossref_api</span> <span class="o">=</span> <span class="n">habanero</span><span class="o">.</span><span class="n">Crossref</span><span class="p">(</span><span class="n">mailto</span><span class="o">=</span><span class="s2">&quot;prometheus@pr.omethe.us&quot;</span><span class="p">)</span>
@@ -77,7 +99,7 @@
             <span class="k">raise</span> <span class="n">SchemaError</span><span class="p">(</span><span class="s2">&quot;All included files must be first in the main schema&quot;</span><span class="p">)</span>
 
         <span class="n">inc_fname</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">schemas</span><span class="p">)</span> <span class="o">/</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;!include&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">inc_fname</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">inc_fname</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">inc_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;---&quot;</span><span class="p">):</span>
@@ -100,10 +122,50 @@
     <span class="s2">&quot;value-unit-optional&quot;</span><span class="p">,</span>
     <span class="s2">&quot;composition&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ignition-type&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uncertainty-metadata&quot;</span><span class="p">,</span>
     <span class="s2">&quot;value-with-uncertainty&quot;</span><span class="p">,</span>
     <span class="s2">&quot;value-without-uncertainty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;time-shift&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;laminar-burning-velocity-measurement-schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;speciation-measurement-schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ignition-delay-schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;time-history&quot;</span><span class="p">,</span>
 <span class="p">]:</span>
-    <span class="k">del</span> <span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">schema</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+<span class="c1"># Relative tolerance on the sum of a mole or mass fraction composition. Compositions in the</span>
+<span class="c1"># literature are reported to a fixed number of digits, so their sums land near 1.0 rather than on</span>
+<span class="c1"># it, and a tolerance tighter than the reported precision rejects otherwise sound data.</span>
+<span class="n">composition_sum_tolerance</span> <span class="o">=</span> <span class="mf">1.0e-3</span>
+
+<span class="c1"># The quantity that identifies each kind of datapoint, and the apparatus each can be measured on.</span>
+<span class="c1"># The datapoints schema is an anyof, so without these an experiment-type could be paired with</span>
+<span class="c1"># datapoints of another kind, or with an apparatus that cannot make that measurement.</span>
+<span class="n">experiment_datapoint_keys</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ignition delay&quot;</span><span class="p">:</span> <span class="s2">&quot;ignition-delay&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;laminar burning velocity measurement&quot;</span><span class="p">:</span> <span class="s2">&quot;laminar-burning-velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;speciation measurement&quot;</span><span class="p">:</span> <span class="s2">&quot;concentration-profiles&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">experiment_apparatus_kinds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ignition delay&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;shock tube&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rapid compression machine&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;laminar burning velocity measurement&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;counterflow twin flame&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;heat flux burner&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bunsen burner&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outwardly propagating spherical flame&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;speciation measurement&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;jet stirred reactor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow reactor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;burner stabilized flame&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;shock tube&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">}</span>
 
 <span class="c1"># SI units for available value-type properties</span>
 <span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span>
@@ -124,6 +186,20 @@
     <span class="s2">&quot;stroke&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
     <span class="s2">&quot;clearance&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
     <span class="s2">&quot;compression-ratio&quot;</span><span class="p">:</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;equivalence-ratio&quot;</span><span class="p">:</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;laminar-burning-velocity&quot;</span><span class="p">:</span> <span class="s2">&quot;meter / second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow-rate&quot;</span><span class="p">:</span> <span class="s2">&quot;kilogram / meter**2 / second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;residence-time&quot;</span><span class="p">:</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reactor-volume&quot;</span><span class="p">:</span> <span class="s2">&quot;meter**3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;volumetric-flow-in-reference-state&quot;</span><span class="p">:</span> <span class="s2">&quot;meter**3 / second&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;environment-temperature&quot;</span><span class="p">:</span> <span class="s2">&quot;kelvin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;global-heat-exchange-coefficient&quot;</span><span class="p">:</span> <span class="s2">&quot;watt / meter**2 / kelvin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;exchange-area&quot;</span><span class="p">:</span> <span class="s2">&quot;meter**2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reactor-length&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reactor-diameter&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pressure-in-reference-state&quot;</span><span class="p">:</span> <span class="s2">&quot;pascal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;temperature-in-reference-state&quot;</span><span class="p">:</span> <span class="s2">&quot;kelvin&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -212,6 +288,45 @@
 <a class="viewcode-back" href="../../validation.html#pyked.validation.OurValidator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OurValidator</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom validator with rules for Quantities and references.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_experiment</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that the datapoints and the apparatus match the stated experiment type.</span>
+
+<span class="sd">        The datapoints schema accepts any of the three kinds of datapoint, so on its own it cannot</span>
+<span class="sd">        tell that, say, ignition delay datapoints were filed under a speciation measurement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            isvalid_experiment (`bool`): flag from schema indicating the check is to be done</span>
+<span class="sd">            field (`str`): &#39;datapoints&#39;</span>
+<span class="sd">            value (`list`): the datapoints</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">experiment_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;experiment-type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">experiment_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">experiment_datapoint_keys</span><span class="p">:</span>
+            <span class="c1"># An unallowed experiment-type is reported by the allowed rule instead</span>
+            <span class="k">return</span>
+
+        <span class="n">required_key</span> <span class="o">=</span> <span class="n">experiment_datapoint_keys</span><span class="p">[</span><span class="n">experiment_type</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">datapoint</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datapoint</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">required_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">datapoint</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;datapoint </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> has no </span><span class="si">{</span><span class="n">required_key</span><span class="si">}</span><span class="s2">, which every &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">experiment_type</span><span class="si">}</span><span class="s2"> datapoint requires&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">apparatus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;apparatus&quot;</span><span class="p">)</span>
+        <span class="n">allowed_kinds</span> <span class="o">=</span> <span class="n">experiment_apparatus_kinds</span><span class="p">[</span><span class="n">experiment_type</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">apparatus</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">apparatus</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">allowed_kinds</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;a </span><span class="si">{</span><span class="n">experiment_type</span><span class="si">}</span><span class="s2"> cannot be measured in a </span><span class="si">{</span><span class="n">apparatus</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;allowed kinds are </span><span class="si">{</span><span class="n">allowed_kinds</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_t_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_t_range</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that the temperature ranges given for thermo data are valid</span>
@@ -316,6 +431,34 @@
         <span class="k">elif</span> <span class="n">n_cols</span> <span class="o">&lt;</span> <span class="n">max_cols</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;not enough columns in the values&quot;</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_speciation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_speciation</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that a speciation datapoint&#39;s profile rows are well formed.</span>
+
+<span class="sd">        Each concentration profile row must carry one value per declared</span>
+<span class="sd">        independent variable, followed by the measured amount, with an</span>
+<span class="sd">        optional trailing uncertainty.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_independent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;independent-variables&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="k">if</span> <span class="n">n_independent</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;at least one independent-variable is required&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;concentration-profiles&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">species</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;species-name&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">n_independent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_independent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                        <span class="n">field</span><span class="p">,</span>
+                        <span class="s2">&quot;concentration-profiles row for &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2"> must have </span><span class="si">{</span><span class="n">n_independent</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> or &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_independent</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2"> columns (</span><span class="si">{</span><span class="n">n_independent</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;independent-variable(s) + amount [+ uncertainty]); &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_quantity</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units.</span>
 
@@ -327,20 +470,134 @@
 <span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
 <span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">quantity</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_quantity</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">expected_units</span> <span class="o">=</span> <span class="n">property_units</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">expected_units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># No dimensional check is configured for this property. Zero is meaningful for the</span>
+            <span class="c1"># properties that land here, a composition amount above all, since a species can be</span>
+            <span class="c1"># measured as absent, so only a negative value is an error. `isvalid_composition`</span>
+            <span class="c1"># takes the same view of an amount.</span>
+            <span class="k">if</span> <span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;value must not be negative&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">expected_units</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">quantity</span> <span class="o">&lt;=</span> <span class="n">low_lim</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                     <span class="n">field</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;value must be greater than 0.0 </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;value must be greater than 0.0 </span><span class="si">{</span><span class="n">expected_units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
         <span class="k">except</span> <span class="n">pint</span><span class="o">.</span><span class="n">DimensionalityError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                 <span class="n">field</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">property_units</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;incompatible units; should be consistent with </span><span class="si">{</span><span class="n">expected_units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a value into a Pint quantity, reporting an error if it cannot be read.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (`str`): property the value belongs to, used in the error message</span>
+<span class="sd">            value (`str` or `float`): the value as written in the file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `~pint.Quantity`, or `None` if the value could not be read</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Q_</span><span class="p">(</span><span class="n">_normalize_unit_str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 - Pint raises several unrelated types for bad input</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> is not a value with units that can be understood&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_uncertainty_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check one uncertainty value against the kind of uncertainty it declares.</span>
+
+<span class="sd">        A relative uncertainty is a fraction of the quantity it describes, so it carries no units.</span>
+<span class="sd">        An absolute one is in the units of that quantity, and is checked against them.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (`str`): property the uncertainty describes</span>
+<span class="sd">            key (`str`): which uncertainty key is being checked, used in the error message</span>
+<span class="sd">            value (`str` or `float`): the uncertainty value</span>
+<span class="sd">            kind (`str`): ``relative`` or ``absolute``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">!=</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+            <span class="k">return</span>
+
+        <span class="n">quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_quantity</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;a relative </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is a fraction of the </span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2"> value, so it must be &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dimensionless; got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_uncertainty_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks that uncertainty metadata includes a value, not only labels.&quot;&quot;&quot;</span>
+        <span class="n">uncertainty_value_keys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;uncertainty&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">has_uncertainty_value</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">uncertainty_value_keys</span>
+        <span class="p">)</span>
+        <span class="n">has_evaluated_sd_value</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">has_uncertainty_value</span> <span class="ow">or</span> <span class="n">has_evaluated_sd_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
+            <span class="n">field</span><span class="p">,</span>
+            <span class="s2">&quot;uncertainty metadata must contain at least one uncertainty value &quot;</span>
+            <span class="s2">&quot;(uncertainty, upper-uncertainty, lower-uncertainty) or an &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;evaluated-standard-deviation value; got: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;empty dict&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_uncertainty_metadata_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">uncertainty_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the values contained in an uncertainty metadata mapping.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_uncertainty_metadata</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">uncertainty_dict</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">uncertainty_type</span> <span class="o">=</span> <span class="n">uncertainty_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty-type&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">,</span> <span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">,</span> <span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">uncertainty_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_uncertainty_value</span><span class="p">(</span>
+                    <span class="n">field</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">uncertainty_dict</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">uncertainty_type</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">uncertainty_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_uncertainty_value</span><span class="p">(</span>
+                <span class="n">field</span><span class="p">,</span>
+                <span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">,</span>
+                <span class="n">uncertainty_dict</span><span class="p">[</span><span class="s2">&quot;evaluated-standard-deviation&quot;</span><span class="p">],</span>
+                <span class="n">uncertainty_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;evaluated-standard-deviation-type&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_profile_uncertainty</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_profile_uncertainty</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate uncertainty metadata associated with a concentration profile.</span>
+
+<span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
+<span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_uncertainty_metadata_values</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_uncertainty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_uncertainty</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks for valid given value and appropriate units with uncertainty.</span>
@@ -356,18 +613,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
-        <span class="c1"># This len check is necessary for reasons that aren&#39;t quite clear to me</span>
-        <span class="c1"># Cerberus calls this validation method even when lists have only one element</span>
-        <span class="c1"># and should therefore be validated only by isvalid_quantity</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;uncertainty-type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">]])</span>
-
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;upper-uncertainty&quot;</span><span class="p">]])</span>
-
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_isvalid_quantity</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;lower-uncertainty&quot;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_uncertainty_metadata_values</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_isvalid_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isvalid_reference</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks valid reference metadata using DOI (if present).</span>
@@ -521,19 +768,29 @@
 <span class="sd">        The rule&#39;s arguments are validated against this schema:</span>
 <span class="sd">            {&#39;type&#39;: &#39;boolean&#39;}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">composition_kind</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span>
+        <span class="n">fraction_kinds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mass fraction&quot;</span><span class="p">,</span> <span class="s2">&quot;mole fraction&quot;</span><span class="p">]</span>
+        <span class="n">percent_kinds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mole percent&quot;</span><span class="p">]</span>
+        <span class="n">concentration_kinds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mol/cm3&quot;</span><span class="p">,</span> <span class="s2">&quot;mol/m3&quot;</span><span class="p">,</span> <span class="s2">&quot;mol/L&quot;</span><span class="p">,</span> <span class="s2">&quot;mol/dm3&quot;</span><span class="p">]</span>
+
         <span class="n">sum_amount</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mass fraction&quot;</span><span class="p">,</span> <span class="s2">&quot;mole fraction&quot;</span><span class="p">]:</span>
+        <span class="n">total_amount</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">composition_kind</span> <span class="ow">in</span> <span class="n">fraction_kinds</span><span class="p">:</span>
             <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">1.0</span>
-        <span class="k">elif</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mole percent&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">composition_kind</span> <span class="ow">in</span> <span class="n">percent_kinds</span><span class="p">:</span>
             <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">up_lim</span> <span class="o">=</span> <span class="mf">100.0</span>
             <span class="n">total_amount</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="k">elif</span> <span class="n">composition_kind</span> <span class="ow">in</span> <span class="n">concentration_kinds</span><span class="p">:</span>
+            <span class="n">low_lim</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">up_lim</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                 <span class="n">field</span><span class="p">,</span>
-                <span class="s1">&#39;composition kind must be &quot;mole percent&quot;, &quot;mass fraction&quot;, or &quot;mole fraction&quot;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;composition kind must be &quot;mole percent&quot;, &quot;mass fraction&quot;, &quot;mole fraction&quot;, &#39;</span>
+                <span class="s1">&#39;&quot;mol/cm3&quot;, &quot;mol/m3&quot;, &quot;mol/L&quot;, or &quot;mol/dm3&quot;&#39;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
@@ -545,20 +802,23 @@
             <span class="k">if</span> <span class="n">amount</span> <span class="o">&lt;</span> <span class="n">low_lim</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                     <span class="n">field</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">composition_kind</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;must be greater than </span><span class="si">{</span><span class="n">low_lim</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
-            <span class="k">elif</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="n">up_lim</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">up_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="n">up_lim</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                     <span class="n">field</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be less than </span><span class="si">{</span><span class="n">up_lim</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;species-name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">composition_kind</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;must be less than </span><span class="si">{</span><span class="n">up_lim</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
 
-        <span class="c1"># Make sure mole/mass fraction sum to 1</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">total_amount</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">):</span>
+        <span class="c1"># Make sure mole/mass fraction sum to 1, allowing for the round-off in published tables</span>
+        <span class="k">if</span> <span class="n">total_amount</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+            <span class="n">total_amount</span><span class="p">,</span> <span class="n">sum_amount</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">composition_sum_tolerance</span>
+        <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span>
                 <span class="n">field</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">s do not sum to </span><span class="si">{</span><span class="n">total_amount</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sum_amount</span><span class="si">:</span><span class="s2">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Species </span><span class="si">{</span><span class="n">composition_kind</span><span class="si">}</span><span class="s2">s do not sum to </span><span class="si">{</span><span class="n">total_amount</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sum_amount</span><span class="si">:</span><span class="s2">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="p">)</span></div>
 
         <span class="c1"># TODO: validate InChI, SMILES, or atomic-composition</span>

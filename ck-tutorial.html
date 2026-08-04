@@ -99,8 +99,10 @@ experiment is published)</p></li>
 is published is collected. This information typically includes:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>the type of experiment (for now, only autoignition experiments are supported)</p></li>
-<li><p>the type and location of the experimental apparatus (rapid compression machine or shock tube)</p></li>
+<li><p>the type of experiment (ignition delay, laminar burning velocity, etc.)</p></li>
+<li><p>the type and location of the experimental apparatus (e.g., shock tube, rapid compression
+machine, jet stirred reactor, flow reactor, or one of the other kinds listed in the
+<a class="reference internal" href="schema-docs.html#reference-apparatus"><span class="std std-ref">apparatus schema</span></a>)</p></li>
 <li><p>the article authors and the journal, DOI, volume, and issue where the data was published</p></li>
 <li><p>a note about where in the paper the data was collected from, if multiple data sets are
 presented in the same work</p></li>
@@ -526,7 +528,26 @@ and their ORCID) may also be added via the <code class="docutils literal notrans
 arguments in Python or the corresponding command-line options <code class="docutils literal notranslate"><span class="pre">-fa</span></code> and <code class="docutils literal notranslate"><span class="pre">-fo</span></code>. More
 details can be found via <code class="docutils literal notranslate"><span class="pre">respth2ck</span> <span class="pre">--help</span></code> or
 <code class="docutils literal notranslate"><span class="pre">help(pyked.converters.ReSpecTh_to_ChemKED)</span></code>, respectively.</p>
+<p>The converter reads both ReSpecTh 1.x and 2.x files, and handles all three ChemKED
+experiment types. ReSpecTh keeps four separate speciation experiment types
+(<code class="docutils literal notranslate"><span class="pre">concentration</span> <span class="pre">time</span> <span class="pre">profile</span> <span class="pre">measurement</span></code>, <code class="docutils literal notranslate"><span class="pre">outlet</span> <span class="pre">concentration</span> <span class="pre">measurement</span></code>,
+<code class="docutils literal notranslate"><span class="pre">jet</span> <span class="pre">stirred</span> <span class="pre">reactor</span> <span class="pre">measurement</span></code>, and <code class="docutils literal notranslate"><span class="pre">burner</span> <span class="pre">stabilized</span> <span class="pre">flame</span> <span class="pre">speciation</span>
+<span class="pre">measurement</span></code>); all four become <code class="docutils literal notranslate"><span class="pre">speciation</span> <span class="pre">measurement</span></code> in ChemKED.</p>
+<p>One case needs a human. ReSpecTh often records only the generic apparatus kind
+<code class="docutils literal notranslate"><span class="pre">flame</span></code>, leaving the burner to the <code class="docutils literal notranslate"><span class="pre">mode</span></code> elements. When those modes identify the
+configuration, for instance <code class="docutils literal notranslate"><span class="pre">OPF</span></code> or <code class="docutils literal notranslate"><span class="pre">HFM</span></code>, the converter maps them to the matching
+ChemKED apparatus kind. When they only say something like <code class="docutils literal notranslate"><span class="pre">premixed</span></code> and <code class="docutils literal notranslate"><span class="pre">laminar</span></code>,
+the apparatus is not in the file at all and the conversion stops rather than guess. Supply
+the kind from the article instead:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>respth2ck<span class="w"> </span>-i<span class="w"> </span>file.xml<span class="w"> </span>-o<span class="w"> </span>file.yaml<span class="w"> </span>-ak<span class="w"> </span><span class="s2">&quot;outwardly propagating spherical flame&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">,</span> <span class="n">apparatus_kind</span><span class="o">=</span><span class="s1">&#39;outwardly propagating spherical flame&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
+Writing ReSpecTh files is still limited to ignition delay data; a laminar burning
+velocity or speciation record raises <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a>.
 Given a ChemKED file <code class="docutils literal notranslate"><span class="pre">file.yaml</span></code>, a corresponding ReSpecTh file can be created
 from the command line via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ck2respth<span class="w"> </span>-i<span class="w"> </span>file.yaml<span class="w"> </span>-o<span class="w"> </span>file.xml

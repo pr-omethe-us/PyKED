@@ -46,21 +46,25 @@ in <a class="reference internal" href="ck-tutorial.html"><span class="doc">Creat
 discussed in the tutorial.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#meta-keys" id="id6">Meta Keys</a></p></li>
-<li><p><a class="reference internal" href="#reference-keys" id="id7">Reference Keys</a></p></li>
-<li><p><a class="reference internal" href="#common-property-keys" id="id8">Common Property Keys</a></p></li>
-<li><p><a class="reference internal" href="#ignition-delay-keys" id="id9">Ignition Delay Keys</a></p></li>
-<li><p><a class="reference internal" href="#rapid-compression-machine-data-keys" id="id10">Rapid Compression Machine Data Keys</a></p></li>
-<li><p><a class="reference internal" href="#schema-only-keys" id="id11">Schema-Only Keys</a></p></li>
+<li><p><a class="reference internal" href="#meta-keys" id="id7">Meta Keys</a></p></li>
+<li><p><a class="reference internal" href="#reference-keys" id="id8">Reference Keys</a></p></li>
+<li><p><a class="reference internal" href="#common-property-keys" id="id9">Common Property Keys</a></p></li>
+<li><p><a class="reference internal" href="#ignition-delay-keys" id="id10">Ignition Delay Keys</a></p></li>
+<li><p><a class="reference internal" href="#rapid-compression-machine-data-keys" id="id11">Rapid Compression Machine Data Keys</a></p></li>
+<li><p><a class="reference internal" href="#laminar-burning-velocity-measurement-keys" id="id12">Laminar Burning Velocity Measurement Keys</a></p></li>
+<li><p><a class="reference internal" href="#speciation-measurement-keys" id="id13">Speciation Measurement Keys</a></p></li>
+<li><p><a class="reference internal" href="#schema-only-keys" id="id14">Schema-Only Keys</a></p></li>
 </ul>
 </nav>
 <section id="meta-keys">
-<span id="id1"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Meta Keys</a><a class="headerlink" href="#meta-keys" title="Link to this heading">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Meta Keys</a><a class="headerlink" href="#meta-keys" title="Link to this heading">¶</a></h2>
 <p>The keys in this section encode the “meta” information about the ChemKED file. All of the keys in
 this section are required in every ChemKED file.</p>
 <ul class="simple" id="meta-chemked-version">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">chemked-version</span></code>: string, required</dt><dd><p>A string with the version of the ChemKED schema that this file targets.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">chemked-version</span></code>: string, required</dt><dd><p>A string with the version of the ChemKED schema that this file targets. Must be one of the
+versions listed under <code class="docutils literal notranslate"><span class="pre">chemked-version</span></code> in <code class="docutils literal notranslate"><span class="pre">chemked_schema.yaml</span></code>. Files written by the
+converters carry the version of the PyKED release that produced them.</p>
 </dd>
 </dl>
 </li>
@@ -90,9 +94,26 @@ work. Elements of the sequence must be mappings that conform to the
 </dl>
 </li>
 </ul>
+<ul class="simple" id="meta-comments">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">comments</span></code>: sequence, optional</dt><dd><p>Free-text notes about the file as a whole, one string per element. Converting a ReSpecTh file
+brings across each of its <code class="docutils literal notranslate"><span class="pre">comment</span></code> elements, which typically record how a quantity was
+derived or what the file author was unsure of.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="meta-method">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">method</span></code>: string, optional</dt><dd><p>Free text describing how the data were obtained or processed, when that does not belong to any
+single datapoint.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 <section id="reference-keys">
-<span id="id2"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Reference Keys</a><a class="headerlink" href="#reference-keys" title="Link to this heading">¶</a></h2>
+<span id="id2"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Reference Keys</a><a class="headerlink" href="#reference-keys" title="Link to this heading">¶</a></h2>
 <p>The keys in this section are related to the reference for the experiment, the article where the data
 is published, and the apparatus used to conduct the experiment. All the top-level keys in this
 section are required, although some of the sub-keys are optional.</p>
@@ -101,7 +122,7 @@ section are required, although some of the sub-keys are optional.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">apparatus</span></code>: mapping, required</dt><dd><p>This mapping provides information about the apparatus used to conduct the experiments. Fields:</p>
 <ul>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">kind</span></code>: string, required</dt><dd><p>Must be one of <code class="docutils literal notranslate"><span class="pre">shock</span> <span class="pre">tube</span></code> or <code class="docutils literal notranslate"><span class="pre">rapid</span> <span class="pre">compression</span> <span class="pre">machine</span></code>. Values are case-sensitive.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">kind</span></code>: string, required</dt><dd><p>Must be one of <code class="docutils literal notranslate"><span class="pre">shock</span> <span class="pre">tube</span></code>, <code class="docutils literal notranslate"><span class="pre">rapid</span> <span class="pre">compression</span> <span class="pre">machine</span></code>, <code class="docutils literal notranslate"><span class="pre">jet</span> <span class="pre">stirred</span> <span class="pre">reactor</span></code>, <code class="docutils literal notranslate"><span class="pre">flow</span> <span class="pre">reactor</span></code>, <code class="docutils literal notranslate"><span class="pre">burner</span> <span class="pre">stabilized</span> <span class="pre">flame</span></code>, <code class="docutils literal notranslate"><span class="pre">counterflow</span> <span class="pre">twin</span> <span class="pre">flame</span></code>, <code class="docutils literal notranslate"><span class="pre">heat</span> <span class="pre">flux</span> <span class="pre">burner</span></code>, <code class="docutils literal notranslate"><span class="pre">bunsen</span> <span class="pre">burner</span></code>, or <code class="docutils literal notranslate"><span class="pre">outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame</span></code>. Values are case-sensitive.</p>
 </dd>
 </dl>
 </li>
@@ -121,10 +142,31 @@ similar</p>
 </dl>
 </li>
 </ul>
-<ul class="simple" id="reference-experiment-type">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">experiment-type</span></code>: string, required</dt><dd><p>The type of experiment encoded in this file. Currently, the only allowed value is
-<code class="docutils literal notranslate"><span class="pre">ignition</span> <span class="pre">delay</span></code>, which is case sensitive.</p>
+<ul id="reference-experiment-type">
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">experiment-type</span></code>: string, required</dt><dd><p>The type of experiment encoded in this file. Must be one of the following case-sensitive
+values:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ignition</span> <span class="pre">delay</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">speciation</span> <span class="pre">measurement</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>The type is cross-checked against the rest of the file, because the datapoint schemas alone
+cannot tell one kind of datapoint from another. Every datapoint must carry the quantity its
+experiment type measures (<code class="docutils literal notranslate"><span class="pre">ignition-delay</span></code>, <code class="docutils literal notranslate"><span class="pre">laminar-burning-velocity</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">concentration-profiles</span></code>), and the <a class="reference internal" href="#reference-apparatus"><span class="std std-ref">apparatus</span></a> kind must be one
+the measurement can be made on:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ignition</span> <span class="pre">delay</span></code>: <code class="docutils literal notranslate"><span class="pre">shock</span> <span class="pre">tube</span></code>, <code class="docutils literal notranslate"><span class="pre">rapid</span> <span class="pre">compression</span> <span class="pre">machine</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement</span></code>: <code class="docutils literal notranslate"><span class="pre">counterflow</span> <span class="pre">twin</span> <span class="pre">flame</span></code>,
+<code class="docutils literal notranslate"><span class="pre">heat</span> <span class="pre">flux</span> <span class="pre">burner</span></code>, <code class="docutils literal notranslate"><span class="pre">bunsen</span> <span class="pre">burner</span></code>, <code class="docutils literal notranslate"><span class="pre">outwardly</span> <span class="pre">propagating</span> <span class="pre">spherical</span> <span class="pre">flame</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">speciation</span> <span class="pre">measurement</span></code>: <code class="docutils literal notranslate"><span class="pre">jet</span> <span class="pre">stirred</span> <span class="pre">reactor</span></code>, <code class="docutils literal notranslate"><span class="pre">flow</span> <span class="pre">reactor</span></code>,
+<code class="docutils literal notranslate"><span class="pre">burner</span> <span class="pre">stabilized</span> <span class="pre">flame</span></code>, <code class="docutils literal notranslate"><span class="pre">shock</span> <span class="pre">tube</span></code></p></li>
+</ul>
+</div></blockquote>
 </dd>
 </dl>
 </li>
@@ -179,11 +221,16 @@ located, that would go in the <code class="docutils literal notranslate"><span c
 </ul>
 </section>
 <section id="common-property-keys">
-<span id="id3"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Common Property Keys</a><a class="headerlink" href="#common-property-keys" title="Link to this heading">¶</a></h2>
+<span id="id3"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Common Property Keys</a><a class="headerlink" href="#common-property-keys" title="Link to this heading">¶</a></h2>
 <p>The keys in this section can be specified as sub-keys of the the <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> top-level
 key, and reused in many different data points within a single ChemKED file. All of the keys in the
 <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> section are optional, although some of their values may be required in a
 particular experiment type.</p>
+<p>Sharing common values across datapoints is done with YAML anchors and aliases: define the value
+once in <code class="docutils literal notranslate"><span class="pre">common-properties</span></code> with an anchor and reference it from each datapoint. Uncertainty
+and evaluated-standard-deviation metadata for a measured property must be attached to that
+property’s value in each datapoint; metadata without the corresponding property value is not
+allowed in <code class="docutils literal notranslate"><span class="pre">common-properties</span></code>.</p>
 <ul class="simple" id="common-pressure-rise">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">pressure-rise</span></code>: sequence, optional</dt><dd><p>Has the same format as <a class="reference internal" href="#ignition-pressure-rise"><span class="std std-ref">pressure-rise</span></a></p>
@@ -199,6 +246,14 @@ conform to <a class="reference internal" href="#schema-value-unit-optional"><spa
 </dl>
 </li>
 </ul>
+<ul class="simple" id="common-temperature">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">temperature</span></code>: sequence, optional</dt><dd><p>The temperature of the experiment, with dimensions of temperature. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
 <ul class="simple" id="common-ignition-type">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">ignition-type</span></code>: mapping, optional</dt><dd><p>Has the same schema as <a class="reference internal" href="#ignition-ignition-type"><span class="std std-ref">ignition-type</span></a></p>
@@ -206,19 +261,130 @@ conform to <a class="reference internal" href="#schema-value-unit-optional"><spa
 </dl>
 </li>
 </ul>
-<ul class="simple" id="common-composition">
+<ul class="simple" id="common-ignition-delay">
 <li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ignition-delay</span></code>: sequence, optional</dt><dd><p>The ignition delay measurement, with dimensions of time. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-equivalence-ratio">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>: sequence, optional</dt><dd><p>The equivalence ratio of the experiment, dimensionless. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-laminar-burning-velocity">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">laminar-burning-velocity</span></code>: sequence, optional</dt><dd><p>The laminar burning velocity measurement, with dimensions of length per time. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-residence-time">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">residence-time</span></code>: sequence, optional</dt><dd><p>The residence time in a flow or jet-stirred reactor experiment, with dimensions of time. Must
+conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-reactor-volume">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-volume</span></code>: sequence, optional</dt><dd><p>The volume of the reactor, with dimensions of length cubed. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-reactor-length">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-length</span></code>: sequence, optional</dt><dd><p>The length of the reactor, with dimensions of length. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-reactor-diameter">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-diameter</span></code>: sequence, optional</dt><dd><p>The diameter of the reactor, with dimensions of length. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-flow-rate">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">flow-rate</span></code>: sequence, optional</dt><dd><p>The flow rate through the reactor. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-environment-temperature">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">environment-temperature</span></code>: sequence, optional</dt><dd><p>The temperature of the environment surrounding the reactor, with dimensions of temperature.
+Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-global-heat-exchange-coefficient">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">global-heat-exchange-coefficient</span></code>: sequence, optional</dt><dd><p>The global heat exchange coefficient between the reactor and its environment. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-exchange-area">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">exchange-area</span></code>: sequence, optional</dt><dd><p>The heat exchange area between the reactor and its environment, with dimensions of length
+squared. Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-pressure-in-reference-state">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pressure-in-reference-state</span></code>: sequence, optional</dt><dd><p>The pressure used to define the reference state for reported quantities, with dimensions of
+mass per length per time squared. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="common-temperature-in-reference-state">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">temperature-in-reference-state</span></code>: sequence, optional</dt><dd><p>The temperature used to define the reference state for reported quantities, with dimensions of
+temperature. Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul id="common-composition">
+<li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">composition</span></code>: mapping, optional</dt><dd><p>This mapping provides the specification of the initial composition of the mixture. Fields:</p>
 <ul>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">kind</span></code>: string, required</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">kind</span></code> can be <code class="docutils literal notranslate"><span class="pre">mole</span> <span class="pre">fraction</span></code>, <code class="docutils literal notranslate"><span class="pre">mass</span> <span class="pre">fraction</span></code>, or <code class="docutils literal notranslate"><span class="pre">mole</span> <span class="pre">percent</span></code></p>
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">kind</span></code>: string, required</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">kind</span></code> can be <code class="docutils literal notranslate"><span class="pre">mole</span> <span class="pre">fraction</span></code>, <code class="docutils literal notranslate"><span class="pre">mass</span> <span class="pre">fraction</span></code>, <code class="docutils literal notranslate"><span class="pre">mole</span> <span class="pre">percent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mol/cm3</span></code>, <code class="docutils literal notranslate"><span class="pre">mol/m3</span></code>, <code class="docutils literal notranslate"><span class="pre">mol/L</span></code>, or <code class="docutils literal notranslate"><span class="pre">mol/dm3</span></code>. Fraction kinds must be
+nonnegative, no greater than 1, and sum to 1. <code class="docutils literal notranslate"><span class="pre">mole</span> <span class="pre">percent</span></code> values must be
+nonnegative, no greater than 100, and sum to 100. Concentration-style kinds must be
+nonnegative and are not required to sum to a fixed total.</p>
+<p>The sum is checked to a relative tolerance of 1e-3, so a composition reported to a few
+digits, summing to 0.9999 for instance, is accepted.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">species</span></code>: sequence, required</dt><dd><p>The elements of this sequence specify the species and their amounts in the mixture. Each
 element of the sequence is a mapping with the following keys:</p>
-<ul>
+<ul class="simple">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">species-name</span></code>: string, required</dt><dd><p>The name of the species</p>
 </dd>
@@ -254,9 +420,15 @@ element of the sequence is a mapping with the following keys:</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">amount</span></code>: sequence, required</dt><dd><p>A sequence representing the amount of the species. Must conform to either
+<dt><code class="docutils literal notranslate"><span class="pre">amount</span></code>: sequence, required</dt><dd><p>A sequence conforming to either
 <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> or
-<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>.</p>
+<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>, where the first
+element is a float representing the species amount (interpreted according to the
+parent <code class="docutils literal notranslate"><span class="pre">kind</span></code>, e.g., mole fraction, mass fraction, or concentration units). The
+optional metadata mapping may additionally include the
+<a class="reference internal" href="#schema-evaluated-standard-deviation"><span class="std std-ref">evaluated-standard-deviation</span></a> fields.
+Because species amounts are unitless numbers, all uncertainty and
+evaluated-standard-deviation values must be plain floats (not strings with units).</p>
 </dd>
 </dl>
 </li>
@@ -271,7 +443,7 @@ element of the sequence is a mapping with the following keys:</p>
 </ul>
 </section>
 <section id="ignition-delay-keys">
-<span id="id4"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Ignition Delay Keys</a><a class="headerlink" href="#ignition-delay-keys" title="Link to this heading">¶</a></h2>
+<span id="id4"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Ignition Delay Keys</a><a class="headerlink" href="#ignition-delay-keys" title="Link to this heading">¶</a></h2>
 <p>This section details the schema for an autoignition delay measurement. This is one of the options
 for the <a class="reference internal" href="#meta-datapoints"><span class="std std-ref">datapoints</span></a> schema.</p>
 <ul class="simple" id="ignition-temperature">
@@ -301,18 +473,11 @@ conform to <a class="reference internal" href="#schema-value-unit-required"><spa
 <li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">ignition-type</span></code>: mapping, required</dt><dd><p>A mapping describing how the ignition delay is defined in the experiments. Fields:</p>
 <ul>
-<li><dl>
-<dt><code class="docutils literal notranslate"><span class="pre">target</span></code>: string, required</dt><dd><p>Describes the target measurement to define ignition. Can be one of:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pressure</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OH*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CH*</span></code></p></li>
-</ul>
-</div></blockquote>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">target</span></code>: string, required</dt><dd><p>Describes the target measurement (species or physical quantity) used to define ignition.
+Must be one of: <code class="docutils literal notranslate"><span class="pre">temperature</span></code>, <code class="docutils literal notranslate"><span class="pre">pressure</span></code>, <code class="docutils literal notranslate"><span class="pre">OH</span></code>, <code class="docutils literal notranslate"><span class="pre">OH*</span></code>, <code class="docutils literal notranslate"><span class="pre">CH</span></code>, <code class="docutils literal notranslate"><span class="pre">CH*</span></code>, <code class="docutils literal notranslate"><span class="pre">NH3</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CO2</span></code>, <code class="docutils literal notranslate"><span class="pre">N2O</span></code>, <code class="docutils literal notranslate"><span class="pre">CH4</span></code>, <code class="docutils literal notranslate"><span class="pre">CO</span></code>, <code class="docutils literal notranslate"><span class="pre">H2O</span></code>, <code class="docutils literal notranslate"><span class="pre">C2</span></code>, <code class="docutils literal notranslate"><span class="pre">O</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CH3OH</span></code>, <code class="docutils literal notranslate"><span class="pre">CH3</span></code>, <code class="docutils literal notranslate"><span class="pre">O2</span></code>, <code class="docutils literal notranslate"><span class="pre">soot</span></code>.</p>
 </dd>
 </dl>
 </li>
@@ -321,12 +486,28 @@ conform to <a class="reference internal" href="#schema-value-unit-required"><spa
 <blockquote>
 <div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">d/dt</span> <span class="pre">max</span></code>: maximum of the time derivative of the <code class="docutils literal notranslate"><span class="pre">target</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d/dt</span> <span class="pre">min</span> <span class="pre">extrapolated</span></code>: minimum slope of the <code class="docutils literal notranslate"><span class="pre">target</span></code> extrapolated to the
+baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d/dt</span> <span class="pre">max</span> <span class="pre">extrapolated</span></code>: maximum slope of the <code class="docutils literal notranslate"><span class="pre">target</span></code> extrapolated to the
+baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d/dt</span> <span class="pre">second</span> <span class="pre">max</span></code>: second maximum of the time derivative of the <code class="docutils literal notranslate"><span class="pre">target</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">max</span></code>: maximum of the <code class="docutils literal notranslate"><span class="pre">target</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">1/2</span> <span class="pre">max</span></code>: half-maximum of the <code class="docutils literal notranslate"><span class="pre">target</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">min</span></code>: minimum of the <code class="docutils literal notranslate"><span class="pre">target</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">d/dt</span> <span class="pre">max</span> <span class="pre">extrapolated</span></code>: maximum slope of the target extrapolated to the baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">concentration</span></code>: the <code class="docutils literal notranslate"><span class="pre">target</span></code> reaches a specified concentration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">relative</span> <span class="pre">concentration</span></code>: the <code class="docutils literal notranslate"><span class="pre">target</span></code> reaches a specified fraction of a
+reference concentration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">relative</span> <span class="pre">increase</span></code>: the <code class="docutils literal notranslate"><span class="pre">target</span></code> increases by a specified amount relative to
+its initial value</p></li>
 </ul>
 </div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">amount</span></code>: float, optional</dt><dd><p>A numeric threshold associated with the ignition <code class="docutils literal notranslate"><span class="pre">type</span></code> (for example, the concentration
+or relative-increase value used when <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">concentration</span></code>, <code class="docutils literal notranslate"><span class="pre">relative</span>
+<span class="pre">concentration</span></code>, or <code class="docutils literal notranslate"><span class="pre">relative</span> <span class="pre">increase</span></code>).</p>
 </dd>
 </dl>
 </li>
@@ -361,7 +542,8 @@ Must conform to <a class="reference internal" href="#schema-value-unit-optional"
 </ul>
 <ul class="simple" id="ignition-equivalence-ratio">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>: float, optional</dt><dd><p>The equivalence ratio of the experiment, dimensionless. Minimum value is 0.0.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>: sequence, optional</dt><dd><p>The equivalence ratio of the experiment, dimensionless. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
 </dd>
 </dl>
 </li>
@@ -377,14 +559,41 @@ detailed in the <a class="reference internal" href="#rcm-data-keys"><span class=
 <ul class="simple" id="ignition-time-histories">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">time-histories</span></code>: sequence, optional</dt><dd><p>A sequence of mappings conforming to the <a class="reference internal" href="#ignition-time-history"><span class="std std-ref">time-history</span></a>
-schema. Used to specify a time-varying history of values during an experiment.</p>
+schema. Used to specify a time-varying history of one or more quantities during an experiment.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="ignition-volume-history">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">volume-history</span></code>: mapping, optional</dt><dd><p>A legacy key for specifying a volume time-history for RCM experiments. New files should use
+<a class="reference internal" href="#ignition-time-histories"><span class="std std-ref">time-histories</span></a> with <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">volume</span></code> instead. Fields:</p>
+<ul>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">volume</span></code>: mapping, required</dt><dd><p>Describes the volume column in the <code class="docutils literal notranslate"><span class="pre">values</span></code> array. Must contain <code class="docutils literal notranslate"><span class="pre">units</span></code> (string with
+dimensions of length cubed) and <code class="docutils literal notranslate"><span class="pre">column</span></code> (integer, 0 or 1).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code>: mapping, required</dt><dd><p>Describes the time column in the <code class="docutils literal notranslate"><span class="pre">values</span></code> array. Must contain <code class="docutils literal notranslate"><span class="pre">units</span></code> (string with
+dimensions of time) and <code class="docutils literal notranslate"><span class="pre">column</span></code> (integer, 0 or 1).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">values</span></code>: sequence, required</dt><dd><p>A sequence of <code class="docutils literal notranslate"><span class="pre">[time,</span> <span class="pre">volume]</span></code> pairs of floats.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd>
 </dl>
 </li>
 </ul>
 </section>
 <section id="rapid-compression-machine-data-keys">
-<span id="rcm-data-keys"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Rapid Compression Machine Data Keys</a><a class="headerlink" href="#rapid-compression-machine-data-keys" title="Link to this heading">¶</a></h2>
+<span id="rcm-data-keys"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Rapid Compression Machine Data Keys</a><a class="headerlink" href="#rapid-compression-machine-data-keys" title="Link to this heading">¶</a></h2>
 <p>This section details the keys specific to rapid compression machine (RCM) experiments, which are
 subkeys of the <a class="reference internal" href="#ignition-rcm-data"><span class="std std-ref">rcm-data</span></a> key.</p>
 <ul class="simple" id="rcm-data-compression-time">
@@ -439,8 +648,237 @@ compression, with dimensions of length. Must conform to
 </li>
 </ul>
 </section>
+<section id="laminar-burning-velocity-measurement-keys">
+<span id="laminar-burning-velocity-keys"></span><h2><a class="toc-backref" href="#id12" role="doc-backlink">Laminar Burning Velocity Measurement Keys</a><a class="headerlink" href="#laminar-burning-velocity-measurement-keys" title="Link to this heading">¶</a></h2>
+<p>This section details the schema for a laminar burning velocity measurement datapoint, selected
+when <a class="reference internal" href="#reference-experiment-type"><span class="std std-ref">experiment-type</span></a> is <code class="docutils literal notranslate"><span class="pre">laminar</span> <span class="pre">burning</span> <span class="pre">velocity</span> <span class="pre">measurement</span></code>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">temperature</span></code>: sequence, required</dt><dd><p>Unburnt-mixture temperature, with dimensions of temperature. Must conform to
+<a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pressure</span></code>: sequence, required</dt><dd><p>Unburnt-mixture pressure, with dimensions of mass per length per time squared. Must conform
+to <a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">laminar-burning-velocity</span></code>: sequence, required</dt><dd><p>The measured laminar burning velocity, with dimensions of length per time. Must conform to
+<a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">composition</span></code>: mapping, required</dt><dd><p>The composition of the unburnt mixture. Must conform to
+<a class="reference internal" href="#common-composition"><span class="std std-ref">composition</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pressure-rise</span></code>: sequence, optional</dt><dd><p>Rate of pressure rise during the measurement, with dimensions of inverse time. Must conform
+to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>: sequence, optional</dt><dd><p>The equivalence ratio of the experiment, dimensionless. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="speciation-measurement-keys">
+<span id="id5"></span><h2><a class="toc-backref" href="#id13" role="doc-backlink">Speciation Measurement Keys</a><a class="headerlink" href="#speciation-measurement-keys" title="Link to this heading">¶</a></h2>
+<p>This section details the schema for a speciation measurement datapoint, selected when
+<a class="reference internal" href="#reference-experiment-type"><span class="std std-ref">experiment-type</span></a> is <code class="docutils literal notranslate"><span class="pre">speciation</span> <span class="pre">measurement</span></code>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pressure</span></code>: sequence, required</dt><dd><p>The pressure of the experiment, with dimensions of mass per length per time squared. Must
+conform to <a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">temperature</span></code>: sequence, optional</dt><dd><p>The inlet, initial, or local temperature, with dimensions of temperature. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">composition</span></code>: mapping, optional</dt><dd><p>The inlet or initial composition. Must conform to
+<a class="reference internal" href="#common-composition"><span class="std std-ref">composition</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>: sequence, optional</dt><dd><p>The equivalence ratio of the experiment, dimensionless. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">environment-temperature</span></code>: sequence, optional</dt><dd><p>Temperature of the environment surrounding the reactor or burner. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">residence-time</span></code>: sequence, optional</dt><dd><p>Residence time in the reactor, with dimensions of time. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-volume</span></code>: sequence, optional</dt><dd><p>Reactor volume, with dimensions of length cubed. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-length</span></code>: sequence, optional</dt><dd><p>Reactor length, with dimensions of length. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">reactor-diameter</span></code>: sequence, optional</dt><dd><p>Reactor diameter, with dimensions of length. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">flow-rate</span></code>: sequence, optional</dt><dd><p>Flow rate through the reactor or burner. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">volumetric-flow-in-reference-state</span></code>: sequence, optional</dt><dd><p>Volumetric flow rate expressed in a defined reference state, with dimensions of length cubed
+per time. Must conform to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pressure-in-reference-state</span></code>: sequence, optional</dt><dd><p>Reference-state pressure for a volumetric flow measurement. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">temperature-in-reference-state</span></code>: sequence, optional</dt><dd><p>Reference-state temperature for a volumetric flow measurement. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">global-heat-exchange-coefficient</span></code>: sequence, optional</dt><dd><p>Global heat exchange coefficient, with dimensions of heat flux per temperature. Must conform
+to <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">exchange-area</span></code>: sequence, optional</dt><dd><p>Heat exchange area, with dimensions of area. Must conform to
+<a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">independent-variables</span></code>: sequence, required</dt><dd><p>A sequence of mappings describing the independent variable columns. Each element has the
+following fields:</p>
+<ul>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code>: string, required</dt><dd><p>Must be one of <code class="docutils literal notranslate"><span class="pre">temperature</span></code>, <code class="docutils literal notranslate"><span class="pre">residence-time</span></code>, <code class="docutils literal notranslate"><span class="pre">distance</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code>,
+<code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>, <code class="docutils literal notranslate"><span class="pre">initial-composition</span></code>, or <code class="docutils literal notranslate"><span class="pre">pressure</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">units</span></code>: string, required</dt><dd><p>Units for the independent variable values.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">primary</span></code>: boolean, optional</dt><dd><p>Indicates the primary swept variable.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">species-name</span></code>: string, optional</dt><dd><p>Identifies the swept inlet species when <code class="docutils literal notranslate"><span class="pre">name</span></code> is <code class="docutils literal notranslate"><span class="pre">initial-composition</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">InChI</span></code>: string, optional</dt><dd><p>The InChI string for the swept inlet species.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">SMILES</span></code>: string, optional</dt><dd><p>The SMILES string for the swept inlet species.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">concentration-profiles</span></code>: sequence, required</dt><dd><p>A sequence of mappings, each describing measured values for a single species. Each element
+has the following fields:</p>
+<ul>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">species-name</span></code>: string, required</dt><dd><p>The name of the measured species.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">InChI</span></code>: string, optional</dt><dd><p>The InChI string for the species.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">SMILES</span></code>: string, optional</dt><dd><p>The SMILES string for the species.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">quantity</span></code>: mapping, required</dt><dd><p>A mapping with a required <code class="docutils literal notranslate"><span class="pre">units</span></code> string describing the measured quantity.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">values</span></code>: sequence, required</dt><dd><p>A sequence of at least two rows. Each row contains one value for each
+<code class="docutils literal notranslate"><span class="pre">independent-variables</span></code> entry, followed by the measured amount, and optionally an
+uncertainty value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>: sequence, optional</dt><dd><p>Profile-level uncertainty or evaluated-standard-deviation information. The measured
+species values are stored separately in <code class="docutils literal notranslate"><span class="pre">values</span></code>. The sequence contains one mapping
+with the uncertainty and/or evaluated-standard-deviation fields described under
+<a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">auxiliary-profiles</span></code>: sequence, optional</dt><dd><p>A sequence of auxiliary measured profiles, such as temperature, pressure, volume, or
+velocity. Each profile includes an <code class="docutils literal notranslate"><span class="pre">independent</span></code> mapping, a <code class="docutils literal notranslate"><span class="pre">quantity</span></code> mapping, and
+<code class="docutils literal notranslate"><span class="pre">values</span></code> rows.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 <section id="schema-only-keys">
-<span id="id5"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Schema-Only Keys</a><a class="headerlink" href="#schema-only-keys" title="Link to this heading">¶</a></h2>
+<span id="id6"></span><h2><a class="toc-backref" href="#id14" role="doc-backlink">Schema-Only Keys</a><a class="headerlink" href="#schema-only-keys" title="Link to this heading">¶</a></h2>
 <p>The schema files contain several keys that are used purely as references within the schema and
 should not be used in actual ChemKED files. These keys are documented in this section.</p>
 <ul class="simple" id="schema-author">
@@ -462,47 +900,113 @@ should not be used in actual ChemKED files. These keys are documented in this se
 </dl>
 </li>
 </ul>
-<ul class="simple" id="schema-value-with-uncertainty">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">value-with-uncertainty</span></code>: sequence</dt><dd><p>A combination of a value and unit with uncertainty. Sequence elements:</p>
+<ul id="schema-value-with-uncertainty">
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">value-with-uncertainty</span></code>: sequence</dt><dd><p>A combination of a value and unit with an associated uncertainty and/or evaluated standard
+deviation. Sequence elements:</p>
 <ul>
 <li><dl class="simple">
-<dt>0: string, required</dt><dd><p>The first element of the sequence should be the value and its associated
-units. The units are validated to have appropriate dimensions for the particular quantity
-under consideration</p>
+<dt>0: string or float, required</dt><dd><p>The first element of the sequence is the value and its associated units (as a single
+string, e.g., <code class="docutils literal notranslate"><span class="pre">&quot;1000.0</span> <span class="pre">K&quot;</span></code>) or a bare float. The units are validated to have appropriate
+dimensions for the particular quantity under consideration.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
-<dt>1: mapping, optional</dt><dd><p>The second element of the sequence should be a mapping representing the uncertainty. Fields:</p>
+<li><dl>
+<dt>1: mapping, optional</dt><dd><p>The second element of the sequence is a mapping containing uncertainty and/or
+evaluated-standard-deviation metadata. Metadata labels such as <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code>,
+<code class="docutils literal notranslate"><span class="pre">uncertainty-sourcetype</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code>,
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-sourcetype</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-method</span></code> must be accompanied by an actual
+<code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code>/<code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code> value.</p>
 <ul>
+<li><p>Uncertainty fields:</p>
+<blockquote>
+<div><ul class="simple">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code>: string, required</dt><dd><p>The type of uncertainty. Options are <code class="docutils literal notranslate"><span class="pre">absolute</span></code> or <code class="docutils literal notranslate"><span class="pre">relative</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code>: string</dt><dd><p>The type of uncertainty. Must be <code class="docutils literal notranslate"><span class="pre">absolute</span></code> or <code class="docutils literal notranslate"><span class="pre">relative</span></code>. Required when
+<code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code>, or <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code> is specified.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code></dt><dd><p>The value of the uncertainty. If <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code> is <code class="docutils literal notranslate"><span class="pre">absolute</span></code>, must include
-units whose dimensions match the units of the value in the first element of the
-sequence.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>: string or float, excludes <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code>, requires <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code></dt><dd><p>The symmetric uncertainty of the value. If <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code> is <code class="docutils literal notranslate"><span class="pre">absolute</span></code>
+and a string is given, it must include units whose dimensions match the units of
+the value in the first element of the sequence.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code></dt><dd><p>The upper value of an asymmetrical uncertainty. Due to limitations in the Python
+<dt><code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code>: string or float, excludes <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code></dt><dd><p>The upper value of an asymmetrical uncertainty. Due to limitations in the Python
 library, asymmetrical uncertainties aren’t supported in PyKED, so the larger of
 <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code> is used.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code></dt><dd><p>The lower value of an asymmetrical uncertainty. Due to limitations in the Python
+<dt><code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code>: string or float, excludes <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, requires <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">uncertainty-type</span></code></dt><dd><p>The lower value of an asymmetrical uncertainty. Due to limitations in the Python
 library, asymmetrical uncertainties aren’t supported in PyKED, so the larger of
 <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code> and <code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code> is used.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uncertainty-sourcetype</span></code>: string, optional</dt><dd><p>A label describing how the <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code> value was obtained. Typical values
+include <code class="docutils literal notranslate"><span class="pre">reported</span></code>, <code class="docutils literal notranslate"><span class="pre">estimated</span></code>, <code class="docutils literal notranslate"><span class="pre">calculated</span></code>, and <code class="docutils literal notranslate"><span class="pre">digitized</span></code>. Must be
+accompanied by an uncertainty value.</p>
 </dd>
 </dl>
 </li>
 </ul>
+</div></blockquote>
+</li>
+</ul>
+<p>The mapping may also include the
+<a class="reference internal" href="#schema-evaluated-standard-deviation"><span class="std std-ref">evaluated-standard-deviation</span></a> fields, which
+may be combined with, or used independently of, the uncertainty fields above.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="schema-evaluated-standard-deviation">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code>: mapping fields</dt><dd><p>A group of optional fields describing a statistically evaluated standard deviation for a
+value (e.g., from a dataset-wide re-evaluation). These fields appear inside the metadata
+mapping of a <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> entry or a
+composition <a class="reference internal" href="#common-composition"><span class="std std-ref">amount</span></a> metadata mapping, and may be used with or
+without the uncertainty fields:</p>
+<ul>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code>: string or float, requires <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code></dt><dd><p>The evaluated standard deviation value. If <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code> is
+<code class="docutils literal notranslate"><span class="pre">absolute</span></code> for a unitful quantity, the value must include units whose dimensions match
+the quantity being described. Relative values and dimensionless absolute values may be
+plain floats.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code>: string, optional</dt><dd><p>Must be <code class="docutils literal notranslate"><span class="pre">absolute</span></code> or <code class="docutils literal notranslate"><span class="pre">relative</span></code>. Required whenever an
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code> value is given, and must be accompanied by one.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-sourcetype</span></code>: string, optional</dt><dd><p>A label describing how the evaluated standard deviation was obtained. Typical values
+include <code class="docutils literal notranslate"><span class="pre">reported</span></code>, <code class="docutils literal notranslate"><span class="pre">estimated</span></code>, <code class="docutils literal notranslate"><span class="pre">calculated</span></code>, and <code class="docutils literal notranslate"><span class="pre">digitized</span></code>. Must be
+accompanied by an <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code> value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-method</span></code>: string, optional</dt><dd><p>The method used to compute the evaluated standard deviation. Typical values include
+<code class="docutils literal notranslate"><span class="pre">generic</span> <span class="pre">uncertainty</span></code>, <code class="docutils literal notranslate"><span class="pre">combined</span> <span class="pre">from</span> <span class="pre">scatter</span> <span class="pre">and</span> <span class="pre">reported</span> <span class="pre">uncertainty</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">statistical</span> <span class="pre">scatter</span></code>. Must be accompanied by an <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code>
+value.</p>
 </dd>
 </dl>
 </li>
@@ -513,12 +1017,12 @@ library, asymmetrical uncertainties aren’t supported in PyKED, so the larger o
 </ul>
 <ul class="simple" id="schema-value-without-uncertainty">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">value-without-uncertainty</span></code>: sequence</dt><dd><p>A combination of a value and unit without uncertainty. Sequence elements:</p>
+<dt><code class="docutils literal notranslate"><span class="pre">value-without-uncertainty</span></code>: sequence</dt><dd><p>A combination of a value and unit without any uncertainty metadata. Sequence elements:</p>
 <ul>
 <li><dl class="simple">
-<dt>0: string, required</dt><dd><p>The first element of the sequence should be the value and its associated
-units. The units are validated to have appropriate dimensions for the particular quantity
-under consideration</p>
+<dt>0: string or float, required</dt><dd><p>The first element of the sequence is the value and its associated units (as a single
+string, e.g., <code class="docutils literal notranslate"><span class="pre">&quot;1.0</span> <span class="pre">atm&quot;</span></code>) or a bare float. The units are validated to have appropriate
+dimensions for the particular quantity under consideration.</p>
 </dd>
 </dl>
 </li>
@@ -538,9 +1042,10 @@ ChemKED file.</p>
 </ul>
 <ul class="simple" id="schema-value-unit-optional">
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">value-unit-optional</span></code>: sequence, optional</dt><dd><p>A sequence conforming to either <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a> or
-<a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>. May or may not be included
-in the ChemKED file.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">value-unit-optional</span></code>: sequence, optional</dt><dd><p>A sequence conforming to one of
+<a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a>
+or <a class="reference internal" href="#schema-value-without-uncertainty"><span class="std std-ref">value-without-uncertainty</span></a>. May or may not be
+included in the ChemKED file.</p>
 </dd>
 </dl>
 </li>
@@ -550,16 +1055,23 @@ in the ChemKED file.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">time-history</span></code>: mapping, optional</dt><dd><p>Specify the time history of a quantity during an experiment. Fields:</p>
 <ul>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">quantity</span></code>: mapping, required</dt><dd><p>A mapping describing the volume in the history. Fields:</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">units</span></code>: string, required</dt><dd><p>The units of the volume, with dimensions of length cubed</p>
+<dt><code class="docutils literal notranslate"><span class="pre">type</span></code>: string, required</dt><dd><p>The kind of quantity being recorded. Must be one of <code class="docutils literal notranslate"><span class="pre">volume</span></code>, <code class="docutils literal notranslate"><span class="pre">temperature</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pressure</span></code>, <code class="docutils literal notranslate"><span class="pre">piston</span> <span class="pre">position</span></code>, <code class="docutils literal notranslate"><span class="pre">light</span> <span class="pre">emission</span></code>, <code class="docutils literal notranslate"><span class="pre">OH</span> <span class="pre">emission</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">absorption</span></code>.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">column</span></code>: integer, required</dt><dd><p>The 0-based index of the column containing the volume information in the <code class="docutils literal notranslate"><span class="pre">values</span></code>
-array. Must be 0 or 1</p>
+<dt><code class="docutils literal notranslate"><span class="pre">quantity</span></code>: mapping, required</dt><dd><p>A mapping describing the recorded quantity. Fields:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">units</span></code>: string, required</dt><dd><p>The units of the quantity, with dimensions appropriate for <code class="docutils literal notranslate"><span class="pre">type</span></code> (e.g., length
+cubed for <code class="docutils literal notranslate"><span class="pre">volume</span></code>, temperature for <code class="docutils literal notranslate"><span class="pre">temperature</span></code>).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">column</span></code>: integer, required</dt><dd><p>The 0-based index of the column containing the quantity in the <code class="docutils literal notranslate"><span class="pre">values</span></code> array.</p>
 </dd>
 </dl>
 </li>
@@ -577,7 +1089,7 @@ array. Must be 0 or 1</p>
 </li>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">column</span></code>: integer, required</dt><dd><p>The 0-based index of the column containing the time information in the <code class="docutils literal notranslate"><span class="pre">values</span></code>
-array. Must be 0 or 1</p>
+array.</p>
 </dd>
 </dl>
 </li>
