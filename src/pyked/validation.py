@@ -397,7 +397,8 @@ class OurValidator(Validator):
 
         Each concentration profile row must carry one value per declared
         independent variable, followed by the measured amount, with an
-        optional trailing uncertainty.
+        optional trailing uncertainty. Amounts and auxiliary profile values are
+        also checked for physical possibility.
 
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
@@ -418,6 +419,70 @@ class OurValidator(Validator):
                         f"{n_independent + 2} columns ({n_independent} "
                         "independent-variable(s) + amount [+ uncertainty]); "
                         f"got {len(row)}",
+                    )
+                    continue
+
+                # Zero is meaningful here, since a species can be measured as
+                # absent, so only a negative amount is an error. This matches
+                # the view `isvalid_composition` and `isvalid_quantity` take of
+                # a composition amount.
+                amount = row[n_independent]
+                if isinstance(amount, (int, float)) and amount < 0:
+                    self._error(
+                        field,
+                        f"concentration-profiles amount for {species} must not "
+                        f"be negative; got {amount}",
+                    )
+
+        self._check_auxiliary_profile_values(field, value)
+
+    def _check_auxiliary_profile_values(self, field, value):
+        """Check that auxiliary profile values are physically possible.
+
+        A profile records a measured history, so its units are declared once in
+        the profile's ``quantity`` block rather than on each point. That puts
+        the points out of reach of ``isvalid_quantity``, which is what lets a
+        value such as a negative absolute temperature pass otherwise.
+
+        Args:
+            field (`str`): property the profiles belong to, used in the error
+            value (`dict`): the datapoint being validated
+        """
+        for profile in value.get("auxiliary-profiles", []):
+            profile_type = profile.get("type")
+            expected_units = property_units.get(profile_type)
+            if expected_units is None:
+                # No dimension is configured for this type, so there is no sign
+                # convention to enforce against it.
+                continue
+
+            unit_str = (profile.get("quantity") or {}).get("units")
+            if not unit_str:
+                continue
+
+            for row in profile.get("values", []):
+                if len(row) < 2 or not isinstance(row[1], (int, float)):
+                    continue
+
+                quantity = self._parse_quantity(field, f"{row[1]} {unit_str}")
+                if quantity is None:
+                    break
+                try:
+                    magnitude = quantity.to(expected_units).magnitude
+                except pint.DimensionalityError:
+                    self._error(
+                        field,
+                        f"auxiliary-profiles {profile_type} has incompatible "
+                        f"units; should be consistent with {expected_units}",
+                    )
+                    break
+
+                if magnitude <= 0:
+                    self._error(
+                        field,
+                        f"auxiliary-profiles {profile_type} value must be "
+                        f"greater than 0.0 {expected_units}; got "
+                        f"{row[1]} {unit_str}",
                     )
 
     def _validate_isvalid_quantity(self, isvalid_quantity, field, value):
