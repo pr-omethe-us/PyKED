@@ -584,7 +584,32 @@ class OurValidator(Validator):
             kind (`str`): ``relative`` or ``absolute``
         """
         if kind != "relative":
-            self._validate_isvalid_quantity(True, field, [value])
+            # Zero means no uncertainty was reported, not an impossible
+            # measurement, so it is accepted here even though the quantity it
+            # describes must itself be above zero. `isvalid_composition` takes
+            # the same view of a composition amount of exactly zero. Only a
+            # negative uncertainty is an error.
+            quantity = self._parse_quantity(field, value)
+            if quantity is None:
+                return
+
+            expected_units = property_units.get(field)
+            if expected_units is None:
+                if quantity.magnitude < 0:
+                    self._error(field, "uncertainty must not be negative")
+                return
+
+            try:
+                converted = quantity.to(expected_units)
+            except pint.DimensionalityError:
+                self._error(
+                    field,
+                    f"incompatible units; should be consistent with {expected_units}",
+                )
+                return
+
+            if converted.magnitude < 0:
+                self._error(field, "uncertainty must not be negative")
             return
 
         quantity = self._parse_quantity(field, value)
