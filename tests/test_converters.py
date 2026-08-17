@@ -17,6 +17,8 @@ from pyked.chemked import ChemKED
 
 # Local imports
 from pyked.converters import (
+    normalize_value,
+    value_with_units,
     KeywordError,
     MissingAttributeError,
     MissingElementError,
@@ -2474,3 +2476,35 @@ class TestConverterMain:
         with pytest.raises(KeywordError) as excinfo:
             main(["-i", str(file_path), "-o", "test.py"])
         assert "Input/output args need to be .xml/.yaml" in str(excinfo.value)
+
+
+class TestNormalizeValue:
+    """Numeric values are normalized without changing what the source stated."""
+
+    @pytest.mark.parametrize(
+        "text, expected",
+        [
+            ("0626", "626"),  # leading zero, which YAML would read as octal
+            ("09.45", "9.45"),
+            ("007", "7"),
+            ("-09.450", "-9.450"),
+            ("+07.5", "+7.5"),
+            ("0.5", "0.5"),  # lone leading zero is kept
+            ("0", "0"),
+            ("5.93+005", "5.93e+005"),  # Fortran exponent Pint cannot read
+        ],
+    )
+    def test_normalized(self, text, expected):
+        assert normalize_value(text) == expected
+
+    @pytest.mark.parametrize("text", ["14.70", "8.10", "1000", "0.000", "1.5e-3", "2.724"])
+    def test_significant_figures_preserved(self, text):
+        """A trailing zero is a significant figure and must survive."""
+        assert normalize_value(text) == text
+
+    @pytest.mark.parametrize("text", ["NaN", ".5", "inf", "not a number"])
+    def test_unparseable_passed_through(self, text):
+        assert normalize_value(text) == text
+
+    def test_used_by_value_with_units(self):
+        assert value_with_units("0626", "us") == "626 us"
