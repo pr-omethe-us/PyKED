@@ -1401,3 +1401,130 @@ class TestValidator:
         thermo["T_ranges"] = [200.0, "1000 K", 5000.0]
         properties["datapoints"][0]["composition"]["species"][0]["thermo"] = thermo
         assert not v.validate(properties)
+
+
+class TestSpeciationProfilePhysicality:
+    """Profile values are checked for physical possibility.
+
+    A profile declares its units once, in the ``quantity`` block, rather than on
+    each point, so its values never reach ``isvalid_quantity``. Without a check
+    of their own they can hold anything a float can hold, including a negative
+    absolute temperature.
+    """
+
+    SPECIATION_FIXTURE = Path("tests") / "data" / "respecth" / "speciation" / "x60200017.yaml"
+
+    @pytest.fixture(scope="function")
+    def properties(self):
+        with open(self.SPECIATION_FIXTURE, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        # Borrow a reference and authorship the API mocks already know, so these
+        # tests exercise the profile rules rather than the DOI/ORCID lookups.
+        with open(Path("tests") / "testfile_st.yaml", encoding="utf-8") as f:
+            mocked = yaml.safe_load(f)
+        properties["reference"] = mocked["reference"]
+        properties["file-authors"] = mocked["file-authors"]
+        return properties
+
+    def _errors(self, properties):
+        v.validate(properties)
+        return str(v.errors)
+
+    def test_fixture_is_valid(self, properties, mock_all_apis):
+        """The unmodified fixture validates, so later failures are the edit's doing."""
+        assert v.validate(properties), v.errors
+
+    def test_negative_auxiliary_temperature_rejected(self, properties, mock_all_apis):
+        """A negative absolute temperature cannot be measured."""
+        profile = properties["datapoints"][0]["auxiliary-profiles"][0]
+        assert profile["type"] == "temperature"
+        profile["values"][-1][1] = -1111.0
+
+        errors = self._errors(properties)
+        assert "auxiliary-profiles temperature value must be greater than 0.0 kelvin" in errors
+
+    def test_zero_auxiliary_temperature_rejected(self, properties, mock_all_apis):
+        """Absolute zero is unreachable, so it marks missing data too."""
+        properties["datapoints"][0]["auxiliary-profiles"][0]["values"][-1][1] = 0.0
+
+        errors = self._errors(properties)
+        assert "auxiliary-profiles temperature value must be greater than 0.0 kelvin" in errors
+
+    @pytest.mark.parametrize("sentinel", [-1.0, -9.9999e94, -9.9999e99, -9.9999e-99])
+    def test_negative_concentration_rejected(self, properties, sentinel, mock_all_apis):
+        """A concentration cannot be negative, whatever placeholder produced it."""
+        properties["datapoints"][0]["concentration-profiles"][0]["values"][0][1] = sentinel
+
+        errors = self._errors(properties)
+        assert "must not be negative" in errors
+
+    def test_zero_concentration_allowed(self, properties, mock_all_apis):
+        """Zero is meaningful: a species can be measured as absent."""
+        properties["datapoints"][0]["concentration-profiles"][0]["values"][0][1] = 0.0
+
+        assert v.validate(properties), v.errors
+
+    @pytest.mark.parametrize(
+        "value, unit, physical",
+        [
+            (-10.0, "degC", True),  # 263.15 K, an ordinary cold temperature
+            (25.0, "degC", True),  # 298.15 K, room temperature
+            (-10.0, "degF", True),  # 249.82 K
+            (-273.15, "degC", False),  # exactly 0 K, unattainable
+            (-300.0, "degC", False),  # below absolute zero
+            (-1111.0, "K", False),  # the sentinel seen in converted files
+        ],
+    )
+    def test_temperature_is_judged_on_the_absolute_scale(
+        self, properties, value, unit, physical, mock_all_apis
+    ):
+        """Celsius and Fahrenheit are interval scales, so a negative number is fine.
+
+        Only the temperature converted to kelvin has to be above zero, which is
+        what makes -10 degC acceptable while -1111 K is not.
+        """
+        profile = properties["datapoints"][0]["auxiliary-profiles"][0]
+        profile["quantity"]["units"] = unit
+        for row in profile["values"]:
+            row[1] = value
+
+        if physical:
+            assert v.validate(properties), v.errors
+        else:
+            assert "must be greater than 0.0 kelvin" in self._errors(properties)
+
+
+class TestScalarTemperatureScale:
+    """A scalar temperature is judged after conversion to the absolute scale.
+
+    Celsius and Fahrenheit are interval scales, so the sign of the value as
+    written carries no physical meaning on its own.
+    """
+
+    @pytest.mark.parametrize(
+        "temperature",
+        ["25 degC", "-10 degC", "-10 degF", "300 K", "1 K"],
+    )
+    def test_physical_temperatures_accepted(self, temperature):
+        """-10 degC is 263.15 K, an ordinary temperature, and must not be refused."""
+        assert v.validate({"datapoints": [{"temperature": [temperature]}]}, update=True), v.errors
+
+    @pytest.mark.parametrize(
+        "temperature",
+        ["-273.15 degC", "-300 degC", "-1111 K", "0 K", "-460 degF"],
+    )
+    def test_temperatures_at_or_below_absolute_zero_rejected(self, temperature):
+        """The third law puts a hard floor at 0 K, and 0 K itself is unattainable."""
+        v.validate({"datapoints": [{"temperature": [temperature]}]}, update=True)
+        assert "value must be greater than 0.0 kelvin" in str(v.errors)
+
+    def test_wrong_dimension_still_reported_as_such(self):
+        """A dimension error must not be reported as a sign error."""
+        v.validate({"datapoints": [{"temperature": ["5 meter"]}]}, update=True)
+        assert "incompatible units" in str(v.errors)
+
+    def test_unreadable_value_still_reported_as_such(self):
+        """The two-argument retry must not swallow genuinely bad input."""
+        v.validate({"datapoints": [{"temperature": ["not a temperature"]}]}, update=True)
+        assert "is not a value with units that can be understood" in str(v.errors)
