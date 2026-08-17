@@ -17,6 +17,7 @@ from pyked.chemked import ChemKED
 
 # Local imports
 from pyked.converters import (
+    normalize_doi,
     normalize_value,
     value_with_units,
     KeywordError,
@@ -2521,3 +2522,22 @@ class TestCrossrefTextIsUnescaped:
         reference = get_reference(root)
         assert reference["journal"] == "Energy & Fuels"
         assert reference["authors"][0]["name"] == "A&B Author"
+
+
+class TestNormalizeDoi:
+    """A DOI is the bare identifier; ReSpecTh sometimes writes a resolvable URL."""
+
+    @pytest.mark.parametrize(
+        "written, expected",
+        [
+            ("doi.org/10.1016/j.proci.2016.05.048", "10.1016/j.proci.2016.05.048"),
+            ("https://doi.org/10.1021/x", "10.1021/x"),
+            ("http://dx.doi.org/10.1/y", "10.1/y"),
+            ("doi:10.1/z", "10.1/z"),
+            ("DOI.ORG/10.1/upper", "10.1/upper"),
+            ("  10.1/spaced  ", "10.1/spaced"),
+            ("10.1016/already.bare", "10.1016/already.bare"),
+        ],
+    )
+    def test_prefix_stripped(self, written, expected):
+        assert normalize_doi(written) == expected

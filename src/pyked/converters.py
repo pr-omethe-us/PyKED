@@ -427,6 +427,23 @@ def get_reference_details(elem):
     return reference
 
 
+def normalize_doi(doi):
+    """Strip a resolver prefix from a DOI as ReSpecTh sometimes writes it.
+
+    A DOI is the bare `10.xxxx/...` identifier. Some ReSpecTh files give a
+    resolvable URL instead, as in `doi.org/10.1016/j.proci.2016.05.048`, which
+    no lookup accepts.
+
+    Args:
+        doi (`str`): DOI as written in the ReSpecTh file
+
+    Returns:
+        `str`: The bare DOI
+    """
+    doi = doi.strip()
+    return re.sub(r"^(?:doi:|(?:https?://)?(?:dx\.)?doi\.org/)", "", doi, flags=re.I)
+
+
 def get_reference(root):
     """Read reference info from root of ReSpecTh XML file.
 
@@ -443,13 +460,15 @@ def get_reference(root):
 
     # Try to get reference info via DOI, fall back on preferredKey if necessary.
     ref_doi = elem.get("doi", None)
+    if ref_doi is not None:
+        ref_doi = normalize_doi(ref_doi)
     ref_key = elem.get("preferredKey", None)
 
     # ReSpecTh 2.x keeps the same information in child elements
     if ref_doi is None:
         ref_doi = getattr(elem.find("referenceDOI"), "text", None)
         if ref_doi is not None:
-            ref_doi = ref_doi.strip() or None
+            ref_doi = normalize_doi(ref_doi) or None
     if ref_key is None:
         ref_key = getattr(elem.find("description"), "text", None)
         if ref_key is not None:
