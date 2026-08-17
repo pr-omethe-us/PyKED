@@ -1,5 +1,6 @@
 """Validation class for ChemKED schema."""
 
+import html
 import re
 from importlib import resources
 from warnings import warn
@@ -717,7 +718,9 @@ class OurValidator(Validator):
                 return
 
             # Assume that the reference returned by the DOI lookup always has a container-title
-            ref_container = ref.get("container-title")[0]
+            # CrossRef returns HTML-escaped text, and the converter unescapes it before
+            # writing, so unescape here too or the two never agree on "Energy & Fuels".
+            ref_container = html.unescape(ref.get("container-title")[0])
             # TODO: Add other container types: value.get('journal') or value.get('report') or ...
             # note that there's a type field in the ref that is journal-article, proceedings-article
             container = value.get("journal")
@@ -762,6 +765,8 @@ class OurValidator(Validator):
             authors = value["authors"][:]
             author_names = [a["name"] for a in authors]
             for author in ref["author"]:
+                author = {**author, "given": html.unescape(author.get("given", "")),
+                          "family": html.unescape(author.get("family", ""))}
                 # find using family name
                 author_match = next(
                     (

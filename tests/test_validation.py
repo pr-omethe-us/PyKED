@@ -1574,3 +1574,24 @@ class TestZeroUncertainty:
         validator = OurValidator(quant_schema)
         validator.validate({quantity: [f"0.0 {unit}"]})
         assert validator.errors[quantity][0] == f"value must be greater than 0.0 {unit}"
+
+
+class TestCrossrefComparisonUnescapes:
+    """The converter unescapes CrossRef text, so validation must compare likewise."""
+
+    def test_unescaped_journal_accepted(self, mock_crossref_api):
+        """`Energy & Fuels` is what the converter writes, and must validate."""
+        v.validate(
+            {
+                "reference": {
+                    "doi": "10.1021/mock.escaped",
+                    "journal": "Energy & Fuels",
+                    "year": 2015,
+                    "volume": 29,
+                    "pages": "1-2",
+                    "authors": [{"name": "A&B Author"}],
+                }
+            },
+            update=True,
+        )
+        assert not [e for e in str(v.errors).split(",") if "journal should be" in e]
