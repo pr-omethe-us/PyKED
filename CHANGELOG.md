@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - A temperature in an offset unit is parsed and validated correctly. `temperature: ['25 degC']` was rejected as unreadable, because Pint reads the string form `"25 degC"` as a multiplication and refuses that for an offset unit, and because the sign check compared the quantity against a zero in kelvin. Values are now built with Pint's two-argument form and converted to the absolute scale before the check, so -10 degC is accepted as 263.15 K while -1111 K and 0 K are still rejected
 - Numeric values are normalized on conversion by the new `normalize_value`: leading zeros are stripped, since YAML reads them as octal, and a Fortran-style exponent written without the `e` is expanded so Pint can read it. Trailing zeros are deliberately left alone, being significant figures. A page range no longer keeps spaces around its dash, so it reads `446-457` rather than `446 - 457`
 - Text taken from a CrossRef DOI lookup is HTML-unescaped, so a journal reaches the file as `Energy & Fuels` rather than `Energy &amp; Fuels`. Author names are unescaped the same way
+- A DOI written as a resolvable URL, such as `doi.org/10.1016/j.proci.2016.05.048`, is reduced to the bare identifier on conversion. Some ReSpecTh files write it that way and no DOI lookup accepts it
 
 ## [0.5.0] - 2026-07-02
 ### Added
