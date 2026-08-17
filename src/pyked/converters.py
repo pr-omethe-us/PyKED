@@ -247,6 +247,38 @@ def normalize_units(unit_str):
     return _normalize_unit_str(f"1.0 {unit_str.strip()}").split(" ", 1)[1]
 
 
+def normalize_value(value):
+    """Normalize a numeric value as written in ReSpecTh for use in ChemKED.
+
+    Expands Fortran-style exponents written without the ``e``, which Pint cannot
+    read, and strips leading zeros, which YAML would otherwise take for octal.
+
+    The digits the source reported are otherwise left alone. A trailing zero is a
+    significant figure, so reformatting through a float would turn a reported
+    ``14.70`` into ``14.7`` and record three significant figures where the
+    authors stated four.
+
+    Args:
+        value (`str`): Value as written in the ReSpecTh file
+
+    Returns:
+        `str`: The same value, normalized
+    """
+    text = str(value).strip()
+
+    # Fortran-style exponent written without the 'e': '5.93+005' -> '5.93e+005'
+    text = re.sub(r"^([+-]?\d+\.?\d*)([+-]\d+)$", r"\1e\2", text)
+
+    # Strip leading zeros from the integer part only, keeping the fraction and
+    # exponent exactly as written. Anything that is not a plain decimal, such as
+    # 'NaN' or '.5', is passed through untouched.
+    match = re.fullmatch(r"([+-]?)0*(\d+)(\.\d*)?([eE][+-]?\d+)?", text)
+    if match is None:
+        return text
+    sign, integer, fraction, exponent = match.groups()
+    return f"{sign}{integer}{fraction or ''}{exponent or ''}"
+
+
 def value_with_units(value, unit_str):
     """Build a ChemKED value-with-units string from ReSpecTh text.
 
@@ -257,7 +289,7 @@ def value_with_units(value, unit_str):
     Returns:
         `str`: Value and units joined in a form the ChemKED schema accepts
     """
-    return f"{value.strip()} {normalize_units(unit_str)}"
+    return f"{normalize_value(value)} {normalize_units(unit_str)}"
 
 
 def check_units(name, field, unit_str):
@@ -387,7 +419,9 @@ def get_reference_details(elem):
     pages = details.findtext("pages")
     if pages is not None:
         # ReSpecTh writes page ranges with en dashes or doubled hyphens; ChemKED uses one hyphen
-        reference["pages"] = re.sub(r"[-–—]+", "-", pages.strip())
+        # Collapse any spacing around the dash too, so a range reads "446-457"
+        # rather than "446 - 457".
+        reference["pages"] = re.sub(r"\s*[-–—]+\s*", "-", pages.strip())
 
     return reference
 

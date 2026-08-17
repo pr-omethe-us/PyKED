@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `composition_schema.yaml` now references the shared `uncertainty-metadata` definition instead of a hand-copied duplicate that had drifted to `type: float`, so a species amount accepts the same uncertainty forms as every other quantity. The definition is hoisted to its own top-level anchor in `value_unit_schema.yaml`
 - Composition units accept concentrations (`mol/cm3`, `mol/m3`, `mol/dm3`, `mol/L`), the misspelling `mole faction` found in part of the ReSpecTh corpus, and a mixture of mole percent and mole fraction, which is reconciled onto mole fraction
 - A temperature in an offset unit is parsed and validated correctly. `temperature: ['25 degC']` was rejected as unreadable, because Pint reads the string form `"25 degC"` as a multiplication and refuses that for an offset unit, and because the sign check compared the quantity against a zero in kelvin. Values are now built with Pint's two-argument form and converted to the absolute scale before the check, so -10 degC is accepted as 263.15 K while -1111 K and 0 K are still rejected
+- Numeric values are normalized on conversion by the new `normalize_value`: leading zeros are stripped, since YAML reads them as octal, and a Fortran-style exponent written without the `e` is expanded so Pint can read it. Trailing zeros are deliberately left alone, being significant figures. A page range no longer keeps spaces around its dash, so it reads `446-457` rather than `446 - 457`
 
 ## [0.5.0] - 2026-07-02
 ### Added
