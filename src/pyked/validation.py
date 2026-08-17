@@ -422,7 +422,7 @@ class OurValidator(Validator):
                     )
                     continue
 
-                # Zero is meaningful here, since a species can be measured as
+                # Zero is meaningful, since a species can be measured as
                 # absent, so only a negative amount is an error. This matches
                 # the view `isvalid_composition` and `isvalid_quantity` take of
                 # a composition amount.
@@ -464,16 +464,26 @@ class OurValidator(Validator):
                 if len(row) < 2 or not isinstance(row[1], (int, float)):
                     continue
 
-                quantity = self._parse_quantity(field, f"{row[1]} {unit_str}")
-                if quantity is None:
-                    break
+                # Build the quantity from value and unit separately. The string
+                # form "-10 degC" reads as a multiplication, which Pint refuses
+                # for an offset unit, so it would reject an ordinary Celsius
+                # temperature as unparseable. Converting to the absolute scale
+                # first is also what makes the sign test meaningful: -10 degC is
+                # 263.15 K and perfectly physical, while -1111 K is not.
                 try:
-                    magnitude = quantity.to(expected_units).magnitude
+                    magnitude = Q_(row[1], unit_str).to(expected_units).magnitude
                 except pint.DimensionalityError:
                     self._error(
                         field,
                         f"auxiliary-profiles {profile_type} has incompatible "
                         f"units; should be consistent with {expected_units}",
+                    )
+                    break
+                except Exception:  # noqa: BLE001 - Pint raises several types for bad units
+                    self._error(
+                        field,
+                        f"auxiliary-profiles {profile_type} has units "
+                        f"{unit_str!r} that cannot be understood",
                     )
                     break
 
@@ -514,18 +524,23 @@ class OurValidator(Validator):
                 self._error(field, "value must not be negative")
             return
 
-        low_lim = 0.0 * units(expected_units)
-
+        # Convert before comparing, rather than comparing against a zero of the
+        # expected units. Celsius and Fahrenheit are interval scales, so the
+        # sign of the value as written says nothing: -10 degC is 263.15 K and
+        # perfectly physical. Only the value on the absolute scale can be tested.
         try:
-            if quantity <= low_lim:
-                self._error(
-                    field,
-                    f"value must be greater than 0.0 {expected_units}",
-                )
+            converted = quantity.to(expected_units)
         except pint.DimensionalityError:
             self._error(
                 field,
                 f"incompatible units; should be consistent with {expected_units}",
+            )
+            return
+
+        if converted.magnitude <= 0:
+            self._error(
+                field,
+                f"value must be greater than 0.0 {expected_units}",
             )
 
     def _parse_quantity(self, field, value):
@@ -538,8 +553,20 @@ class OurValidator(Validator):
         Returns:
             `~pint.Quantity`, or `None` if the value could not be read
         """
+        normalized = _normalize_unit_str(value)
+
         try:
-            return Q_(_normalize_unit_str(value))
+            return Q_(normalized)
+        except Exception:  # noqa: BLE001 - Pint raises several unrelated types for bad input
+            pass
+
+        # Retry with the magnitude and the unit given separately. Pint reads a
+        # string such as "25 degC" as a multiplication and refuses that for an
+        # offset unit, so an ordinary Celsius or Fahrenheit temperature parses
+        # only in the two-argument form.
+        magnitude, _, unit_str = normalized.partition(" ")
+        try:
+            return Q_(float(magnitude), unit_str)
         except Exception:  # noqa: BLE001 - Pint raises several unrelated types for bad input
             self._error(field, f"{value!r} is not a value with units that can be understood")
             return None
