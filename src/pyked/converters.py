@@ -1,6 +1,7 @@
 """Module with converters from other formats."""
 
 # Standard libraries
+import html
 import re
 import xml.etree.ElementTree as etree
 from argparse import ArgumentParser
@@ -486,7 +487,9 @@ def get_reference(root):
             reference["doi"] = ref_doi
             # Now get elements of the reference data
             # Assume that the reference returned by the DOI lookup always has a container-title
-            reference["journal"] = ref.get("container-title")[0]
+            # CrossRef returns HTML-escaped text, so a journal such as
+            # "Energy &amp; Fuels" arrives with the entity intact.
+            reference["journal"] = html.unescape(ref.get("container-title")[0])
             ref_year = ref.get("published-print") or ref.get("published-online")
             reference["year"] = int(ref_year["date-parts"][0][0])
             reference["volume"] = int(ref.get("volume"))
@@ -494,7 +497,7 @@ def get_reference(root):
             reference["authors"] = []
             for author in ref["author"]:
                 auth = {}
-                auth["name"] = " ".join([author["given"], author["family"]])
+                auth["name"] = html.unescape(" ".join([author["given"], author["family"]]))
                 # Add ORCID if available
                 orcid = author.get("ORCID")
                 if orcid:
