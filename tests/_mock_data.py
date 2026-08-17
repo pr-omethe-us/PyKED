@@ -1,6 +1,14 @@
 """Shared mock data for Crossref and ORCID APIs used by conftest.py and test_live_api.py."""
 
 CROSSREF_RESPONSES = {
+    # Journal and author names as CrossRef actually returns them: HTML-escaped.
+    "10.1021/mock.escaped": {
+        "container-title": ["Energy &amp; Fuels"],
+        "published-print": {"date-parts": [[2015]]},
+        "volume": "29",
+        "page": "1-2",
+        "author": [{"given": "A&amp;B", "family": "Author"}],
+    },
     "10.1016/j.ijhydene.2007.04.008": {
         "container-title": ["International Journal of Hydrogen Energy"],
         "published-print": {"date-parts": [[2007]]},

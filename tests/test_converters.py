@@ -2508,3 +2508,16 @@ class TestNormalizeValue:
 
     def test_used_by_value_with_units(self):
         assert value_with_units("0626", "us") == "626 us"
+
+
+class TestCrossrefTextIsUnescaped:
+    """CrossRef returns HTML-escaped text, which must not reach the ChemKED file."""
+
+    def test_journal_and_author_unescaped(self, mock_crossref_api):
+        """`Energy &amp; Fuels` is not a journal name."""
+        root = etree.fromstring(
+            '<experiment><bibliographyLink doi="10.1021/mock.escaped"/></experiment>'
+        )
+        reference = get_reference(root)
+        assert reference["journal"] == "Energy & Fuels"
+        assert reference["authors"][0]["name"] == "A&B Author"
