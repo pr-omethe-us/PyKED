@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Round-trip tests asserting the converter reproduces each checked-in ReSpecTh/ChemKED fixture pair
 - `resolve_reference` maps an uncertainty that points at a column by its `label` or `id`, and one that references `initial composition`, onto the quantity it describes; both were silently dropped before
 - `0.5.0` added to the allowed `chemked-version` values, and a test asserting the current `__version__` is always among them, since `get_file_metadata` stamps it into every converted file
+- Physicality checks on speciation profile values: a `concentration-profiles` amount may not be negative, and an `auxiliary-profiles` temperature, pressure or volume must be above zero on its absolute scale. Profile values declare their units once in the `quantity` block rather than per point, so they never reached `isvalid_quantity` and could hold any float, including the -1111 K and -9.9999e+94 missing-data placeholders that ReSpecTh conversions carry through
 
 ### Changed
 - The `tubular reactor` apparatus kind is renamed `flow reactor`, the name ReSpecTh, the ChemKED database, and the speciation literature all use. `tubular reactor` is still accepted as converter input and maps to `flow reactor`
 - The mole and mass fraction sum check uses a relative tolerance of 1e-3 (`composition_sum_tolerance`) rather than the NumPy default of 1e-5, so compositions reported to a few digits are not rejected for round-off
 - An auxiliary profile against a `residence-time` axis is recorded with the axis name `time`, which `auxiliary-profiles.independent.name` allows, since a residence time is a time coordinate
+- An absolute uncertainty of exactly zero is accepted, meaning none was reported. The quantity it describes must still be above zero, but the uncertainty itself may be zero, the same view `isvalid_composition` takes of a composition amount of zero. Only a negative uncertainty is an error, reported as `uncertainty must not be negative`
 
 ### Fixed
 - A composition amount of exactly zero, meaning a species measured as absent, is accepted when it carries uncertainty metadata. It was accepted without metadata and rejected with it, and `isvalid_composition` already allowed it. Only a negative value is an error for a property with no configured units
@@ -34,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `ignitionType` is only required for ignition delay files
 - `composition_schema.yaml` now references the shared `uncertainty-metadata` definition instead of a hand-copied duplicate that had drifted to `type: float`, so a species amount accepts the same uncertainty forms as every other quantity. The definition is hoisted to its own top-level anchor in `value_unit_schema.yaml`
 - Composition units accept concentrations (`mol/cm3`, `mol/m3`, `mol/dm3`, `mol/L`), the misspelling `mole faction` found in part of the ReSpecTh corpus, and a mixture of mole percent and mole fraction, which is reconciled onto mole fraction
+- A temperature in an offset unit is parsed and validated correctly. `temperature: ['25 degC']` was rejected as unreadable, because Pint reads the string form `"25 degC"` as a multiplication and refuses that for an offset unit, and because the sign check compared the quantity against a zero in kelvin. Values are now built with Pint's two-argument form and converted to the absolute scale before the check, so -10 degC is accepted as 263.15 K while -1111 K and 0 K are still rejected
 
 ## [0.5.0] - 2026-07-02
 ### Added

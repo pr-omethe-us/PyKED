@@ -1172,7 +1172,7 @@ class TestValidator:
                 ]
             }
         )
-        assert v.errors[quantity][0] == f"value must be greater than 0.0 {unit}"
+        assert v.errors[quantity][0] == "uncertainty must not be negative"
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_dimensionality_error_sym_uncertainty(self, quantity, unit):
@@ -1259,7 +1259,7 @@ class TestValidator:
                 ]
             }
         )
-        assert v.errors[quantity][0] == f"value must be greater than 0.0 {unit}"
+        assert v.errors[quantity][0] == "uncertainty must not be negative"
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_dimensionality_error_asym_uncertainty(self, quantity, unit):
@@ -1528,3 +1528,49 @@ class TestScalarTemperatureScale:
         """The two-argument retry must not swallow genuinely bad input."""
         v.validate({"datapoints": [{"temperature": ["not a temperature"]}]}, update=True)
         assert "is not a value with units that can be understood" in str(v.errors)
+
+
+class TestZeroUncertainty:
+    """An absolute uncertainty of exactly zero means none was reported.
+
+    The quantity it describes must still be above zero, but the uncertainty
+    itself may be zero, the same view `isvalid_composition` takes of a
+    composition amount of exactly zero.
+    """
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_zero_absolute_uncertainty_accepted(self, quantity, unit):
+        """A reported uncertainty of 0 must not invalidate the measurement."""
+        quant_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(quant_schema)
+        assert validator.validate(
+            {
+                quantity: [
+                    f"999 {unit}",
+                    {"uncertainty-type": "absolute", "uncertainty": f"0.0 {unit}"},
+                ]
+            }
+        ), validator.errors
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_negative_absolute_uncertainty_still_rejected(self, quantity, unit):
+        """Relaxing zero must not let a negative uncertainty through."""
+        quant_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(quant_schema)
+        validator.validate(
+            {
+                quantity: [
+                    f"999 {unit}",
+                    {"uncertainty-type": "absolute", "uncertainty": f"-1 {unit}"},
+                ]
+            }
+        )
+        assert validator.errors[quantity][0] == "uncertainty must not be negative"
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_zero_value_still_rejected(self, quantity, unit):
+        """The measured quantity itself is unchanged: zero remains an error."""
+        quant_schema = {quantity: {"type": "list", "isvalid_quantity": True}}
+        validator = OurValidator(quant_schema)
+        validator.validate({quantity: [f"0.0 {unit}"]})
+        assert validator.errors[quantity][0] == f"value must be greater than 0.0 {unit}"
