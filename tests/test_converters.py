@@ -2268,6 +2268,221 @@ class TestSpeciationDatapoints:
             get_speciation_datapoints(root)
         assert "without composition columns cannot be a speciation datapoint" in str(excinfo.value)
 
+    def uncertainty_column(self, name="evaluated standard deviation", **attributes):
+        """An uncertainty column x3 about the H2 profile, absolute and in mole fraction."""
+        return {
+            "name": name,
+            "id": "x3",
+            "units": "mole fraction",
+            "reference": "composition",
+            "kind": "absolute",
+            "species": "H2",
+            **attributes,
+        }
+
+    def read_profile(self, column, profile_units="mole fraction", values=("0.01", "0.02")):
+        """Read the H2 profile of a dataGroup whose uncertainty column x3 holds ``values``."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": profile_units, "species": "H2"},
+                column,
+            ],
+            [
+                {"x1": "849", "x2": "0.1", "x3": values[0]},
+                {"x1": "899", "x2": "0.2", "x3": values[1]},
+            ],
+        )
+        return get_speciation_datapoints(root)[0]["concentration-profiles"][0]
+
+    def test_row_evaluated_standard_deviation(self):
+        """The profile says that its rows end with an evaluated standard deviation."""
+        profile = self.read_profile(
+            self.uncertainty_column(
+                sourcetype="estimated", method="combined from scatter and reported uncertainty"
+            )
+        )
+
+        assert [row[2] for row in profile["values"]] == [0.01, 0.02]
+        # Given without a value, the keys describe the last value of each row
+        assert profile["uncertainty"] == [
+            {
+                "evaluated-standard-deviation-type": "absolute",
+                "evaluated-standard-deviation-sourcetype": "estimated",
+                "evaluated-standard-deviation-method": "combined from scatter and reported "
+                "uncertainty",
+            }
+        ]
+
+    def test_row_uncertainty_with_sourcetype(self):
+        """The sourcetype of a row uncertainty is kept."""
+        profile = self.read_profile(
+            self.uncertainty_column("uncertainty", bound="plusminus", sourcetype="calculated")
+        )
+
+        assert profile["uncertainty"] == [
+            {"uncertainty-type": "absolute", "uncertainty-sourcetype": "calculated"}
+        ]
+
+    def test_plain_row_uncertainty(self):
+        """An absolute uncertainty with nothing more stated is what a row ends with by default."""
+        profile = self.read_profile(self.uncertainty_column("uncertainty", bound="plusminus"))
+
+        assert [row[2] for row in profile["values"]] == [0.01, 0.02]
+        assert "uncertainty" not in profile
+
+    @pytest.mark.filterwarnings("ignore:Assuming")
+    @pytest.mark.parametrize(
+        ("units", "profile_units", "expected"),
+        [
+            # A ppm profile is converted to mole fraction, and so is its uncertainty
+            ("ppm", "ppm", [1.0e-8, 2.0e-8]),
+            # An uncertainty may be in other units than its profile
+            ("mole fraction", "ppm", [0.01, 0.02]),
+            ("ppm", "mole fraction", [1.0e-8, 2.0e-8]),
+            ("mole fraction", "percent", [1.0, 2.0]),
+            ("percent", "mole fraction", [1.0e-4, 2.0e-4]),
+            # Without units of its own, it is in those of the profile
+            ("unitless", "ppm", [1.0e-8, 2.0e-8]),
+        ],
+    )
+    def test_row_uncertainty_in_other_units(self, units, profile_units, expected):
+        """An absolute uncertainty is converted to the units the profile is stated in."""
+        profile = self.read_profile(self.uncertainty_column(units=units), profile_units)
+
+        assert [row[2] for row in profile["values"]] == pytest.approx(expected)
+
+    @pytest.mark.filterwarnings("ignore:Assuming")
+    def test_relative_row_uncertainty(self):
+        """A relative uncertainty is a fraction of the amount, so it is not rescaled."""
+        column = self.uncertainty_column(
+            "uncertainty", units="unitless", kind="relative", bound="plusminus"
+        )
+
+        profile = self.read_profile(column, "ppm")
+
+        assert [row[2] for row in profile["values"]] == [0.01, 0.02]
+        assert profile["uncertainty"] == [{"uncertainty-type": "relative"}]
+
+    def test_constant_uncertainty_in_other_units(self):
+        """An uncertainty that describes the whole profile is converted to its units too."""
+        column = self.uncertainty_column("uncertainty", units="ppm", bound="plusminus")
+
+        profile = self.read_profile(column, values=("2", "2"))
+
+        assert len(profile["values"][0]) == 2
+        assert profile["uncertainty"][0]["uncertainty-type"] == "absolute"
+        assert profile["uncertainty"][0]["uncertainty"] == pytest.approx(2.0e-6)
+
+    def test_row_uncertainty_in_incompatible_units(self):
+        """A mole fraction cannot be stated as a concentration without the density."""
+        with pytest.raises(KeywordError, match="cannot be stated in the mol/cm3"):
+            self.read_profile(self.uncertainty_column(), "mol/cm3")
+
+    def test_varying_bound(self):
+        """A row ends with a symmetric uncertainty, so one bound cannot vary on its own."""
+        with pytest.raises(NotImplementedError, match="ends with a symmetric uncertainty"):
+            self.read_profile(self.uncertainty_column("uncertainty", bound="upper"))
+
+    def test_row_and_profile_uncertainty_of_one_kind(self):
+        """One kind of uncertainty cannot describe both the rows and the whole profile."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                self.uncertainty_column(sourcetype="estimated"),
+                dict(self.uncertainty_column(), id="x4"),
+            ],
+            [
+                {"x1": "849", "x2": "0.1", "x3": "0.01", "x4": "0.05"},
+                {"x1": "899", "x2": "0.2", "x3": "0.02", "x4": "0.05"},
+            ],
+        )
+
+        with pytest.raises(NotImplementedError, match="for each row and one for the whole"):
+            get_speciation_datapoints(root)
+
+    def test_common_uncertainty_of_the_row_kind(self):
+        """Nor can a common property give a value to the kind that describes the rows."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+                self.uncertainty_column(),
+            ],
+            [{"x1": "849", "x2": "0.1", "x3": "0.01"}, {"x1": "899", "x2": "0.2", "x3": "0.02"}],
+        )
+        common = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(
+            common,
+            "property",
+            attrib={
+                "name": "evaluated standard deviation",
+                "units": "mole fraction",
+                "reference": "composition",
+                "kind": "absolute",
+            },
+        )
+        etree.SubElement(prop, "value").text = "0.05"
+        properties = {"datapoints": get_speciation_datapoints(root), "common-properties": {}}
+
+        with pytest.raises(NotImplementedError, match="for each row and one for the whole"):
+            attach_value_metadata(properties, get_value_metadata(root))
+
+    def time_profile_root(self, datagroups=1):
+        """A file with ``datagroups`` time profiles of H2."""
+        columns = [
+            {"name": "time", "id": "x1", "units": "us"},
+            {"name": "composition", "id": "x2", "units": "mole fraction", "species": "H2"},
+        ]
+        rows = [{"x1": "0", "x2": "0.01"}, {"x1": "100", "x2": "0.005"}]
+        root = self.build_root(columns, rows)
+        for _ in range(datagroups - 1):
+            root.append(self.build_root(columns, rows).find("dataGroup"))
+        return root
+
+    def test_time_shift(self):
+        """The time shift of the file is given to every datapoint."""
+        root = self.time_profile_root(datagroups=2)
+        etree.SubElement(
+            root,
+            "timeshift",
+            attrib={"target": "H2", "type": "relative decrease", "amount": "0.21"},
+        )
+
+        datapoints = get_speciation_datapoints(root)
+
+        assert [datapoint["time-shift"] for datapoint in datapoints] == [
+            {"target": "H2", "type": "relative decrease", "amount": ["0.21"]},
+            {"target": "H2", "type": "relative decrease", "amount": ["0.21"]},
+        ]
+
+    def test_time_shift_without_amount(self):
+        """A half decrease or increase needs no amount."""
+        root = self.time_profile_root()
+        etree.SubElement(root, "timeshift", attrib={"target": "CO2", "type": "half increase"})
+
+        datapoint = get_speciation_datapoints(root)[0]
+
+        assert datapoint["time-shift"] == {"target": "CO2", "type": "half increase"}
+
+    def test_time_shift_without_type(self):
+        """A time shift names how the zero was placed."""
+        root = self.time_profile_root()
+        etree.SubElement(root, "timeshift", attrib={"target": "H2"})
+
+        with pytest.raises(MissingAttributeError, match="type of timeshift"):
+            get_speciation_datapoints(root)
+
+    def test_two_time_shifts(self):
+        """A datapoint has one time shift."""
+        root = self.time_profile_root()
+        for target in ["H2", "CO"]:
+            etree.SubElement(root, "timeshift", attrib={"target": target, "type": "half decrease"})
+
+        with pytest.raises(NotImplementedError, match="2 timeshift elements"):
+            get_speciation_datapoints(root)
+
 
 @pytest.mark.usefixtures("mock_crossref_api")
 class TestConvertReSpecTh:

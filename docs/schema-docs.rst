@@ -607,7 +607,8 @@ This section details the schema for a speciation measurement datapoint, selected
     - ``values``: sequence, required
         A sequence of at least two rows. Each row contains one value for each
         ``independent-variables`` entry, followed by the measured amount, and optionally an
-        uncertainty value.
+        uncertainty value. Unless ``uncertainty`` says otherwise, that last value is an
+        absolute uncertainty in the units of the profile.
 
     - ``uncertainty``: sequence, optional
         Profile-level uncertainty or evaluated-standard-deviation information. The measured
@@ -615,10 +616,31 @@ This section details the schema for a speciation measurement datapoint, selected
         with the uncertainty and/or evaluated-standard-deviation fields described under
         :ref:`value-with-uncertainty <schema-value-with-uncertainty>`.
 
+        The fields of one kind given without its value, such as
+        ``evaluated-standard-deviation-type``, ``-sourcetype`` and ``-method`` without
+        ``evaluated-standard-deviation``, say what the uncertainty value at the end of each row
+        is. The ``-type`` field is then required, and the rows must end with an uncertainty. The
+        other kind may still give a value for the whole profile:
+
+        .. code-block:: yaml
+
+            values:
+              - [798.0, 9.8e-4, 4.9e-5]
+            uncertainty:
+              - uncertainty-type: relative          # the whole profile
+                uncertainty: 0.1
+                evaluated-standard-deviation-type: absolute   # the last value of each row
+                evaluated-standard-deviation-sourcetype: estimated
+
 * ``auxiliary-profiles``: sequence, optional
     A sequence of auxiliary measured profiles, such as temperature, pressure, volume, or
     velocity. Each profile includes an ``independent`` mapping, a ``quantity`` mapping, and
     ``values`` rows.
+
+* ``time-shift``: mapping, optional
+    How the zero of a time axis was placed. ``target`` is the species, and ``type`` is one of
+    ``half decrease``, ``half increase``, or ``relative decrease``; a relative decrease gives
+    its ``amount`` as a :ref:`value-unit-optional <schema-value-unit-optional>` fraction.
 
 .. _schema-only-keys:
 
@@ -657,7 +679,8 @@ should not be used in actual ChemKED files. These keys are documented in this se
         ``evaluated-standard-deviation-sourcetype``, and
         ``evaluated-standard-deviation-method`` must be accompanied by an actual
         ``uncertainty``, ``upper-uncertainty``/``lower-uncertainty``, or
-        ``evaluated-standard-deviation`` value.
+        ``evaluated-standard-deviation`` value. Only in a concentration profile may they describe
+        the uncertainty at the end of each row instead.
 
         - Uncertainty fields:
 

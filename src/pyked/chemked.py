@@ -22,7 +22,7 @@ from .converters import (
 )
 
 # Local imports
-from .validation import Q_, OurValidator, _normalize_unit_str, schema, yaml
+from .validation import Q_, OurValidator, _normalize_unit_str, row_uncertainty_kinds, schema, yaml
 
 respecth_property_names = {field: name for name, field in common_property_fields.items()}
 """`dict`: ChemKED field name mapped to the ReSpecTh property name, the inverse of
@@ -128,9 +128,41 @@ def _metadata_items(metadata):
 
 
 row_uncertainty = {"name": "uncertainty", "kind": "absolute", "bound": "plusminus", "value": ""}
-"""`dict`: Descriptor of the uncertainty a ChemKED profile row may end with, which is an
-absolute uncertainty in the units of the profile. Its values are in the rows, so it has none of
-its own."""
+"""`dict`: Descriptor of the uncertainty a ChemKED profile row ends with when nothing says
+otherwise, which is an absolute uncertainty in the units of the profile. Its values are in the
+rows, so it has none of its own."""
+
+
+def _row_uncertainty(metadata):
+    """Describe the uncertainty at the end of each row of a profile for ReSpecTh.
+
+    The inverse of `~pyked.converters.format_row_uncertainty`: the profile's uncertainty metadata
+    says what the last value of a row is with the keys of one kind of uncertainty given without
+    a value (see `~pyked.validation.row_uncertainty_kinds`). Without such keys it is
+    `row_uncertainty`.
+
+    Args:
+        metadata (`dict`): The uncertainty metadata mapping of the profile, empty if it has none
+
+    Returns:
+        `dict`: Descriptor of the ReSpecTh uncertainty or evaluated standard deviation column
+    """
+    kinds = row_uncertainty_kinds(metadata)
+    if not kinds:
+        return row_uncertainty
+    if kinds[0] == "uncertainty":
+        return dict(
+            row_uncertainty,
+            kind=metadata.get("uncertainty-type"),
+            sourcetype=metadata.get("uncertainty-sourcetype"),
+        )
+    return {
+        "name": "evaluated standard deviation",
+        "kind": metadata.get("evaluated-standard-deviation-type"),
+        "sourcetype": metadata.get("evaluated-standard-deviation-sourcetype"),
+        "method": metadata.get("evaluated-standard-deviation-method"),
+        "value": "",
+    }
 
 
 def _metadata_value(item, units):
@@ -553,7 +585,7 @@ def _add_speciation_datagroup(
                 None,
                 profile["quantity"]["units"],
                 species=profile,
-                metadata=(row_uncertainty, "composition"),
+                metadata=(_row_uncertainty((profile.get("uncertainty") or [{}])[0]), "composition"),
             )
     for aux in auxiliary:
         if any(len(row) > 2 for row in aux["values"]):
@@ -1281,8 +1313,9 @@ class ChemKED:
 
         The inverse of `~pyked.converters.get_speciation_datapoints`: each datapoint becomes a
         dataGroup, with the independent variables, the concentration and auxiliary profiles, and
-        the per-row uncertainties as its columns. A per-row uncertainty is written as an absolute
-        uncertainty in the units of its profile, which is how a ChemKED row states it. Conditions
+        the per-row uncertainties as its columns. A per-row uncertainty is written as whatever its
+        profile's uncertainty metadata describes without a value, and otherwise as an absolute
+        uncertainty in the units of the profile, which is what a ChemKED row means by it. Conditions
         every datapoint shares, the initial composition, and the uncertainties that describe a
         whole profile or quantity become common properties.
 
