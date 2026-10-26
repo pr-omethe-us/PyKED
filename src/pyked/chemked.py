@@ -4,7 +4,7 @@
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as etree
 from copy import deepcopy
-from itertools import chain
+from itertools import chain, count
 from pathlib import Path
 from typing import Any, ClassVar, NamedTuple
 from warnings import warn
@@ -12,10 +12,587 @@ from warnings import warn
 import numpy as np
 import pint
 
-from .converters import ReSpecTh_to_ChemKED, datagroup_properties
+from .converters import (
+    ReSpecTh_to_ChemKED,
+    auxiliary_axes,
+    common_property_fields,
+    composition_units,
+    datagroup_properties,
+    independent_variables,
+)
 
 # Local imports
 from .validation import Q_, OurValidator, _normalize_unit_str, schema, yaml
+
+respecth_property_names = {field: name for name, field in common_property_fields.items()}
+"""`dict`: ChemKED field name mapped to the ReSpecTh property name, the inverse of
+`~pyked.converters.common_property_fields`"""
+
+respecth_axis_names = {axis: name for name, axis in independent_variables.items()}
+"""`dict`: Speciation independent-variable name mapped to the ReSpecTh dataGroup property name,
+the inverse of `~pyked.converters.independent_variables`"""
+
+respecth_speciation_apparatus = {
+    "jet stirred reactor": ("jet stirred reactor", []),
+    "flow reactor": ("flow reactor", []),
+    "shock tube": ("shock tube", []),
+    # ReSpecTh names a flame generically and the burner in a mode
+    "burner stabilized flame": ("flame", ["burner-stabilized"]),
+}
+"""`dict`: ChemKED ``apparatus.kind`` of a speciation measurement mapped to the ReSpecTh
+``apparatus/kind`` and ``apparatus/mode`` elements"""
+
+respecth_labels = {
+    "temperature": "T",
+    "pressure": "P",
+    "time": "t",
+    "residence time": "tau",
+    "distance": "x",
+    "volume": "V",
+    "equivalence ratio": "phi",
+}
+"""`dict`: ReSpecTh property name mapped to the column label ReSpecTh files give it"""
+
+concentration_kinds = {kind for kind, _, _ in composition_units.values() if "/" in kind}
+"""`set`: Composition kinds that are concentrations, which ReSpecTh names ``concentration``
+rather than ``composition``"""
+
+speciation_profile_keys = [
+    "independent-variables",
+    "concentration-profiles",
+    "auxiliary-profiles",
+    "time-shift",
+]
+"""`list`: Speciation datapoint fields that are written as dataGroup columns or elements of their
+own rather than as properties"""
+
+
+def _respecth_units(units):
+    """Spell units as ReSpecTh does, which writes a dimensionless quantity as ``unitless``."""
+    if units is None or units.strip() in ["", "dimensionless"]:
+        return "unitless"
+    return units.strip()
+
+
+def _split_value(value):
+    """Split a ChemKED value into the value text and the units ReSpecTh states it in.
+
+    The value text is kept as written, so its significant figures survive the conversion.
+    """
+    number, _, units = str(value).strip().partition(" ")
+    return number, _respecth_units(units)
+
+
+def _metadata_items(metadata):
+    """Turn ChemKED uncertainty metadata into ReSpecTh uncertainty descriptors.
+
+    The inverse of `~pyked.converters.format_value_metadata`: an uncertainty, each bound of an
+    asymmetric one, and an evaluated standard deviation each become a property of their own.
+
+    Args:
+        metadata (`dict`): The metadata mapping of a ChemKED quantity or profile
+
+    Returns:
+        `list`: One `dict` per ReSpecTh uncertainty or evaluated standard deviation property
+    """
+    items = []
+    bounds = {
+        "uncertainty": "plusminus",
+        "upper-uncertainty": "upper",
+        "lower-uncertainty": "lower",
+    }
+    for key, bound in bounds.items():
+        if key in metadata:
+            items.append(
+                {
+                    "name": "uncertainty",
+                    "kind": metadata.get("uncertainty-type"),
+                    "bound": bound,
+                    "sourcetype": metadata.get("uncertainty-sourcetype"),
+                    "value": metadata[key],
+                }
+            )
+
+    if "evaluated-standard-deviation" in metadata:
+        items.append(
+            {
+                "name": "evaluated standard deviation",
+                "kind": metadata.get("evaluated-standard-deviation-type"),
+                "sourcetype": metadata.get("evaluated-standard-deviation-sourcetype"),
+                "method": metadata.get("evaluated-standard-deviation-method"),
+                "value": metadata["evaluated-standard-deviation"],
+            }
+        )
+
+    return items
+
+
+row_uncertainty = {"name": "uncertainty", "kind": "absolute", "bound": "plusminus", "value": ""}
+"""`dict`: Descriptor of the uncertainty a ChemKED profile row may end with, which is an
+absolute uncertainty in the units of the profile. Its values are in the rows, so it has none of
+its own."""
+
+
+def _metadata_value(item, units):
+    """The value text of an uncertainty descriptor and the units ReSpecTh states it in.
+
+    Args:
+        item (`dict`): Descriptor from `_metadata_items`
+        units (`str`): Units of the quantity the uncertainty is about, which an absolute value
+            without units of its own is stated in
+
+    Returns:
+        `tuple`: The value text and its units
+    """
+    value, own_units = _split_value(item["value"])
+    if item["kind"] == "relative":
+        # A relative value is a fraction of the quantity
+        return value, "unitless"
+    if own_units == "unitless":
+        return value, _respecth_units(units)
+    return value, own_units
+
+
+def _set_metadata_attributes(prop, item, reference, units, column_id=None):
+    """Describe a ReSpecTh uncertainty property and return its value text.
+
+    Args:
+        prop (`~xml.etree.ElementTree.Element`): The ReSpecTh property to describe
+        item (`dict`): Descriptor from `_metadata_items`
+        reference (`str`): ReSpecTh name of the quantity the uncertainty is about
+        units (`str`): Units of that quantity
+        column_id (`str`, optional): The id of the property, when it is a dataGroup column
+
+    Returns:
+        `str`: The value text
+    """
+    value, units = _metadata_value(item, units)
+    prop.set("name", item["name"])
+    if column_id is not None:
+        prop.set("id", column_id)
+    prop.set("units", units)
+    prop.set("reference", reference)
+    for attribute in ["kind", "bound", "sourcetype", "method"]:
+        if item.get(attribute) is not None:
+            prop.set(attribute, item[attribute])
+
+    return value
+
+
+def _add_species_link(parent, species):
+    """Add a ReSpecTh speciesLink for a ChemKED species, profile, or swept inlet species."""
+    link = etree.SubElement(parent, "speciesLink")
+    link.set("preferredKey", species["species-name"])
+    for key in ["InChI", "SMILES"]:
+        if species.get(key) is not None:
+            link.set(key, species[key])
+
+
+def _add_metadata_property(parent, item, reference, units, species=None):
+    """Add an uncertainty that applies to every value of a quantity as a common property."""
+    prop = etree.SubElement(parent, "property")
+    value = _set_metadata_attributes(prop, item, reference, units)
+    if species is not None:
+        _add_species_link(prop, species)
+    etree.SubElement(prop, "value").text = value
+
+
+def _shared_value(values):
+    """The value every entry has, or `None` when they differ or the value is missing."""
+    if not values or values[0] is None:
+        return None
+    if all(value == values[0] for value in values):
+        return values[0]
+    return None
+
+
+def _speciation_experiment_type(apparatus_kind, datapoints):
+    """Pick the ReSpecTh experiment type for a ChemKED speciation measurement.
+
+    ReSpecTh keeps four speciation types where ChemKED has one. The apparatus says which, and for a
+    shock tube or flow reactor so does the swept axis: profiles against time are concentration
+    time profiles, while sweeps of temperature or residence time sample the outlet.
+
+    Args:
+        apparatus_kind (`str`): The ChemKED ``apparatus.kind``
+        datapoints (`list`): The ChemKED datapoints
+
+    Returns:
+        `str`: The ReSpecTh ``experimentType``
+
+    Raises:
+        `NotImplementedError`: If the apparatus has no ReSpecTh speciation type, or the datapoints
+            would need more than one
+    """
+    if apparatus_kind == "jet stirred reactor":
+        return "jet stirred reactor measurement"
+    if apparatus_kind == "burner stabilized flame":
+        return "burner stabilized flame speciation measurement"
+    if apparatus_kind not in ["shock tube", "flow reactor"]:
+        raise NotImplementedError(
+            f"ReSpecTh has no speciation measurement type for a {apparatus_kind}."
+        )
+
+    against_time = {dp["independent-variables"][0]["name"] == "time" for dp in datapoints}
+    if len(against_time) > 1:
+        raise NotImplementedError(
+            "ReSpecTh gives one experiment type per file, but some datapoints are profiles "
+            "against time and others are outlet concentrations."
+        )
+    if against_time.pop():
+        return "concentration time profile measurement"
+    return "outlet concentration measurement"
+
+
+def _respecth_bibliography(reference):
+    """Write a ChemKED reference as a ReSpecTh 2 ``bibliographyLink``.
+
+    The reference is stated in full in ``details``, which `~pyked.converters.get_reference_details`
+    reads back without a DOI look-up. Author names are written as ChemKED has them, given name
+    first, which BibTeX accepts as well as the family-name-first form.
+
+    Args:
+        reference (`Reference`): The ChemKED reference
+
+    Returns:
+        `~xml.etree.ElementTree.Element`: The ``bibliographyLink`` element
+    """
+    names = [author["name"] for author in reference.authors]
+    citation = ", ".join(names)
+    for part in [reference.journal, reference.volume, reference.pages, reference.year]:
+        if part is not None:
+            citation += f", {part}"
+    citation += "."
+    if reference.detail:
+        citation += f" {reference.detail}"
+
+    link = etree.Element("bibliographyLink")
+    etree.SubElement(link, "description").text = citation
+    if reference.doi is not None:
+        etree.SubElement(link, "referenceDOI").text = reference.doi
+
+    details = etree.SubElement(link, "details")
+    etree.SubElement(details, "author").text = " and ".join(names)
+    for field in ["journal", "pages", "volume", "year"]:
+        value = getattr(reference, field)
+        if value is not None:
+            etree.SubElement(details, field).text = str(value)
+
+    return link
+
+
+def _respecth_property_name(field):
+    """The ReSpecTh property name of a ChemKED condition.
+
+    Raises:
+        `NotImplementedError`: If ReSpecTh has no property for the condition
+    """
+    if field not in respecth_property_names:
+        raise NotImplementedError(f"ReSpecTh has no property for {field}.")
+    return respecth_property_names[field]
+
+
+def _speciation_common_properties(properties):
+    """The conditions of a speciation measurement that ReSpecTh can state once for the file.
+
+    ReSpecTh applies a common property to every dataGroup, so only a condition every datapoint
+    states with the same value can be common. The candidates are the file's own
+    common-properties, so that the file reads back the same, or what the first datapoint states
+    when the file has none.
+
+    Args:
+        properties (`dict`): The ChemKED file
+
+    Returns:
+        `dict`: ChemKED field mapped to the value every datapoint shares
+
+    Raises:
+        `NotImplementedError`: If the datapoints have different initial compositions
+    """
+    datapoints = properties["datapoints"]
+    candidates = properties.get("common-properties")
+    if candidates is None:
+        candidates = {
+            field: value
+            for field, value in datapoints[0].items()
+            if field not in speciation_profile_keys
+        }
+
+    common = {
+        field: value
+        for field, value in candidates.items()
+        if all(field in dp and dp[field] == value for dp in datapoints)
+    }
+    if "composition" not in common:
+        raise NotImplementedError(
+            "ReSpecTh states one initial composition for the whole file, but the datapoints "
+            "have different compositions."
+        )
+    return common
+
+
+def _datapoint_conditions(datapoint, common):
+    """The conditions a datapoint states with a value of its own rather than a common one."""
+    return [
+        field for field in datapoint if field not in common and field not in speciation_profile_keys
+    ]
+
+
+def _shared_uncertainties(datapoints, common):
+    """Find the uncertainties that ReSpecTh can state as common properties.
+
+    The converter attaches a common uncertainty about a species to every profile of that species,
+    and one about a condition to every datapoint that states the condition. Such an uncertainty
+    can therefore be common when every profile of the species, or every datapoint stating the
+    condition, carries the same one.
+
+    Args:
+        datapoints (`list`): The ChemKED datapoints
+        common (`dict`): The common conditions, from `_speciation_common_properties`
+
+    Returns:
+        `tuple`: Species name mapped to a profile of it and the uncertainty mapping they share,
+        and ChemKED field mapped to the uncertainty mapping the datapoints share
+    """
+    profiles: dict[str, list] = {}
+    conditions: dict[str, list] = {}
+    for dp in datapoints:
+        for profile in dp["concentration-profiles"]:
+            profiles.setdefault(profile["species-name"], []).append(profile)
+        for field in _datapoint_conditions(dp, common):
+            conditions.setdefault(field, []).append(dp[field][1] if len(dp[field]) > 1 else None)
+
+    shared_profiles = {}
+    for species, found in profiles.items():
+        # The units are shared too, as an absolute uncertainty is stated in them
+        shared = _shared_value([(p["quantity"]["units"], p.get("uncertainty")) for p in found])
+        if shared is not None and shared[1] is not None:
+            shared_profiles[species] = (found[0], shared[1][0])
+
+    shared_conditions = {}
+    for field, found in conditions.items():
+        shared = _shared_value(found)
+        if shared is not None:
+            shared_conditions[field] = shared
+
+    return shared_profiles, shared_conditions
+
+
+def _add_speciation_common_properties(root, datapoints, common, shared_profiles, shared_conditions):
+    """Write the common properties of a speciation measurement.
+
+    The uncertainties follow the values they describe, as in ReSpecTh files, and each names the
+    quantity it is about: an amount in the inlet mixture is referred to as the ``initial
+    composition`` and a measured profile as the ``composition``, with the species linked.
+
+    Args:
+        root (`~xml.etree.ElementTree.Element`): The ReSpecTh ``experiment`` element
+        datapoints (`list`): The ChemKED datapoints
+        common (`dict`): The common conditions, from `_speciation_common_properties`
+        shared_profiles (`dict`): Profile uncertainties to state once, from `_shared_uncertainties`
+        shared_conditions (`dict`): Condition uncertainties to state once, likewise
+    """
+    common_properties = etree.SubElement(root, "commonProperties")
+
+    # (reference, units of the quantity, species, descriptor) of each uncertainty
+    metadata = []
+    for field, value in common.items():
+        prop = etree.SubElement(common_properties, "property")
+        if field == "composition":
+            prop.set("name", "initial composition")
+            for species in value["species"]:
+                component = etree.SubElement(prop, "component")
+                _add_species_link(component, species)
+                amount = etree.SubElement(component, "amount")
+                amount.set("units", value["kind"])
+                amount.text = str(species["amount"][0])
+                if len(species["amount"]) > 1:
+                    metadata.extend(
+                        ("initial composition", value["kind"], species, item)
+                        for item in _metadata_items(species["amount"][1])
+                    )
+            continue
+
+        name = _respecth_property_name(field)
+        number, units = _split_value(value[0])
+        prop.set("name", name)
+        if name in respecth_labels:
+            prop.set("label", respecth_labels[name])
+        prop.set("units", units)
+        etree.SubElement(prop, "value").text = number
+        if len(value) > 1:
+            metadata.extend((name, units, None, item) for item in _metadata_items(value[1]))
+
+    for profile, uncertainty in shared_profiles.values():
+        metadata.extend(
+            ("composition", profile["quantity"]["units"], profile, item)
+            for item in _metadata_items(uncertainty)
+        )
+
+    for field, uncertainty in shared_conditions.items():
+        value = next(dp[field] for dp in datapoints if field in dp)
+        metadata.extend(
+            (_respecth_property_name(field), _split_value(value[0])[1], None, item)
+            for item in _metadata_items(uncertainty)
+        )
+
+    for reference, units, species, item in metadata:
+        _add_metadata_property(common_properties, item, reference, units, species)
+
+
+def _add_speciation_datagroup(
+    root, datapoint, datagroup_id, column_ids, common, shared_profiles, shared_conditions
+):
+    """Write a speciation datapoint as a ReSpecTh dataGroup.
+
+    The columns are, in order, the independent variables with the swept axis first, one column
+    per concentration profile, any condition the datapoint states with a value of its own, the
+    auxiliary profiles, and then the uncertainties. That is the order in which
+    `~pyked.converters.get_speciation_datapoints` tells the columns apart. An uncertainty that
+    could not be common is written as a column with one repeated value, which describes the whole
+    profile.
+
+    Args:
+        root (`~xml.etree.ElementTree.Element`): The ReSpecTh ``experiment`` element
+        datapoint (`dict`): The ChemKED datapoint
+        datagroup_id (`str`): The id of the dataGroup
+        column_ids (`~collections.abc.Iterator`): Column numbers, which ReSpecTh counts across the
+            whole file
+        common (`dict`): The common conditions, from `_speciation_common_properties`
+        shared_profiles (`dict`): Profile uncertainties stated once, from `_shared_uncertainties`
+        shared_conditions (`dict`): Condition uncertainties stated once, likewise
+
+    Raises:
+        `NotImplementedError`: If the concentration and auxiliary profiles are not all sampled at
+            the same points
+    """
+    axes = datapoint["independent-variables"]
+    n_axes = len(axes)
+    profiles = datapoint["concentration-profiles"]
+    auxiliary = datapoint.get("auxiliary-profiles", [])
+
+    grid = [row[:n_axes] for row in profiles[0]["values"]]
+    for profile in profiles[1:]:
+        if [row[:n_axes] for row in profile["values"]] != grid:
+            raise NotImplementedError(
+                f"The profile of {profile['species-name']} is sampled at other points than that "
+                f"of {profiles[0]['species-name']}, but a ReSpecTh dataGroup holds every profile "
+                "on one set of rows."
+            )
+    for aux in auxiliary:
+        if (
+            aux["independent"]["name"] != auxiliary_axes.get(axes[0]["name"])
+            or aux["independent"]["units"] != axes[0]["units"]
+            or [row[0] for row in aux["values"]] != [point[0] for point in grid]
+        ):
+            raise NotImplementedError(
+                f"The auxiliary {aux['type']} profile is not sampled at the points of the "
+                "concentration profiles, but a ReSpecTh dataGroup holds both on one set of rows."
+            )
+
+    datagroup = etree.SubElement(root, "dataGroup")
+    datagroup.set("id", datagroup_id)
+    columns = []
+
+    def add_column(values, name, units, species=None, metadata=None):
+        """Declare a column whose text in each row is in ``values``, `None` where it is blank.
+
+        An uncertainty column is described by ``metadata``, its descriptor and the name of the
+        quantity it is about, instead of by ``name``.
+        """
+        prop = etree.SubElement(datagroup, "property")
+        column_id = f"x{next(column_ids)}"
+        if metadata is not None:
+            item, reference = metadata
+            _set_metadata_attributes(prop, item, reference, units, column_id)
+        else:
+            prop.set("name", name)
+            prop.set("id", column_id)
+            if species is not None:
+                prop.set("label", f"[{species['species-name']}]")
+            elif name in respecth_labels:
+                prop.set("label", respecth_labels[name])
+            prop.set("units", _respecth_units(units))
+        if species is not None:
+            _add_species_link(prop, species)
+        columns.append((column_id, values))
+
+    for idx, axis in enumerate(axes):
+        add_column(
+            [str(point[idx]) for point in grid],
+            respecth_axis_names[axis["name"]],
+            axis["units"],
+            species=axis if "species-name" in axis else None,
+        )
+
+    for profile in profiles:
+        units = profile["quantity"]["units"]
+        add_column(
+            [str(row[n_axes]) for row in profile["values"]],
+            "concentration" if units in concentration_kinds else "composition",
+            units,
+            species=profile,
+        )
+
+    conditions = _datapoint_conditions(datapoint, common)
+    for field in conditions:
+        number, units = _split_value(datapoint[field][0])
+        add_column([number] * len(grid), _respecth_property_name(field), units)
+
+    for aux in auxiliary:
+        add_column([str(row[1]) for row in aux["values"]], aux["type"], aux["quantity"]["units"])
+
+    # A row may end with the uncertainty of its value
+    for profile in profiles:
+        if any(len(row) > n_axes + 1 for row in profile["values"]):
+            add_column(
+                [
+                    str(row[n_axes + 1]) if len(row) > n_axes + 1 else None
+                    for row in profile["values"]
+                ],
+                None,
+                profile["quantity"]["units"],
+                species=profile,
+                metadata=(row_uncertainty, "composition"),
+            )
+    for aux in auxiliary:
+        if any(len(row) > 2 for row in aux["values"]):
+            add_column(
+                [str(row[2]) if len(row) > 2 else None for row in aux["values"]],
+                None,
+                aux["quantity"]["units"],
+                metadata=(row_uncertainty, aux["type"]),
+            )
+
+    for profile in profiles:
+        if profile["species-name"] in shared_profiles or "uncertainty" not in profile:
+            continue
+        units = profile["quantity"]["units"]
+        for item in _metadata_items(profile["uncertainty"][0]):
+            add_column(
+                [_metadata_value(item, units)[0]] * len(grid),
+                None,
+                units,
+                species=profile,
+                metadata=(item, "composition"),
+            )
+    for field in conditions:
+        if field in shared_conditions or len(datapoint[field]) < 2:
+            continue
+        units = _split_value(datapoint[field][0])[1]
+        for item in _metadata_items(datapoint[field][1]):
+            add_column(
+                [_metadata_value(item, units)[0]] * len(grid),
+                None,
+                units,
+                metadata=(item, _respecth_property_name(field)),
+            )
+
+    for row in range(len(grid)):
+        point = etree.SubElement(datagroup, "dataPoint")
+        for column_id, values in columns:
+            if values[row] is not None:
+                etree.SubElement(point, column_id).text = values[row]
 
 
 class VolumeHistory(NamedTuple):
@@ -422,6 +999,10 @@ class ChemKED:
         ReSpecTh XML file. Note that some information may be lost, as ChemKED stores
         some additional attributes.
 
+        Ignition delay and speciation measurement files can be converted. A speciation
+        measurement is written as whichever of the four ReSpecTh speciation types fits its
+        apparatus and swept axis; see `_speciation_to_ReSpecTh`.
+
         Arguments:
             filename (`str`): Filename for output ReSpecTh XML file.
 
@@ -429,6 +1010,19 @@ class ChemKED:
             >>> dataset = ChemKED(yaml_file)
             >>> dataset.convert_to_ReSpecTh(xml_file)
         """
+        if self.experiment_type == "speciation measurement":
+            root = self._speciation_to_ReSpecTh()
+            # Indent for reading, but keep each dataPoint on one line as ReSpecTh files do, since
+            # a profile can run to hundreds of rows
+            etree.indent(root, space="    ")
+            for point in root.iter("dataPoint"):
+                point.text = None
+                for value in point:
+                    value.tail = None
+            etree.ElementTree(root).write(filename, encoding="utf-8", xml_declaration=True)
+            print("Converted to " + str(filename))
+            return
+
         root = etree.Element("experiment")
 
         file_author = etree.SubElement(root, "fileAuthor")
@@ -447,12 +1041,14 @@ class ChemKED:
         minor_version = etree.SubElement(respecth_version, "minor")
         minor_version.text = "0"
 
-        # Only ignition delay currently supported
+        # Speciation measurements were handled above
         exp = etree.SubElement(root, "experimentType")
         if self.experiment_type == "ignition delay":
             exp.text = "Ignition delay measurement"
         else:
-            raise NotImplementedError("Only ignition delay type supported for conversion.")
+            raise NotImplementedError(
+                "Only ignition delay and speciation measurement types supported for conversion."
+            )
 
         reference = etree.SubElement(root, "bibliographyLink")
         citation = (
@@ -679,6 +1275,92 @@ class ChemKED:
             f.write(xml_string)
 
         print("Converted to " + str(filename))
+
+    def _speciation_to_ReSpecTh(self):
+        """Build the ReSpecTh experiment for a speciation measurement.
+
+        The inverse of `~pyked.converters.get_speciation_datapoints`: each datapoint becomes a
+        dataGroup, with the independent variables, the concentration and auxiliary profiles, and
+        the per-row uncertainties as its columns. A per-row uncertainty is written as an absolute
+        uncertainty in the units of its profile, which is how a ChemKED row states it. Conditions
+        every datapoint shares, the initial composition, and the uncertainties that describe a
+        whole profile or quantity become common properties.
+
+        `DataPoint` does not model profiles, so they are read from the mapping the instance was
+        built from.
+
+        Note:
+            ReSpecTh has no place for the ORCID of an author, for more than one file author
+            (their names are joined into one), for the apparatus institution and facility, or for
+            the atomic composition and thermo of a species.
+
+        Returns:
+            `~xml.etree.ElementTree.Element`: The ReSpecTh ``experiment`` element
+
+        Raises:
+            `NotImplementedError`: If the measurement cannot be stated in one ReSpecTh file, as
+                for datapoints with different initial compositions or time shifts, or profiles
+                of one datapoint that are sampled at different points
+        """
+        datapoints = self._properties["datapoints"]
+        experiment_type = _speciation_experiment_type(self.apparatus.kind, datapoints)
+        common = _speciation_common_properties(self._properties)
+        shared_profiles, shared_conditions = _shared_uncertainties(datapoints, common)
+
+        root = etree.Element("experiment")
+        etree.SubElement(root, "fileAuthor").text = "; ".join(
+            author["name"] for author in self.file_authors
+        )
+
+        # right now ChemKED just uses an integer file version
+        file_version = etree.SubElement(root, "fileVersion")
+        etree.SubElement(file_version, "major").text = str(self.file_version)
+        etree.SubElement(file_version, "minor").text = "0"
+
+        # The speciation types and the bibliographic details are ReSpecTh 2 elements
+        respecth_version = etree.SubElement(root, "ReSpecThVersion")
+        etree.SubElement(respecth_version, "major").text = "2"
+        etree.SubElement(respecth_version, "minor").text = "3"
+
+        root.append(_respecth_bibliography(self.reference))
+        etree.SubElement(root, "experimentType").text = experiment_type
+
+        apparatus = etree.SubElement(root, "apparatus")
+        kind, modes = respecth_speciation_apparatus[self.apparatus.kind]
+        etree.SubElement(apparatus, "kind").text = kind
+        for mode in modes:
+            etree.SubElement(apparatus, "mode").text = mode
+
+        _add_speciation_common_properties(
+            root, datapoints, common, shared_profiles, shared_conditions
+        )
+
+        # ReSpecTh numbers columns across the whole file
+        column_ids = count(1)
+        for index, dp in enumerate(datapoints):
+            _add_speciation_datagroup(
+                root, dp, f"dg{index + 1}", column_ids, common, shared_profiles, shared_conditions
+            )
+
+        # ReSpecTh states the zero of a time axis once for the whole file
+        shifts = [dp.get("time-shift") for dp in datapoints]
+        if any(shift is not None for shift in shifts):
+            shift = _shared_value(shifts)
+            if shift is None:
+                raise NotImplementedError(
+                    "ReSpecTh states one time shift for the whole file, but the datapoints "
+                    "have different ones."
+                )
+            timeshift = etree.SubElement(root, "timeshift")
+            timeshift.set("target", shift["target"])
+            timeshift.set("type", shift["type"])
+            if shift.get("amount"):
+                timeshift.set("amount", _split_value(shift["amount"][0])[0])
+
+        for comment in self._properties.get("comments", []):
+            etree.SubElement(root, "comment").text = comment
+
+        return root
 
 
 class DataPoint:

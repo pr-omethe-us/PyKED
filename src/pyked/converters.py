@@ -806,6 +806,7 @@ def get_value_metadata(root):
                 "reference": reference,
                 "kind": elem.attrib["kind"],
                 "units": elem.attrib.get("units"),
+                "bound": elem.attrib.get("bound"),
                 "sourcetype": elem.attrib.get("sourcetype"),
                 "method": elem.attrib.get("method"),
                 "value": elem.find("value").text,

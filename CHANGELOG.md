@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `apparatus_kind` argument to `ReSpecTh_to_ChemKED` and `-ak/--apparatus-kind` to `respth2ck`, for files whose apparatus ReSpecTh records only as the generic `flame`
 - `uncertainty` and `evaluated standard deviation` properties and dataGroup columns are converted and attached to the quantity they describe, whether that is a datapoint value, a common property, a species amount, or a concentration profile
 - ReSpecTh `comment` elements are converted to ChemKED `comments`
+- `convert_to_ReSpecTh` writes speciation measurements, as whichever of ReSpecTh's four speciation types fits the apparatus and the swept axis. Each datapoint becomes a dataGroup, the inverse of `get_speciation_datapoints`, so `ReSpecTh_to_ChemKED` reads the file back as the same ChemKED file; all 576 speciation files of the ChemKED database do
 - `isvalid_experiment` validation rule cross-checking `experiment-type` against the datapoint contents and the apparatus kind, which the `anyof` datapoints schema cannot do on its own
 - Round-trip tests asserting the converter reproduces each checked-in ReSpecTh/ChemKED fixture pair
 - `resolve_reference` maps an uncertainty that points at a column by its `label` or `id`, and one that references `initial composition`, onto the quantity it describes; both were silently dropped before
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - An absolute uncertainty of exactly zero is accepted, meaning none was reported. The quantity it describes must still be above zero, but the uncertainty itself may be zero, the same view `isvalid_composition` takes of a composition amount of zero. Only a negative uncertainty is an error, reported as `uncertainty must not be negative`
 
 ### Fixed
+- An `uncertainty` common property with `bound="upper"` or `bound="lower"` was read as a symmetric uncertainty, so the second bound overwrote the first. The bound is now kept, as it already was for a dataGroup column
 - A composition amount of exactly zero, meaning a species measured as absent, is accepted when it carries uncertainty metadata. It was accepted without metadata and rejected with it, and `isvalid_composition` already allowed it. Only a negative value is an error for a property with no configured units
 - The unsupported-composition-units error lists the units the converter actually accepts, built from `composition_units` rather than hand-written, so it cannot fall behind the table again
 - Every text file is now opened with an explicit UTF-8 encoding. Reading or writing a ChemKED or ReSpecTh file whose author names contain non-ASCII characters previously depended on the platform's preferred encoding, and failed on Windows. `convert_to_ReSpecTh` could also rewrite its pretty-printed XML in the platform encoding while declaring UTF-8 in the file. The ruff rule `PLW1514` now enforces this

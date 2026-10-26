@@ -202,3 +202,19 @@ def test_auxiliary_profile_scenario():
     auxiliary = flame_profile["datapoints"][0]["auxiliary-profiles"]
     assert auxiliary[0]["type"] == "temperature"
     assert auxiliary[0]["independent"]["name"] == "distance"
+
+
+@pytest.mark.parametrize(
+    ("stem", "source_type"),
+    [(stem, source_type) for group, stem, source_type, _, _ in CASES if group == "speciation"],
+)
+def test_speciation_round_trip(stem, source_type, tmp_path):
+    """Writing a converted speciation file back out as ReSpecTh loses nothing."""
+    converted = ReSpecTh_to_ChemKED(str(DATA_DIR / "speciation" / f"{stem}.xml"))
+
+    # Keep the source name, which the converter records in the reference detail
+    filename = tmp_path / f"{stem}.xml"
+    ChemKED(dict_input=deepcopy(converted), skip_validation=True).convert_to_ReSpecTh(filename)
+
+    assert etree.parse(filename).getroot().findtext("experimentType") == source_type
+    assert ReSpecTh_to_ChemKED(str(filename)) == converted
