@@ -952,7 +952,7 @@ def format_row_uncertainty(item):
     return metadata
 
 
-def uncertainty_factor(item, profile_units):
+def uncertainty_factor(item, profile_units, species):
     """Scale factor that states an uncertainty about a profile in the units of the profile.
 
     ReSpecTh gives an uncertainty units of its own, which need not be those of the composition it
@@ -960,15 +960,18 @@ def uncertainty_factor(item, profile_units):
     profile is converted to its ChemKED kind, so an absolute uncertainty is converted to the same
     kind. A relative uncertainty is a fraction of the amount, so it is not rescaled.
 
+    Some cannot be converted. A mole fraction is stated as a concentration only with the density
+    of the mixture at each point, which the file does not give, so such an uncertainty is dropped
+    with a warning rather than attached in the wrong units.
+
     Args:
-        item (`dict`): Descriptor of the uncertainty, with its ``kind`` and ``units``
-        profile_units (`str`): ReSpecTh units of the profile
+        item (`dict`): Descriptor of the uncertainty, with its ``name``, ``kind`` and ``units``
+        profile_units (`str`): ReSpecTh units of the profile, or its ChemKED kind
+        species (`str`): The species of the profile, named in the warning
 
     Returns:
-        `float`: The factor to multiply the uncertainty by
-
-    Raises:
-        `KeywordError`: If an absolute uncertainty cannot be stated in the units of the profile
+        `float`: The factor to multiply the uncertainty by, or `None` if it cannot be stated in
+        the units of the profile
     """
     if item["kind"] == "relative":
         return 1.0
@@ -984,9 +987,12 @@ def uncertainty_factor(item, profile_units):
         return own_factor
     if own_kind in fraction_kinds and kind in fraction_kinds:
         return own_factor * fraction_kinds[own_kind] / fraction_kinds[kind]
-    raise KeywordError(
-        f"{item['name']} in {units} cannot be stated in the {kind} of the profile it describes"
+
+    warn(
+        f"Dropping {item['name']} in {units} of the {species} profile, which cannot be stated in "
+        f"the {kind} of the profile"
     )
+    return None
 
 
 def merge_profile_metadata(profile, metadata):
@@ -1056,11 +1062,18 @@ def attach_value_metadata(properties, metadata):
                 # A speciation datapoint keeps its measured species in profiles
                 for datapoint in datapoints:
                     for profile in datapoint.get("concentration-profiles", []):
-                        if item["species"] in (None, profile["species-name"]):
+                        if item["species"] not in (None, profile["species-name"]):
+                            continue
+                        # The profile is what it describes, even if it cannot be converted
+                        attached = True
+                        profile_factor = uncertainty_factor(
+                            item, profile["quantity"]["units"], profile["species-name"]
+                        )
+                        if profile_factor is not None:
                             merge_profile_metadata(
-                                profile, format_value_metadata(item, factor=factor, numeric=True)
+                                profile,
+                                format_value_metadata(item, factor=profile_factor, numeric=True),
                             )
-                            attached = True
 
             if not attached:
                 # Otherwise it describes the amount of that species in the mixture, which may be
@@ -1428,7 +1441,11 @@ def get_speciation_datapoints(root):
                 ("composition", column["species"])
             )
             if uncertainty_column is not None:
-                row_factor = uncertainty_factor(uncertainty_column, column["units"])
+                row_factor = uncertainty_factor(
+                    uncertainty_column, column["units"], column["species"]
+                )
+                if row_factor is None:
+                    uncertainty_column = None
 
             values = []
             for row in rows:
@@ -1444,9 +1461,14 @@ def get_speciation_datapoints(root):
             profile["quantity"] = {"units": kind}
             profile["values"] = values
             for constant_column in constant_columns:
+                constant_factor = uncertainty_factor(
+                    constant_column, column["units"], column["species"]
+                )
+                if constant_factor is None:
+                    continue
                 metadata = format_value_metadata(
                     dict(constant_column, value=rows[0][constant_column["id"]]),
-                    factor=uncertainty_factor(constant_column, column["units"]),
+                    factor=constant_factor,
                     numeric=True,
                 )
                 merge_profile_metadata(profile, metadata)

@@ -2374,10 +2374,15 @@ class TestSpeciationDatapoints:
         assert profile["uncertainty"][0]["uncertainty-type"] == "absolute"
         assert profile["uncertainty"][0]["uncertainty"] == pytest.approx(2.0e-6)
 
-    def test_row_uncertainty_in_incompatible_units(self):
-        """A mole fraction cannot be stated as a concentration without the density."""
-        with pytest.raises(KeywordError, match="cannot be stated in the mol/cm3"):
-            self.read_profile(self.uncertainty_column(), "mol/cm3")
+    @pytest.mark.parametrize("values", [("0.01", "0.02"), ("0.01", "0.01")])
+    def test_uncertainty_column_in_incompatible_units(self, values):
+        """A mole fraction cannot be stated as a concentration without the density, so a row or
+        whole-profile uncertainty in one is dropped."""
+        with pytest.warns(UserWarning, match="cannot be stated in the mol/cm3 of the profile"):
+            profile = self.read_profile(self.uncertainty_column(), "mol/cm3", values)
+
+        assert [len(row) for row in profile["values"]] == [2, 2]
+        assert "uncertainty" not in profile
 
     def test_varying_bound(self):
         """A row ends with a symmetric uncertainty, so one bound cannot vary on its own."""
@@ -2402,6 +2407,21 @@ class TestSpeciationDatapoints:
         with pytest.raises(NotImplementedError, match="for each row and one for the whole"):
             get_speciation_datapoints(root)
 
+    def add_common_deviation(self, root, units="mole fraction"):
+        """State an absolute evaluated standard deviation of 0.0005 about every profile."""
+        common = etree.SubElement(root, "commonProperties")
+        prop = etree.SubElement(
+            common,
+            "property",
+            attrib={
+                "name": "evaluated standard deviation",
+                "units": units,
+                "reference": "composition",
+                "kind": "absolute",
+            },
+        )
+        etree.SubElement(prop, "value").text = "0.0005"
+
     def test_common_uncertainty_of_the_row_kind(self):
         """Nor can a common property give a value to the kind that describes the rows."""
         root = self.build_root(
@@ -2412,22 +2432,61 @@ class TestSpeciationDatapoints:
             ],
             [{"x1": "849", "x2": "0.1", "x3": "0.01"}, {"x1": "899", "x2": "0.2", "x3": "0.02"}],
         )
-        common = etree.SubElement(root, "commonProperties")
-        prop = etree.SubElement(
-            common,
-            "property",
-            attrib={
-                "name": "evaluated standard deviation",
-                "units": "mole fraction",
-                "reference": "composition",
-                "kind": "absolute",
-            },
-        )
-        etree.SubElement(prop, "value").text = "0.05"
+        self.add_common_deviation(root)
         properties = {"datapoints": get_speciation_datapoints(root), "common-properties": {}}
 
         with pytest.raises(NotImplementedError, match="for each row and one for the whole"):
             attach_value_metadata(properties, get_value_metadata(root))
+
+    def read_with_common_deviation(self, units, profile_units):
+        """Read a file whose H2 profile is in ``profile_units`` and whose inlet holds H2, with a
+        common evaluated standard deviation in ``units``."""
+        root = self.build_root(
+            [
+                {"name": "temperature", "id": "x1", "units": "K"},
+                {"name": "composition", "id": "x2", "units": profile_units, "species": "H2"},
+            ],
+            [{"x1": "849", "x2": "0.1"}, {"x1": "899", "x2": "0.2"}],
+        )
+        self.add_common_deviation(root, units)
+        properties = {
+            "datapoints": get_speciation_datapoints(root),
+            "common-properties": {
+                "composition": {
+                    "kind": "mole fraction",
+                    "species": [{"species-name": "H2", "amount": [0.01]}],
+                }
+            },
+        }
+        attach_value_metadata(properties, get_value_metadata(root))
+        return properties
+
+    @pytest.mark.filterwarnings("ignore:Assuming")
+    @pytest.mark.parametrize(
+        ("units", "profile_units", "expected"),
+        [
+            # A percent profile stays in mole percent, so a mole fraction uncertainty is converted
+            ("mole fraction", "percent", 0.05),
+            # A ppm profile is converted to mole fraction, which the uncertainty is already in
+            ("mole fraction", "ppm", 0.0005),
+            ("ppm", "mole fraction", 5.0e-10),
+        ],
+    )
+    def test_common_uncertainty_in_other_units(self, units, profile_units, expected):
+        """A common uncertainty about a profile is converted to the units of the profile."""
+        properties = self.read_with_common_deviation(units, profile_units)
+
+        profile = properties["datapoints"][0]["concentration-profiles"][0]
+        assert profile["uncertainty"][0]["evaluated-standard-deviation"] == pytest.approx(expected)
+
+    def test_common_uncertainty_in_incompatible_units(self):
+        """A common mole fraction uncertainty about a concentration profile is dropped."""
+        with pytest.warns(UserWarning, match="mole fraction of the H2 profile, which cannot be"):
+            properties = self.read_with_common_deviation("mole fraction", "mol/cm3")
+
+        assert "uncertainty" not in properties["datapoints"][0]["concentration-profiles"][0]
+        # It describes the profile, so it is not given to the inlet amount of H2 instead
+        assert properties["common-properties"]["composition"]["species"][0]["amount"] == [0.01]
 
     def time_profile_root(self, datagroups=1):
         """A file with ``datagroups`` time profiles of H2."""
