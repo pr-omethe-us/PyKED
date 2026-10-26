@@ -18,7 +18,14 @@ from . import chemked
 from ._version import __version__
 
 # Local imports
-from .validation import _normalize_unit_str, crossref_api, property_units, yaml
+from .validation import (
+    _normalize_unit_str,
+    crossref_api,
+    property_units,
+    row_uncertainty_kinds,
+    uncertainty_metadata_groups,
+    yaml,
+)
 from .validation import units as unit_registry
 
 # Valid properties for ReSpecTh dataGroup
@@ -216,6 +223,10 @@ composition_units = {
     "mol/L": ("mol/L", 1.0, None),
 }
 """`dict`: ReSpecTh composition units mapped to (ChemKED kind, scale factor, warning)"""
+
+fraction_kinds = {"mole fraction": 1.0, "mole percent": 0.01}
+"""`dict`: Composition kinds that state one quantity on different scales, mapped to the mole
+fraction that one unit of the kind is"""
 
 composition_unit_typos = ["mole faction"]
 """`list`: Misspelled composition units in the ReSpecTh corpus, accepted with a warning
@@ -907,6 +918,108 @@ def format_value_metadata(item, factor=None, numeric=False):
     return metadata
 
 
+def format_row_uncertainty(item):
+    """Say what the uncertainty at the end of each profile row is, as ChemKED metadata keys.
+
+    These are the keys of `format_value_metadata` without the value, which is in the rows. An
+    absolute, symmetric uncertainty with nothing else stated is what the last value of a row
+    means when no key says otherwise, so it needs none.
+
+    Args:
+        item (`dict`): Descriptor of the uncertainty column, from `get_datagroup_columns`
+
+    Returns:
+        `dict`: Uncertainty metadata keys without a value, empty for an absolute uncertainty with
+        no sourcetype
+
+    Raises:
+        `KeywordError`: If the ``kind`` attribute is neither absolute nor relative
+        `NotImplementedError`: If the column is one bound of an asymmetric uncertainty
+    """
+    if item["name"] == "uncertainty" and (item.get("bound") or "plusminus") != "plusminus":
+        raise NotImplementedError(
+            f"The {item['bound']} bound of the uncertainty of {item['reference']} varies across "
+            "the dataGroup, but a ChemKED profile row ends with a symmetric uncertainty"
+        )
+
+    metadata = format_value_metadata(dict(item, value="0"), numeric=True)
+    for value_keys, _ in uncertainty_metadata_groups.values():
+        for key in value_keys:
+            metadata.pop(key, None)
+
+    if metadata == {"uncertainty-type": "absolute"}:
+        return {}
+    return metadata
+
+
+def uncertainty_factor(item, profile_units):
+    """Scale factor that states an uncertainty about a profile in the units of the profile.
+
+    ReSpecTh gives an uncertainty units of its own, which need not be those of the composition it
+    describes: a profile in ppm often has an evaluated standard deviation in mole fraction. The
+    profile is converted to its ChemKED kind, so an absolute uncertainty is converted to the same
+    kind. A relative uncertainty is a fraction of the amount, so it is not rescaled.
+
+    Args:
+        item (`dict`): Descriptor of the uncertainty, with its ``kind`` and ``units``
+        profile_units (`str`): ReSpecTh units of the profile
+
+    Returns:
+        `float`: The factor to multiply the uncertainty by
+
+    Raises:
+        `KeywordError`: If an absolute uncertainty cannot be stated in the units of the profile
+    """
+    if item["kind"] == "relative":
+        return 1.0
+
+    kind, factor, _ = composition_units[profile_units]
+    units = item.get("units")
+    if units is None or units.strip().lower() in dimensionless_units:
+        # Without units of its own, an absolute uncertainty is in those of the profile
+        return factor
+
+    own_kind, own_factor, _ = composition_units.get(units, (None, None, None))
+    if own_kind == kind:
+        return own_factor
+    if own_kind in fraction_kinds and kind in fraction_kinds:
+        return own_factor * fraction_kinds[own_kind] / fraction_kinds[kind]
+    raise KeywordError(
+        f"{item['name']} in {units} cannot be stated in the {kind} of the profile it describes"
+    )
+
+
+def merge_profile_metadata(profile, metadata):
+    """Add uncertainty metadata to a concentration profile, in place.
+
+    One mapping holds both the uncertainty of the whole profile and what the last value of each
+    row is, which is described by keys given without a value (see
+    `~pyked.validation.row_uncertainty_kinds`). So each kind of uncertainty can describe either
+    the rows or the whole profile.
+
+    Args:
+        profile (`dict`): ChemKED concentration profile
+        metadata (`dict`): Metadata keys from `format_value_metadata` or `format_row_uncertainty`
+
+    Raises:
+        `NotImplementedError`: If one kind of uncertainty would describe both the rows and the
+            whole profile
+    """
+    block = profile.setdefault("uncertainty", [{}])[0]
+    for kind, (value_keys, label_keys) in uncertainty_metadata_groups.items():
+        keys = value_keys + label_keys
+        if not any(key in metadata for key in keys):
+            continue
+        if kind in row_uncertainty_kinds(block) or (
+            kind in row_uncertainty_kinds(metadata) and any(key in block for key in keys)
+        ):
+            raise NotImplementedError(
+                f"The profile of {profile['species-name']} has a {kind} for each row and one for "
+                "the whole profile, but ChemKED states both with the same keys"
+            )
+    block.update(metadata)
+
+
 def merge_value_metadata(value, metadata):
     """Add uncertainty metadata to a ChemKED value list, in place.
 
@@ -944,9 +1057,8 @@ def attach_value_metadata(properties, metadata):
                 for datapoint in datapoints:
                     for profile in datapoint.get("concentration-profiles", []):
                         if item["species"] in (None, profile["species-name"]):
-                            profile.setdefault("uncertainty", [{}])
-                            profile["uncertainty"][0].update(
-                                format_value_metadata(item, factor=factor, numeric=True)
+                            merge_profile_metadata(
+                                profile, format_value_metadata(item, factor=factor, numeric=True)
                             )
                             attached = True
 
@@ -1153,12 +1265,40 @@ def get_lbv_datapoints(root):
     return datapoints
 
 
+def get_time_shift(elem):
+    """Read a ReSpecTh ``timeshift`` element as a ChemKED time shift.
+
+    ReSpecTh states once for the file how the zero of its time axis was placed: where the amount
+    of the ``target`` species has fallen to half, for example, or by a relative ``amount``.
+
+    Args:
+        elem (`~xml.etree.ElementTree.Element`): The ``timeshift`` element
+
+    Returns:
+        `dict`: ChemKED ``time-shift``
+
+    Raises:
+        `MissingAttributeError`: If the element has no ``target`` or ``type``
+    """
+    shift = {}
+    for attribute in ["target", "type"]:
+        if attribute not in elem.attrib:
+            raise MissingAttributeError(attribute, "timeshift")
+        shift[attribute] = " ".join(elem.attrib[attribute].split())
+
+    if "amount" in elem.attrib:
+        # A relative amount is a fraction, so it carries no units
+        shift["amount"] = [normalize_value(elem.attrib["amount"])]
+
+    return shift
+
+
 def get_speciation_datapoints(root):
     """Parse speciation datapoints from a ReSpecTh file.
 
     Each dataGroup becomes one ChemKED datapoint: the first column that is not a species is the
     swept axis, the species columns become concentration profiles, and any remaining measured
-    quantity becomes an auxiliary profile.
+    quantity becomes an auxiliary profile. The file's time shift is given to every datapoint.
 
     Args:
         root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file
@@ -1173,6 +1313,14 @@ def get_speciation_datapoints(root):
     dataGroups = root.findall("dataGroup")
     if not dataGroups:
         raise MissingElementError("dataGroup")
+
+    time_shifts = root.findall("timeshift")
+    if len(time_shifts) > 1:
+        raise NotImplementedError(
+            f"The file has {len(time_shifts)} timeshift elements, but a ChemKED datapoint has "
+            "one time shift"
+        )
+    time_shift = time_shifts[0] if time_shifts else None
 
     datapoints = []
     for dataGroup in dataGroups:
@@ -1279,13 +1427,15 @@ def get_speciation_datapoints(root):
             uncertainty_column, constant_columns = split_metadata(
                 ("composition", column["species"])
             )
+            if uncertainty_column is not None:
+                row_factor = uncertainty_factor(uncertainty_column, column["units"])
 
             values = []
             for row in rows:
                 point = [float(row[axis["id"]]) for axis in independent]
                 point.append(float(row[column["id"]]) * factor)
                 if uncertainty_column is not None and uncertainty_column["id"] in row:
-                    point.append(float(row[uncertainty_column["id"]]) * factor)
+                    point.append(float(row[uncertainty_column["id"]]) * row_factor)
                 values.append(point)
 
             profile = {"species-name": column["species"]}
@@ -1296,10 +1446,16 @@ def get_speciation_datapoints(root):
             for constant_column in constant_columns:
                 metadata = format_value_metadata(
                     dict(constant_column, value=rows[0][constant_column["id"]]),
-                    factor=factor,
+                    factor=uncertainty_factor(constant_column, column["units"]),
                     numeric=True,
                 )
-                profile.setdefault("uncertainty", [{}])[0].update(metadata)
+                merge_profile_metadata(profile, metadata)
+            if uncertainty_column is not None:
+                # What the last value of each row is, unless it is the plain absolute uncertainty
+                # a row ends with when nothing says otherwise
+                row_metadata = format_row_uncertainty(uncertainty_column)
+                if row_metadata:
+                    merge_profile_metadata(profile, row_metadata)
             profiles.append(profile)
 
         datapoint["concentration-profiles"] = profiles
@@ -1339,6 +1495,9 @@ def get_speciation_datapoints(root):
                 + (f" of {species}" if species else "")
                 + ", which has no profile in this dataGroup"
             )
+
+        if time_shift is not None:
+            datapoint["time-shift"] = get_time_shift(time_shift)
 
         datapoints.append(datapoint)
 

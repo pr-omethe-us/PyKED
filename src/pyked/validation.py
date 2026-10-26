@@ -169,6 +169,47 @@ property_units = {
     "temperature-in-reference-state": "kelvin",
 }
 
+# The uncertainty metadata keys of each kind of uncertainty: those that give a value, and those that
+# describe it
+uncertainty_metadata_groups = {
+    "uncertainty": (
+        ["uncertainty", "upper-uncertainty", "lower-uncertainty"],
+        ["uncertainty-type", "uncertainty-sourcetype"],
+    ),
+    "evaluated-standard-deviation": (
+        ["evaluated-standard-deviation"],
+        [
+            "evaluated-standard-deviation-type",
+            "evaluated-standard-deviation-sourcetype",
+            "evaluated-standard-deviation-method",
+        ],
+    ),
+}
+
+
+def row_uncertainty_kinds(metadata):
+    """The kinds of uncertainty that a profile's metadata describes without giving a value.
+
+    A concentration profile row may end with an uncertainty of its own. The profile's uncertainty
+    metadata says what that last value is with the descriptive keys of one kind, such as
+    ``evaluated-standard-deviation-type``, given without the value of that kind, which is in the
+    rows instead. Without such keys the last value of a row is an absolute uncertainty in the
+    units of the profile.
+
+    Args:
+        metadata (`dict`): The uncertainty metadata mapping of a concentration profile
+
+    Returns:
+        `list`: ``uncertainty`` and/or ``evaluated-standard-deviation``, each kind whose
+        descriptive keys are given without a value
+    """
+    return [
+        kind
+        for kind, (value_keys, label_keys) in uncertainty_metadata_groups.items()
+        if any(key in metadata for key in label_keys)
+        and not any(metadata.get(key) is not None for key in value_keys)
+    ]
+
 
 def compare_name(given_name, family_name, question_name):
     """Compares a name in question to a specified name separated into given and family.
@@ -398,8 +439,10 @@ class OurValidator(Validator):
 
         Each concentration profile row must carry one value per declared
         independent variable, followed by the measured amount, with an
-        optional trailing uncertainty. Amounts and auxiliary profile values are
-        also checked for physical possibility.
+        optional trailing uncertainty. Uncertainty metadata that describes
+        that trailing value (see `row_uncertainty_kinds`) must describe one
+        kind, give its type, and belong to rows that have one. Amounts and
+        auxiliary profile values are also checked for physical possibility.
 
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
@@ -435,7 +478,44 @@ class OurValidator(Validator):
                         f"be negative; got {amount}",
                     )
 
+            self._check_row_uncertainty(field, profile, n_independent)
+
         self._check_auxiliary_profile_values(field, value)
+
+    def _check_row_uncertainty(self, field, profile, n_independent):
+        """Check uncertainty metadata that describes the last value of each profile row.
+
+        Args:
+            field (`str`): property the profile belongs to, used in the error
+            profile (`dict`): the concentration profile
+            n_independent (`int`): number of independent variables of its datapoint
+        """
+        metadata = (profile.get("uncertainty") or [None])[0]
+        if not isinstance(metadata, dict):
+            return
+
+        species = profile.get("species-name", "?")
+        described = row_uncertainty_kinds(metadata)
+        if len(described) > 1:
+            self._error(
+                field,
+                f"the uncertainty of {species} describes both an uncertainty and an "
+                "evaluated-standard-deviation without a value, but a row ends with only one",
+            )
+        elif described:
+            kind = described[0]
+            if f"{kind}-type" not in metadata:
+                self._error(
+                    field,
+                    f"the uncertainty of {species} describes the {kind} at the end of each "
+                    f"row, so it must give {kind}-type",
+                )
+            if not any(len(row) == n_independent + 2 for row in profile.get("values", [])):
+                self._error(
+                    field,
+                    f"the uncertainty of {species} describes the {kind} at the end of each "
+                    "row without a value, but no row ends with one",
+                )
 
     def _check_auxiliary_profile_values(self, field, value):
         """Check that auxiliary profile values are physically possible.
@@ -647,9 +727,15 @@ class OurValidator(Validator):
         )
         return False
 
-    def _check_uncertainty_metadata_values(self, field, uncertainty_dict):
-        """Validate the values contained in an uncertainty metadata mapping."""
-        if not self._check_uncertainty_metadata(field, uncertainty_dict):
+    def _check_uncertainty_metadata_values(self, field, uncertainty_dict, require_value=True):
+        """Validate the values contained in an uncertainty metadata mapping.
+
+        Args:
+            field (`str`): property the uncertainty describes
+            uncertainty_dict (`dict`): the uncertainty metadata
+            require_value (`bool`, optional): whether the mapping must give a value at all
+        """
+        if require_value and not self._check_uncertainty_metadata(field, uncertainty_dict):
             return
 
         uncertainty_type = uncertainty_dict.get("uncertainty-type")
@@ -672,11 +758,16 @@ class OurValidator(Validator):
     ):
         """Validate uncertainty metadata associated with a concentration profile.
 
+        Metadata that only describes the uncertainty at the end of each row needs no value of its
+        own; `_check_row_uncertainty` checks that the rows have one.
+
         The rule's arguments are validated against this schema:
             {'type': 'boolean'}
         """
         if value and isinstance(value[0], dict):
-            self._check_uncertainty_metadata_values(field, value[0])
+            self._check_uncertainty_metadata_values(
+                field, value[0], require_value=not row_uncertainty_kinds(value[0])
+            )
 
     def _validate_isvalid_uncertainty(self, isvalid_uncertainty, field, value):
         """Checks for valid given value and appropriate units with uncertainty.

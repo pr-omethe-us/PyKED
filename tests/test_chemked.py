@@ -956,13 +956,109 @@ class TestSpeciationToReSpecTh:
             "amount": ["0.21"],
         }
 
-        root, _ = self.convert(document, tmp_path)
+        root, converted = self.round_trip(document, tmp_path)
 
         assert root.find("timeshift").attrib == {
             "target": "H2",
             "type": "relative decrease",
             "amount": "0.21",
         }
+        assert converted == document
+        ChemKED(dict_input=converted)
+
+    def test_time_shift_of_every_datapoint(self, tmp_path):
+        """The time shift that every datapoint shares is one timeshift element."""
+        document = speciation_document("shock tube", ("time", "us"))
+        document["datapoints"][0]["time-shift"] = {"target": "H2O", "type": "half increase"}
+        document["datapoints"].append(deepcopy(document["datapoints"][0]))
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert [elem.attrib for elem in root.iterfind("timeshift")] == [
+            {"target": "H2O", "type": "half increase"}
+        ]
+        assert converted == document
+        ChemKED(dict_input=converted)
+
+    def row_uncertainty_column(self, root, species):
+        """The per-row uncertainty column of the profile of ``species``, and its values."""
+        datagroup = root.find("dataGroup")
+        for prop in datagroup.iterfind("property[@reference='composition']"):
+            if prop.find("speciesLink").get("preferredKey") == species:
+                values = [point.findtext(prop.get("id")) for point in datagroup.iter("dataPoint")]
+                return prop, values
+        raise AssertionError(f"no uncertainty column for {species}")
+
+    def test_row_evaluated_standard_deviation(self, tmp_path):
+        """Rows that end with an evaluated standard deviation are written with one."""
+        document = speciation_document()
+        profile = document["datapoints"][0]["concentration-profiles"][1]
+        profile["uncertainty"] = [
+            {
+                "evaluated-standard-deviation-type": "absolute",
+                "evaluated-standard-deviation-sourcetype": "estimated",
+                "evaluated-standard-deviation-method": "combined from scatter and reported "
+                "uncertainty",
+            }
+        ]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        ChemKED(dict_input=converted)
+        column, values = self.row_uncertainty_column(root, "H2O")
+        assert {key: value for key, value in column.attrib.items() if key != "id"} == {
+            "name": "evaluated standard deviation",
+            "units": "mole fraction",
+            "reference": "composition",
+            "kind": "absolute",
+            "sourcetype": "estimated",
+            "method": "combined from scatter and reported uncertainty",
+        }
+        assert values == ["0.0001", "0.0002"]
+        # Keys without a value describe the rows, so they are not a common property
+        common = root.findall("commonProperties/property[@reference='composition']")
+        assert [prop.find("speciesLink").get("preferredKey") for prop in common] == ["H2"]
+
+    def test_row_and_profile_uncertainty(self, tmp_path):
+        """A relative uncertainty per row is written beside one about the whole profile."""
+        document = speciation_document()
+        profile = document["datapoints"][0]["concentration-profiles"][0]
+        profile["values"] = [[800.0, 0.0095, 0.05], [900.0, 0.0071, 0.08]]
+        profile["uncertainty"][0].update(
+            {"uncertainty-type": "relative", "uncertainty-sourcetype": "calculated"}
+        )
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        ChemKED(dict_input=converted)
+        column, values = self.row_uncertainty_column(root, "H2")
+        assert column.get("name") == "uncertainty"
+        assert column.get("units") == "unitless"
+        assert column.get("kind") == "relative"
+        assert column.get("bound") == "plusminus"
+        assert column.get("sourcetype") == "calculated"
+        assert values == ["0.05", "0.08"]
+        common = root.find("commonProperties/property[@reference='composition']")
+        assert common.get("name") == "evaluated standard deviation"
+        assert common.findtext("value") == "0.05"
+
+    def test_row_uncertainty_in_mole_percent(self, tmp_path):
+        """An absolute uncertainty per row is in the units of its profile."""
+        document = speciation_document()
+        profile = document["datapoints"][0]["concentration-profiles"][1]
+        profile["quantity"]["units"] = "mole percent"
+        profile["values"] = [[800.0, 0.05, 0.01], [900.0, 0.29, 0.02]]
+        profile["uncertainty"] = [{"evaluated-standard-deviation-type": "absolute"}]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        column, values = self.row_uncertainty_column(root, "H2O")
+        assert column.get("name") == "evaluated standard deviation"
+        assert column.get("units") == "mole percent"
+        assert values == ["0.01", "0.02"]
 
     def test_without_common_properties(self, tmp_path):
         """Without common-properties, what every datapoint shares is stated once."""

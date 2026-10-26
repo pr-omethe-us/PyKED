@@ -12,6 +12,9 @@ from pyked.validation import OurValidator, compare_name, property_units, schema
 
 v = OurValidator(schema)
 
+# The speciation measurement datapoints schema on its own, without the other datapoint schemas
+speciation = OurValidator({"datapoints": schema["datapoints"]["anyof"][2]})
+
 
 def test_current_version_is_allowed():
     """The version the converters stamp into new files has to be an allowed one.
@@ -999,6 +1002,100 @@ class TestValidator:
             ],
         }
         assert v.validate({"datapoints": [datapoint]}, update=True)
+
+    def speciation_datapoint(self, values, metadata):
+        """A speciation datapoint whose H2 profile has ``values`` and uncertainty ``metadata``.
+
+        It is validated with `speciation`, since in update mode the other datapoint schemas of the
+        ``anyof`` accept it whatever its profiles hold.
+        """
+        return {
+            "pressure": ["1 atm"],
+            "composition": {
+                "kind": "mole fraction",
+                "species": [{"species-name": "H2", "InChI": "1S/H2/h1H", "amount": [1.0]}],
+            },
+            "independent-variables": [{"name": "time", "units": "s"}],
+            "concentration-profiles": [
+                {
+                    "species-name": "H2",
+                    "InChI": "1S/H2/h1H",
+                    "quantity": {"units": "mole fraction"},
+                    "values": values,
+                    "uncertainty": [metadata],
+                }
+            ],
+        }
+
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            {
+                "evaluated-standard-deviation-type": "absolute",
+                "evaluated-standard-deviation-sourcetype": "estimated",
+                "evaluated-standard-deviation-method": "statistical scatter",
+            },
+            {"uncertainty-type": "relative"},
+            # The kind with a value describes the profile, the other the rows
+            {
+                "uncertainty-type": "relative",
+                "uncertainty": 0.05,
+                "evaluated-standard-deviation-type": "absolute",
+            },
+        ],
+    )
+    def test_profile_uncertainty_that_describes_the_rows(self, metadata):
+        """Uncertainty keys given without a value describe the last value of each row."""
+        datapoint = self.speciation_datapoint([[0.0, 0.1, 0.01], [1.0, 0.2, 0.02]], metadata)
+        assert speciation.validate({"datapoints": [datapoint]}), speciation.errors
+
+    @pytest.mark.parametrize(
+        ("values", "metadata", "message"),
+        [
+            # The rows have no uncertainty for the keys to describe
+            (
+                [[0.0, 0.1], [1.0, 0.2]],
+                {"evaluated-standard-deviation-type": "absolute"},
+                "no row ends with one",
+            ),
+            # A row ends with only one uncertainty
+            (
+                [[0.0, 0.1, 0.01], [1.0, 0.2, 0.02]],
+                {"uncertainty-type": "absolute", "evaluated-standard-deviation-type": "absolute"},
+                "describes both",
+            ),
+            # Whether the value in the rows is absolute or relative must be stated
+            (
+                [[0.0, 0.1, 0.01], [1.0, 0.2, 0.02]],
+                {"uncertainty-sourcetype": "calculated"},
+                "must give uncertainty-type",
+            ),
+            # Metadata that describes nothing is still an error
+            ([[0.0, 0.1], [1.0, 0.2]], {}, "must contain at least one"),
+        ],
+    )
+    def test_profile_uncertainty_that_cannot_describe_the_rows(self, values, metadata, message):
+        """Keys without a value need rows with an uncertainty, and must say what it is."""
+        datapoint = self.speciation_datapoint(values, metadata)
+        assert not speciation.validate({"datapoints": [datapoint]})
+        assert message in str(speciation.errors)
+
+    @pytest.mark.parametrize(
+        ("time_shift", "valid"),
+        [
+            ({"target": "H2", "type": "half decrease"}, True),
+            ({"target": "CO2", "type": "half increase"}, True),
+            ({"target": "H2", "type": "relative decrease", "amount": ["0.21"]}, True),
+            ({"target": "H2", "type": "quarter decrease"}, False),
+        ],
+    )
+    def test_time_shift_type(self, time_shift, valid):
+        """A time shift is placed at a half decrease or increase, or a relative decrease."""
+        datapoint = self.speciation_datapoint(
+            [[0.0, 0.1], [1.0, 0.2]], {"uncertainty-type": "relative", "uncertainty": 0.05}
+        )
+        datapoint["time-shift"] = time_shift
+        assert speciation.validate({"datapoints": [datapoint]}) is valid
 
     def test_evaluated_standard_deviation_requires_type(self):
         """Ensure an ESD value without evaluated-standard-deviation-type is rejected."""
