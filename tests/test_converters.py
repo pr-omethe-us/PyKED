@@ -1844,6 +1844,27 @@ class TestValueMetadata:
         assert metadata["evaluated-standard-deviation"] == "2.0 cm/s"
         assert metadata["evaluated-standard-deviation-method"] == "generic uncertainty"
 
+    def test_bounds_of_a_common_uncertainty(self):
+        """A one-sided uncertainty stated once for the file keeps its bound."""
+        root = etree.Element("experiment")
+        properties_elem = etree.SubElement(root, "commonProperties")
+        for bound, value in [("upper", "0.1"), ("lower", "0.05")]:
+            prop = etree.SubElement(properties_elem, "property")
+            prop.set("name", "uncertainty")
+            prop.set("reference", "pressure")
+            prop.set("kind", "relative")
+            prop.set("bound", bound)
+            etree.SubElement(prop, "value").text = value
+        properties = {"common-properties": {"pressure": ["1.0 atm"]}, "datapoints": [{}]}
+
+        attach_value_metadata(properties, get_value_metadata(root))
+
+        assert properties["common-properties"]["pressure"][1] == {
+            "uncertainty-type": "relative",
+            "upper-uncertainty": "0.1",
+            "lower-uncertainty": "0.05",
+        }
+
     def test_metadata_attaches_to_common_property(self):
         """A deviation about a shared value is stored with that shared value."""
         root = self.build_metadata("uncertainty", "temperature", "absolute", "5", units="K")

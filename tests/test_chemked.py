@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from pyked.chemked import ChemKED, Composition, DataPoint
-from pyked.converters import get_common_properties, get_datapoints
+from pyked.converters import ReSpecTh_to_ChemKED, get_common_properties, get_datapoints
 
 # Local imports
 from pyked.validation import Q_, OurValidator, schema, yaml
@@ -346,23 +346,19 @@ class TestConvertToReSpecTh:
         assert len(c.datapoints) == len(c_true.datapoints)
         assert getattr(c.datapoints[0], "{}_history".format(history_type.replace(" ", "_"))) is None
 
-    @pytest.mark.parametrize(
-        "experiment_type",
-        [
-            "laminar burning velocity measurement",
-            "speciation measurement",
-        ],
-    )
-    def test_conversion_to_respecth_error(self, experiment_type):
-        """Only ignition delay can be written back out to ReSpecTh."""
+    def test_conversion_to_respecth_error(self):
+        """Laminar burning velocity cannot be written back out to ReSpecTh yet."""
         filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
-        c.experiment_type = experiment_type
+        c.experiment_type = "laminar burning velocity measurement"
 
         with pytest.raises(NotImplementedError) as excinfo:
             c.convert_to_ReSpecTh("test.xml")
-        assert "Only ignition delay type supported for conversion." in str(excinfo.value)
+        assert (
+            "Only ignition delay and speciation measurement types supported for conversion."
+            in str(excinfo.value)
+        )
 
     def test_conversion_datapoints_composition_missing_inchi(self):
         """Test for appropriate handling of composition with missing InChI."""
@@ -568,6 +564,483 @@ class TestConvertToReSpecTh:
             "Different ignition targets or types for multiple datapoints are not supported in "
             "ReSpecTh." in str(e.value)
         )
+
+
+def speciation_document(
+    apparatus="jet stirred reactor", axis=("temperature", "K"), points=(800.0, 900.0)
+):
+    """A small speciation measurement whose datapoint shares its common values, as in a file."""
+    pressure = ["1.0 atm"]
+    volume = ["39 cm3"]
+    composition = {
+        "kind": "mole fraction",
+        "species": [
+            {"species-name": "H2", "InChI": "1S/H2/h1H", "amount": [0.01]},
+            {"species-name": "O2", "InChI": "1S/O2/c1-2", "amount": [0.01]},
+            {"species-name": "N2", "InChI": "1S/N2/c1-2", "amount": [0.98]},
+        ],
+    }
+    common = {"pressure": pressure, "reactor-volume": volume, "composition": composition}
+    datapoint = {
+        "independent-variables": [{"name": axis[0], "units": axis[1], "primary": True}],
+        "concentration-profiles": [
+            {
+                "species-name": "H2",
+                "InChI": "1S/H2/h1H",
+                "quantity": {"units": "mole fraction"},
+                "values": [[points[0], 0.0095], [points[1], 0.0071]],
+                "uncertainty": [
+                    {
+                        "evaluated-standard-deviation-type": "relative",
+                        "evaluated-standard-deviation": 0.05,
+                        "evaluated-standard-deviation-sourcetype": "estimated",
+                        "evaluated-standard-deviation-method": "generic uncertainty",
+                    }
+                ],
+            },
+            {
+                "species-name": "H2O",
+                "InChI": "1S/H2O/h1H2",
+                "quantity": {"units": "mole fraction"},
+                "values": [[points[0], 0.0005, 0.0001], [points[1], 0.0029, 0.0002]],
+            },
+        ],
+        **common,
+    }
+    return {
+        "file-authors": [{"name": "Kyle Niemeyer"}],
+        "file-version": 0,
+        "chemked-version": "0.5.0",
+        "reference": {
+            "authors": [{"name": "Ann Author"}, {"name": "Ben Author"}],
+            "journal": "Combustion and Flame",
+            "year": 2001,
+            "volume": 125,
+            "pages": "1-10",
+            # What the converter writes, so the file reads back the same
+            "detail": "Converted from ReSpecTh XML file x1.xml",
+        },
+        "experiment-type": "speciation measurement",
+        "apparatus": {"kind": apparatus, "institution": "", "facility": ""},
+        "common-properties": common,
+        "datapoints": [datapoint],
+        "comments": ["Measured by gas chromatography."],
+    }
+
+
+@pytest.mark.usefixtures("mock_all_apis")
+class TestSpeciationToReSpecTh:
+    """Speciation measurements are written as one of the four ReSpecTh speciation types."""
+
+    def convert(self, document, tmp_path, *, skip_validation=False):
+        """Write ``document`` as ReSpecTh, and return the XML root and the file."""
+        filename = tmp_path / "x1.xml"
+        c = ChemKED(dict_input=deepcopy(document), skip_validation=skip_validation)
+        c.convert_to_ReSpecTh(filename)
+        return etree.parse(filename).getroot(), filename
+
+    def round_trip(self, document, tmp_path):
+        """Write ``document`` as ReSpecTh and convert it back to ChemKED."""
+        root, filename = self.convert(document, tmp_path)
+        return root, ReSpecTh_to_ChemKED(filename)
+
+    def test_round_trip(self, tmp_path):
+        """Converting the ReSpecTh file back gives the same ChemKED file."""
+        document = speciation_document()
+
+        _, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        ChemKED(dict_input=converted)
+
+    def test_layout(self, tmp_path):
+        """The file is laid out as ReSpecTh writes a speciation measurement."""
+        root, _ = self.round_trip(speciation_document(), tmp_path)
+
+        assert root.findtext("ReSpecThVersion/major") == "2"
+        assert root.findtext("bibliographyLink/details/author") == "Ann Author and Ben Author"
+        assert root.findtext("bibliographyLink/details/year") == "2001"
+        assert root.find("bibliographyLink/referenceDOI") is None
+
+        common = root.find("commonProperties")
+        assert [prop.get("name") for prop in common] == [
+            "pressure",
+            "volume",
+            "initial composition",
+            "evaluated standard deviation",
+        ]
+        assert common[1].get("units") == "cm3"
+        assert common[1].findtext("value") == "39"
+        assert [
+            component.find("speciesLink").get("preferredKey")
+            for component in common[2].iter("component")
+        ] == ["H2", "O2", "N2"]
+
+        # An uncertainty about a whole profile is a common property linked to its species
+        esd = common[3]
+        assert esd.attrib == {
+            "name": "evaluated standard deviation",
+            "units": "unitless",
+            "reference": "composition",
+            "kind": "relative",
+            "sourcetype": "estimated",
+            "method": "generic uncertainty",
+        }
+        assert esd.find("speciesLink").attrib == {"preferredKey": "H2", "InChI": "1S/H2/h1H"}
+        assert esd.findtext("value") == "0.05"
+
+        datagroup = root.find("dataGroup")
+        columns = [
+            (prop.get("id"), prop.get("name"), prop.get("units"), prop.find("speciesLink"))
+            for prop in datagroup.findall("property")
+        ]
+        assert [column[:3] for column in columns] == [
+            ("x1", "temperature", "K"),
+            ("x2", "composition", "mole fraction"),
+            ("x3", "composition", "mole fraction"),
+            ("x4", "uncertainty", "mole fraction"),
+        ]
+        assert [getattr(column[3], "attrib", {}).get("preferredKey") for column in columns] == [
+            None,
+            "H2",
+            "H2O",
+            "H2O",
+        ]
+
+        # The last value of a profile row is an absolute uncertainty in the units of the profile
+        uncertainty = datagroup.find("property[@id='x4']")
+        assert uncertainty.get("reference") == "composition"
+        assert uncertainty.get("kind") == "absolute"
+        assert uncertainty.get("bound") == "plusminus"
+
+        rows = [{value.tag: value.text for value in point} for point in datagroup.iter("dataPoint")]
+        assert rows == [
+            {"x1": "800.0", "x2": "0.0095", "x3": "0.0005", "x4": "0.0001"},
+            {"x1": "900.0", "x2": "0.0071", "x3": "0.0029", "x4": "0.0002"},
+        ]
+        assert root.findtext("comment") == "Measured by gas chromatography."
+
+    @pytest.mark.parametrize(
+        ("apparatus", "axis", "experiment_type", "kind", "modes"),
+        [
+            (
+                "jet stirred reactor",
+                ("temperature", "K"),
+                "jet stirred reactor measurement",
+                "jet stirred reactor",
+                [],
+            ),
+            (
+                "flow reactor",
+                ("time", "ms"),
+                "concentration time profile measurement",
+                "flow reactor",
+                [],
+            ),
+            (
+                "flow reactor",
+                ("temperature", "K"),
+                "outlet concentration measurement",
+                "flow reactor",
+                [],
+            ),
+            (
+                "flow reactor",
+                ("residence-time", "s"),
+                "outlet concentration measurement",
+                "flow reactor",
+                [],
+            ),
+            (
+                "shock tube",
+                ("time", "us"),
+                "concentration time profile measurement",
+                "shock tube",
+                [],
+            ),
+            (
+                "shock tube",
+                ("temperature", "K"),
+                "outlet concentration measurement",
+                "shock tube",
+                [],
+            ),
+            (
+                "burner stabilized flame",
+                ("distance", "mm"),
+                "burner stabilized flame speciation measurement",
+                "flame",
+                ["burner-stabilized"],
+            ),
+        ],
+    )
+    def test_experiment_type(self, tmp_path, apparatus, axis, experiment_type, kind, modes):
+        """The apparatus, and for a reactor the swept axis, picks the ReSpecTh type."""
+        document = speciation_document(apparatus, axis)
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert root.findtext("experimentType") == experiment_type
+        assert root.findtext("apparatus/kind") == kind
+        assert [mode.text for mode in root.iterfind("apparatus/mode")] == modes
+        assert converted == document
+
+    def test_reference_doi_and_concentration(self, tmp_path):
+        """A DOI is written with the details, and a concentration profile is a concentration."""
+        document = speciation_document("shock tube", ("time", "us"))
+        document["reference"]["doi"] = "10.1016/S0010-2180(00)00200-7"
+        profile = document["datapoints"][0]["concentration-profiles"][1]
+        profile["quantity"]["units"] = "mol/cm3"
+
+        root, _ = self.convert(document, tmp_path, skip_validation=True)
+
+        assert root.findtext("bibliographyLink/referenceDOI") == "10.1016/S0010-2180(00)00200-7"
+        column = root.find("dataGroup/property[@id='x3']")
+        assert column.get("name") == "concentration"
+        assert column.get("units") == "mol/cm3"
+
+    def test_uncertainty_that_differs_between_datapoints(self, tmp_path):
+        """An uncertainty only some profiles of a species share is a column of each dataGroup."""
+        document = speciation_document()
+        second = deepcopy(document["datapoints"][0])
+        second["concentration-profiles"][0]["uncertainty"][0]["evaluated-standard-deviation"] = 0.1
+        document["datapoints"].append(second)
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        assert root.find("commonProperties/property[@reference='composition']") is None
+        for datagroup, expected in zip(root.iterfind("dataGroup"), ["0.05", "0.1"]):
+            column = datagroup.find("property[@name='evaluated standard deviation']")
+            assert column.find("speciesLink").get("preferredKey") == "H2"
+            assert {point.findtext(column.get("id")) for point in datagroup.iter("dataPoint")} == {
+                expected
+            }
+
+        # ReSpecTh numbers the columns across the whole file
+        ids = [prop.get("id") for prop in root.iterfind("dataGroup/property")]
+        assert len(ids) == len(set(ids))
+
+    def test_condition_of_one_datapoint(self, tmp_path):
+        """A condition that datapoints state differently is a column with one value."""
+        document = speciation_document("flow reactor", ("time", "ms"))
+        document["datapoints"].append(deepcopy(document["datapoints"][0]))
+        for datapoint, temperature in zip(document["datapoints"], ["1000 K", "1100 K"]):
+            datapoint["temperature"] = [
+                temperature,
+                {"uncertainty-type": "absolute", "uncertainty": "10 K"},
+            ]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        assert "temperature" not in converted["common-properties"]
+        for datagroup, expected in zip(root.iterfind("dataGroup"), ["1000", "1100"]):
+            column = datagroup.find("property[@name='temperature']")
+            assert column.get("units") == "K"
+            assert {point.findtext(column.get("id")) for point in datagroup.iter("dataPoint")} == {
+                expected
+            }
+
+        # Every datapoint states the same uncertainty, so it is stated once
+        uncertainty = root.find("commonProperties/property[@reference='temperature']")
+        assert uncertainty.get("units") == "K"
+        assert uncertainty.findtext("value") == "10"
+
+    def test_condition_uncertainty_of_one_datapoint(self, tmp_path):
+        """The uncertainty of a condition of one datapoint alone is a column too."""
+        document = speciation_document("flow reactor", ("time", "ms"))
+        document["datapoints"].append(deepcopy(document["datapoints"][0]))
+        for datapoint, uncertainty in zip(document["datapoints"], ["10 K", "20 K"]):
+            datapoint["temperature"] = [
+                "1000 K",
+                {"uncertainty-type": "absolute", "uncertainty": uncertainty},
+            ]
+
+        root, _ = self.convert(document, tmp_path)
+
+        assert root.find("commonProperties/property[@reference='temperature']") is None
+        for datagroup, expected in zip(root.iterfind("dataGroup"), ["10", "20"]):
+            column = datagroup.find("property[@reference='temperature']")
+            assert column.get("name") == "uncertainty"
+            assert column.get("units") == "K"
+            assert {point.findtext(column.get("id")) for point in datagroup.iter("dataPoint")} == {
+                expected
+            }
+
+    def test_auxiliary_profile(self, tmp_path):
+        """An auxiliary profile and its per-row uncertainty are columns on the same rows."""
+        document = speciation_document("burner stabilized flame", ("distance", "mm"), (0.5, 1.5))
+        document["datapoints"][0]["auxiliary-profiles"] = [
+            {
+                "type": "temperature",
+                "independent": {"name": "distance", "units": "mm"},
+                "quantity": {"units": "K"},
+                "values": [[0.5, 1500.0, 50.0], [1.5, 1600.0, 60.0]],
+            }
+        ]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        datagroup = root.find("dataGroup")
+        assert datagroup.find("property[@id='x4']").attrib == {
+            "name": "temperature",
+            "id": "x4",
+            "label": "T",
+            "units": "K",
+        }
+        uncertainty = datagroup.find("property[@reference='temperature']")
+        assert uncertainty.get("units") == "K"
+        assert [point.findtext(uncertainty.get("id")) for point in datagroup.iter("dataPoint")] == [
+            "50.0",
+            "60.0",
+        ]
+
+    def test_swept_inlet_species(self, tmp_path):
+        """The species of an inlet composition sweep is linked to its column."""
+        document = speciation_document(points=(0.01, 0.02))
+        document["datapoints"][0]["independent-variables"] = [
+            {
+                "name": "initial-composition",
+                "units": "dimensionless",
+                "primary": True,
+                "species-name": "H2",
+                "InChI": "1S/H2/h1H",
+            }
+        ]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        column = root.find("dataGroup/property[@id='x1']")
+        assert column.get("name") == "initial composition"
+        assert column.get("units") == "unitless"
+        assert column.find("speciesLink").get("preferredKey") == "H2"
+
+    def test_bounds_and_inlet_amount_uncertainty(self, tmp_path):
+        """Asymmetric bounds and the uncertainty of an inlet amount are common properties."""
+        document = speciation_document()
+        document["common-properties"]["pressure"].append(
+            {
+                "uncertainty-type": "relative",
+                "upper-uncertainty": "0.1",
+                "lower-uncertainty": "0.05",
+                "uncertainty-sourcetype": "reported",
+            }
+        )
+        document["common-properties"]["composition"]["species"][0]["amount"].append(
+            {"uncertainty-type": "absolute", "uncertainty": 0.0005}
+        )
+
+        with pytest.warns(UserWarning, match="Asymmetric uncertainties"):
+            root, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        bounds = root.findall("commonProperties/property[@reference='pressure']")
+        assert [(prop.get("bound"), prop.findtext("value")) for prop in bounds] == [
+            ("upper", "0.1"),
+            ("lower", "0.05"),
+        ]
+        inlet = root.find("commonProperties/property[@reference='initial composition']")
+        assert inlet.get("units") == "mole fraction"
+        assert inlet.find("speciesLink").get("preferredKey") == "H2"
+        assert inlet.findtext("value") == "0.0005"
+
+    def test_time_shift(self, tmp_path):
+        """A time shift is a ReSpecTh timeshift element."""
+        document = speciation_document("shock tube", ("time", "us"))
+        document["datapoints"][0]["time-shift"] = {
+            "target": "H2",
+            "type": "relative decrease",
+            "amount": ["0.21"],
+        }
+
+        root, _ = self.convert(document, tmp_path)
+
+        assert root.find("timeshift").attrib == {
+            "target": "H2",
+            "type": "relative decrease",
+            "amount": "0.21",
+        }
+
+    def test_without_common_properties(self, tmp_path):
+        """Without common-properties, what every datapoint shares is stated once."""
+        document = speciation_document()
+        del document["common-properties"]
+
+        root, converted = self.round_trip(document, tmp_path)
+
+        assert [prop.get("name") for prop in root.iterfind("commonProperties/property")] == [
+            "pressure",
+            "volume",
+            "initial composition",
+            "evaluated standard deviation",
+        ]
+        assert converted["datapoints"] == document["datapoints"]
+        assert set(converted["common-properties"]) == {"pressure", "reactor-volume", "composition"}
+
+    def test_different_compositions(self, tmp_path):
+        """ReSpecTh states one initial composition for a file."""
+        document = speciation_document()
+        second = deepcopy(document["datapoints"][0])
+        second["composition"]["species"][0]["amount"] = [0.02]
+        second["composition"]["species"][2]["amount"] = [0.97]
+        document["datapoints"].append(second)
+
+        with pytest.raises(NotImplementedError, match="one initial composition"):
+            self.convert(document, tmp_path)
+
+    def test_profiles_on_different_points(self, tmp_path):
+        """The profiles of a datapoint share the rows of its dataGroup."""
+        document = speciation_document()
+        document["datapoints"][0]["concentration-profiles"][1]["values"][1][0] = 950.0
+
+        with pytest.raises(NotImplementedError, match="sampled at other points"):
+            self.convert(document, tmp_path)
+
+    def test_auxiliary_profile_on_other_points(self, tmp_path):
+        """An auxiliary profile shares the rows of the concentration profiles."""
+        document = speciation_document("burner stabilized flame", ("distance", "mm"), (0.5, 1.5))
+        document["datapoints"][0]["auxiliary-profiles"] = [
+            {
+                "type": "temperature",
+                "independent": {"name": "distance", "units": "mm"},
+                "quantity": {"units": "K"},
+                "values": [[0.5, 1500.0], [2.0, 1600.0]],
+            }
+        ]
+
+        with pytest.raises(NotImplementedError, match="not sampled at the points"):
+            self.convert(document, tmp_path)
+
+    def test_time_profiles_and_outlet_concentrations(self, tmp_path):
+        """A file holds one ReSpecTh experiment type."""
+        document = speciation_document("flow reactor", ("time", "ms"))
+        second = deepcopy(document["datapoints"][0])
+        second["independent-variables"][0].update(name="temperature", units="K")
+        document["datapoints"].append(second)
+
+        with pytest.raises(NotImplementedError, match="one experiment type per file"):
+            self.convert(document, tmp_path)
+
+    def test_different_time_shifts(self, tmp_path):
+        """ReSpecTh states one time shift for a file."""
+        document = speciation_document("shock tube", ("time", "us"))
+        second = deepcopy(document["datapoints"][0])
+        document["datapoints"][0]["time-shift"] = {"target": "H2", "type": "half decrease"}
+        second["time-shift"] = {"target": "O2", "type": "half decrease"}
+        document["datapoints"].append(second)
+
+        with pytest.raises(NotImplementedError, match="one time shift"):
+            self.convert(document, tmp_path)
+
+    def test_apparatus_without_speciation_type(self, tmp_path):
+        """Only the apparatus ReSpecTh has a speciation type for can be converted."""
+        document = speciation_document("counterflow twin flame", ("distance", "mm"))
+
+        with pytest.raises(NotImplementedError, match="no speciation measurement type"):
+            self.convert(document, tmp_path, skip_validation=True)
 
 
 @pytest.mark.usefixtures("mock_all_apis")
