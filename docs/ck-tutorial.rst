@@ -70,8 +70,10 @@ The Reference Section
 In the reference section, information about the experimental facility and the article where the data
 is published is collected. This information typically includes:
 
-    * the type of experiment (for now, only autoignition experiments are supported)
-    * the type and location of the experimental apparatus (rapid compression machine or shock tube)
+    * the type of experiment (ignition delay, laminar burning velocity, etc.)
+    * the type and location of the experimental apparatus (e.g., shock tube, rapid compression
+      machine, jet stirred reactor, flow reactor, or one of the other kinds listed in the
+      :ref:`apparatus schema <reference-apparatus>`)
     * the article authors and the journal, DOI, volume, and issue where the data was published
     * a note about where in the paper the data was collected from, if multiple data sets are
       presented in the same work
@@ -519,7 +521,30 @@ arguments in Python or the corresponding command-line options ``-fa`` and ``-fo`
 details can be found via ``respth2ck --help`` or
 ``help(pyked.converters.ReSpecTh_to_ChemKED)``, respectively.
 
+The converter reads both ReSpecTh 1.x and 2.x files, and handles all three ChemKED
+experiment types. ReSpecTh keeps four separate speciation experiment types
+(``concentration time profile measurement``, ``outlet concentration measurement``,
+``jet stirred reactor measurement``, and ``burner stabilized flame speciation
+measurement``); all four become ``speciation measurement`` in ChemKED.
+
+One case needs a human. ReSpecTh often records only the generic apparatus kind
+``flame``, leaving the burner to the ``mode`` elements. When those modes identify the
+configuration, for instance ``OPF`` or ``HFM``, the converter maps them to the matching
+ChemKED apparatus kind. When they only say something like ``premixed`` and ``laminar``,
+the apparatus is not in the file at all and the conversion stops rather than guess. Supply
+the kind from the article instead:
+
+.. code-block:: bash
+
+    respth2ck -i file.xml -o file.yaml -ak "outwardly propagating spherical flame"
+
+.. code-block:: Python
+
+    ReSpecTh_to_ChemKED('file.xml', apparatus_kind='outwardly propagating spherical flame')
+
 PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
+Writing ReSpecTh files is still limited to ignition delay data; a laminar burning
+velocity or speciation record raises `NotImplementedError`.
 Given a ChemKED file ``file.yaml``, a corresponding ReSpecTh file can be created
 from the command line via
 

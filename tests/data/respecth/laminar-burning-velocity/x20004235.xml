@@ -1,0 +1,53 @@
+<experiment>
+    <fileAuthor>Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary</fileAuthor>
+    <fileDOI>10.24388/x20004235</fileDOI>
+    <fileVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </fileVersion>
+    <ReSpecThVersion>
+        <major>2</major>
+        <minor>3</minor>
+    </ReSpecThVersion>
+    <firstPublicationDate>2021-10-29</firstPublicationDate>
+    <lastModificationDate>2021-10-29</lastModificationDate>
+    <bibliographyLink>
+        <description>B.E. Milton, J.C. Keck, Combustion and Flame 58 (1984), 13--22</description>
+        <referenceDOI>10.1016/0010-2180(84)90074-9</referenceDOI>
+        <location>Table 2</location>
+        <table>Table 2</table>
+        <details>
+            <author>B.E. Milton and J.C. Keck</author>
+            <journal>Combustion and Flame</journal>
+            <month>oct</month>
+            <number>1</number>
+            <pages>13--22</pages>
+            <publisher>Elsevier {BV}</publisher>
+            <title>Laminar burning velocities in stoichiometric hydrogen and hydrogen-hydrocarbon gas mixtures</title>
+            <volume>58</volume>
+            <year>1984</year>
+        </details>
+    </bibliographyLink>
+    <experimentType>laminar burning velocity measurement</experimentType>
+    <apparatus>
+        <kind>flame</kind>
+        <mode>premixed</mode>
+        <mode>laminar</mode>
+    </apparatus>
+    <commonProperties>
+        <property name="temperature"          label="T"  sourcetype="reported"    units="K"             ><value>435</value></property>
+        <property name="initial composition"  sourcetype="calculated" >
+            <component><speciesLink preferredKey="CH4"  CAS="74-82-8"    InChI="1S/CH4/h1H4"  SMILES="C"    chemName="methane"  /><amount units="mole fraction" >0.095890</amount></component>
+            <component><speciesLink preferredKey="O2"   CAS="7782-44-7"  InChI="1S/O2/c1-2"   SMILES="O=O"  chemName="oxygen"   /><amount units="mole fraction" >0.19178</amount></component>
+            <component><speciesLink preferredKey="N2"   CAS="7727-37-9"  InChI="1S/N2/c1-2"   SMILES="N#N"  chemName="nitrogen" /><amount units="mole fraction" >0.71233</amount></component>
+        </property>
+    </commonProperties>
+    <dataGroup id="dg1">
+        <property name="pressure"                      id="x1"   label="P"   sourcetype="reported"   units="atm"  />
+        <property name="laminar burning velocity"      id="x2"   label="Sl"  sourcetype="reported"   units="cm/s" />
+        <property name="evaluated standard deviation"  id="x3"   sourcetype="estimated"  units="cm/s"  reference="laminar burning velocity"  kind="absolute"  method="generic uncertainty" />
+
+        <dataPoint><x1>2.000000e+000</x1><x2>6.500000e+001</x2><x3>0.65</x3></dataPoint>
+        <dataPoint><x1>4.000000e+000</x1><x2>4.300000e+001</x2> <x3>0.5</x3></dataPoint>
+    </dataGroup>
+</experiment>

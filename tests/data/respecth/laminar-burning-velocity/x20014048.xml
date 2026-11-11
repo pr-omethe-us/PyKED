@@ -1,0 +1,55 @@
+<experiment>
+    <fileAuthor>Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary</fileAuthor>
+    <fileDOI>10.24388/x20014048</fileDOI>
+    <fileVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </fileVersion>
+    <ReSpecThVersion>
+        <major>2</major>
+        <minor>4</minor>
+    </ReSpecThVersion>
+    <firstPublicationDate>2023-10-04</firstPublicationDate>
+    <lastModificationDate>2023-10-04</lastModificationDate>
+    <bibliographyLink>
+        <description>S. Adusumilli, J. Seitzman, Combustion and Flame 233 (2021), 111564</description>
+        <referenceDOI>10.1016/j.combustflame.2021.111564</referenceDOI>
+        <details>
+            <author>Adusumilli, Sampath and Seitzman, Jerry</author>
+            <journal>Combustion and Flame</journal>
+            <pages>111564</pages>
+            <publisher>Elsevier Inc.</publisher>
+            <title>Laminar flame speed measurements of ethylene at high preheat temperatures and for diluted oxidizers</title>
+            <volume>233</volume>
+            <year>2021</year>
+        </details>
+    </bibliographyLink>
+    <experimentType>laminar burning velocity measurement</experimentType>
+    <apparatus>
+        <kind>flame</kind>
+        <mode>premixed</mode>
+    </apparatus>
+    <commonProperties>
+        <property name="temperature"                   sourcetype="reported"   units="K"        ><value>650</value></property>
+        <property name="pressure"                      sourcetype="reported"   units="atm"      ><value>1</value></property>
+        <property name="evaluated standard deviation"  sourcetype="estimated"  units="unitless"  reference="laminar burning velocity"  kind="relative"  method="combined from scatter and reported uncertainty" ><value>0.039</value></property>
+    </commonProperties>
+    <dataGroup id="dg1">
+        <property name="laminar burning velocity"  id="x1"   label="S1"    sourcetype="digitized"  units="cm/s"          />
+        <property name="composition"               id="x2"   label="C2H4"  sourcetype="reported"   units="mole fraction" >
+            <speciesLink preferredKey="C2H4"  CAS="74-85-1"    InChI="1S/C2H4/c1-2/h1-2H2"  SMILES="C=C"  chemName="ethene"   />
+        </property>
+        <property name="composition"               id="x3"   label="O2"    sourcetype="reported"   units="mole fraction" >
+            <speciesLink preferredKey="O2"    CAS="7782-44-7"  InChI="1S/O2/c1-2"           SMILES="O=O"  chemName="oxygen"   />
+        </property>
+        <property name="composition"               id="x4"   label="N2"    sourcetype="reported"   units="mole fraction" >
+            <speciesLink preferredKey="N2"    CAS="7727-37-9"  InChI="1S/N2/c1-2"           SMILES="N#N"  chemName="nitrogen" />
+        </property>
+
+        <dataPoint><x1>59.48</x1><x2>0.029126214</x2><x3>0.145631068</x3><x4>0.825242718</x4></dataPoint>
+        <dataPoint><x1>91.48</x1><x2>0.038461538</x2><x3>0.144230769</x3><x4>0.817307692</x4></dataPoint>
+        <dataPoint><x1>123.13</x1><x2>0.047619048</x2><x3>0.142857143</x3><x4>0.80952381</x4></dataPoint>
+        <dataPoint><x1>130.09</x1><x2>0.056603774</x2><x3>0.141509434</x3><x4>0.801886792</x4></dataPoint>
+        <dataPoint><x1>105.39</x1><x2>0.065420561</x2><x3>0.140186916</x3><x4>0.794392523</x4></dataPoint>
+    </dataGroup>
+</experiment>

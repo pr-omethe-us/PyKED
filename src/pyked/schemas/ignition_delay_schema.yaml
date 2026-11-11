@@ -13,6 +13,18 @@ ignition-type: &ignition-type
         - OH*
         - CH
         - CH*
+        - NH3
+        - CO2
+        - N2O
+        - CH4
+        - CO
+        - H2O
+        - C2
+        - O
+        - CH3OH
+        - CH3
+        - O2
+        - soot
     type:
       allowed:
         - d/dt max
@@ -20,8 +32,15 @@ ignition-type: &ignition-type
         - 1/2 max
         - min
         - d/dt max extrapolated
+        - d/dt min extrapolated
+        - relative concentration
+        - d/dt second max
+        - concentration
+        - relative increase
       required: true
       type: string
+    amount:
+      type: float
 
 time-history: &time-history
   type: dict
@@ -121,10 +140,10 @@ ignition-delay-schema: &ignition-delay-schema
           clearance: *value-unit-optional
           compression-ratio: *value-unit-optional
       temperature: *value-unit-required
-      composition: *composition
-      equivalence-ratio:
-        type: float
-        min: 0.0
+      composition:
+        <<: *composition
+        required: true
+      equivalence-ratio: *value-unit-optional
       time-histories:
         type: list
         minlength: 1

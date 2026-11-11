@@ -10,9 +10,16 @@ import yaml
 from pyked._version import __version__
 from pyked.validation import OurValidator, compare_name, property_units, schema
 
-schema["chemked-version"]["allowed"].append(__version__)
-
 v = OurValidator(schema)
+
+
+def test_current_version_is_allowed():
+    """The version the converters stamp into new files has to be an allowed one.
+
+    `get_file_metadata` writes ``__version__`` as the ``chemked-version`` of a converted file, so
+    a release that is missing from the schema makes every conversion fail validation.
+    """
+    assert __version__ in schema["chemked-version"]["allowed"]
 
 
 class TestCompareName:
@@ -435,7 +442,7 @@ class TestValidator:
     def properties(self, request):
         filename = Path("tests") / request.param
 
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.FullLoader)
 
     @pytest.mark.parametrize(
@@ -510,7 +517,7 @@ class TestValidator:
         """Ensure the datapoints list contains data"""
         properties["datapoints"] = []
         v.validate(properties)
-        assert v.errors["datapoints"][1]["oneof definition 0"][0] == "min length is 1"
+        assert v.errors["datapoints"][1]["anyof definition 0"][0] == "min length is 1"
 
     @pytest.fixture(scope="function")
     def time_history(self, request):
@@ -523,6 +530,18 @@ class TestValidator:
         history["time"] = {"units": "second", "column": 0}
         history["values"] = [[0, 1], [1, 2]]
         return history
+
+    @staticmethod
+    def validate_time_history(time_history):
+        """Validate a time history without needing a complete datapoint."""
+        time_history_schema = {
+            "time-histories": {
+                "type": "list",
+                "schema": {"type": "dict", "isvalid_history": True},
+            }
+        }
+        validator = OurValidator(time_history_schema)
+        return validator.validate({"time-histories": [time_history]})
 
     @pytest.mark.parametrize("quantity, unit", [("volume", "meter**3"), ("time", "second")])
     def test_dimensionality_error_unit(self, quantity, unit):
@@ -547,7 +566,7 @@ class TestValidator:
     )
     def test_time_history(self, time_history):
         """Test that the time history validation is working"""
-        assert v.validate({"datapoints": [{"time-histories": [time_history]}]}, update=True)
+        assert self.validate_time_history(time_history)
 
     @pytest.mark.parametrize(
         "time_history",
@@ -564,28 +583,28 @@ class TestValidator:
     )
     def test_time_history_bad_units(self, time_history):
         """Test that giving bad units to a time history results in a validation error"""
-        assert not v.validate({"datapoints": [{"time-histories": [time_history]}]}, update=True)
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_bad_time_units(self):
         """Test that giving bad units to the time in a time history results in a validation error"""
         time_history = {"type": "pressure", "quantity": {"units": "bar", "column": 1}}
         time_history["time"] = {"units": "candela*ampere", "column": 0}
         time_history["values"] = [[0, 1], [1, 2]]
-        assert not v.validate({"datapoints": [{"time-histories": [time_history]}]}, update=True)
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_not_enough_columns(self):
         """Test that not having enough columns in the value array results in a validation error"""
         time_history = {"type": "pressure", "quantity": {"units": "bar", "column": 1}}
         time_history["time"] = {"units": "second", "column": 0}
         time_history["values"] = [[0], [1]]
-        assert not v.validate({"datapoints": [{"time-histories": [time_history]}]}, update=True)
+        assert not self.validate_time_history(time_history)
 
     def test_time_history_too_many_columns(self):
         """Test that having too many columns in the value array results in a validation error"""
         time_history = {"type": "pressure", "quantity": {"units": "bar", "column": 1}}
         time_history["time"] = {"units": "second", "column": 0}
         time_history["values"] = [[0, 1, 2], [1, 2, 3]]
-        assert not v.validate({"datapoints": [{"time-histories": [time_history]}]}, update=True)
+        assert not self.validate_time_history(time_history)
 
     def test_invalid_experiment_type(self):
         """Ensure that an invalid experiment type is an error"""
@@ -597,12 +616,42 @@ class TestValidator:
         "valid_type",
         [
             "ignition delay",
+            "laminar burning velocity measurement",
+            "speciation measurement",
         ],
     )
     def test_valid_experiment_types(self, valid_type):
         """Ensure that all the valid experiment types are validated"""
         # update=True means to ignore required keys that are left out for testing
         assert v.validate({"experiment-type": valid_type}, update=True)
+
+    def test_invalid_apparatus_kind(self):
+        """Ensure that an apparatus kind outside the schema is an error"""
+        # update=True means to ignore required keys that are left out for testing
+        v.validate({"apparatus": {"kind": "internal combustion engine"}}, update=True)
+        assert (
+            v.errors["apparatus"][0]["kind"][0]
+            == "unallowed value internal combustion engine"
+        )
+
+    @pytest.mark.parametrize(
+        "valid_kind",
+        [
+            "shock tube",
+            "rapid compression machine",
+            "jet stirred reactor",
+            "flow reactor",
+            "burner stabilized flame",
+            "counterflow twin flame",
+            "heat flux burner",
+            "bunsen burner",
+            "outwardly propagating spherical flame",
+        ],
+    )
+    def test_valid_apparatus_kinds(self, valid_kind):
+        """Ensure that all the valid apparatus kinds are validated"""
+        # update=True means to ignore required keys that are left out for testing
+        assert v.validate({"apparatus": {"kind": valid_kind}}, update=True)
 
     @pytest.mark.parametrize(
         "valid_type",
@@ -665,7 +714,7 @@ class TestValidator:
         v.validate(properties)
         assert (
             "Species mole fractions do not sum to 1.0: 0.300000"
-            == v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["composition"][0]
+            == v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0]
         )
 
     @pytest.mark.parametrize("properties", ["testfile_bad.yaml"], indirect=["properties"])
@@ -680,7 +729,7 @@ class TestValidator:
         v.validate(properties)
         assert (
             "Species mass fractions do not sum to 1.0: 0.300000"
-            == v.errors["datapoints"][1]["oneof definition 0"][0][1][0]["composition"][0]
+            == v.errors["datapoints"][1]["anyof definition 0"][0][1][0]["composition"][0]
         )
 
     @pytest.mark.parametrize("properties", ["testfile_bad.yaml"], indirect=["properties"])
@@ -695,7 +744,7 @@ class TestValidator:
         v.validate(properties)
         assert (
             "Species mole percents do not sum to 100.0: 30.000000"
-            == v.errors["datapoints"][1]["oneof definition 0"][0][2][0]["composition"][0]
+            == v.errors["datapoints"][1]["anyof definition 0"][0][2][0]["composition"][0]
         )
 
     def test_composition_bounded(self):
@@ -736,10 +785,93 @@ class TestValidator:
             },
             update=True,
         )
-        errors = v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["composition"]
+        errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
         assert "Species A mass fraction must be less than 1.0" in errors
         assert "Species B mass fraction must be greater than 0.0" in errors
         assert "Species mass fractions do not sum to 1.0: 1.100000" in errors
+
+    @pytest.mark.parametrize("total", [1.0, 0.9999, 1.0001, 0.9995, 1.0005])
+    def test_composition_sum_within_tolerance(self, total):
+        """Compositions reported to a few digits sum close to 1.0 rather than onto it."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "A", "amount": [total - 0.5]},
+                {"species-name": "B", "amount": [0.5]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    @pytest.mark.parametrize("total", [0.99, 1.01, 0.9])
+    def test_composition_sum_outside_tolerance(self, total):
+        """A composition that misses 1.0 by more than round-off is still an error."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "A", "amount": [total - 0.5]},
+                {"species-name": "B", "amount": [0.5]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+        errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
+        assert any("do not sum to 1.0" in error for error in errors)
+
+    @pytest.mark.parametrize(
+        "amount",
+        [[0.0], [0.0, {"uncertainty-type": "relative", "uncertainty": 0.05}]],
+    )
+    def test_species_measured_as_absent(self, amount):
+        """A species can be measured at zero, whether or not it carries an uncertainty."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "H2", "amount": amount},
+                {"species-name": "N2", "amount": [1.0]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True), v.errors
+
+    @pytest.mark.parametrize(
+        "amount",
+        [[-0.1], [-0.1, {"uncertainty-type": "relative", "uncertainty": 0.05}]],
+    )
+    def test_negative_species_amount(self, amount):
+        """A negative amount is an error however it is written."""
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {"species-name": "H2", "amount": amount},
+                {"species-name": "N2", "amount": [1.1]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
+    def test_concentration_composition_kind(self, kind):
+        """Ensure concentration-style composition kinds are allowed."""
+        composition = {
+            "kind": kind,
+            "species": [
+                {"species-name": "A", "amount": [1.2]},
+                {"species-name": "B", "amount": [0.3]},
+            ],
+        }
+        assert v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    @pytest.mark.parametrize("kind", ["mol/cm3", "mol/m3", "mol/L", "mol/dm3"])
+    def test_concentration_composition_nonnegative(self, kind):
+        """Ensure concentration-style composition amounts cannot be negative."""
+        composition = {
+            "kind": kind,
+            "species": [
+                {"species-name": "A", "amount": [-0.1]},
+                {"species-name": "B", "amount": [1.1]},
+            ],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+        errors = v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"]
+        assert f"Species A {kind} must be greater than 0.0" in errors
+        assert not any("do not sum" in error for error in errors)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_relative_uncertainty_validation(self, quantity, unit):
@@ -788,6 +920,164 @@ class TestValidator:
                     },
                 ]
             }
+        )
+
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            {"uncertainty-type": "relative"},
+            {"uncertainty-sourcetype": "reported"},
+            {"evaluated-standard-deviation-type": "relative"},
+            {"evaluated-standard-deviation-sourcetype": "reported"},
+            {"evaluated-standard-deviation-method": "statistical scatter"},
+        ],
+    )
+    def test_uncertainty_metadata_requires_value(self, metadata):
+        """Ensure uncertainty/ESD labels alone do not validate as uncertainty metadata."""
+        uncertainty_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert not validator.validate({"temperature": ["1000 kelvin", metadata]})
+        assert "uncertainty metadata must contain" in validator.errors["temperature"][0]
+
+        assert not v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
+        composition = {
+            "kind": "mole fraction",
+            "species": [{"species-name": "A", "amount": [1.0, metadata]}],
+        }
+        assert not v.validate({"datapoints": [{"composition": composition}]}, update=True)
+
+    def test_evaluated_standard_deviation_metadata_value(self):
+        """Ensure ESD metadata validates when the ESD value is present."""
+        metadata = {
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+            "evaluated-standard-deviation-sourcetype": "reported",
+            "evaluated-standard-deviation-method": "statistical scatter",
+        }
+        uncertainty_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert validator.validate({"temperature": ["1000 kelvin", metadata]})
+        assert not v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
+
+    def test_common_property_uncertainty_requires_property_value(self):
+        """Common-property uncertainty metadata cannot appear without its property value."""
+        metadata = {"uncertainty-type": "relative", "uncertainty": 0.1}
+        assert not v.validate(
+            {"common-properties": {"temperature": [metadata]}}, update=True
+        )
+        assert v.validate(
+            {"common-properties": {"temperature": ["1000 kelvin", metadata]}},
+            update=True,
+        )
+
+    def test_profile_uncertainty_does_not_require_inline_measured_value(self):
+        """A profile may store shared uncertainty separately from its measured-values table."""
+        datapoint = {
+            "pressure": ["1 atm"],
+            "composition": {
+                "kind": "mole fraction",
+                "species": [
+                    {
+                        "species-name": "H2",
+                        "InChI": "1S/H2/h1H",
+                        "amount": [1.0],
+                    }
+                ],
+            },
+            "independent-variables": [{"name": "time", "units": "s"}],
+            "concentration-profiles": [
+                {
+                    "species-name": "H2",
+                    "InChI": "1S/H2/h1H",
+                    "quantity": {"units": "mole fraction"},
+                    "values": [[0.0, 0.1], [1.0, 0.2]],
+                    "uncertainty": [
+                        {"uncertainty-type": "relative", "uncertainty": 0.05}
+                    ],
+                }
+            ],
+        }
+        assert v.validate({"datapoints": [datapoint]}, update=True)
+
+    def test_evaluated_standard_deviation_requires_type(self):
+        """Ensure an ESD value without evaluated-standard-deviation-type is rejected."""
+        metadata = {"evaluated-standard-deviation": 0.1}
+        assert not v.validate(
+            {"common-properties": {"temperature": ["1000 kelvin", metadata]}}, update=True
+        )
+
+        composition = {
+            "kind": "mole fraction",
+            "species": [
+                {
+                    "species-name": "A",
+                    "amount": [1.0, {"evaluated-standard-deviation": 0.01}],
+                }
+            ],
+        }
+        assert not v.validate(
+            {"common-properties": {"composition": composition}}, update=True
+        )
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_absolute_evaluated_standard_deviation_validation(self, quantity, unit):
+        """Ensure absolute ESD values are validated with compatible units."""
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        assert validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": f"0.1 {unit}",
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_dimensionality_error_absolute_evaluated_standard_deviation(self, quantity, unit):
+        """Ensure absolute ESD values with bad units fail validation."""
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": "0.1 candela*ampere",
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+        assert validator.errors[quantity][0] == (
+            f"incompatible units; should be consistent with {unit}"
+        )
+
+    @pytest.mark.parametrize("quantity, unit", property_units.items())
+    def test_unitless_absolute_evaluated_standard_deviation(self, quantity, unit):
+        """Ensure unitless absolute ESD values fail for unitful fields."""
+        if unit == "dimensionless":
+            pytest.skip("unitless absolute ESD is valid for dimensionless fields")
+
+        uncertainty_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        validator = OurValidator(uncertainty_schema)
+        validator.validate(
+            {
+                quantity: [
+                    f"1.0 {unit}",
+                    {
+                        "evaluated-standard-deviation": 0.1,
+                        "evaluated-standard-deviation-type": "absolute",
+                    },
+                ]
+            }
+        )
+        assert validator.errors[quantity][0] == (
+            f"incompatible units; should be consistent with {unit}"
         )
 
     def test_missing_lower_upper_uncertainty(self):
@@ -840,8 +1130,8 @@ class TestValidator:
         error_str = "field 'lower-uncertainty' is required"
         assert (
             error_str
-            == v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["temperature"][1][
-                "oneof definition 0"
+            == v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["temperature"][1][
+                "anyof definition 0"
             ][0][1][0]["upper-uncertainty"][0]
         )
 
@@ -861,8 +1151,8 @@ class TestValidator:
         error_str = "field 'upper-uncertainty' is required"
         assert (
             error_str
-            == v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["temperature"][1][
-                "oneof definition 0"
+            == v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["temperature"][1][
+                "anyof definition 0"
             ][0][1][0]["lower-uncertainty"][0]
         )
 
@@ -901,6 +1191,56 @@ class TestValidator:
             }
         )
         assert v.errors[quantity][0] == f"incompatible units; should be consistent with {unit}"
+
+    # A quantity that is itself dimensionless is skipped: a fraction of it is in its units
+    @pytest.mark.parametrize(
+        "quantity, unit",
+        [(q, u) for q, u in property_units.items() if u != "dimensionless"],
+    )
+    @pytest.mark.parametrize(
+        "key, type_key",
+        [
+            ("uncertainty", "uncertainty-type"),
+            ("evaluated-standard-deviation", "evaluated-standard-deviation-type"),
+        ],
+    )
+    def test_relative_uncertainty_must_be_dimensionless(self, quantity, unit, key, type_key):
+        """A relative uncertainty is a fraction, so it cannot carry the units of the quantity."""
+        quant_schema = {quantity: {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        v.validate({quantity: [f"999 {unit}", {type_key: "relative", key: f"0.1 {unit}"}]})
+        assert v.errors[quantity][0] == (
+            f"a relative {key} is a fraction of the {quantity} value, so it must be "
+            f"dimensionless; got '0.1 {unit}'"
+        )
+
+    @pytest.mark.parametrize("value", ["0.1", 0.1, "0.1 dimensionless", "5 percent"])
+    def test_relative_uncertainty_without_units(self, value):
+        """A fraction validates whether it is written as a number or as a dimensionless one."""
+        quant_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        assert v.validate(
+            {"temperature": ["999 K", {"uncertainty-type": "relative", "uncertainty": value}]}
+        ), v.errors
+
+    @pytest.mark.parametrize(
+        "kind, value",
+        [
+            ("relative", "not a number"),
+            ("absolute", "not a number"),
+            ("absolute", "5 zorkmids"),
+        ],
+    )
+    def test_unreadable_uncertainty_is_an_error(self, kind, value):
+        """An uncertainty Pint cannot read is reported, rather than raised out of the validator."""
+        quant_schema = {"temperature": {"type": "list", "isvalid_uncertainty": True}}
+        v = OurValidator(quant_schema)
+        assert not v.validate(
+            {"temperature": ["999 K", {"uncertainty-type": kind, "uncertainty": value}]}
+        )
+        assert v.errors["temperature"][0] == (
+            f"'{value}' is not a value with units that can be understood"
+        )
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_incompatible_asym_uncertainty(self, quantity, unit):
@@ -992,9 +1332,9 @@ class TestValidator:
         error_str = "field 'lower-uncertainty' is required"
         assert (
             error_str
-            == v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["composition"][0][
+            == v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0][
                 "species"
-            ][0][0][0]["amount"][1]["oneof definition 1"][0][1][0]["upper-uncertainty"][0]
+            ][0][0][0]["amount"][1]["anyof definition 1"][0][1][0]["upper-uncertainty"][0]
         )
 
         species = [{"amount": [1.0, {"uncertainty-type": "relative", "lower-uncertainty": 0.1}]}]
@@ -1003,9 +1343,9 @@ class TestValidator:
         error_str = "field 'upper-uncertainty' is required"
         assert (
             error_str
-            == v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["composition"][0][
+            == v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0][
                 "species"
-            ][0][0][0]["amount"][1]["oneof definition 1"][0][1][0]["lower-uncertainty"][0]
+            ][0][0][0]["amount"][1]["anyof definition 1"][0][1][0]["lower-uncertainty"][0]
         )
 
     def test_incorrect_composition_kind(self):
@@ -1020,10 +1360,22 @@ class TestValidator:
         species = [{"amount": [1.0]}]
         dp = {"datapoints": [{"composition": {"kind": "bad value", "species": species}}]}
         v.validate(dp, update=True)
-        error_str = 'composition kind must be "mole percent", "mass fraction", or "mole fraction"'
-        assert (
-            v.errors["datapoints"][1]["oneof definition 0"][0][0][0]["composition"][0] == error_str
+        error_str = (
+            'composition kind must be "mole percent", "mass fraction", "mole fraction", '
+            '"mol/cm3", "mol/m3", "mol/L", or "mol/dm3"'
         )
+        assert (
+            v.errors["datapoints"][1]["anyof definition 0"][0][0][0]["composition"][0] == error_str
+        )
+
+    @pytest.mark.parametrize("properties", ["testfile_st.yaml"], indirect=["properties"])
+    def test_composition_required(self, properties, mock_all_apis):
+        """A datapoint missing composition must fail validation, not crash at load."""
+        for datapoint in properties["datapoints"]:
+            datapoint.pop("composition", None)
+        assert not v.validate(properties)
+        errors = str(v.errors["datapoints"])
+        assert "composition" in errors and "required field" in errors
 
     @pytest.mark.parametrize("properties", ["testfile_st_thermo.yaml"], indirect=["properties"])
     def test_composition_thermo(self, properties, mock_all_apis):

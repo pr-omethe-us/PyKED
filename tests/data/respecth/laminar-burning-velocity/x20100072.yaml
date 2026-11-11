@@ -1,0 +1,289 @@
+---
+file-authors:
+  - name: András Szanthoffer, Chemical Kinetics Laboratory, Institute of Chemistry,
+      ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1016/j.combustflame.2021.111472
+  authors:
+    - name: Bowen Mei
+    - name: Jianguo Zhang
+    - name: Xiaoxiang Shi
+    - name: Zhongya Xi
+    - name: Yuyang Li
+  journal: Combustion and Flame
+  year: 2021
+  volume: 231
+  pages: '111472'
+  detail: Converted from ReSpecTh XML file x20100072.xml
+experiment-type: laminar burning velocity measurement
+apparatus:
+  kind: outwardly propagating spherical flame
+  institution: ''
+  facility: ''
+comments:
+  - The composition of air was reported to be 79% N2 and 21% O2.
+common-properties:
+  temperature: &id001
+    - 298 K
+  pressure: &id002
+    - 1 atm
+datapoints:
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.092279
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.092279
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.164783
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.650659
+    equivalence-ratio:
+      - 0.7 dimensionless
+    laminar-burning-velocity:
+      - 20.16 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 0.97 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.558 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.102314
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.102314
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.159866
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.635505
+    equivalence-ratio:
+      - 0.8 dimensionless
+    laminar-burning-velocity:
+      - 26.26 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.04 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.629 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.111768
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.111768
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.155234
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.62123
+    equivalence-ratio:
+      - 0.9 dimensionless
+    laminar-burning-velocity:
+      - 32.38 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.13 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.714 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.12069
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.12069
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.150862
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.607759
+    equivalence-ratio:
+      - 1 dimensionless
+    laminar-burning-velocity:
+      - 35.66 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.13 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.744 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.129122
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.129122
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.14673
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.595025
+    equivalence-ratio:
+      - 1.1 dimensionless
+    laminar-burning-velocity:
+      - 38.11 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.19 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.787 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.137106
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.137106
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.142818
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.582971
+    equivalence-ratio:
+      - 1.2 dimensionless
+    laminar-burning-velocity:
+      - 35.81 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.13 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.744 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.144674
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.144674
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.13911
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.571542
+    equivalence-ratio:
+      - 1.3 dimensionless
+    laminar-burning-velocity:
+      - 30.65 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 1.02 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.657 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+  - composition:
+      kind: mole fraction
+      species:
+        - species-name: NH3
+          InChI: 1S/H3N/h1H3
+          amount:
+            - 0.15186
+        - species-name: H2
+          InChI: 1S/H2/h1H
+          amount:
+            - 0.15186
+        - species-name: O2
+          InChI: 1S/O2/c1-2
+          amount:
+            - 0.135589
+        - species-name: N2
+          InChI: 1S/N2/c1-2
+          amount:
+            - 0.560692
+    equivalence-ratio:
+      - 1.4 dimensionless
+    laminar-burning-velocity:
+      - 24.82 cm/s
+      - uncertainty-type: absolute
+        uncertainty: 0.93 cm/s
+        uncertainty-sourcetype: reported
+        evaluated-standard-deviation: 0.574 cm/s
+        evaluated-standard-deviation-type: absolute
+        evaluated-standard-deviation-sourcetype: estimated
+        evaluated-standard-deviation-method: combined from scatter and reported uncertainty
+    temperature: *id001
+    pressure: *id002
+...

@@ -5,7 +5,7 @@ composition: &composition
   schema:
     kind:
       type: string
-      allowed: ['mass fraction', 'mole fraction', 'mole percent']
+      allowed: ['mass fraction', 'mole fraction', 'mole percent', 'mol/cm3', 'mol/m3', 'mol/L', 'mol/dm3']
     species:
       type: list
       required: true
@@ -58,7 +58,6 @@ composition: &composition
             type: string
             empty: false
             isvalid_inchi: true
-            required: true
             excludes:
               - atomic-composition
               - SMILES
@@ -66,14 +65,12 @@ composition: &composition
             type: string
             empty: false
             isvalid_smiles: true
-            required: true
             excludes:
               - atomic-composition
               - InChI
           atomic-composition:
             type: list
             minlength: 1
-            required: true
             excludes:
               - InChI
               - SMILES
@@ -89,32 +86,12 @@ composition: &composition
           amount:
             required: true
             type: list
-            oneof:
+            anyof:
               - items:
                 - type: float
-              - items:
-                - type: float
-                - type: dict
-                  schema:
-                    uncertainty-type:
-                      required: true
-                      type: string
-                      allowed:
-                        - absolute
-                        - relative
-                    uncertainty:
-                      required: true
-                      type: float
-                      excludes:
-                        - upper-uncertainty
-                        - lower-uncertainty
-                    upper-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: lower-uncertainty
-                    lower-uncertainty:
-                      required: true
-                      type: float
-                      excludes: uncertainty
-                      dependencies: upper-uncertainty
+              - isvalid_uncertainty: true
+                items:
+                  # The amount itself is a number, with the units given by the composition kind
+                  - type: float
+                  # The uncertainty about it is described exactly as for any other quantity
+                  - *uncertainty-metadata

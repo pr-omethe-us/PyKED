@@ -7,6 +7,8 @@
 !include value_unit_schema.yaml
 !include composition_schema.yaml
 !include ignition_delay_schema.yaml
+!include laminar_burning_velocity_measurement_schema.yaml
+!include speciation_measurement_schema.yaml
 ######################################################
 
 # Common reference for authors' information
@@ -26,9 +28,26 @@ common-properties:
   type: dict
   schema:
     pressure: *value-unit-optional
-    ignition-type: *ignition-type
+    temperature: *value-unit-optional
+    ignition-type:
+      <<: *ignition-type
+      required: false
+    ignition-delay: *value-unit-optional
     composition: *composition
     pressure-rise: *value-unit-optional
+    residence-time: *value-unit-optional
+    reactor-volume: *value-unit-optional
+    flow-rate: *value-unit-optional
+    laminar-burning-velocity: *value-unit-optional
+    environment-temperature: *value-unit-optional
+    global-heat-exchange-coefficient: *value-unit-optional
+    exchange-area: *value-unit-optional
+    reactor-length: *value-unit-optional
+    reactor-diameter: *value-unit-optional
+    pressure-in-reference-state: *value-unit-optional
+    temperature-in-reference-state: *value-unit-optional
+    volumetric-flow-in-reference-state: *value-unit-optional
+    equivalence-ratio: *value-unit-optional
 
 apparatus:
   required: true
@@ -38,6 +57,13 @@ apparatus:
       allowed:
         - shock tube
         - rapid compression machine
+        - jet stirred reactor
+        - flow reactor # A reactor the mixture flows through unstirred, as in a tube
+        - burner stabilized flame
+        - counterflow twin flame # ReSpecTh CTF (counterflow twin flame)
+        - heat flux burner # ReSpecTh HFM (heat flux method)
+        - bunsen burner # ReSpecTh FCM (flame cone method)
+        - outwardly propagating spherical flame # ReSpecTh OPF (outwardly propagating flame)
       required: true
       type: string
     institution:
@@ -46,8 +72,12 @@ apparatus:
       type: string
 datapoints:
   required: true
-  oneof:
+  # Checks the datapoints and the apparatus against experiment-type, which anyof cannot do
+  isvalid_experiment: true
+  anyof:
     - *ignition-delay-schema
+    - *laminar-burning-velocity-measurement-schema
+    - *speciation-measurement-schema
 reference:
   required: true
   type: dict
@@ -89,11 +119,14 @@ chemked-version:  # TODO: Implement proper version comparison
     - 0.4.0
     - 0.4.1
     - 0.5.0a0
+    - 0.5.0
   required: true
   type: string
 experiment-type:
   allowed:
     - ignition delay
+    - laminar burning velocity measurement
+    - speciation measurement
   required: true
   type: string
 file-authors:
@@ -104,3 +137,9 @@ file-authors:
 file-version:
   required: true
   type: integer
+comments:
+  type: list
+  schema:
+    type: string
+method:
+  type: string

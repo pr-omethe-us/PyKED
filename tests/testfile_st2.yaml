@@ -53,5 +53,6 @@ datapoints:
     composition: *comp
     pressure-rise: *pres-rise
     ignition-type: *ign
-    equivalence-ratio: 0.4
+    equivalence-ratio:
+      - 0.4
 ...

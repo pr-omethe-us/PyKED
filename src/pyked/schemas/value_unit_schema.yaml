@@ -1,3 +1,61 @@
+# Common reference for the uncertainty metadata that may accompany any quantity.
+#
+# Referenced by every quantity that can carry an uncertainty: the value-unit schemas below, a
+# species amount in composition_schema.yaml, and a concentration profile in
+# speciation_measurement_schema.yaml. Define it once here so those cannot drift apart.
+uncertainty-metadata: &uncertainty-metadata
+  type: dict
+  schema:
+    uncertainty-type:
+      type: string
+      allowed:
+        - absolute
+        - relative
+    uncertainty:
+      anyof_type:
+        - string
+        - float
+      excludes:
+        - upper-uncertainty
+        - lower-uncertainty
+      dependencies:
+        - uncertainty-type
+    upper-uncertainty:
+      anyof_type:
+        - string
+        - float
+      excludes:
+        - uncertainty
+      dependencies:
+        - lower-uncertainty
+        - uncertainty-type
+    lower-uncertainty:
+      anyof_type:
+        - string
+        - float
+      excludes:
+        - uncertainty
+      dependencies:
+        - upper-uncertainty
+        - uncertainty-type
+    uncertainty-sourcetype:
+      type: string
+    evaluated-standard-deviation:
+      anyof_type:
+        - string
+        - float
+      dependencies:
+        - evaluated-standard-deviation-type
+    evaluated-standard-deviation-type:
+      type: string
+      allowed:
+        - absolute
+        - relative
+    evaluated-standard-deviation-sourcetype:
+      type: string
+    evaluated-standard-deviation-method:
+      type: string
+
 # Common reference for value-unit schema
 value-with-uncertainty: &value-with-uncertainty
   isvalid_uncertainty: true
@@ -5,40 +63,7 @@ value-with-uncertainty: &value-with-uncertainty
     - anyof_type:
       - string
       - float
-    - type: dict
-      schema:
-        uncertainty-type:
-          required: true
-          type: string
-          allowed:
-            - absolute
-            - relative
-        uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - upper-uncertainty
-            - lower-uncertainty
-        upper-uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - lower-uncertainty
-        lower-uncertainty:
-          required: true
-          anyof_type:
-            - string
-            - float
-          excludes:
-            - uncertainty
-          dependencies:
-            - upper-uncertainty
+    - *uncertainty-metadata
 value-without-uncertainty: &value-without-uncertainty
   isvalid_quantity: true
   items:
@@ -48,11 +73,11 @@ value-without-uncertainty: &value-without-uncertainty
 value-unit-required: &value-unit-required
   type: list
   required: true
-  oneof:
+  anyof:
     - *value-with-uncertainty
     - *value-without-uncertainty
 value-unit-optional: &value-unit-optional
   type: list
-  oneof:
+  anyof:
     - *value-with-uncertainty
     - *value-without-uncertainty

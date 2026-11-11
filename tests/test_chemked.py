@@ -12,14 +12,11 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
-from pyked._version import __version__
 from pyked.chemked import ChemKED, Composition, DataPoint
 from pyked.converters import get_common_properties, get_datapoints
 
 # Local imports
 from pyked.validation import Q_, OurValidator, schema, yaml
-
-schema["chemked-version"]["allowed"].append(__version__)
 
 warnings.simplefilter("always")
 
@@ -51,6 +48,7 @@ class TestChemKED:
             assert d.pressure_rise is None
             assert d.volume_history is None
             assert d.rcm_data is None
+            assert d.equivalence_ratio == 0.4
             assert d.ignition_type["type"] == "d/dt max"
             assert d.ignition_type["target"] == "pressure"
 
@@ -61,14 +59,14 @@ class TestChemKED:
 
     def test_dict_input(self):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         ChemKED(dict_input=properties)
 
     def test_unallowed_input(self, capfd):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties["experiment-type"] = "Ignition Delay"  # should be 'ignition delay'
@@ -77,14 +75,15 @@ class TestChemKED:
             ChemKED(dict_input=properties)
 
         out, _err = capfd.readouterr()
-        assert out == (
-            "experiment-type has an illegal value. Allowed values are ['ignition "
-            "delay'] and are case sensitive.\n"
-        )
+        assert "experiment-type has an illegal value. Allowed values are [" in out
+        assert "'ignition delay'" in out
+        assert "'laminar burning velocity measurement'" in out
+        assert "'speciation measurement'" in out
+        assert "and are case sensitive." in out
 
     def test_missing_input(self, capfd):
         file_path = Path("tests") / "testfile_required.yaml"
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         properties.pop("apparatus")
@@ -205,12 +204,12 @@ class TestWriteFile:
     def test_overwrite(self):
         """ """
         yaml_filename = Path("tests") / "testfile_st.yaml"
-        with open(yaml_filename) as f:
+        with open(yaml_filename, encoding="utf-8") as f:
             lines = f.readlines()
 
         with TemporaryDirectory() as temp_dir:
             newfile_path = Path(temp_dir) / "testfile.yaml"
-            with open(newfile_path, "w") as f:
+            with open(newfile_path, "w", encoding="utf-8") as f:
                 f.writelines(lines)
             c = ChemKED(newfile_path)
 
@@ -241,7 +240,7 @@ class TestWriteFile:
             c.write_file(Path(temp_dir) / "testfile.yaml")
 
             # Now read in the file
-            with open(Path(temp_dir) / "testfile.yaml") as f:
+            with open(Path(temp_dir) / "testfile.yaml", encoding="utf-8") as f:
                 properties = yaml.safe_load(f)
 
         assert properties == c._properties
@@ -282,7 +281,7 @@ class TestConvertToReSpecTh:
     def test_time_history_conversion_to_respecth(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with time histories."""
         filename = Path("tests") / "testfile_rcm.yaml"
-        with open(filename) as yaml_file:
+        with open(filename, encoding="utf-8") as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
         properties["datapoints"][0]["time-histories"][0]["quantity"]["units"] = unit
@@ -317,7 +316,7 @@ class TestConvertToReSpecTh:
     def test_time_history_conversion_to_respecth_unsupported(self, history_type, unit):
         """Test proper conversion to ReSpecTh XML with unsupported time histories."""
         filename = Path("tests") / "testfile_rcm.yaml"
-        with open(filename) as yaml_file:
+        with open(filename, encoding="utf-8") as yaml_file:
             properties = yaml.safe_load(yaml_file)
         properties["datapoints"][0]["time-histories"][0]["type"] = history_type
         properties["datapoints"][0]["time-histories"][0]["quantity"]["units"] = unit
@@ -350,16 +349,12 @@ class TestConvertToReSpecTh:
     @pytest.mark.parametrize(
         "experiment_type",
         [
-            "Laminar flame speed measurement",
-            "Species profile measurement",
-            "Outlet concentration measurement",
-            "Burner stabilized flame speciation measurement",
-            "Jet-stirred reactor measurement",
-            "Reaction rate coefficient measurement",
+            "laminar burning velocity measurement",
+            "speciation measurement",
         ],
     )
     def test_conversion_to_respecth_error(self, experiment_type):
-        """Test for conversion errors."""
+        """Only ignition delay can be written back out to ReSpecTh."""
         filename = Path("tests") / "testfile_st.yaml"
         c = ChemKED(filename)
 
@@ -581,7 +576,7 @@ class TestDataPoint:
 
     def load_properties(self, test_file):
         filename = Path("tests") / test_file
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             properties = yaml.safe_load(f)
 
         v = OurValidator(schema)
@@ -938,6 +933,133 @@ class TestDataPoint:
             with pytest.raises(ValueError):
                 DataPoint(properties[1])
             properties[1]["composition"]["species"][2]["amount"][1][prop] = save
+
+    def test_evaluated_standard_deviation_metadata_without_uncertainty(self):
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        metadata = {
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+        }
+        datapoint = properties["datapoints"][0]
+        datapoint["temperature"].append(deepcopy(metadata))
+        datapoint["equivalence-ratio"].append(deepcopy(metadata))
+        datapoint["composition"]["species"][0]["amount"].append(deepcopy(metadata))
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.temperature, Q_(1164.48, "kelvin"))
+        assert datapoint.equivalence_ratio == 0.4
+        assert np.isclose(datapoint.composition["H2"].amount, Q_(0.00444))
+
+    def test_uncertainty_type_with_esd_only_metadata(self):
+        """uncertainty-type alongside an ESD value but no uncertainty value must not crash."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        metadata = {
+            "uncertainty-type": "relative",
+            "evaluated-standard-deviation": 0.1,
+            "evaluated-standard-deviation-type": "relative",
+        }
+        properties["datapoints"][0]["temperature"].append(metadata)
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.temperature, Q_(1164.48, "kelvin"))
+        assert not hasattr(datapoint.temperature, "error")
+
+    def test_evaluated_standard_deviation_is_stored(self):
+        """ESD metadata is stored on the DataPoint and on composition amounts."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        datapoint = properties["datapoints"][0]
+        datapoint["temperature"].append(
+            {
+                "evaluated-standard-deviation": "10.0 kelvin",
+                "evaluated-standard-deviation-type": "absolute",
+                "evaluated-standard-deviation-sourcetype": "reported",
+            }
+        )
+        datapoint["ignition-delay"].append(
+            {
+                "evaluated-standard-deviation": 0.15,
+                "evaluated-standard-deviation-type": "relative",
+                "evaluated-standard-deviation-method": "statistical scatter",
+            }
+        )
+        datapoint["composition"]["species"][0]["amount"].append(
+            {
+                "evaluated-standard-deviation": 0.0002,
+                "evaluated-standard-deviation-type": "absolute",
+            }
+        )
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+
+        esd = datapoint.evaluated_standard_deviation["temperature"]
+        assert esd.value == Q_("10.0 kelvin")
+        assert esd.type == "absolute"
+        assert esd.sourcetype == "reported"
+
+        esd = datapoint.evaluated_standard_deviation["ignition_delay"]
+        assert esd.value == 0.15
+        assert esd.type == "relative"
+        assert esd.method == "statistical scatter"
+
+        assert datapoint.composition["H2"].amount_esd.value == Q_(0.0002)
+        assert datapoint.composition["O2"].amount_esd is None
+        assert "pressure" not in datapoint.evaluated_standard_deviation
+
+    def test_unit_normalization_matches_validation(self):
+        """Unit strings accepted by validation must also parse at load time."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        properties["datapoints"][0]["pressure"] = [
+            "220000 kg m-1 s-2",
+            {
+                "uncertainty-type": "absolute",
+                "uncertainty": "1000 kg m-1 s-2",
+                "evaluated-standard-deviation": "2000 kg m-1 s-2",
+                "evaluated-standard-deviation-type": "absolute",
+            },
+        ]
+
+        chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.pressure.value.to("pascal").magnitude, 220000)
+        assert np.isclose(datapoint.pressure.error.to("pascal").magnitude, 1000)
+        esd = datapoint.evaluated_standard_deviation["pressure"]
+        assert np.isclose(esd.value.to("pascal").magnitude, 2000)
+
+    def test_unit_normalization_asymmetric_uncertainty(self):
+        """Asymmetric absolute uncertainties must normalize like the main value."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+
+        properties["datapoints"][0]["pressure"] = [
+            "220000 kg m-1 s-2",
+            {
+                "uncertainty-type": "absolute",
+                "upper-uncertainty": "2000 kg m-1 s-2",
+                "lower-uncertainty": "1000 kg m-1 s-2",
+            },
+        ]
+
+        with pytest.warns(UserWarning):
+            chemked = ChemKED(dict_input=properties)
+        datapoint = chemked.datapoints[0]
+        assert np.isclose(datapoint.pressure.value.to("pascal").magnitude, 220000)
+        assert np.isclose(datapoint.pressure.error.to("pascal").magnitude, 2000)
 
     def test_volume_history(self):
         """Test that volume history works properly.

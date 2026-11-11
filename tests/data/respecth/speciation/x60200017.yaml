@@ -1,0 +1,92 @@
+---
+file-authors:
+  - name: Chemical Kinetics Laboratory, Institute of Chemistry, ELTE, Budapest, Hungary
+file-version: 0
+chemked-version: 0.5.0a0
+reference:
+  doi: 10.1016/0010-2180(90)90102-W
+  authors:
+    - name: Richard J. Martin
+    - name: Nancy J. Brown
+  journal: Combustion and Flame
+  year: 1990
+  volume: 80
+  pages: 238-255
+  detail: Converted from ReSpecTh XML file x60200017.xml
+experiment-type: speciation measurement
+apparatus:
+  kind: burner stabilized flame
+  institution: ''
+  facility: ''
+comments:
+  - The inlet gas temperature is not given only the burner surface temperasture. Acceptable?
+  - 'The flow rate (F) was calculated by the following data and formula: F[sccm] =
+    40675 sccm, M_average = 31.69 g/mol, d = 6 cm, A = (d/2)^2*PI; F[kg m-2 s-1] =
+    const * F[sccm] * M_average / A . Where const = 6,905*10^-7 (=p/R/T/6E7)'
+  - I assumed the standard temperature in this definition is 294.26 K, and the pressure
+    is 1 atm.
+common-properties:
+  temperature: &id001
+    - 970 K
+  pressure: &id002
+    - 1 atm
+  flow-rate: &id003
+    - 0.3148 kg * m**-2 * s**-1
+  composition: &id004
+    kind: mole fraction
+    species:
+      - species-name: H2
+        InChI: 1S/H2/h1H
+        amount:
+          - 0.1914
+      - species-name: O2
+        InChI: 1S/O2/c1-2
+        amount:
+          - 0.1186
+      - species-name: Ar
+        InChI: 1S/Ar
+        amount:
+          - 0.6879
+      - species-name: 'NO'
+        InChI: 1S/NO/c1-2
+        amount:
+          - 0.0021
+datapoints:
+  - temperature: *id001
+    pressure: *id002
+    flow-rate: *id003
+    composition: *id004
+    independent-variables:
+      - name: distance
+        units: mm
+        primary: true
+    concentration-profiles:
+      - species-name: N2
+        InChI: 1S/N2/c1-2
+        quantity:
+          units: mole fraction
+        values:
+          - [0.674, 7.197e-05]
+          - [1.058, 6.497e-05]
+          - [1.549, 9.65e-05]
+          - [2.234, 4.618e-05]
+          - [4.105, 9.013e-05]
+        uncertainty:
+          - evaluated-standard-deviation: 2.4e-05
+            evaluated-standard-deviation-type: absolute
+            evaluated-standard-deviation-sourcetype: estimated
+            evaluated-standard-deviation-method: statistical scatter
+    auxiliary-profiles:
+      - type: temperature
+        independent:
+          name: distance
+          units: mm
+        quantity:
+          units: K
+        values:
+          - [0.674, 1662.0]
+          - [1.058, 1662.0]
+          - [1.549, 1659.0]
+          - [2.234, 1656.0]
+          - [4.105, 1650.0]
+...
