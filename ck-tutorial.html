@@ -520,7 +520,7 @@ either from the command line</p>
 </div>
 <p>or via Python:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyked.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReSpecTh_to_ChemKED</span>
-<span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;file.yaml&#39;</span><span class="p">)</span>
+<span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">'file.xml'</span><span class="p">,</span> <span class="s1">'file.yaml'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Information about the person creating this new ChemKED file (e.g., file author name
@@ -539,15 +539,15 @@ configuration, for instance <code class="docutils literal notranslate"><span cla
 ChemKED apparatus kind. When they only say something like <code class="docutils literal notranslate"><span class="pre">premixed</span></code> and <code class="docutils literal notranslate"><span class="pre">laminar</span></code>,
 the apparatus is not in the file at all and the conversion stops rather than guess. Supply
 the kind from the article instead:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>respth2ck<span class="w"> </span>-i<span class="w"> </span>file.xml<span class="w"> </span>-o<span class="w"> </span>file.yaml<span class="w"> </span>-ak<span class="w"> </span><span class="s2">&quot;outwardly propagating spherical flame&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>respth2ck<span class="w"> </span>-i<span class="w"> </span>file.xml<span class="w"> </span>-o<span class="w"> </span>file.yaml<span class="w"> </span>-ak<span class="w"> </span><span class="s2">"outwardly propagating spherical flame"</span>
 </pre></div>
 </div>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">,</span> <span class="n">apparatus_kind</span><span class="o">=</span><span class="s1">&#39;outwardly propagating spherical flame&#39;</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ReSpecTh_to_ChemKED</span><span class="p">(</span><span class="s1">'file.xml'</span><span class="p">,</span> <span class="n">apparatus_kind</span><span class="o">=</span><span class="s1">'outwardly propagating spherical flame'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
 Writing ReSpecTh files is still limited to ignition delay data; a laminar burning
-velocity or speciation record raises <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a>.
+velocity or speciation record raises <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a>.
 Given a ChemKED file <code class="docutils literal notranslate"><span class="pre">file.yaml</span></code>, a corresponding ReSpecTh file can be created
 from the command line via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ck2respth<span class="w"> </span>-i<span class="w"> </span>file.yaml<span class="w"> </span>-o<span class="w"> </span>file.xml
@@ -555,8 +555,8 @@ from the command line via</p>
 </div>
 <p>or from inside Python with</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyked</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChemKED</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="s1">&#39;file.yaml&#39;</span><span class="p">)</span>
-<span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="s1">&#39;file.xml&#39;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="s1">'file.yaml'</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_to_ReSpecTh</span><span class="p">(</span><span class="s1">'file.xml'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that some information, or granularity of details, may be lost in this conversion.</p>
@@ -647,7 +647,7 @@ Budapest, Hungary.</p>
 <li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identifier.html">Identifier</a></li>
 </ul>
 
 <div class="relations">
@@ -675,7 +675,7 @@ Budapest, Hungary.</p>
       &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.2.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

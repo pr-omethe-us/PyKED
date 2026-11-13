@@ -15,7 +15,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ORCID" href="orcid.html" />
+    <link rel="next" title="Identifier" href="identifier.html" />
     <link rel="prev" title="Converters" href="converters.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -52,25 +52,25 @@
 “K Niemeyer”. Other possibilities include names with hyphens such as
 “Chih-Jen Sung”, “C. J. Sung”, “C-J Sung”.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compare_name</span><span class="p">(</span><span class="s1">&#39;Kyle&#39;</span><span class="p">,</span> <span class="s1">&#39;Niemeyer&#39;</span><span class="p">,</span> <span class="s1">&#39;Kyle E Niemeyer&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compare_name</span><span class="p">(</span><span class="s1">'Kyle'</span><span class="p">,</span> <span class="s1">'Niemeyer'</span><span class="p">,</span> <span class="s1">'Kyle E Niemeyer'</span><span class="p">)</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">compare_name</span><span class="p">(</span><span class="s1">&#39;Chih-Jen&#39;</span><span class="p">,</span> <span class="s1">&#39;Sung&#39;</span><span class="p">,</span> <span class="s1">&#39;C-J Sung&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compare_name</span><span class="p">(</span><span class="s1">'Chih-Jen'</span><span class="p">,</span> <span class="s1">'Sung'</span><span class="p">,</span> <span class="s1">'C-J Sung'</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>given_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Given (or first) name to be checked against.</p></li>
-<li><p><strong>family_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Family (or last) name to be checked against.</p></li>
-<li><p><strong>question_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – The whole name in question.</p></li>
+<li><p><strong>given_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Given (or first) name to be checked against.</p></li>
+<li><p><strong>family_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Family (or last) name to be checked against.</p></li>
+<li><p><strong>question_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – The whole name in question.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The return value. True for successful comparison, False otherwise.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -133,7 +133,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#pyked.validation.units"><code class="docutils literal notranslate"><span class="pre">units</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identifier.html">Identifier</a></li>
 </ul>
 
 <div class="relations">
@@ -141,7 +141,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="converters.html" title="previous chapter">Converters</a></li>
-      <li>Next: <a href="orcid.html" title="next chapter">ORCID</a></li>
+      <li>Next: <a href="identifier.html" title="next chapter">Identifier</a></li>
   </ul></li>
 </ul>
 </div>
@@ -161,7 +161,7 @@
       &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.2.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

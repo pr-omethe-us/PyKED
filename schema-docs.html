@@ -391,12 +391,15 @@ element of the sequence is a mapping with the following keys:</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">InChI</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">SMILES</span></code>, <code class="docutils literal notranslate"><span class="pre">atomic-composition</span></code></dt><dd><p>The InChI string for the species</p>
+<dt><code class="docutils literal notranslate"><span class="pre">InChI</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">SMILES</span></code>, <code class="docutils literal notranslate"><span class="pre">atomic-composition</span></code></dt><dd><p>The InChI string for the species. PyKED validates the identifier offline by parsing it
+with RDKit. Both a complete identifier beginning with <code class="docutils literal notranslate"><span class="pre">InChI=</span></code> and the historical
+ChemKED prefixless form (for example, <code class="docutils literal notranslate"><span class="pre">1S/H2/h1H</span></code>) are accepted.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">SMILES</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">InChI</span></code>, <code class="docutils literal notranslate"><span class="pre">atomic-composition</span></code></dt><dd><p>The SMILES string for the species</p>
+<dt><code class="docutils literal notranslate"><span class="pre">SMILES</span></code>: string, required, excludes <code class="docutils literal notranslate"><span class="pre">InChI</span></code>, <code class="docutils literal notranslate"><span class="pre">atomic-composition</span></code></dt><dd><p>The SMILES string for the species. PyKED validates the identifier offline by parsing
+and sanitizing it with RDKit.</p>
 </dd>
 </dl>
 </li>
@@ -1200,7 +1203,7 @@ volume at the time points. Can be entered in any supported syntax, including:</p
 <li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identifier.html">Identifier</a></li>
 </ul>
 
 <div class="relations">
@@ -1228,7 +1231,7 @@ volume at the time points. Can be entered in any supported syntax, including:</p
       &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.2.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

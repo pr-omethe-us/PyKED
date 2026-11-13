@@ -139,7 +139,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="n">rcm_link</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/pr-omethe-us/PyKED/main/tests/testfile_rcm.yaml&quot;</span>
+<span class="n">rcm_link</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/pr-omethe-us/PyKED/main/tests/testfile_rcm.yaml"</span>
 <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">rcm_link</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
     <span class="n">testfile_rcm</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 <span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">testfile_rcm</span><span class="p">)</span>
@@ -153,8 +153,8 @@ retrieve the initial mixture mole fractions in a format Cantera will understand:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;K&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-<span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;Pa&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"K"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+<span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"Pa"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="n">X_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -165,7 +165,7 @@ retrieve the initial mixture mole fractions in a format Cantera will understand:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">&quot;gri30.xml&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">"gri30.xml"</span><span class="p">)</span>
 <span class="n">gas</span><span class="o">.</span><span class="n">TPX</span> <span class="o">=</span> <span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">X_initial</span>
 </pre></div>
 </div>
@@ -176,7 +176,7 @@ retrieve the initial mixture mole fractions in a format Cantera will understand:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reac</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">IdealGasReactor</span><span class="p">(</span><span class="n">gas</span><span class="p">)</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Reservoir</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">&quot;air.xml&quot;</span><span class="p">))</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Reservoir</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">"air.xml"</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -191,7 +191,7 @@ which we import here:</p>
 
 <span class="n">exp_time</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="n">exp_volume</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">volume_history</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span>
-<span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;vproTime&quot;</span><span class="p">:</span> <span class="n">exp_time</span><span class="p">,</span> <span class="s2">&quot;vproVol&quot;</span><span class="p">:</span> <span class="n">exp_volume</span><span class="p">}</span>
+<span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"vproTime"</span><span class="p">:</span> <span class="n">exp_time</span><span class="p">,</span> <span class="s2">"vproVol"</span><span class="p">:</span> <span class="n">exp_volume</span><span class="p">}</span>
 <span class="n">ct</span><span class="o">.</span><span class="n">Wall</span><span class="p">(</span><span class="n">reac</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="n">VolumeProfile</span><span class="p">(</span><span class="n">keywords</span><span class="p">));</span>
 </pre></div>
 </div>
@@ -244,8 +244,8 @@ which we import here:</p>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">pressure</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Pressure [Pa]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time [s]&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Pressure [Pa]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time [s]"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1038,11 +1038,11 @@ if (IPython.notebook.kernel != null) {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">exp_time</span><span class="p">,</span> <span class="n">exp_volume</span> <span class="o">/</span> <span class="n">exp_volume</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Experimental volume&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Simulated volume&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Volume [m^3]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time [s]&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">exp_time</span><span class="p">,</span> <span class="n">exp_volume</span> <span class="o">/</span> <span class="n">exp_volume</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Experimental volume"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Simulated volume"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"best"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Volume [m^3]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time [s]"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1875,7 +1875,7 @@ if (IPython.notebook.kernel != null) {
 <li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identifier.html">Identifier</a></li>
 </ul>
 
 <div class="relations">
@@ -1905,7 +1905,7 @@ if (IPython.notebook.kernel != null) {
       &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.2.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

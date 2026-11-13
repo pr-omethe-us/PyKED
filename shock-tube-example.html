@@ -156,7 +156,7 @@ experiments.</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">run_simulation</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-    <span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">&quot;LLNL_sarathy_butanol.cti&quot;</span><span class="p">)</span>
+    <span class="n">gas</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">Solution</span><span class="p">(</span><span class="s2">"LLNL_sarathy_butanol.cti"</span><span class="p">)</span>
     <span class="n">gas</span><span class="o">.</span><span class="n">TPX</span> <span class="o">=</span> <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">X</span>
     <span class="n">reac</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">IdealGasReactor</span><span class="p">(</span><span class="n">gas</span><span class="p">)</span>
     <span class="n">netw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">ReactorNet</span><span class="p">([</span><span class="n">reac</span><span class="p">])</span>
@@ -177,16 +177,16 @@ apply the <code class="docutils literal notranslate"><span class="pre">collect_i
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="n">st_link</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/pr-omethe-us/PyKED/main/tests/testfile_st_p5.yaml&quot;</span>
+<span class="n">st_link</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/pr-omethe-us/PyKED/main/tests/testfile_st_p5.yaml"</span>
 <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">st_link</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
     <span class="n">testfile_st</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 <span class="n">ck</span> <span class="o">=</span> <span class="n">ChemKED</span><span class="p">(</span><span class="n">dict_input</span><span class="o">=</span><span class="n">testfile_st</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">collect_input</span><span class="p">(</span><span class="n">dp</span><span class="p">):</span>
-    <span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;K&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-    <span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;Pa&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-    <span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t-butanol&quot;</span><span class="p">:</span> <span class="s2">&quot;tc4h9oh&quot;</span><span class="p">,</span> <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="s2">&quot;o2&quot;</span><span class="p">,</span> <span class="s2">&quot;Ar&quot;</span><span class="p">:</span> <span class="s2">&quot;ar&quot;</span><span class="p">}</span>
+    <span class="n">T_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"K"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+    <span class="n">P_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"Pa"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+    <span class="n">species_conversion</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"t-butanol"</span><span class="p">:</span> <span class="s2">"tc4h9oh"</span><span class="p">,</span> <span class="s2">"O2"</span><span class="p">:</span> <span class="s2">"o2"</span><span class="p">,</span> <span class="s2">"Ar"</span><span class="p">:</span> <span class="s2">"ar"</span><span class="p">}</span>
     <span class="n">X_initial</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">get_cantera_mole_fraction</span><span class="p">(</span><span class="n">species_conversion</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">T_initial</span><span class="p">,</span> <span class="n">P_initial</span><span class="p">,</span> <span class="n">X_initial</span><span class="p">)</span>
 
@@ -204,7 +204,7 @@ apply the <code class="docutils literal notranslate"><span class="pre">collect_i
     <span class="n">ignition_delays</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">run_simulation</span><span class="p">,</span> <span class="n">initial_conditions</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">X</span><span class="p">),</span> <span class="n">tau</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">initial_conditions</span><span class="p">,</span> <span class="n">ignition_delays</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The ignition delay for T_initial=</span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2"> K, P_initial=</span><span class="si">{</span><span class="n">P</span><span class="si">}</span><span class="s2"> Pa is: </span><span class="si">{</span><span class="n">tau</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The ignition delay for T_initial=</span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2"> K, P_initial=</span><span class="si">{</span><span class="n">P</span><span class="si">}</span><span class="s2"> Pa is: </span><span class="si">{</span><span class="n">tau</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -228,16 +228,16 @@ The ignition delay for T_initial=1562 K, P_initial=151987.5 Pa is: 0.00043835671
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="n">inv_temps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1000</span> <span class="o">/</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">initial_conditions</span><span class="p">]</span>
-<span class="n">exp_ignition_delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">ignition_delay</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ck</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]</span>
+<span class="n">exp_ignition_delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">ignition_delay</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ck</span><span class="o">.</span><span class="n">datapoints</span><span class="p">]</span>
 <span class="n">sim_ignition_delays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ignition_delays</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0e3</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inv_temps</span><span class="p">,</span> <span class="n">exp_ignition_delays</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Experimental ignition delays&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inv_temps</span><span class="p">,</span> <span class="n">sim_ignition_delays</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Simulated ignition delays&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Ignition delay [ms]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;1000/T [1/K]&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inv_temps</span><span class="p">,</span> <span class="n">exp_ignition_delays</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Experimental ignition delays"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">inv_temps</span><span class="p">,</span> <span class="n">sim_ignition_delays</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Simulated ignition delays"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"s"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"best"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Ignition delay [ms]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"1000/T [1/K]"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1070,7 +1070,7 @@ if (IPython.notebook.kernel != null) {
 <li class="toctree-l1"><a class="reference internal" href="chemked.html">ChemKED</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters.html">Converters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="orcid.html">ORCID</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identifier.html">Identifier</a></li>
 </ul>
 
 <div class="relations">
@@ -1100,7 +1100,7 @@ if (IPython.notebook.kernel != null) {
       &#169;2026, Kyle E. Niemeyer and Bryan W. Weber.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.2.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
