@@ -711,9 +711,7 @@ class OurValidator(Validator):
             "upper-uncertainty",
             "lower-uncertainty",
         }
-        has_uncertainty_value = any(
-            metadata.get(key) is not None for key in uncertainty_value_keys
-        )
+        has_uncertainty_value = any(metadata.get(key) is not None for key in uncertainty_value_keys)
         has_evaluated_sd_value = metadata.get("evaluated-standard-deviation") is not None
 
         if has_uncertainty_value or has_evaluated_sd_value:
@@ -741,9 +739,7 @@ class OurValidator(Validator):
         uncertainty_type = uncertainty_dict.get("uncertainty-type")
         for key in ["uncertainty", "upper-uncertainty", "lower-uncertainty"]:
             if uncertainty_dict.get(key) is not None:
-                self._check_uncertainty_value(
-                    field, key, uncertainty_dict[key], uncertainty_type
-                )
+                self._check_uncertainty_value(field, key, uncertainty_dict[key], uncertainty_type)
 
         if uncertainty_dict.get("evaluated-standard-deviation") is not None:
             self._check_uncertainty_value(
@@ -753,9 +749,7 @@ class OurValidator(Validator):
                 uncertainty_dict.get("evaluated-standard-deviation-type"),
             )
 
-    def _validate_isvalid_profile_uncertainty(
-        self, isvalid_profile_uncertainty, field, value
-    ):
+    def _validate_isvalid_profile_uncertainty(self, isvalid_profile_uncertainty, field, value):
         """Validate uncertainty metadata associated with a concentration profile.
 
         Metadata that only describes the uncertainty at the end of each row needs no value of its
@@ -856,8 +850,11 @@ class OurValidator(Validator):
             authors = value["authors"][:]
             author_names = [a["name"] for a in authors]
             for author in ref["author"]:
-                author = {**author, "given": html.unescape(author.get("given", "")),
-                          "family": html.unescape(author.get("family", ""))}
+                author = {
+                    **author,
+                    "given": html.unescape(author.get("given", "")),
+                    "family": html.unescape(author.get("family", "")),
+                }
                 # find using family name
                 author_match = next(
                     (
