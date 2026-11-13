@@ -17,9 +17,6 @@ from pyked.chemked import ChemKED
 
 # Local imports
 from pyked.converters import (
-    normalize_doi,
-    normalize_value,
-    value_with_units,
     KeywordError,
     MissingAttributeError,
     MissingElementError,
@@ -46,8 +43,11 @@ from pyked.converters import (
     ignition_target_values,
     ignition_type_values,
     main,
+    normalize_doi,
     normalize_units,
+    normalize_value,
     respth2ck,
+    value_with_units,
 )
 from pyked.validation import schema
 from pyked.validation import units as unit_registry
@@ -474,7 +474,7 @@ class TestGetExperiment:
         ["stirred reactor", "stirred reactor (quartz)", "stirred reactor (fused silica)"],
     )
     def test_stirred_reactor_needs_the_experiment_type(self, respecth_kind):
-        """"Stirred reactor" says the mixture is stirred, not which reactor it is.
+        """ "Stirred reactor" says the mixture is stirred, not which reactor it is.
 
         Only the experiment type says the reactor is jet stirred, so the kind is mapped when it
         agrees and refused when there is nothing to corroborate it.
@@ -501,7 +501,10 @@ class TestGetExperiment:
             (["premixed", "laminar", "CTF"], "counterflow twin flame"),
             (["premixed", "laminar", "FCM"], "bunsen burner"),
             (["burner-stabilized"], "burner stabilized flame"),
-            (["constant volume combustion chamber", "premixed"], "outwardly propagating spherical flame"),
+            (
+                ["constant volume combustion chamber", "premixed"],
+                "outwardly propagating spherical flame",
+            ),
         ],
     )
     def test_generic_flame_apparatus_uses_mode(self, modes, chemked_kind):
@@ -1624,9 +1627,7 @@ class TestReSpecThVersion2:
         prop.set("units", units)
         etree.SubElement(prop, "value").text = value
 
-        assert get_common_properties(root)[field] == [
-            " ".join([value, normalize_units(units)])
-        ]
+        assert get_common_properties(root)[field] == [" ".join([value, normalize_units(units)])]
 
     def test_composition_units_error_lists_what_is_accepted(self):
         """The error message is built from the table, so it cannot fall behind it."""
@@ -1769,7 +1770,12 @@ class TestValueMetadata:
     def test_initial_composition_reference(self):
         """An uncertainty about the mixture belongs to that species' amount."""
         root = self.build_metadata(
-            "uncertainty", "initial composition", "relative", "0.04", units="unitless", species="NH3"
+            "uncertainty",
+            "initial composition",
+            "relative",
+            "0.04",
+            units="unitless",
+            species="NH3",
         )
         properties = {
             "common-properties": {
