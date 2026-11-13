@@ -1664,6 +1664,63 @@ class TestZeroUncertainty:
         assert validator.errors[quantity][0] == f"value must be greater than 0.0 {unit}"
 
 
+class TestOffsetUnitUncertainty:
+    """An absolute uncertainty in an offset unit is a span, not a point on the scale.
+
+    10 degC as a temperature is 283.15 K, but an uncertainty of 10 degC spans 10 K. Converted as a
+    point, -5 degC would pass the sign check as 268.15 K.
+    """
+
+    @staticmethod
+    def validate_temperature(metadata):
+        validator = OurValidator({"temperature": {"type": "list", "isvalid_uncertainty": True}})
+        validator.validate({"temperature": ["1000 K", metadata]})
+        return validator
+
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            {"uncertainty-type": "absolute", "uncertainty": "10 degC"},
+            {"uncertainty-type": "absolute", "uncertainty": "18 degF"},
+            {"uncertainty-type": "absolute", "uncertainty": "0 degC"},
+            {
+                "uncertainty-type": "absolute",
+                "upper-uncertainty": "10 degC",
+                "lower-uncertainty": "5 degC",
+            },
+            {
+                "evaluated-standard-deviation": "10 degC",
+                "evaluated-standard-deviation-type": "absolute",
+            },
+        ],
+    )
+    def test_offset_unit_uncertainty_accepted(self, metadata):
+        """A positive or zero span in degC or degF is an ordinary uncertainty."""
+        validator = self.validate_temperature(metadata)
+        assert not validator.errors, validator.errors
+
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            {"uncertainty-type": "absolute", "uncertainty": "-5 degC"},
+            {"uncertainty-type": "absolute", "uncertainty": "-5 degF"},
+            {
+                "uncertainty-type": "absolute",
+                "upper-uncertainty": "10 degC",
+                "lower-uncertainty": "-5 degC",
+            },
+            {
+                "evaluated-standard-deviation": "-5 degC",
+                "evaluated-standard-deviation-type": "absolute",
+            },
+        ],
+    )
+    def test_negative_offset_unit_uncertainty_rejected(self, metadata):
+        """-5 degC of uncertainty is -5 K, so it is negative, not 268.15 K."""
+        validator = self.validate_temperature(metadata)
+        assert "uncertainty must not be negative" in str(validator.errors)
+
+
 class TestCrossrefComparisonUnescapes:
     """The converter unescapes CrossRef text, so validation must compare likewise."""
 
