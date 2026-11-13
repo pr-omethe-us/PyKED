@@ -58,6 +58,7 @@ composition: &composition
             type: string
             empty: false
             isvalid_inchi: true
+            required: true
             excludes:
               - atomic-composition
               - SMILES
@@ -65,12 +66,14 @@ composition: &composition
             type: string
             empty: false
             isvalid_smiles: true
+            required: true
             excludes:
               - atomic-composition
               - InChI
           atomic-composition:
             type: list
             minlength: 1
+            required: true
             excludes:
               - InChI
               - SMILES
