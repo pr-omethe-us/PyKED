@@ -66,9 +66,7 @@ def load_pair(group, stem):
 def test_all_respecth_fixtures_are_paired():
     """Every checked-in source XML has exactly one converted YAML partner."""
     xml_pairs = {path.relative_to(DATA_DIR).with_suffix("") for path in DATA_DIR.rglob("*.xml")}
-    yaml_pairs = {
-        path.relative_to(DATA_DIR).with_suffix("") for path in DATA_DIR.rglob("*.yaml")
-    }
+    yaml_pairs = {path.relative_to(DATA_DIR).with_suffix("") for path in DATA_DIR.rglob("*.yaml")}
     expected = {Path(group) / stem for group, stem, *_ in CASES}
 
     assert xml_pairs == yaml_pairs == expected
@@ -96,9 +94,9 @@ def as_comparable(value):
     return value
 
 
-@pytest.mark.parametrize(("group", "stem", "apparatus_kind"), [
-    (group, stem, kind) for group, stem, _, _, kind in CASES
-])
+@pytest.mark.parametrize(
+    ("group", "stem", "apparatus_kind"), [(group, stem, kind) for group, stem, _, _, kind in CASES]
+)
 def test_converter_reproduces_fixture(group, stem, apparatus_kind):
     """Converting the source XML gives back the checked-in ChemKED file."""
     _, document = load_pair(group, stem)
@@ -116,9 +114,7 @@ def test_converter_reproduces_fixture(group, stem, apparatus_kind):
 @pytest.mark.parametrize(
     ("group", "stem", "source_type", "independent_variables", "apparatus_kind"), CASES
 )
-def test_respecth_pair_validates(
-    group, stem, source_type, independent_variables, apparatus_kind
-):
+def test_respecth_pair_validates(group, stem, source_type, independent_variables, apparatus_kind):
     """Each YAML conversion validates and retains its source structure."""
     root, document = load_pair(group, stem)
 
@@ -134,11 +130,7 @@ def test_respecth_pair_validates(
     ChemKED(dict_input=local_document)
 
     for value in document.get("common-properties", {}).values():
-        assert not (
-            isinstance(value, list)
-            and len(value) == 1
-            and isinstance(value[0], dict)
-        )
+        assert not (isinstance(value, list) and len(value) == 1 and isinstance(value[0], dict))
 
     if group == "laminar-burning-velocity":
         assert document["experiment-type"] == "laminar burning velocity measurement"
@@ -159,9 +151,7 @@ def test_respecth_pair_validates(
 def test_common_lbv_esd_is_attached_to_each_measured_value():
     """Shared ReSpecTh ESD metadata is distributed to LBV datapoints."""
     root, document = load_pair("laminar-burning-velocity", "x20014048")
-    common_esd = root.find(
-        "commonProperties/property[@name='evaluated standard deviation']"
-    )
+    common_esd = root.find("commonProperties/property[@name='evaluated standard deviation']")
 
     assert common_esd is not None
     assert "laminar-burning-velocity" not in document["common-properties"]
