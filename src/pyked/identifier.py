@@ -12,6 +12,7 @@ INCHI_PREFIX = "InChI="
 
 headers = {"Accept": "application/json"}
 
+
 def search_orcid(orcid):
     """
     Search the ORCID public API
@@ -37,6 +38,7 @@ def search_orcid(orcid):
 
 """Validation helpers for chemical species identifiers."""
 
+
 def normalize_inchi(value: str):
     """Return an InChI with the conventional ``InChI=`` prefix.
 
@@ -55,9 +57,7 @@ def valid_inchi(value: str):
         return False
     try:
         with rdBase.BlockLogs():
-            molecule = inchi.MolFromInchi(
-                normalize_inchi(value)
-            )
+            molecule = inchi.MolFromInchi(normalize_inchi(value))
     except (inchi.InchiReadWriteError, RuntimeError, ValueError):
         return False
     return molecule is not None
