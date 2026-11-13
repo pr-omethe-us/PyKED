@@ -632,10 +632,7 @@ class TestValidator:
         """Ensure that an apparatus kind outside the schema is an error"""
         # update=True means to ignore required keys that are left out for testing
         v.validate({"apparatus": {"kind": "internal combustion engine"}}, update=True)
-        assert (
-            v.errors["apparatus"][0]["kind"][0]
-            == "unallowed value internal combustion engine"
-        )
+        assert v.errors["apparatus"][0]["kind"][0] == "unallowed value internal combustion engine"
 
     @pytest.mark.parametrize(
         "valid_kind",
@@ -966,9 +963,7 @@ class TestValidator:
     def test_common_property_uncertainty_requires_property_value(self):
         """Common-property uncertainty metadata cannot appear without its property value."""
         metadata = {"uncertainty-type": "relative", "uncertainty": 0.1}
-        assert not v.validate(
-            {"common-properties": {"temperature": [metadata]}}, update=True
-        )
+        assert not v.validate({"common-properties": {"temperature": [metadata]}}, update=True)
         assert v.validate(
             {"common-properties": {"temperature": ["1000 kelvin", metadata]}},
             update=True,
@@ -995,9 +990,7 @@ class TestValidator:
                     "InChI": "1S/H2/h1H",
                     "quantity": {"units": "mole fraction"},
                     "values": [[0.0, 0.1], [1.0, 0.2]],
-                    "uncertainty": [
-                        {"uncertainty-type": "relative", "uncertainty": 0.05}
-                    ],
+                    "uncertainty": [{"uncertainty-type": "relative", "uncertainty": 0.05}],
                 }
             ],
         }
@@ -1113,9 +1106,7 @@ class TestValidator:
                 }
             ],
         }
-        assert not v.validate(
-            {"common-properties": {"composition": composition}}, update=True
-        )
+        assert not v.validate({"common-properties": {"composition": composition}}, update=True)
 
     @pytest.mark.parametrize("quantity, unit", property_units.items())
     def test_absolute_evaluated_standard_deviation_validation(self, quantity, unit):

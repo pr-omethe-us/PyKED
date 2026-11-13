@@ -1509,9 +1509,7 @@ class DataPoint:
             self._store_evaluated_standard_deviation(
                 "equivalence-ratio", properties["equivalence-ratio"]
             )
-        self.equivalence_ratio = self.process_equivalence_ratio(
-            properties.get("equivalence-ratio")
-        )
+        self.equivalence_ratio = self.process_equivalence_ratio(properties.get("equivalence-ratio"))
         self.ignition_type = deepcopy(properties.get("ignition-type"))
 
         if "time-histories" in properties and "volume-history" in properties:
