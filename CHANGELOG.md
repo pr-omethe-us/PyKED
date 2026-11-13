@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Numeric values are normalized on conversion by the new `normalize_value`: leading zeros are stripped, since YAML reads them as octal, and a Fortran-style exponent written without the `e` is expanded so Pint can read it. Trailing zeros are deliberately left alone, being significant figures. A page range no longer keeps spaces around its dash, so it reads `446-457` rather than `446 - 457`
 - Text taken from a CrossRef DOI lookup is HTML-unescaped, so a journal reaches the file as `Energy & Fuels` rather than `Energy &amp; Fuels`. Author names are unescaped the same way
 - A DOI written as a resolvable URL, such as `doi.org/10.1016/j.proci.2016.05.048`, is reduced to the bare identifier on conversion. Some ReSpecTh files write it that way and no DOI lookup accepts it
+- An absolute uncertainty or evaluated standard deviation in `degC` or `degF` is treated as a temperature difference rather than a temperature, in validation and when a file is loaded. An uncertainty of `10 degC` was loaded as ±283.15 K instead of ±10 K; a temperature in `degC` with an uncertainty in kelvin failed to load, since 10 K became -263.15 degC; and a negative uncertainty such as `-5 degC` passed validation as 268.15 K
 
 ## [0.5.0] - 2026-07-02
 ### Added

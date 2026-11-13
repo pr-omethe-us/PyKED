@@ -1630,6 +1630,67 @@ class TestDataPoint:
         assert np.isclose(datapoint.pressure.value.to("pascal").magnitude, 220000)
         assert np.isclose(datapoint.pressure.error.to("pascal").magnitude, 2000)
 
+    @staticmethod
+    def load_with_temperature(temperature):
+        """Load testfile_st.yaml with the temperature of its first datapoint replaced."""
+        filename = Path("tests") / "testfile_st.yaml"
+        with open(filename, encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+        properties["datapoints"][0]["temperature"] = temperature
+        return ChemKED(dict_input=properties).datapoints[0]
+
+    @pytest.mark.parametrize(
+        "temperature, uncertainty",
+        [
+            ("1164.48 kelvin", "10 degC"),
+            ("1164.48 kelvin", "18 degF"),
+            ("891.33 degC", "10 kelvin"),
+            ("891.33 degC", "10 degC"),
+            ("1636.394 degF", "10 kelvin"),
+        ],
+    )
+    def test_offset_unit_uncertainty_is_a_span(self, temperature, uncertainty):
+        """An uncertainty in degC or degF spans that many degrees; it is not a temperature.
+
+        10 degC of uncertainty is 10 K, not 283.15 K, and 10 K about a temperature in degC is
+        10 degC, not -263.15 degC, which `uncertainties` refuses as a negative error.
+        """
+        datapoint = self.load_with_temperature(
+            [temperature, {"uncertainty-type": "absolute", "uncertainty": uncertainty}]
+        )
+        in_kelvin = datapoint.temperature.to("kelvin")
+        assert np.isclose(in_kelvin.value.magnitude, 1164.48)
+        assert np.isclose(in_kelvin.error.magnitude, 10.0)
+
+    def test_offset_unit_asymmetric_uncertainty_is_a_span(self):
+        """The larger bound is chosen as a span: 20 K is larger than 5 degC, which spans 5 K."""
+        with pytest.warns(UserWarning, match="Asymmetric uncertainties"):
+            datapoint = self.load_with_temperature(
+                [
+                    "1164.48 kelvin",
+                    {
+                        "uncertainty-type": "absolute",
+                        "upper-uncertainty": "5 degC",
+                        "lower-uncertainty": "20 kelvin",
+                    },
+                ]
+            )
+        assert np.isclose(datapoint.temperature.error.to("kelvin").magnitude, 20.0)
+
+    def test_offset_unit_evaluated_standard_deviation_is_a_span(self):
+        """An evaluated standard deviation of 10 degC is stored as a span of 10 K."""
+        datapoint = self.load_with_temperature(
+            [
+                "1164.48 kelvin",
+                {
+                    "evaluated-standard-deviation": "10 degC",
+                    "evaluated-standard-deviation-type": "absolute",
+                },
+            ]
+        )
+        esd = datapoint.evaluated_standard_deviation["temperature"]
+        assert np.isclose(esd.value.to("kelvin").magnitude, 10.0)
+
     def test_volume_history(self):
         """Test that volume history works properly.
 

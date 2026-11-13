@@ -43,6 +43,27 @@ def _normalize_unit_str(val_str):
 
 Q_ = units.Quantity
 
+
+def _as_difference(quantity):
+    """Read a quantity as a difference between two values rather than as a point on a scale.
+
+    An uncertainty is a span. Celsius and Fahrenheit are offset scales, on which 10 degC as a
+    temperature is 283.15 K but an uncertainty of 10 degC spans 10 K. Pint converts a quantity in
+    an offset unit as a point, so it is restated in Pint's delta unit, which converts as a span.
+    Every other unit converts the same either way and is returned unchanged.
+
+    Args:
+        quantity (`~pint.Quantity`): The quantity, such as an uncertainty
+
+    Returns:
+        `~pint.Quantity`: The same quantity, in a delta unit if it was in an offset unit
+    """
+    delta_units = f"delta_{quantity.units}"
+    if delta_units in units:
+        return Q_(quantity.magnitude, delta_units)
+    return quantity
+
+
 crossref_api = habanero.Crossref(mailto="prometheus@pr.omethe.us")
 
 # Load the ChemKED schema definition file
@@ -673,6 +694,8 @@ class OurValidator(Validator):
             quantity = self._parse_quantity(field, value)
             if quantity is None:
                 return
+            # An uncertainty is a span, so -5 degC of it is -5 K, not 268.15 K
+            quantity = _as_difference(quantity)
 
             expected_units = property_units.get(field)
             if expected_units is None:

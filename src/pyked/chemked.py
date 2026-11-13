@@ -22,7 +22,15 @@ from .converters import (
 )
 
 # Local imports
-from .validation import Q_, OurValidator, _normalize_unit_str, row_uncertainty_kinds, schema, yaml
+from .validation import (
+    Q_,
+    OurValidator,
+    _as_difference,
+    _normalize_unit_str,
+    row_uncertainty_kinds,
+    schema,
+    yaml,
+)
 
 respecth_property_names = {field: name for name, field in common_property_fields.items()}
 """`dict`: ChemKED field name mapped to the ReSpecTh property name, the inverse of
@@ -1598,7 +1606,8 @@ class DataPoint:
 
         esd_type = metadata.get("evaluated-standard-deviation-type")
         if esd_type == "absolute":
-            value = Q_(_normalize_unit_str(esd))
+            # A standard deviation is a span, so one in degC is kept in delta_degC
+            value = _as_difference(Q_(_normalize_unit_str(esd)))
         else:
             value = float(Q_(_normalize_unit_str(esd)).magnitude)
 
@@ -1664,9 +1673,13 @@ class DataPoint:
                         '"lower-uncertainty" need to be specified.'
                     )
             elif uncertainty_type == "absolute":
+                # An uncertainty is a span, not a point on the scale of the quantity, so it is
+                # converted as a difference: 10 degC of uncertainty about a temperature in kelvin
+                # is 10 K, not 283.15 K, and 10 K about one in degC is 10 delta_degC.
+                span_units = _as_difference(quant).units
                 if uncertainty is not None:
-                    uncertainty = Q_(_normalize_unit_str(uncertainty))
-                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                    uncertainty = _as_difference(Q_(_normalize_unit_str(uncertainty)))
+                    quant = quant.plus_minus(uncertainty.to(span_units).magnitude)
                 elif upper_uncertainty is not None and lower_uncertainty is not None:
                     warn(
                         "Asymmetric uncertainties are not supported. The "
@@ -1674,10 +1687,10 @@ class DataPoint:
                         "has been used as the symmetric uncertainty."
                     )
                     uncertainty = max(
-                        Q_(_normalize_unit_str(upper_uncertainty)),
-                        Q_(_normalize_unit_str(lower_uncertainty)),
+                        _as_difference(Q_(_normalize_unit_str(upper_uncertainty))),
+                        _as_difference(Q_(_normalize_unit_str(lower_uncertainty))),
                     )
-                    quant = quant.plus_minus(uncertainty.to(quant.units).magnitude)
+                    quant = quant.plus_minus(uncertainty.to(span_units).magnitude)
                 else:
                     raise ValueError(
                         'Either "uncertainty" or "upper-uncertainty" and '
