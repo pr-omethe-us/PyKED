@@ -1128,6 +1128,8 @@ class ChemKED:
                 species_link.set("preferredKey", species_name)
                 if species.InChI is not None:
                     species_link.set("InChI", species.InChI)
+                if species.SMILES is not None:
+                    species_link.set("SMILES", species.SMILES)
 
                 amount = etree.SubElement(component, "amount")
                 amount.set("units", composition_type)
@@ -1211,6 +1213,8 @@ class ChemKED:
                         species_link.set("preferredKey", species.species_name)
                         if species.InChI is not None:
                             species_link.set("InChI", species.InChI)
+                        if species.SMILES is not None:
+                            species_link.set("SMILES", species.SMILES)
 
         for dp in self.datapoints:
             datapoint = etree.SubElement(datagroup, "dataPoint")

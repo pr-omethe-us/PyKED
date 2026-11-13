@@ -416,6 +416,44 @@ class TestConvertToReSpecTh:
                 {"amount": [0.8], "species-name": "Ar"},
             ]
 
+    def test_conversion_common_composition_smiles(self):
+        """A species identified by SMILES keeps it in the initial composition written to ReSpecTh.
+
+        ChemKED requires each composition species to give an identifier, so a species whose SMILES
+        were dropped would no longer validate when the file is read back.
+        """
+        filename = Path("tests") / "testfile_st.yaml"
+        c = ChemKED(filename)
+
+        amounts = {"H2": 0.1, "O2": 0.1, "Ar": 0.8}
+        smiles = {"H2": "[H][H]", "O2": "O=O", "Ar": "[Ar]"}
+        for idx, _dp in enumerate(c.datapoints):
+            c.datapoints[idx].composition = {
+                name: Composition(
+                    amount=Q_(amounts[name], "dimensionless"),
+                    species_name=name,
+                    InChI=None,
+                    SMILES=smiles[name],
+                    atomic_composition=None,
+                )
+                for name in amounts
+            }
+
+        with TemporaryDirectory() as temp_dir:
+            newfile = Path(temp_dir) / "test.xml"
+            c.convert_to_ReSpecTh(newfile)
+            root = etree.parse(newfile).getroot()
+
+        assert [link.get("SMILES") for link in root.iter("speciesLink")] == list(smiles.values())
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            common = get_common_properties(root)
+        assert not [w for w in record if "Missing InChI" in str(w.message)]
+        assert common["composition"]["species"] == [
+            {"species-name": name, "SMILES": smiles[name], "amount": [amounts[name]]}
+            for name in amounts
+        ]
+
     def test_conversion_datapoints_different_composition(self):
         """Test for appropriate handling of datapoints with different composition."""
         filename = Path("tests") / "testfile_st.yaml"
@@ -457,17 +495,19 @@ class TestConvertToReSpecTh:
 
             tree = etree.parse(newfile)
         root = tree.getroot()
-        with pytest.warns(UserWarning) as record:
+        # N2 is identified by its SMILES, which is written and read back, so no species is
+        # reported as missing its identifier
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
             datapoints = get_datapoints(root)
-        m = str(record.pop(UserWarning).message)
-        assert m == "Missing InChI for species N2"
+        assert not [w for w in record if "Missing InChI" in str(w.message)]
 
         assert len(datapoints[0]["composition"]["species"]) == 3
         for spec in datapoints[0]["composition"]["species"]:
             assert spec in [
                 {"InChI": "1S/H2/h1H", "amount": [0.1], "species-name": "H2"},
                 {"InChI": "1S/O2/c1-2", "amount": [0.1], "species-name": "O2"},
-                {"amount": [0.8], "species-name": "N2", "InChI": None},
+                {"SMILES": "N#N", "amount": [0.8], "species-name": "N2"},
             ]
 
     def test_conversion_error_datapoints_different_composition_type(self):
@@ -647,6 +687,22 @@ class TestSpeciationToReSpecTh:
     def test_round_trip(self, tmp_path):
         """Converting the ReSpecTh file back gives the same ChemKED file."""
         document = speciation_document()
+
+        _, converted = self.round_trip(document, tmp_path)
+
+        assert converted == document
+        ChemKED(dict_input=converted)
+
+    def test_round_trip_smiles(self, tmp_path):
+        """Species identified only by SMILES, in the inlet and in a profile, keep it through
+        ReSpecTh, so the file read back still gives every composition species an identifier."""
+        document = speciation_document()
+        nitrogen = document["common-properties"]["composition"]["species"][2]
+        del nitrogen["InChI"]
+        nitrogen["SMILES"] = "N#N"
+        water = document["datapoints"][0]["concentration-profiles"][1]
+        del water["InChI"]
+        water["SMILES"] = "O"
 
         _, converted = self.round_trip(document, tmp_path)
 

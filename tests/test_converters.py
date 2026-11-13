@@ -3,6 +3,7 @@ Tests for the converters
 """
 
 import socket
+import warnings
 import xml.etree.ElementTree as etree
 from pathlib import Path
 from shutil import copy
@@ -714,6 +715,38 @@ class TestCommonProperties:
         m = str(record.pop(UserWarning).message)
         assert m == "Missing InChI for species H2"
 
+    @staticmethod
+    def initial_composition_species(**identifiers):
+        """Read an initial composition of H2 whose speciesLink gives ``identifiers``."""
+        root = etree.Element("experiment")
+        properties = etree.SubElement(root, "commonProperties")
+        initial_composition = etree.SubElement(properties, "property")
+        initial_composition.set("name", "initial composition")
+        component = etree.SubElement(initial_composition, "component")
+        species = etree.SubElement(component, "speciesLink")
+        species.set("preferredKey", "H2")
+        for key, value in identifiers.items():
+            species.set(key, value)
+        amount = etree.SubElement(component, "amount")
+        amount.set("units", "mole fraction")
+        amount.text = "1.0"
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            species = get_common_properties(root)["composition"]["species"][0]
+        assert not [w for w in record if "Missing InChI" in str(w.message)]
+        return species
+
+    def test_species_smiles_without_inchi(self):
+        """A species ReSpecTh identifies only by SMILES keeps it as its identifier."""
+        species = self.initial_composition_species(SMILES="[H][H]")
+        assert species == {"species-name": "H2", "SMILES": "[H][H]", "amount": [1.0]}
+
+    def test_species_inchi_and_smiles(self):
+        """A composition species gives exactly one identifier, so the InChI is kept over SMILES."""
+        species = self.initial_composition_species(InChI="1S/H2/h1H", SMILES="[H][H]")
+        assert species == {"species-name": "H2", "InChI": "1S/H2/h1H", "amount": [1.0]}
+
     def test_inconsistent_composition_type(self):
         """Check for error when inconsistent composition types."""
         root = etree.Element("experiment")
@@ -1357,10 +1390,10 @@ class TestGetDatapoints:
         assert datapoint["temperature"] == [str(1000.0) + " K"]
         assert datapoint["ignition-delay"] == [str(100.0) + " us"]
         assert datapoint["composition"]["kind"] == type
+        # ReSpecTh gives no identifier for H2, so the species has none
         assert datapoint["composition"]["species"][0] == {
             "amount": [value],
             "species-name": "H2",
-            "InChI": None,
         }
 
     @pytest.mark.parametrize(
@@ -1420,10 +1453,10 @@ class TestGetDatapoints:
         assert datapoint["temperature"] == [str(1000.0) + " K"]
         assert datapoint["ignition-delay"] == [str(100.0) + " us"]
         assert datapoint["composition"]["kind"] == kind
+        # ReSpecTh gives no identifier for H2, so the species has none
         assert datapoint["composition"]["species"][0] == {
             "amount": [value],
             "species-name": "H2",
-            "InChI": None,
         }
 
     def test_datapoints_composition_error(self):

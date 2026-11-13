@@ -702,6 +702,28 @@ def reconcile_composition_kind(species, kinds):
     raise KeywordError("composition units " + inconsistent + " not consistent with " + kinds[0])
 
 
+def species_identifier(identifiers):
+    """Choose the identifier of a ChemKED species from those ReSpecTh gives.
+
+    A ReSpecTh ``speciesLink`` may give an InChI, a SMILES, or both. The InChI is kept when it is
+    given, and the SMILES only when it is not, so a species keeps an identifier either way. A
+    ChemKED composition species must be identified by exactly one of ``InChI``, ``SMILES``, and
+    ``atomic-composition``; profile and swept species follow the same rule, so the converted
+    files are unchanged for every species ReSpecTh gives an InChI.
+
+    Args:
+        identifiers (`dict`): The ``InChI`` and ``SMILES`` given in ReSpecTh, such as the attributes
+            of a ``speciesLink``, absent or `None` when not given
+
+    Returns:
+        `dict`: ``{"InChI": ...}`` or ``{"SMILES": ...}``, or empty if ReSpecTh gives neither
+    """
+    for key in ["InChI", "SMILES"]:
+        if identifiers.get(key) is not None:
+            return {key: identifiers[key]}
+    return {}
+
+
 def get_composition(elem, capitalize=False):
     """Read a ReSpecTh ``initial composition`` property into a ChemKED composition.
 
@@ -719,16 +741,15 @@ def get_composition(elem, capitalize=False):
     kinds = []
 
     for child in elem.iter("component"):
-        spec = {}
-        spec["species-name"] = child.find("speciesLink").attrib["preferredKey"]
+        species_link = child.find("speciesLink")
+        spec = {"species-name": species_link.attrib["preferredKey"]}
 
-        # use InChI for unique species identifier (if present)
-        try:
-            spec["InChI"] = child.find("speciesLink").attrib["InChI"]
-        except KeyError:
+        # Identify the species by its InChI, or else its SMILES
+        identifier = species_identifier(species_link.attrib)
+        if not identifier:
             # TODO: add InChI validator/search
             warn("Missing InChI for species " + spec["species-name"])
-            pass
+        spec.update(identifier)
 
         amount = child.find("amount")
         value, units = get_composition_amount(
@@ -1137,13 +1158,15 @@ def get_datagroup_columns(dataGroup, root=None):
             "units": prop.attrib.get("units"),
             "species": None,
             "InChI": None,
+            "SMILES": None,
         }
 
         species_link = prop.find("speciesLink")
         if species_link is not None:
             column["species"] = species_link.attrib["preferredKey"]
             column["InChI"] = species_link.attrib.get("InChI")
-            if column["InChI"] is None and name == "composition":
+            column["SMILES"] = species_link.attrib.get("SMILES")
+            if not species_identifier(column) and name == "composition":
                 # TODO: add InChI validator/search
                 warn("Missing InChI for species " + column["species"])
 
@@ -1245,9 +1268,7 @@ def get_lbv_datapoints(root):
 
             if name == "composition":
                 amount, kind = get_composition_amount(column["units"], row[column["id"]])
-                species = {"species-name": column["species"]}
-                if column["InChI"] is not None:
-                    species["InChI"] = column["InChI"]
+                species = {"species-name": column["species"], **species_identifier(column)}
                 species["amount"] = [amount]
                 composition["species"].append(species)
                 kinds.append(kind)
@@ -1400,8 +1421,7 @@ def get_speciation_datapoints(root):
         for idx, column in enumerate(independent):
             if column["species"] is not None:
                 datapoint["independent-variables"][idx]["species-name"] = column["species"]
-                if column["InChI"] is not None:
-                    datapoint["independent-variables"][idx]["InChI"] = column["InChI"]
+                datapoint["independent-variables"][idx].update(species_identifier(column))
 
         for column in scalar_columns:
             field = common_property_fields[column["name"]]
@@ -1455,9 +1475,7 @@ def get_speciation_datapoints(root):
                     point.append(float(row[uncertainty_column["id"]]) * row_factor)
                 values.append(point)
 
-            profile = {"species-name": column["species"]}
-            if column["InChI"] is not None:
-                profile["InChI"] = column["InChI"]
+            profile = {"species-name": column["species"], **species_identifier(column)}
             profile["quantity"] = {"units": kind}
             profile["values"] = values
             for constant_column in constant_columns:
@@ -1609,10 +1627,10 @@ def get_datapoints(root):
         property_id[column["id"]] = temp_prop
 
         if temp_prop == "composition":
-            spec = {"species-name": column["species"]}
-            if column["InChI"] is not None:
-                spec["InChI"] = column["InChI"]
-            species_id[column["id"]] = spec
+            species_id[column["id"]] = {
+                "species-name": column["species"],
+                **species_identifier(column),
+            }
 
     if not property_id:
         raise MissingElementError("property")
@@ -1633,9 +1651,8 @@ def get_datapoints(root):
                     value_with_units(val.text, units)
                 ]
             elif property_id.get(val.tag) == "composition":
-                spec = {}
-                spec["species-name"] = species_id[val.tag]["species-name"]
-                spec["InChI"] = species_id[val.tag].get("InChI")
+                # The species name and its identifier, if ReSpecTh gives one
+                spec = dict(species_id[val.tag])
 
                 amount, units = get_composition_amount(unit_id[val.tag], val.text)
                 spec["amount"] = [amount]
