@@ -46,11 +46,19 @@ datapoints:
       kind: mass fraction
       species:
         - species-name: new-species-1
-          InChI: no-inchi
+          atomic-composition:
+            - element: C
+              amount: 1.0
+            - element: H
+              amount: 4.0
           amount:
             - 2.25252818E-4
         - species-name: new-species-2
-          InChI: no-inchi
+          atomic-composition:
+            - element: C
+              amount: 2.0
+            - element: H
+              amount: 6.0
           amount:
             - 4.47745336E-3
         - species-name: Ar

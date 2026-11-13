@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Offline validation of species InChI and SMILES strings using RDKit, including support for both
+  complete and historical prefixless InChIs
 - ReSpecTh 2.x support in `ReSpecTh_to_ChemKED`: the reference is read from the `bibliographyLink` child elements (`referenceDOI`, `details`) with no DOI lookup, falling back to the 1.x `doi` and `preferredKey` attributes
 - Conversion of laminar burning velocity and speciation measurements, alongside ignition delay. ReSpecTh's four speciation experiment types all map to ChemKED `speciation measurement`
 - Mapping tables in `converters.py` for ReSpecTh experiment types, apparatus kinds and modes, common property names, speciation independent variables, and ignition targets and types
