@@ -892,6 +892,29 @@ property names one, otherwise <a class="reference external" href="https://docs.p
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.species_identifier">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">species_identifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifiers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#species_identifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.species_identifier" title="Link to this definition">¶</a></dt>
+<dd><p>Choose the identifier of a ChemKED species from those ReSpecTh gives.</p>
+<p>A ReSpecTh <code class="docutils literal notranslate"><span class="pre">speciesLink</span></code> may give an InChI, a SMILES, or both. The InChI is kept when it is
+given, and the SMILES only when it is not, so a species keeps an identifier either way. A
+ChemKED composition species must be identified by exactly one of <code class="docutils literal notranslate"><span class="pre">InChI</span></code>, <code class="docutils literal notranslate"><span class="pre">SMILES</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">atomic-composition</span></code>; profile and swept species follow the same rule, so the converted
+files are unchanged for every species ReSpecTh gives an InChI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>identifiers</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – The <code class="docutils literal notranslate"><span class="pre">InChI</span></code> and <code class="docutils literal notranslate"><span class="pre">SMILES</span></code> given in ReSpecTh, such as the attributes
+of a <code class="docutils literal notranslate"><span class="pre">speciesLink</span></code>, absent or <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> when not given</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">{&quot;InChI&quot;:</span> <span class="pre">...}</span></code> or <code class="docutils literal notranslate"><span class="pre">{&quot;SMILES&quot;:</span> <span class="pre">...}</span></code>, or empty if ReSpecTh gives neither</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.uncertainty_factor">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">uncertainty_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#uncertainty_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.uncertainty_factor" title="Link to this definition">¶</a></dt>
 <dd><p>Scale factor that states an uncertainty about a profile in the units of the profile.</p>
@@ -1049,6 +1072,7 @@ the units of the profile</p>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.reconcile_composition_kind"><code class="docutils literal notranslate"><span class="pre">reconcile_composition_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.resolve_reference"><code class="docutils literal notranslate"><span class="pre">resolve_reference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.respth2ck"><code class="docutils literal notranslate"><span class="pre">respth2ck()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.species_identifier"><code class="docutils literal notranslate"><span class="pre">species_identifier()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.uncertainty_factor"><code class="docutils literal notranslate"><span class="pre">uncertainty_factor()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.unit_aliases"><code class="docutils literal notranslate"><span class="pre">unit_aliases</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.value_with_units"><code class="docutils literal notranslate"><span class="pre">value_with_units()</span></code></a></li>

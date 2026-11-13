@@ -784,6 +784,31 @@
 
 
 
+<div class="viewcode-block" id="species_identifier">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.species_identifier">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">species_identifier</span><span class="p">(</span><span class="n">identifiers</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Choose the identifier of a ChemKED species from those ReSpecTh gives.</span>
+
+<span class="sd">    A ReSpecTh ``speciesLink`` may give an InChI, a SMILES, or both. The InChI is kept when it is</span>
+<span class="sd">    given, and the SMILES only when it is not, so a species keeps an identifier either way. A</span>
+<span class="sd">    ChemKED composition species must be identified by exactly one of ``InChI``, ``SMILES``, and</span>
+<span class="sd">    ``atomic-composition``; profile and swept species follow the same rule, so the converted</span>
+<span class="sd">    files are unchanged for every species ReSpecTh gives an InChI.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        identifiers (`dict`): The ``InChI`` and ``SMILES`` given in ReSpecTh, such as the attributes</span>
+<span class="sd">            of a ``speciesLink``, absent or `None` when not given</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `dict`: ``{"InChI": ...}`` or ``{"SMILES": ...}``, or empty if ReSpecTh gives neither</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"InChI"</span><span class="p">,</span> <span class="s2">"SMILES"</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">identifiers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">identifiers</span><span class="p">[</span><span class="n">key</span><span class="p">]}</span>
+    <span class="k">return</span> <span class="p">{}</span></div>
+
+
+
 <div class="viewcode-block" id="get_composition">
 <a class="viewcode-back" href="../../converters.html#pyked.converters.get_composition">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_composition</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">capitalize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -803,16 +828,15 @@
     <span class="n">kinds</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s2">"component"</span><span class="p">):</span>
-        <span class="n">spec</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">spec</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"speciesLink"</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"preferredKey"</span><span class="p">]</span>
+        <span class="n">species_link</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"speciesLink"</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">species_link</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"preferredKey"</span><span class="p">]}</span>
 
-        <span class="c1"># use InChI for unique species identifier (if present)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">spec</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"speciesLink"</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="c1"># Identify the species by its InChI, or else its SMILES</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">species_identifier</span><span class="p">(</span><span class="n">species_link</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">identifier</span><span class="p">:</span>
             <span class="c1"># TODO: add InChI validator/search</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">"Missing InChI for species "</span> <span class="o">+</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">])</span>
-            <span class="k">pass</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
 
         <span class="n">amount</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"amount"</span><span class="p">)</span>
         <span class="n">value</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="n">get_composition_amount</span><span class="p">(</span>
@@ -1251,13 +1275,15 @@
             <span class="s2">"units"</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">),</span>
             <span class="s2">"species"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s2">"InChI"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"SMILES"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="n">species_link</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"speciesLink"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">species_link</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_link</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"preferredKey"</span><span class="p">]</span>
             <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_link</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"InChI"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"composition"</span><span class="p">:</span>
+            <span class="n">column</span><span class="p">[</span><span class="s2">"SMILES"</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_link</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SMILES"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">species_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"composition"</span><span class="p">:</span>
                 <span class="c1"># TODO: add InChI validator/search</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s2">"Missing InChI for species "</span> <span class="o">+</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">])</span>
 
@@ -1365,9 +1391,7 @@
 
             <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"composition"</span><span class="p">:</span>
                 <span class="n">amount</span><span class="p">,</span> <span class="n">kind</span> <span class="o">=</span> <span class="n">get_composition_amount</span><span class="p">(</span><span class="n">column</span><span class="p">[</span><span class="s2">"units"</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span>
-                <span class="n">species</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]}</span>
-                <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">species</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span>
+                <span class="n">species</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">],</span> <span class="o">**</span><span class="n">species_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">)}</span>
                 <span class="n">species</span><span class="p">[</span><span class="s2">"amount"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">amount</span><span class="p">]</span>
                 <span class="n">composition</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
                 <span class="n">kinds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
@@ -1526,8 +1550,7 @@
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">independent</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">datapoint</span><span class="p">[</span><span class="s2">"independent-variables"</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s2">"species-name"</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">datapoint</span><span class="p">[</span><span class="s2">"independent-variables"</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span>
+                <span class="n">datapoint</span><span class="p">[</span><span class="s2">"independent-variables"</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">species_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">scalar_columns</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">common_property_fields</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]]</span>
@@ -1581,9 +1604,7 @@
                     <span class="n">point</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">uncertainty_column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span> <span class="o">*</span> <span class="n">row_factor</span><span class="p">)</span>
                 <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
-            <span class="n">profile</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]}</span>
-            <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">profile</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">],</span> <span class="o">**</span><span class="n">species_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">)}</span>
             <span class="n">profile</span><span class="p">[</span><span class="s2">"quantity"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"units"</span><span class="p">:</span> <span class="n">kind</span><span class="p">}</span>
             <span class="n">profile</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
             <span class="k">for</span> <span class="n">constant_column</span> <span class="ow">in</span> <span class="n">constant_columns</span><span class="p">:</span>
@@ -1741,10 +1762,10 @@
         <span class="n">property_id</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">temp_prop</span>
 
         <span class="k">if</span> <span class="n">temp_prop</span> <span class="o">==</span> <span class="s2">"composition"</span><span class="p">:</span>
-            <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]}</span>
-            <span class="k">if</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">spec</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span>
-            <span class="n">species_id</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">spec</span>
+            <span class="n">species_id</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">species_identifier</span><span class="p">(</span><span class="n">column</span><span class="p">),</span>
+            <span class="p">}</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">property_id</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s2">"property"</span><span class="p">)</span>
@@ -1765,9 +1786,8 @@
                     <span class="n">value_with_units</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
                 <span class="p">]</span>
             <span class="k">elif</span> <span class="n">property_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"composition"</span><span class="p">:</span>
-                <span class="n">spec</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">spec</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_id</span><span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">][</span><span class="s2">"species-name"</span><span class="p">]</span>
-                <span class="n">spec</span><span class="p">[</span><span class="s2">"InChI"</span><span class="p">]</span> <span class="o">=</span> <span class="n">species_id</span><span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"InChI"</span><span class="p">)</span>
+                <span class="c1"># The species name and its identifier, if ReSpecTh gives one</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">species_id</span><span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">])</span>
 
                 <span class="n">amount</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="n">get_composition_amount</span><span class="p">(</span><span class="n">unit_id</span><span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">tag</span><span class="p">],</span> <span class="n">val</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
                 <span class="n">spec</span><span class="p">[</span><span class="s2">"amount"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">amount</span><span class="p">]</span>

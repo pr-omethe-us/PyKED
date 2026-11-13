@@ -46,6 +46,7 @@
 
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Accept"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">}</span>
 
+
 <div class="viewcode-block" id="search_orcid">
 <a class="viewcode-back" href="../../identifier.html#pyked.identifier.search_orcid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">search_orcid</span><span class="p">(</span><span class="n">orcid</span><span class="p">):</span>
@@ -74,6 +75,7 @@
 
 <span class="sd">"""Validation helpers for chemical species identifiers."""</span>
 
+
 <div class="viewcode-block" id="normalize_inchi">
 <a class="viewcode-back" href="../../identifier.html#pyked.identifier.normalize_inchi">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_inchi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -97,9 +99,7 @@
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">BlockLogs</span><span class="p">():</span>
-            <span class="n">molecule</span> <span class="o">=</span> <span class="n">inchi</span><span class="o">.</span><span class="n">MolFromInchi</span><span class="p">(</span>
-                <span class="n">normalize_inchi</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">molecule</span> <span class="o">=</span> <span class="n">inchi</span><span class="o">.</span><span class="n">MolFromInchi</span><span class="p">(</span><span class="n">normalize_inchi</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">inchi</span><span class="o">.</span><span class="n">InchiReadWriteError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="n">molecule</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
