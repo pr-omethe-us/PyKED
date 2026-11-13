@@ -1740,3 +1740,64 @@ class TestCrossrefComparisonUnescapes:
             update=True,
         )
         assert not [e for e in str(v.errors).split(",") if "journal should be" in e]
+
+
+class TestSpeciesIdentifier:
+    """Each species of a composition is identified by exactly one of InChI, SMILES, and
+    atomic-composition.
+
+    The composition is validated on its own, without ``update=True``, which would skip the
+    required rules being tested.
+    """
+
+    identifiers = {
+        "InChI": {"InChI": "1S/H2/h1H"},
+        "SMILES": {"SMILES": "[H][H]"},
+        "atomic-composition": {"atomic-composition": [{"element": "H", "amount": 2}]},
+    }
+
+    @staticmethod
+    def validate_species(identifiers):
+        validator = OurValidator(
+            {"composition": schema["common-properties"]["schema"]["composition"]}
+        )
+        species = {"species-name": "H2", "amount": [1.0], **identifiers}
+        validator.validate({"composition": {"kind": "mole fraction", "species": [species]}})
+        return validator
+
+    @pytest.mark.parametrize("name", ["InChI", "SMILES", "atomic-composition"])
+    def test_one_identifier_accepted(self, name):
+        """Any one of the three identifies the species."""
+        validator = self.validate_species(self.identifiers[name])
+        assert not validator.errors, validator.errors
+
+    def test_no_identifier_rejected(self):
+        """A species with none of the three is an error, reported against each of them."""
+        validator = self.validate_species({})
+        errors = validator.errors["composition"][0]["species"][0][0][0]
+        assert errors == {
+            "InChI": ["required field"],
+            "SMILES": ["required field"],
+            "atomic-composition": ["required field"],
+        }
+
+    @pytest.mark.parametrize(
+        "names",
+        [("InChI", "SMILES"), ("InChI", "atomic-composition"), ("SMILES", "atomic-composition")],
+    )
+    def test_two_identifiers_rejected(self, names):
+        """A species gives one identifier, not two."""
+        validator = self.validate_species(
+            {**self.identifiers[names[0]], **self.identifiers[names[1]]}
+        )
+        assert "must not be present with" in str(validator.errors)
+
+    def test_full_file_without_identifier_rejected(self, mock_all_apis):
+        """The requirement holds for a whole ChemKED file, not just the composition schema."""
+        with open(Path(__file__).parent / "testfile_st.yaml", encoding="utf-8") as f:
+            properties = yaml.safe_load(f)
+        for species in properties["datapoints"][0]["composition"]["species"]:
+            species.pop("InChI", None)
+        validator = OurValidator(schema)
+        assert not validator.validate(properties)
+        assert "required field" in str(validator.errors)

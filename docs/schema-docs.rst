@@ -273,7 +273,9 @@ allowed in ``common-properties``.
 
     - ``species``: sequence, required
         The elements of this sequence specify the species and their amounts in the mixture. Each
-        element of the sequence is a mapping with the following keys:
+        element of the sequence is a mapping with the following keys. Each species must be
+        identified by exactly one of ``InChI``, ``SMILES``, or ``atomic-composition``: one of them
+        is required, and each excludes the other two.
 
         * ``species-name``: string, required
             The name of the species
