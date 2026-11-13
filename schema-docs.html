@@ -698,7 +698,7 @@ to <a class="reference internal" href="#schema-value-unit-optional"><span class=
 <span id="id5"></span><h2><a class="toc-backref" href="#id13" role="doc-backlink">Speciation Measurement Keys</a><a class="headerlink" href="#speciation-measurement-keys" title="Link to this heading">¶</a></h2>
 <p>This section details the schema for a speciation measurement datapoint, selected when
 <a class="reference internal" href="#reference-experiment-type"><span class="std std-ref">experiment-type</span></a> is <code class="docutils literal notranslate"><span class="pre">speciation</span> <span class="pre">measurement</span></code>.</p>
-<ul class="simple">
+<ul>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">pressure</span></code>: sequence, required</dt><dd><p>The pressure of the experiment, with dimensions of mass per length per time squared. Must
 conform to <a class="reference internal" href="#schema-value-unit-required"><span class="std std-ref">value-unit-required</span></a>.</p>
@@ -792,7 +792,7 @@ to <a class="reference internal" href="#schema-value-unit-optional"><span class=
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">independent-variables</span></code>: sequence, required</dt><dd><p>A sequence of mappings describing the independent variable columns. Each element has the
 following fields:</p>
-<ul>
+<ul class="simple">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">name</span></code>: string, required</dt><dd><p>Must be one of <code class="docutils literal notranslate"><span class="pre">temperature</span></code>, <code class="docutils literal notranslate"><span class="pre">residence-time</span></code>, <code class="docutils literal notranslate"><span class="pre">distance</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code>,
 <code class="docutils literal notranslate"><span class="pre">equivalence-ratio</span></code>, <code class="docutils literal notranslate"><span class="pre">initial-composition</span></code>, or <code class="docutils literal notranslate"><span class="pre">pressure</span></code>.</p>
@@ -828,7 +828,7 @@ following fields:</p>
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
+<li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">concentration-profiles</span></code>: sequence, required</dt><dd><p>A sequence of mappings, each describing measured values for a single species. Each element
 has the following fields:</p>
 <ul>
@@ -855,15 +855,30 @@ has the following fields:</p>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">values</span></code>: sequence, required</dt><dd><p>A sequence of at least two rows. Each row contains one value for each
 <code class="docutils literal notranslate"><span class="pre">independent-variables</span></code> entry, followed by the measured amount, and optionally an
-uncertainty value.</p>
+uncertainty value. Unless <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code> says otherwise, that last value is an
+absolute uncertainty in the units of the profile.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
+<li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>: sequence, optional</dt><dd><p>Profile-level uncertainty or evaluated-standard-deviation information. The measured
 species values are stored separately in <code class="docutils literal notranslate"><span class="pre">values</span></code>. The sequence contains one mapping
 with the uncertainty and/or evaluated-standard-deviation fields described under
 <a class="reference internal" href="#schema-value-with-uncertainty"><span class="std std-ref">value-with-uncertainty</span></a>.</p>
+<p>The fields of one kind given without its value, such as
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code>, <code class="docutils literal notranslate"><span class="pre">-sourcetype</span></code> and <code class="docutils literal notranslate"><span class="pre">-method</span></code> without
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code>, say what the uncertainty value at the end of each row
+is. The <code class="docutils literal notranslate"><span class="pre">-type</span></code> field is then required, and the rows must end with an uncertainty. The
+other kind may still give a value for the whole profile:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">values</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">798.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">9.8e-4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4.9e-5</span><span class="p p-Indicator">]</span>
+<span class="nt">uncertainty</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uncertainty-type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">relative</span><span class="w">          </span><span class="c1"># the whole profile</span>
+<span class="w">    </span><span class="nt">uncertainty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="w">    </span><span class="nt">evaluated-standard-deviation-type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absolute</span><span class="w">   </span><span class="c1"># the last value of each row</span>
+<span class="w">    </span><span class="nt">evaluated-standard-deviation-sourcetype</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">estimated</span>
+</pre></div>
+</div>
 </dd>
 </dl>
 </li>
@@ -875,6 +890,13 @@ with the uncertainty and/or evaluated-standard-deviation fields described under
 <dt><code class="docutils literal notranslate"><span class="pre">auxiliary-profiles</span></code>: sequence, optional</dt><dd><p>A sequence of auxiliary measured profiles, such as temperature, pressure, volume, or
 velocity. Each profile includes an <code class="docutils literal notranslate"><span class="pre">independent</span></code> mapping, a <code class="docutils literal notranslate"><span class="pre">quantity</span></code> mapping, and
 <code class="docutils literal notranslate"><span class="pre">values</span></code> rows.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">time-shift</span></code>: mapping, optional</dt><dd><p>How the zero of a time axis was placed. <code class="docutils literal notranslate"><span class="pre">target</span></code> is the species, and <code class="docutils literal notranslate"><span class="pre">type</span></code> is one of
+<code class="docutils literal notranslate"><span class="pre">half</span> <span class="pre">decrease</span></code>, <code class="docutils literal notranslate"><span class="pre">half</span> <span class="pre">increase</span></code>, or <code class="docutils literal notranslate"><span class="pre">relative</span> <span class="pre">decrease</span></code>; a relative decrease gives
+its <code class="docutils literal notranslate"><span class="pre">amount</span></code> as a <a class="reference internal" href="#schema-value-unit-optional"><span class="std std-ref">value-unit-optional</span></a> fraction.</p>
 </dd>
 </dl>
 </li>
@@ -922,7 +944,8 @@ evaluated-standard-deviation metadata. Metadata labels such as <code class="docu
 <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-sourcetype</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-method</span></code> must be accompanied by an actual
 <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>, <code class="docutils literal notranslate"><span class="pre">upper-uncertainty</span></code>/<code class="docutils literal notranslate"><span class="pre">lower-uncertainty</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code> value.</p>
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code> value. Only in a concentration profile may they describe
+the uncertainty at the end of each row instead.</p>
 <ul>
 <li><p>Uncertainty fields:</p>
 <blockquote>

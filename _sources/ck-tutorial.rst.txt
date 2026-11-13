@@ -543,8 +543,12 @@ the kind from the article instead:
     ReSpecTh_to_ChemKED('file.xml', apparatus_kind='outwardly propagating spherical flame')
 
 PyKED also provides a converter to generate ReSpecTh files based on ChemKED records.
-Writing ReSpecTh files is still limited to ignition delay data; a laminar burning
-velocity or speciation record raises `NotImplementedError`.
+Ignition delay and speciation measurement records can be written; a laminar burning
+velocity record raises `NotImplementedError`. A speciation measurement is written as the
+ReSpecTh speciation type its apparatus and swept axis call for: a jet stirred reactor
+measurement, a burner stabilized flame speciation measurement, a concentration time profile
+measurement for a shock tube or flow reactor against time, or otherwise an outlet
+concentration measurement.
 Given a ChemKED file ``file.yaml``, a corresponding ReSpecTh file can be created
 from the command line via
 

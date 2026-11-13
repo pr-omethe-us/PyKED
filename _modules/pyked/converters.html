@@ -35,6 +35,7 @@
 <span></span><span class="sd">"""Module with converters from other formats."""</span>
 
 <span class="c1"># Standard libraries</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">etree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">argparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArgumentParser</span>
@@ -51,7 +52,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
 
 <span class="c1"># Local imports</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">_normalize_unit_str</span><span class="p">,</span> <span class="n">crossref_api</span><span class="p">,</span> <span class="n">property_units</span><span class="p">,</span> <span class="n">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_normalize_unit_str</span><span class="p">,</span>
+    <span class="n">crossref_api</span><span class="p">,</span>
+    <span class="n">property_units</span><span class="p">,</span>
+    <span class="n">row_uncertainty_kinds</span><span class="p">,</span>
+    <span class="n">uncertainty_metadata_groups</span><span class="p">,</span>
+    <span class="n">yaml</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">unit_registry</span>
 
 <span class="c1"># Valid properties for ReSpecTh dataGroup</span>
@@ -250,6 +258,10 @@
 <span class="p">}</span>
 <span class="sd">"""`dict`: ReSpecTh composition units mapped to (ChemKED kind, scale factor, warning)"""</span>
 
+<span class="n">fraction_kinds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"mole fraction"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">"mole percent"</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>
+<span class="sd">"""`dict`: Composition kinds that state one quantity on different scales, mapped to the mole</span>
+<span class="sd">fraction that one unit of the kind is"""</span>
+
 <span class="n">composition_unit_typos</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mole faction"</span><span class="p">]</span>
 <span class="sd">"""`list`: Misspelled composition units in the ReSpecTh corpus, accepted with a warning</span>
 
@@ -284,6 +296,41 @@
 
 
 
+<div class="viewcode-block" id="normalize_value">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.normalize_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Normalize a numeric value as written in ReSpecTh for use in ChemKED.</span>
+
+<span class="sd">    Expands Fortran-style exponents written without the ``e``, which Pint cannot</span>
+<span class="sd">    read, and strips leading zeros, which YAML would otherwise take for octal.</span>
+
+<span class="sd">    The digits the source reported are otherwise left alone. A trailing zero is a</span>
+<span class="sd">    significant figure, so reformatting through a float would turn a reported</span>
+<span class="sd">    ``14.70`` into ``14.7`` and record three significant figures where the</span>
+<span class="sd">    authors stated four.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (`str`): Value as written in the ReSpecTh file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `str`: The same value, normalized</span>
+<span class="sd">    """</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Fortran-style exponent written without the 'e': '5.93+005' -&gt; '5.93e+005'</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^([+-]?\d+\.?\d*)([+-]\d+)$"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\1e\2"</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># Strip leading zeros from the integer part only, keeping the fraction and</span>
+    <span class="c1"># exponent exactly as written. Anything that is not a plain decimal, such as</span>
+    <span class="c1"># 'NaN' or '.5', is passed through untouched.</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"([+-]?)0*(\d+)(\.\d*)?([eE][+-]?\d+)?"</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="n">sign</span><span class="p">,</span> <span class="n">integer</span><span class="p">,</span> <span class="n">fraction</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sign</span><span class="si">}{</span><span class="n">integer</span><span class="si">}{</span><span class="n">fraction</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">''</span><span class="si">}{</span><span class="n">exponent</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+
 <div class="viewcode-block" id="value_with_units">
 <a class="viewcode-back" href="../../converters.html#pyked.converters.value_with_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">value_with_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unit_str</span><span class="p">):</span>
@@ -296,7 +343,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        `str`: Value and units joined in a form the ChemKED schema accepts</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">normalize_units</span><span class="p">(</span><span class="n">unit_str</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">normalize_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">normalize_units</span><span class="p">(</span><span class="n">unit_str</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span></div>
 
 
 
@@ -447,9 +494,31 @@
     <span class="n">pages</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">findtext</span><span class="p">(</span><span class="s2">"pages"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># ReSpecTh writes page ranges with en dashes or doubled hyphens; ChemKED uses one hyphen</span>
-        <span class="n">reference</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[-–—]+"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">,</span> <span class="n">pages</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="c1"># Collapse any spacing around the dash too, so a range reads "446-457"</span>
+        <span class="c1"># rather than "446 - 457".</span>
+        <span class="n">reference</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\s*[-–—]+\s*"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">,</span> <span class="n">pages</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">reference</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_doi">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.normalize_doi">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_doi</span><span class="p">(</span><span class="n">doi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Strip a resolver prefix from a DOI as ReSpecTh sometimes writes it.</span>
+
+<span class="sd">    A DOI is the bare `10.xxxx/...` identifier. Some ReSpecTh files give a</span>
+<span class="sd">    resolvable URL instead, as in `doi.org/10.1016/j.proci.2016.05.048`, which</span>
+<span class="sd">    no lookup accepts.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        doi (`str`): DOI as written in the ReSpecTh file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `str`: The bare DOI</span>
+<span class="sd">    """</span>
+    <span class="n">doi</span> <span class="o">=</span> <span class="n">doi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^(?:doi:|(?:https?://)?(?:dx\.)?doi\.org/)"</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">doi</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span></div>
 
 
 
@@ -471,13 +540,15 @@
 
     <span class="c1"># Try to get reference info via DOI, fall back on preferredKey if necessary.</span>
     <span class="n">ref_doi</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"doi"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ref_doi</span> <span class="o">=</span> <span class="n">normalize_doi</span><span class="p">(</span><span class="n">ref_doi</span><span class="p">)</span>
     <span class="n">ref_key</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"preferredKey"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># ReSpecTh 2.x keeps the same information in child elements</span>
     <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ref_doi</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"referenceDOI"</span><span class="p">),</span> <span class="s2">"text"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ref_doi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ref_doi</span> <span class="o">=</span> <span class="n">ref_doi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
+            <span class="n">ref_doi</span> <span class="o">=</span> <span class="n">normalize_doi</span><span class="p">(</span><span class="n">ref_doi</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">ref_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ref_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"description"</span><span class="p">),</span> <span class="s2">"text"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ref_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -515,7 +586,9 @@
             <span class="n">reference</span><span class="p">[</span><span class="s2">"doi"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_doi</span>
             <span class="c1"># Now get elements of the reference data</span>
             <span class="c1"># Assume that the reference returned by the DOI lookup always has a container-title</span>
-            <span class="n">reference</span><span class="p">[</span><span class="s2">"journal"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"container-title"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># CrossRef returns HTML-escaped text, so a journal such as</span>
+            <span class="c1"># "Energy &amp;amp; Fuels" arrives with the entity intact.</span>
+            <span class="n">reference</span><span class="p">[</span><span class="s2">"journal"</span><span class="p">]</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"container-title"</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">ref_year</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"published-print"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"published-online"</span><span class="p">)</span>
             <span class="n">reference</span><span class="p">[</span><span class="s2">"year"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref_year</span><span class="p">[</span><span class="s2">"date-parts"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">reference</span><span class="p">[</span><span class="s2">"volume"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"volume"</span><span class="p">))</span>
@@ -523,7 +596,7 @@
             <span class="n">reference</span><span class="p">[</span><span class="s2">"authors"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"author"</span><span class="p">]:</span>
                 <span class="n">auth</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">auth</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">author</span><span class="p">[</span><span class="s2">"given"</span><span class="p">],</span> <span class="n">author</span><span class="p">[</span><span class="s2">"family"</span><span class="p">]])</span>
+                <span class="n">auth</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">author</span><span class="p">[</span><span class="s2">"given"</span><span class="p">],</span> <span class="n">author</span><span class="p">[</span><span class="s2">"family"</span><span class="p">]]))</span>
                 <span class="c1"># Add ORCID if available</span>
                 <span class="n">orcid</span> <span class="o">=</span> <span class="n">author</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ORCID"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">orcid</span><span class="p">:</span>
@@ -834,6 +907,7 @@
                 <span class="s2">"reference"</span><span class="p">:</span> <span class="n">reference</span><span class="p">,</span>
                 <span class="s2">"kind"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">],</span>
                 <span class="s2">"units"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">),</span>
+                <span class="s2">"bound"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bound"</span><span class="p">),</span>
                 <span class="s2">"sourcetype"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sourcetype"</span><span class="p">),</span>
                 <span class="s2">"method"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"method"</span><span class="p">),</span>
                 <span class="s2">"value"</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"value"</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
@@ -941,6 +1015,123 @@
 
 
 
+<div class="viewcode-block" id="format_row_uncertainty">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.format_row_uncertainty">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_row_uncertainty</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Say what the uncertainty at the end of each profile row is, as ChemKED metadata keys.</span>
+
+<span class="sd">    These are the keys of `format_value_metadata` without the value, which is in the rows. An</span>
+<span class="sd">    absolute, symmetric uncertainty with nothing else stated is what the last value of a row</span>
+<span class="sd">    means when no key says otherwise, so it needs none.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        item (`dict`): Descriptor of the uncertainty column, from `get_datagroup_columns`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `dict`: Uncertainty metadata keys without a value, empty for an absolute uncertainty with</span>
+<span class="sd">        no sourcetype</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `KeywordError`: If the ``kind`` attribute is neither absolute nor relative</span>
+<span class="sd">        `NotImplementedError`: If the column is one bound of an asymmetric uncertainty</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"uncertainty"</span> <span class="ow">and</span> <span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bound"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"plusminus"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"plusminus"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'bound'</span><span class="p">]</span><span class="si">}</span><span class="s2"> bound of the uncertainty of </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'reference'</span><span class="p">]</span><span class="si">}</span><span class="s2"> varies across "</span>
+            <span class="s2">"the dataGroup, but a ChemKED profile row ends with a symmetric uncertainty"</span>
+        <span class="p">)</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">format_value_metadata</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"0"</span><span class="p">),</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">value_keys</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">uncertainty_metadata_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">value_keys</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">metadata</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"uncertainty-type"</span><span class="p">:</span> <span class="s2">"absolute"</span><span class="p">}:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+
+<div class="viewcode-block" id="uncertainty_factor">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.uncertainty_factor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">uncertainty_factor</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">profile_units</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Scale factor that states an uncertainty about a profile in the units of the profile.</span>
+
+<span class="sd">    ReSpecTh gives an uncertainty units of its own, which need not be those of the composition it</span>
+<span class="sd">    describes: a profile in ppm often has an evaluated standard deviation in mole fraction. The</span>
+<span class="sd">    profile is converted to its ChemKED kind, so an absolute uncertainty is converted to the same</span>
+<span class="sd">    kind. A relative uncertainty is a fraction of the amount, so it is not rescaled.</span>
+
+<span class="sd">    Some cannot be converted. A mole fraction is stated as a concentration only with the density</span>
+<span class="sd">    of the mixture at each point, which the file does not give, so such an uncertainty is dropped</span>
+<span class="sd">    with a warning rather than attached in the wrong units.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        item (`dict`): Descriptor of the uncertainty, with its ``name``, ``kind`` and ``units``</span>
+<span class="sd">        profile_units (`str`): ReSpecTh units of the profile, or its ChemKED kind</span>
+<span class="sd">        species (`str`): The species of the profile, named in the warning</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `float`: The factor to multiply the uncertainty by, or `None` if it cannot be stated in</span>
+<span class="sd">        the units of the profile</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"relative"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1.0</span>
+
+    <span class="n">kind</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">composition_units</span><span class="p">[</span><span class="n">profile_units</span><span class="p">]</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">units</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">dimensionless_units</span><span class="p">:</span>
+        <span class="c1"># Without units of its own, an absolute uncertainty is in those of the profile</span>
+        <span class="k">return</span> <span class="n">factor</span>
+
+    <span class="n">own_kind</span><span class="p">,</span> <span class="n">own_factor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">composition_units</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">own_kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">own_factor</span>
+    <span class="k">if</span> <span class="n">own_kind</span> <span class="ow">in</span> <span class="n">fraction_kinds</span> <span class="ow">and</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">fraction_kinds</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">own_factor</span> <span class="o">*</span> <span class="n">fraction_kinds</span><span class="p">[</span><span class="n">own_kind</span><span class="p">]</span> <span class="o">/</span> <span class="n">fraction_kinds</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span>
+
+    <span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Dropping </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2"> of the </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2"> profile, which cannot be stated in "</span>
+        <span class="sa">f</span><span class="s2">"the </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> of the profile"</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="merge_profile_metadata">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.merge_profile_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_profile_metadata</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Add uncertainty metadata to a concentration profile, in place.</span>
+
+<span class="sd">    One mapping holds both the uncertainty of the whole profile and what the last value of each</span>
+<span class="sd">    row is, which is described by keys given without a value (see</span>
+<span class="sd">    `~pyked.validation.row_uncertainty_kinds`). So each kind of uncertainty can describe either</span>
+<span class="sd">    the rows or the whole profile.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        profile (`dict`): ChemKED concentration profile</span>
+<span class="sd">        metadata (`dict`): Metadata keys from `format_value_metadata` or `format_row_uncertainty`</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `NotImplementedError`: If one kind of uncertainty would describe both the rows and the</span>
+<span class="sd">            whole profile</span>
+<span class="sd">    """</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"uncertainty"</span><span class="p">,</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">kind</span><span class="p">,</span> <span class="p">(</span><span class="n">value_keys</span><span class="p">,</span> <span class="n">label_keys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">uncertainty_metadata_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">value_keys</span> <span class="o">+</span> <span class="n">label_keys</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">metadata</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">row_uncertainty_kinds</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">kind</span> <span class="ow">in</span> <span class="n">row_uncertainty_kinds</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">block</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The profile of </span><span class="si">{</span><span class="n">profile</span><span class="p">[</span><span class="s1">'species-name'</span><span class="p">]</span><span class="si">}</span><span class="s2"> has a </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> for each row and one for "</span>
+                <span class="s2">"the whole profile, but ChemKED states both with the same keys"</span>
+            <span class="p">)</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="merge_value_metadata">
 <a class="viewcode-back" href="../../converters.html#pyked.converters.merge_value_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_value_metadata</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
@@ -982,12 +1173,18 @@
                 <span class="c1"># A speciation datapoint keeps its measured species in profiles</span>
                 <span class="k">for</span> <span class="n">datapoint</span> <span class="ow">in</span> <span class="n">datapoints</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">datapoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"concentration-profiles"</span><span class="p">,</span> <span class="p">[]):</span>
-                        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">]):</span>
-                            <span class="n">profile</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"uncertainty"</span><span class="p">,</span> <span class="p">[{}])</span>
-                            <span class="n">profile</span><span class="p">[</span><span class="s2">"uncertainty"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                                <span class="n">format_value_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">]):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># The profile is what it describes, even if it cannot be converted</span>
+                        <span class="n">attached</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">profile_factor</span> <span class="o">=</span> <span class="n">uncertainty_factor</span><span class="p">(</span>
+                            <span class="n">item</span><span class="p">,</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"quantity"</span><span class="p">][</span><span class="s2">"units"</span><span class="p">],</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"species-name"</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">profile_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">merge_profile_metadata</span><span class="p">(</span>
+                                <span class="n">profile</span><span class="p">,</span>
+                                <span class="n">format_value_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">profile_factor</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                             <span class="p">)</span>
-                            <span class="n">attached</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">attached</span><span class="p">:</span>
                 <span class="c1"># Otherwise it describes the amount of that species in the mixture, which may be</span>
@@ -1202,6 +1399,37 @@
 
 
 
+<div class="viewcode-block" id="get_time_shift">
+<a class="viewcode-back" href="../../converters.html#pyked.converters.get_time_shift">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_time_shift</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Read a ReSpecTh ``timeshift`` element as a ChemKED time shift.</span>
+
+<span class="sd">    ReSpecTh states once for the file how the zero of its time axis was placed: where the amount</span>
+<span class="sd">    of the ``target`` species has fallen to half, for example, or by a relative ``amount``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        elem (`~xml.etree.ElementTree.Element`): The ``timeshift`` element</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `dict`: ChemKED ``time-shift``</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `MissingAttributeError`: If the element has no ``target`` or ``type``</span>
+<span class="sd">    """</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"target"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">attribute</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MissingAttributeError</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="s2">"timeshift"</span><span class="p">)</span>
+        <span class="n">shift</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="s2">"amount"</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+        <span class="c1"># A relative amount is a fraction, so it carries no units</span>
+        <span class="n">shift</span><span class="p">[</span><span class="s2">"amount"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">normalize_value</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"amount"</span><span class="p">])]</span>
+
+    <span class="k">return</span> <span class="n">shift</span></div>
+
+
+
 <div class="viewcode-block" id="get_speciation_datapoints">
 <a class="viewcode-back" href="../../converters.html#pyked.converters.get_speciation_datapoints">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_speciation_datapoints</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
@@ -1209,7 +1437,7 @@
 
 <span class="sd">    Each dataGroup becomes one ChemKED datapoint: the first column that is not a species is the</span>
 <span class="sd">    swept axis, the species columns become concentration profiles, and any remaining measured</span>
-<span class="sd">    quantity becomes an auxiliary profile.</span>
+<span class="sd">    quantity becomes an auxiliary profile. The file's time shift is given to every datapoint.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        root (`~xml.etree.ElementTree.Element`): Root of ReSpecTh XML file</span>
@@ -1224,6 +1452,14 @@
     <span class="n">dataGroups</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">"dataGroup"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dataGroups</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">MissingElementError</span><span class="p">(</span><span class="s2">"dataGroup"</span><span class="p">)</span>
+
+    <span class="n">time_shifts</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">"timeshift"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_shifts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The file has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">time_shifts</span><span class="p">)</span><span class="si">}</span><span class="s2"> timeshift elements, but a ChemKED datapoint has "</span>
+            <span class="s2">"one time shift"</span>
+        <span class="p">)</span>
+    <span class="n">time_shift</span> <span class="o">=</span> <span class="n">time_shifts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">time_shifts</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="n">datapoints</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">dataGroup</span> <span class="ow">in</span> <span class="n">dataGroups</span><span class="p">:</span>
@@ -1330,13 +1566,19 @@
             <span class="n">uncertainty_column</span><span class="p">,</span> <span class="n">constant_columns</span> <span class="o">=</span> <span class="n">split_metadata</span><span class="p">(</span>
                 <span class="p">(</span><span class="s2">"composition"</span><span class="p">,</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">])</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">uncertainty_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">row_factor</span> <span class="o">=</span> <span class="n">uncertainty_factor</span><span class="p">(</span>
+                    <span class="n">uncertainty_column</span><span class="p">,</span> <span class="n">column</span><span class="p">[</span><span class="s2">"units"</span><span class="p">],</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">row_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">uncertainty_column</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
                 <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">axis</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">independent</span><span class="p">]</span>
                 <span class="n">point</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">uncertainty_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">uncertainty_column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
-                    <span class="n">point</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">uncertainty_column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span>
+                    <span class="n">point</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">uncertainty_column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]])</span> <span class="o">*</span> <span class="n">row_factor</span><span class="p">)</span>
                 <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
             <span class="n">profile</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"species-name"</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]}</span>
@@ -1345,12 +1587,23 @@
             <span class="n">profile</span><span class="p">[</span><span class="s2">"quantity"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"units"</span><span class="p">:</span> <span class="n">kind</span><span class="p">}</span>
             <span class="n">profile</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
             <span class="k">for</span> <span class="n">constant_column</span> <span class="ow">in</span> <span class="n">constant_columns</span><span class="p">:</span>
+                <span class="n">constant_factor</span> <span class="o">=</span> <span class="n">uncertainty_factor</span><span class="p">(</span>
+                    <span class="n">constant_column</span><span class="p">,</span> <span class="n">column</span><span class="p">[</span><span class="s2">"units"</span><span class="p">],</span> <span class="n">column</span><span class="p">[</span><span class="s2">"species"</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">constant_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="n">metadata</span> <span class="o">=</span> <span class="n">format_value_metadata</span><span class="p">(</span>
                     <span class="nb">dict</span><span class="p">(</span><span class="n">constant_column</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">constant_column</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]]),</span>
-                    <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">,</span>
+                    <span class="n">factor</span><span class="o">=</span><span class="n">constant_factor</span><span class="p">,</span>
                     <span class="n">numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="n">profile</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"uncertainty"</span><span class="p">,</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+                <span class="n">merge_profile_metadata</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">uncertainty_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># What the last value of each row is, unless it is the plain absolute uncertainty</span>
+                <span class="c1"># a row ends with when nothing says otherwise</span>
+                <span class="n">row_metadata</span> <span class="o">=</span> <span class="n">format_row_uncertainty</span><span class="p">(</span><span class="n">uncertainty_column</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">row_metadata</span><span class="p">:</span>
+                    <span class="n">merge_profile_metadata</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">row_metadata</span><span class="p">)</span>
             <span class="n">profiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
 
         <span class="n">datapoint</span><span class="p">[</span><span class="s2">"concentration-profiles"</span><span class="p">]</span> <span class="o">=</span> <span class="n">profiles</span>
@@ -1390,6 +1643,9 @@
                 <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" of </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">species</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
                 <span class="o">+</span> <span class="s2">", which has no profile in this dataGroup"</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">time_shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">datapoint</span><span class="p">[</span><span class="s2">"time-shift"</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time_shift</span><span class="p">(</span><span class="n">time_shift</span><span class="p">)</span>
 
         <span class="n">datapoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datapoint</span><span class="p">)</span>
 

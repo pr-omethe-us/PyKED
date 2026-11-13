@@ -257,6 +257,33 @@ a burner, so a file carrying nothing else cannot be converted without curation.<
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.format_row_uncertainty">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">format_row_uncertainty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#format_row_uncertainty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.format_row_uncertainty" title="Link to this definition">¶</a></dt>
+<dd><p>Say what the uncertainty at the end of each profile row is, as ChemKED metadata keys.</p>
+<p>These are the keys of <a class="reference internal" href="#pyked.converters.format_value_metadata" title="pyked.converters.format_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_value_metadata</span></code></a> without the value, which is in the rows. An
+absolute, symmetric uncertainty with nothing else stated is what the last value of a row
+means when no key says otherwise, so it needs none.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Descriptor of the uncertainty column, from <a class="reference internal" href="#pyked.converters.get_datagroup_columns" title="pyked.converters.get_datagroup_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_datagroup_columns</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Uncertainty metadata keys without a value, empty for an absolute uncertainty with
+no sourcetype</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the <code class="docutils literal notranslate"><span class="pre">kind</span></code> attribute is neither absolute nor relative</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.15)"><strong>NotImplementedError</strong></a> – If the column is one bound of an asymmetric uncertainty</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.format_value_metadata">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">format_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numeric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#format_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.format_value_metadata" title="Link to this definition">¶</a></dt>
 <dd><p>Turn one ReSpecTh uncertainty descriptor into ChemKED metadata keys.</p>
@@ -279,6 +306,18 @@ elsewhere, so an uncertainty about one of them is a number too.</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#pyked.converters.KeywordError" title="pyked.converters.KeywordError"><strong>KeywordError</strong></a> – If the <code class="docutils literal notranslate"><span class="pre">kind</span></code> attribute is neither absolute nor relative</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyked.converters.fraction_kinds">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">fraction_kinds</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'mole</span> <span class="pre">fraction':</span> <span class="pre">1.0,</span> <span class="pre">'mole</span> <span class="pre">percent':</span> <span class="pre">0.01}</span></span><a class="headerlink" href="#pyked.converters.fraction_kinds" title="Link to this definition">¶</a></dt>
+<dd><p>Composition kinds that state one quantity on different scales, mapped to the mole
+fraction that one unit of the kind is</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -571,7 +610,7 @@ columns gathered into that datapoint’s composition.</p>
 <dd><p>Parse speciation datapoints from a ReSpecTh file.</p>
 <p>Each dataGroup becomes one ChemKED datapoint: the first column that is not a species is the
 swept axis, the species columns become concentration profiles, and any remaining measured
-quantity becomes an auxiliary profile.</p>
+quantity becomes an auxiliary profile. The file’s time shift is given to every datapoint.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – Root of ReSpecTh XML file</p>
@@ -587,6 +626,28 @@ quantity becomes an auxiliary profile.</p>
 <li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If a column is not a valid property for this experiment type</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.15)"><strong>NotImplementedError</strong></a> – If the file cannot be represented by the ChemKED speciation schema</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.get_time_shift">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">get_time_shift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#get_time_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.get_time_shift" title="Link to this definition">¶</a></dt>
+<dd><p>Read a ReSpecTh <code class="docutils literal notranslate"><span class="pre">timeshift</span></code> element as a ChemKED time shift.</p>
+<p>ReSpecTh states once for the file how the zero of its time axis was placed: where the amount
+of the <code class="docutils literal notranslate"><span class="pre">target</span></code> species has fallen to half, for example, or by a relative <code class="docutils literal notranslate"><span class="pre">amount</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>elem</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Element</span></code></a>) – The <code class="docutils literal notranslate"><span class="pre">timeshift</span></code> element</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ChemKED <code class="docutils literal notranslate"><span class="pre">time-shift</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyked.converters.MissingAttributeError" title="pyked.converters.MissingAttributeError"><strong>MissingAttributeError</strong></a> – If the element has no <code class="docutils literal notranslate"><span class="pre">target</span></code> or <code class="docutils literal notranslate"><span class="pre">type</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -679,6 +740,28 @@ and attached by <a class="reference internal" href="#pyked.converters.attach_val
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.merge_profile_metadata">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">merge_profile_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#merge_profile_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.merge_profile_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Add uncertainty metadata to a concentration profile, in place.</p>
+<p>One mapping holds both the uncertainty of the whole profile and what the last value of each
+row is, which is described by keys given without a value (see
+<a class="reference internal" href="validation.html#pyked.validation.row_uncertainty_kinds" title="pyked.validation.row_uncertainty_kinds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">row_uncertainty_kinds</span></code></a>). So each kind of uncertainty can describe either
+the rows or the whole profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – ChemKED concentration profile</p></li>
+<li><p><strong>metadata</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Metadata keys from <a class="reference internal" href="#pyked.converters.format_value_metadata" title="pyked.converters.format_value_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_value_metadata</span></code></a> or <a class="reference internal" href="#pyked.converters.format_row_uncertainty" title="pyked.converters.format_row_uncertainty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_row_uncertainty</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.15)"><strong>NotImplementedError</strong></a> – If one kind of uncertainty would describe both the rows and the
+    whole profile</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.merge_value_metadata">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">merge_value_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#merge_value_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.merge_value_metadata" title="Link to this definition">¶</a></dt>
 <dd><p>Add uncertainty metadata to a ChemKED value list, in place.</p>
@@ -693,6 +776,26 @@ and attached by <a class="reference internal" href="#pyked.converters.attach_val
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.normalize_doi">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">normalize_doi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#normalize_doi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.normalize_doi" title="Link to this definition">¶</a></dt>
+<dd><p>Strip a resolver prefix from a DOI as ReSpecTh sometimes writes it.</p>
+<p>A DOI is the bare <code class="xref py py-obj docutils literal notranslate"><span class="pre">10.xxxx/...</span></code> identifier. Some ReSpecTh files give a
+resolvable URL instead, as in <code class="xref py py-obj docutils literal notranslate"><span class="pre">doi.org/10.1016/j.proci.2016.05.048</span></code>, which
+no lookup accepts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>doi</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – DOI as written in the ReSpecTh file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The bare DOI</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyked.converters.normalize_units">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">normalize_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#normalize_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.normalize_units" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a ReSpecTh unit string into one Pint can parse.</p>
@@ -702,6 +805,29 @@ and attached by <a class="reference internal" href="#pyked.converters.attach_val
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Equivalent unit string in Pint syntax</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.normalize_value">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">normalize_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#normalize_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.normalize_value" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize a numeric value as written in ReSpecTh for use in ChemKED.</p>
+<p>Expands Fortran-style exponents written without the <code class="docutils literal notranslate"><span class="pre">e</span></code>, which Pint cannot
+read, and strips leading zeros, which YAML would otherwise take for octal.</p>
+<p>The digits the source reported are otherwise left alone. A trailing zero is a
+significant figure, so reformatting through a float would turn a reported
+<code class="docutils literal notranslate"><span class="pre">14.70</span></code> into <code class="docutils literal notranslate"><span class="pre">14.7</span></code> and record three significant figures where the
+authors stated four.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – Value as written in the ReSpecTh file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The same value, normalized</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></p>
@@ -763,6 +889,35 @@ property names one, otherwise <a class="reference external" href="https://docs.p
 <dt class="sig sig-object py" id="pyked.converters.respth2ck">
 <span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">respth2ck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#respth2ck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.respth2ck" title="Link to this definition">¶</a></dt>
 <dd><p>Command-line entry point for converting a ReSpecTh XML file to a ChemKED YAML file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.converters.uncertainty_factor">
+<span class="sig-prename descclassname"><span class="pre">pyked.converters.</span></span><span class="sig-name descname"><span class="pre">uncertainty_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/converters.html#uncertainty_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.converters.uncertainty_factor" title="Link to this definition">¶</a></dt>
+<dd><p>Scale factor that states an uncertainty about a profile in the units of the profile.</p>
+<p>ReSpecTh gives an uncertainty units of its own, which need not be those of the composition it
+describes: a profile in ppm often has an evaluated standard deviation in mole fraction. The
+profile is converted to its ChemKED kind, so an absolute uncertainty is converted to the same
+kind. A relative uncertainty is a fraction of the amount, so it is not rescaled.</p>
+<p>Some cannot be converted. A mole fraction is stated as a concentration only with the density
+of the mixture at each point, which the file does not give, so such an uncertainty is dropped
+with a warning rather than attached in the wrong units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – Descriptor of the uncertainty, with its <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">kind</span></code> and <code class="docutils literal notranslate"><span class="pre">units</span></code></p></li>
+<li><p><strong>profile_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – ReSpecTh units of the profile, or its ChemKED kind</p></li>
+<li><p><strong>species</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – The species of the profile, named in the warning</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The factor to multiply the uncertainty by, or <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if it cannot be stated in
+the units of the profile</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -861,7 +1016,9 @@ property names one, otherwise <a class="reference external" href="https://docs.p
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.dimensionless_units"><code class="docutils literal notranslate"><span class="pre">dimensionless_units</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.experiment_types"><code class="docutils literal notranslate"><span class="pre">experiment_types</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.flame_modes"><code class="docutils literal notranslate"><span class="pre">flame_modes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.format_row_uncertainty"><code class="docutils literal notranslate"><span class="pre">format_row_uncertainty()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.format_value_metadata"><code class="docutils literal notranslate"><span class="pre">format_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.fraction_kinds"><code class="docutils literal notranslate"><span class="pre">fraction_kinds</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_apparatus_kind"><code class="docutils literal notranslate"><span class="pre">get_apparatus_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_common_properties"><code class="docutils literal notranslate"><span class="pre">get_common_properties()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_composition"><code class="docutils literal notranslate"><span class="pre">get_composition()</span></code></a></li>
@@ -876,6 +1033,7 @@ property names one, otherwise <a class="reference external" href="https://docs.p
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_reference"><code class="docutils literal notranslate"><span class="pre">get_reference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_reference_details"><code class="docutils literal notranslate"><span class="pre">get_reference_details()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_speciation_datapoints"><code class="docutils literal notranslate"><span class="pre">get_speciation_datapoints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_time_shift"><code class="docutils literal notranslate"><span class="pre">get_time_shift()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.get_value_metadata"><code class="docutils literal notranslate"><span class="pre">get_value_metadata()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_target_values"><code class="docutils literal notranslate"><span class="pre">ignition_target_values</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_targets"><code class="docutils literal notranslate"><span class="pre">ignition_targets</span></code></a></li>
@@ -883,11 +1041,15 @@ property names one, otherwise <a class="reference external" href="https://docs.p
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.ignition_types"><code class="docutils literal notranslate"><span class="pre">ignition_types</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.independent_variables"><code class="docutils literal notranslate"><span class="pre">independent_variables</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.merge_profile_metadata"><code class="docutils literal notranslate"><span class="pre">merge_profile_metadata()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.merge_value_metadata"><code class="docutils literal notranslate"><span class="pre">merge_value_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.normalize_doi"><code class="docutils literal notranslate"><span class="pre">normalize_doi()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.normalize_units"><code class="docutils literal notranslate"><span class="pre">normalize_units()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.normalize_value"><code class="docutils literal notranslate"><span class="pre">normalize_value()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.reconcile_composition_kind"><code class="docutils literal notranslate"><span class="pre">reconcile_composition_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.resolve_reference"><code class="docutils literal notranslate"><span class="pre">resolve_reference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.respth2ck"><code class="docutils literal notranslate"><span class="pre">respth2ck()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.converters.uncertainty_factor"><code class="docutils literal notranslate"><span class="pre">uncertainty_factor()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.unit_aliases"><code class="docutils literal notranslate"><span class="pre">unit_aliases</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.converters.value_with_units"><code class="docutils literal notranslate"><span class="pre">value_with_units()</span></code></a></li>
 </ul>

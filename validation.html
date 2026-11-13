@@ -75,6 +75,29 @@
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="pyked.validation.row_uncertainty_kinds">
+<span class="sig-prename descclassname"><span class="pre">pyked.validation.</span></span><span class="sig-name descname"><span class="pre">row_uncertainty_kinds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyked/validation.html#row_uncertainty_kinds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyked.validation.row_uncertainty_kinds" title="Link to this definition">¶</a></dt>
+<dd><p>The kinds of uncertainty that a profile’s metadata describes without giving a value.</p>
+<p>A concentration profile row may end with an uncertainty of its own. The profile’s uncertainty
+metadata says what that last value is with the descriptive keys of one kind, such as
+<code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation-type</span></code>, given without the value of that kind, which is in the
+rows instead. Without such keys the last value of a row is an absolute uncertainty in the
+units of the profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metadata</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>) – The uncertainty metadata mapping of a concentration profile</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">uncertainty</span></code> and/or <code class="docutils literal notranslate"><span class="pre">evaluated-standard-deviation</span></code>, each kind whose
+descriptive keys are given without a value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py" id="pyked.validation.units">
 <span class="sig-prename descclassname"><span class="pre">pyked.validation.</span></span><span class="sig-name descname"><span class="pre">units</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;pint.registry.UnitRegistry</span> <span class="pre">object&gt;</span></span><a class="headerlink" href="#pyked.validation.units" title="Link to this definition">¶</a></dt>
@@ -130,6 +153,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Validation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.validation.OurValidator"><code class="docutils literal notranslate"><span class="pre">OurValidator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.validation.compare_name"><code class="docutils literal notranslate"><span class="pre">compare_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyked.validation.row_uncertainty_kinds"><code class="docutils literal notranslate"><span class="pre">row_uncertainty_kinds()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyked.validation.units"><code class="docutils literal notranslate"><span class="pre">units</span></code></a></li>
 </ul>
 </li>
