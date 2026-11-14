@@ -16,8 +16,12 @@ authors:
     given-names: Bryan W.
     orcid: https://orcid.org/0000-0003-0815-9270
     email: bryan.w.weber@gmail.com
-version: 0.5.0
-date-released: "2026-07-02"
+  - family-names: Lekia
+    given-names: Prosper K.
+    orcid: https://orcid.org/0009-0007-2428-0755
+    email: lekia.p@northeastern.edu
+version: 0.6.0
+date-released: "2026-11-13"
 license: BSD-3-Clause
 repository-code: https://github.com/pr-omethe-us/PyKED
 url: https://pr-omethe-us.github.io/PyKED/

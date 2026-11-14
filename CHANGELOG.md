@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.6.0] - 2026-11-13
 ### Added
 - Offline validation of species InChI and SMILES strings using RDKit, including support for both
   complete and historical prefixless InChIs
@@ -223,7 +225,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First minor release of PyKED, supporting autoignition experiments.
 - Basic API documentation is available via https://pr-omethe-us.github.io/PyKED/
 
-[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/pr-omethe-us/PyKED/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pr-omethe-us/PyKED/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pr-omethe-us/PyKED/compare/v0.3.0...v0.4.0

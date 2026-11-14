@@ -7,4 +7,4 @@
 
 ## Contributors
 
-None yet. Why not be the first?
+* Prosper Lekia <lekia.p@northeastern.edu>
