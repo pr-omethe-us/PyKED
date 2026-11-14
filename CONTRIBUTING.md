@@ -104,6 +104,11 @@ Merge the release commit into `main` through a pull request, and wait for CI to 
 
 ### 2. Tag the release and publish to PyPI
 
+Only an admin can do this step. The `protect-release-tags` repository ruleset covers every tag
+and lets only organization and repository admins create, move, or delete one, so a tag pushed by
+anyone else is rejected. This also guards the release tags that PyPI and Zenodo point to. The
+same rule applies to deleting a tag if the publish fails, below.
+
 Tag the release commit on `main` with an annotated tag, and push only that tag:
 
 ```bash
@@ -120,7 +125,7 @@ publishing, through the `pypi` deployment environment, which accepts only the `m
 Actions tab, then check that <https://pypi.org/project/pyked/> shows the new version.
 
 If the workflow fails before uploading, fix the problem on `main`, delete the tag, and tag the
-fixed commit again:
+fixed commit again, rather than force-moving it:
 
 ```bash
 git push upstream :refs/tags/vX.Y.Z
