@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
+from pyked._version import __version__
 from pyked.chemked import ChemKED, Composition, DataPoint
 from pyked.converters import ReSpecTh_to_ChemKED, get_common_properties, get_datapoints
 
@@ -650,7 +651,9 @@ def speciation_document(
     return {
         "file-authors": [{"name": "Kyle Niemeyer"}],
         "file-version": 0,
-        "chemked-version": "0.5.0",
+        # The converter writes the current version into every file it reads back, so a fixed
+        # version here would break the round trips at every release
+        "chemked-version": __version__,
         "reference": {
             "authors": [{"name": "Ann Author"}, {"name": "Ben Author"}],
             "journal": "Combustion and Flame",
