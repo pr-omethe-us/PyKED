@@ -106,6 +106,22 @@ CROSSREF_RESPONSES = {
             {"given": "Chih-Jen", "family": "Sung"},
         ],
     },
+    # CrossRef HTML-escapes the journal name, as the converter and validator assume when they
+    # unescape it. Recorded as CrossRef returns it, so the weekly contract tests fail if CrossRef
+    # ever stops escaping it.
+    "10.1021/ef4017762": {
+        "container-title": ["Energy &amp; Fuels"],
+        "published-print": {"date-parts": [[2013]]},
+        "volume": "27",
+        "page": "6247-6254",
+        "author": [
+            {"given": "Jiaxiang", "family": "Zhang"},
+            {"given": "Erjiang", "family": "Hu"},
+            {"given": "Lun", "family": "Pan"},
+            {"given": "Zihang", "family": "Zhang"},
+            {"given": "Zuohua", "family": "Huang"},
+        ],
+    },
 }
 
 CROSSREF_INVALID_DOIS = {"10.1000/invalid.doi"}
