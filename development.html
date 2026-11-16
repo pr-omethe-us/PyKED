@@ -65,7 +65,9 @@ they run offline and at full speed:</p>
 <h3>Live API contract tests<a class="headerlink" href="#live-api-contract-tests" title="Link to this heading">¶</a></h3>
 <p>A separate set of tests marked <code class="docutils literal notranslate"><span class="pre">live_api</span></code> call the real Crossref and ORCID APIs to confirm
 that the mock data in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code> still matches actual responses. These are excluded
-from the default run to keep CI reliable:</p>
+from the default run and from the CI checks on pull requests, so run them by hand before
+submitting a pull request, whatever it changes: they are there to catch errors you did not
+expect:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">m</span> <span class="n">live_api</span> <span class="o">-</span><span class="n">v</span>
 </pre></div>
 </div>
@@ -84,7 +86,9 @@ entries in <code class="docutils literal notranslate"><span class="pre">tests/_m
 <p>If you add a test that loads a ChemKED file with a DOI or author ORCID, the validation layer
 will call the Crossref and/or ORCID APIs. Rather than hitting the real APIs, extend the mocks:</p>
 <ol class="arabic simple">
-<li><p>Add your DOI’s expected response to <code class="docutils literal notranslate"><span class="pre">CROSSREF_RESPONSES</span></code> in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code>.</p></li>
+<li><p>Add your DOI’s expected response to <code class="docutils literal notranslate"><span class="pre">CROSSREF_RESPONSES</span></code> in <code class="docutils literal notranslate"><span class="pre">tests/_mock_data.py</span></code>, with
+the fields copied from the real CrossRef record. If the test needs a record that does not
+exist, such as one with made-up text, add it to <code class="docutils literal notranslate"><span class="pre">CROSSREF_SYNTHETIC_RESPONSES</span></code> instead.</p></li>
 <li><p>Add any ORCID identifiers to <code class="docutils literal notranslate"><span class="pre">ORCID_RESPONSES</span></code> in the same file.</p></li>
 <li><p>Apply the appropriate fixture to your test:</p>
 <ul class="simple">
@@ -100,8 +104,10 @@ will call the Crossref and/or ORCID APIs. Rather than hitting the real APIs, ext
     <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">doi</span> <span class="o">==</span> <span class="s2">"10.xxxx/my.doi"</span>
 </pre></div>
 </div>
-<p>The mock data is also what the live contract tests compare against, so adding the entry to
-<code class="docutils literal notranslate"><span class="pre">_mock_data.py</span></code> simultaneously keeps both the unit test mocks and the contract tests correct.</p>
+<p>The real records are also what the live contract tests compare against, so adding the entry to
+<code class="docutils literal notranslate"><span class="pre">CROSSREF_RESPONSES</span></code> keeps both the unit test mocks and the contract tests correct. The
+contract tests do not check <code class="docutils literal notranslate"><span class="pre">CROSSREF_SYNTHETIC_RESPONSES</span></code>, since its DOIs do not exist and
+CrossRef would not find them.</p>
 </section>
 </section>
 
