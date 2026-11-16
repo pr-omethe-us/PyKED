@@ -36,7 +36,9 @@ Live API contract tests
 
 A separate set of tests marked ``live_api`` call the real Crossref and ORCID APIs to confirm
 that the mock data in ``tests/_mock_data.py`` still matches actual responses. These are excluded
-from the default run to keep CI reliable::
+from the default run and from the CI checks on pull requests, so run them by hand before
+submitting a pull request, whatever it changes: they are there to catch errors you did not
+expect::
 
     pytest -m live_api -v
 
