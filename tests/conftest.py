@@ -6,16 +6,24 @@ import habanero
 import httpx2 as httpx
 import pytest
 
-from tests._mock_data import CROSSREF_INVALID_DOIS, CROSSREF_RESPONSES, ORCID_RESPONSES
+from tests._mock_data import (
+    CROSSREF_INVALID_DOIS,
+    CROSSREF_RESPONSES,
+    CROSSREF_SYNTHETIC_RESPONSES,
+    ORCID_RESPONSES,
+)
 
 
 def _mock_works(ids=None, **kwargs):
     if ids in CROSSREF_INVALID_DOIS:
         raise habanero.RequestError(404, "Not Found")
-    if ids in CROSSREF_RESPONSES:
-        return {"message": CROSSREF_RESPONSES[ids]}
+    # Real records, checked against CrossRef by the live API tests, and made-up ones, which are not
+    for responses in (CROSSREF_RESPONSES, CROSSREF_SYNTHETIC_RESPONSES):
+        if ids in responses:
+            return {"message": responses[ids]}
     raise KeyError(
-        f"DOI {ids!r} not in mock data; add it to CROSSREF_RESPONSES in tests/_mock_data.py"
+        f"DOI {ids!r} not in mock data; add it to CROSSREF_RESPONSES in tests/_mock_data.py, "
+        "or to CROSSREF_SYNTHETIC_RESPONSES if it is made up"
     )
 
 
