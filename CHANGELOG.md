@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- The weekly live API contract tests failed on the made-up DOI `10.1021/mock.escaped`, which the HTML-unescaping tests use and CrossRef does not know. Made-up records now live in `CROSSREF_SYNTHETIC_RESPONSES` in `tests/_mock_data.py`, which the mock serves but the contract tests do not check
 
 ## [0.6.0] - 2026-11-13
 ### Added

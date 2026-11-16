@@ -1,14 +1,8 @@
 """Shared mock data for Crossref and ORCID APIs used by conftest.py and test_live_api.py."""
 
+# Records copied from real CrossRef responses. The live API contract tests in test_live_api.py
+# check every one of them against CrossRef each week, so only add a DOI that really exists.
 CROSSREF_RESPONSES = {
-    # Journal and author names as CrossRef actually returns them: HTML-escaped.
-    "10.1021/mock.escaped": {
-        "container-title": ["Energy &amp; Fuels"],
-        "published-print": {"date-parts": [[2015]]},
-        "volume": "29",
-        "page": "1-2",
-        "author": [{"given": "A&amp;B", "family": "Author"}],
-    },
     "10.1016/j.ijhydene.2007.04.008": {
         "container-title": ["International Journal of Hydrogen Energy"],
         "published-print": {"date-parts": [[2007]]},
@@ -115,6 +109,20 @@ CROSSREF_RESPONSES = {
 }
 
 CROSSREF_INVALID_DOIS = {"10.1000/invalid.doi"}
+
+# Made-up records, served by the mock like those above but never checked against CrossRef,
+# for testing behavior that no real record shows. Their DOIs do not exist.
+CROSSREF_SYNTHETIC_RESPONSES = {
+    # Journal and author names HTML-escaped, as CrossRef returns them, to test that both are
+    # unescaped. The author name is made up so that it contains an escaped character.
+    "10.1021/mock.escaped": {
+        "container-title": ["Energy &amp; Fuels"],
+        "published-print": {"date-parts": [[2015]]},
+        "volume": "29",
+        "page": "1-2",
+        "author": [{"given": "A&amp;B", "family": "Author"}],
+    },
+}
 
 ORCID_RESPONSES = {
     # given-names must be "Kyle" (not "Kyle E.") — test_invalid_ORCID_name expects

@@ -42,7 +42,11 @@ pytest -v               # verbose output
 
 If you add a test that calls the Crossref or ORCID API, **do not hit the real API**. Instead:
 
-1. Add your DOI to `CROSSREF_RESPONSES` in [`tests/_mock_data.py`](tests/_mock_data.py).
+1. Add your DOI to `CROSSREF_RESPONSES` in [`tests/_mock_data.py`](tests/_mock_data.py), with
+   the fields copied from the real CrossRef record. If the test needs a record that does not
+   exist, such as one with made-up text, add it to `CROSSREF_SYNTHETIC_RESPONSES` instead: the
+   live API contract tests below check every DOI in `CROSSREF_RESPONSES` against CrossRef, and a
+   made-up one fails them.
 2. Add any ORCID identifiers to `ORCID_RESPONSES` in the same file.
 3. Use the `mock_crossref_api`, `mock_orcid_api`, or `mock_all_apis` fixture from
    [`tests/conftest.py`](tests/conftest.py) in your test.
@@ -50,8 +54,8 @@ If you add a test that calls the Crossref or ORCID API, **do not hit the real AP
 ### Live API contract tests
 
 A separate set of tests marked `live_api` calls the real Crossref and ORCID APIs to verify that
-the mock data in `tests/_mock_data.py` still matches live responses. These are excluded from the
-default run but can be triggered manually:
+the mock data in `tests/_mock_data.py` still matches live responses (`CROSSREF_SYNTHETIC_RESPONSES`
+is not checked). These are excluded from the default run but can be triggered manually:
 
 ```bash
 pytest -m live_api -v
