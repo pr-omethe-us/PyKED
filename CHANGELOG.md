@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - A real *Energy & Fuels* record (`10.1021/ef4017762`) in the CrossRef mock data, so the weekly live API contract tests check that CrossRef still HTML-escapes the journal name, as the converter and validator assume when they unescape it
 
+### Changed
+- The GitHub Actions workflows use `actions/checkout` v7, `actions/setup-python` v7, `actions/upload-artifact` v7, and `actions/download-artifact` v8, which run on Node.js 24; the earlier versions ran on Node.js 20, which GitHub has deprecated
+- The weekly live API contract tests run only in `pr-omethe-us/PyKED`, not in forks
+
 ### Fixed
 - The weekly live API contract tests failed on the made-up DOI `10.1021/mock.escaped`, which the HTML-unescaping tests use and CrossRef does not know. Made-up records now live in `CROSSREF_SYNTHETIC_RESPONSES` in `tests/_mock_data.py`, which the mock serves but the contract tests do not check
 
