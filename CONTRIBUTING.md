@@ -13,7 +13,7 @@ You can find a [list of current issues](https://github.com/pr-omethe-us/PyKED/is
 ## Pull Requests
 
  * If you're unfamiliar with Pull Requests, please take a look at the [GitHub documentation for them](https://help.github.com/articles/proposing-changes-to-a-project-with-pull-requests/).
- * **Make sure the test suite passes** on your computer, and that test coverage doesn't go down. To do this, run `pytest --cov=pyked` from the top-level directory. See [Testing](#testing) below for more detail.
+ * **Make sure the test suite passes** on your computer, and that test coverage doesn't go down. To do this, run `pytest --cov=pyked` from the top-level directory. Then also run the [live API contract tests](#live-api-contract-tests) with `pytest -m live_api`, whatever your pull request changes: the default run and the CI checks on pull requests both skip them, and they are there to catch errors you did not expect. See [Testing](#testing) below for more detail.
  * *Always* add tests and docs for your code.
  * The use of emoji in Pull Requests is encouraged with the format ":emoji: Commit summary". See [this list of suggested emoji.](https://github.com/slashsBin/styleguide-git-commit-message#suggested-emojis)
  * Please reference relevant GitHub issues in your commit messages using `GH123` or `#123`.
@@ -55,7 +55,8 @@ If you add a test that calls the Crossref or ORCID API, **do not hit the real AP
 
 A separate set of tests marked `live_api` calls the real Crossref and ORCID APIs to verify that
 the mock data in `tests/_mock_data.py` still matches live responses (`CROSSREF_SYNTHETIC_RESPONSES`
-is not checked). These are excluded from the default run but can be triggered manually:
+is not checked). These are excluded from the default run and from the CI checks on pull requests,
+so run them by hand before submitting a pull request:
 
 ```bash
 pytest -m live_api -v
