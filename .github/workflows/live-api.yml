@@ -8,6 +8,8 @@ on:
 jobs:
   live-api:
     runs-on: ubuntu-latest
+    # Only the main repository runs the weekly check; forks would repeat it and notify their owners
+    if: github.repository == 'pr-omethe-us/PyKED'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
