@@ -57,7 +57,9 @@ Adding new API-dependent tests
 If you add a test that loads a ChemKED file with a DOI or author ORCID, the validation layer
 will call the Crossref and/or ORCID APIs. Rather than hitting the real APIs, extend the mocks:
 
-1. Add your DOI's expected response to ``CROSSREF_RESPONSES`` in ``tests/_mock_data.py``.
+1. Add your DOI's expected response to ``CROSSREF_RESPONSES`` in ``tests/_mock_data.py``, with
+   the fields copied from the real CrossRef record. If the test needs a record that does not
+   exist, such as one with made-up text, add it to ``CROSSREF_SYNTHETIC_RESPONSES`` instead.
 2. Add any ORCID identifiers to ``ORCID_RESPONSES`` in the same file.
 3. Apply the appropriate fixture to your test:
 
@@ -71,5 +73,7 @@ Example::
         c = ChemKED(yaml_file="tests/my_new_file.yaml")
         assert c.reference.doi == "10.xxxx/my.doi"
 
-The mock data is also what the live contract tests compare against, so adding the entry to
-``_mock_data.py`` simultaneously keeps both the unit test mocks and the contract tests correct.
+The real records are also what the live contract tests compare against, so adding the entry to
+``CROSSREF_RESPONSES`` keeps both the unit test mocks and the contract tests correct. The
+contract tests do not check ``CROSSREF_SYNTHETIC_RESPONSES``, since its DOIs do not exist and
+CrossRef would not find them.
